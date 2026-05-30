@@ -132,3 +132,15 @@ Start with services and reports, then move into software:
 4. Invariant catalog.
 5. CLI that reads fixtures and emits a report.
 6. Hosted report viewer.
+
+## Current Build Slice
+
+The first executable slice is a fixture-driven runner:
+
+- fixture: `fixtures/hello-counter.lab.json`
+- schema: `schemas/nockapp-lab-fixture.schema.json`
+- runner: `scripts/run-lab.mjs`
+- sample report API: `/api/reports/sample`
+- dashboard report preview on the home page
+
+This creates a stable contract for the first real adapter. The runner currently applies mock state transitions, evaluates `peek` expectations, checks invariant packs, and emits JSON plus Markdown reports. The next engineering milestone is a local fakenet adapter that replaces mock execution with calls to the Nockchain gRPC service.

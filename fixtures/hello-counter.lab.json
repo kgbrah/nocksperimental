@@ -1,0 +1,127 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "hello-counter-v0",
+  "app": {
+    "name": "Hello Counter",
+    "slug": "hello-counter",
+    "version": "0.0.1",
+    "kernel": "hoon-counter-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Modeled after the official local fakenet flow.",
+      "This fixture is mock-backed until a real adapter can call a node."
+    ]
+  },
+  "actors": [
+    {
+      "name": "alice",
+      "pkh": "9yPePjfWAdUnzaQKyxcRXKRa5PpUzKKEwtpECBZsUYt9Jd7egSDEWoV"
+    },
+    {
+      "name": "bob",
+      "pkh": "child-fakenet-pkh-1"
+    }
+  ],
+  "initialState": {
+    "counter": 0,
+    "totalSupply": 1000,
+    "balances": {
+      "alice": 1000,
+      "bob": 0
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock fakenet profile",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "poke-increment-alice",
+      "type": "poke",
+      "title": "Alice increments counter",
+      "actor": "alice",
+      "target": "/counter",
+      "input": {
+        "action": "increment",
+        "by": 1
+      },
+      "statePatch": {
+        "counter": 1
+      },
+      "expect": {
+        "path": "counter",
+        "equals": 1
+      }
+    },
+    {
+      "id": "poke-increment-bob",
+      "type": "poke",
+      "title": "Bob increments counter and receives test balance",
+      "actor": "bob",
+      "target": "/counter",
+      "input": {
+        "action": "increment",
+        "by": 1
+      },
+      "statePatch": {
+        "counter": 2,
+        "balances": {
+          "alice": 700,
+          "bob": 300
+        }
+      },
+      "expect": {
+        "path": "counter",
+        "equals": 2
+      }
+    },
+    {
+      "id": "peek-counter",
+      "type": "peek",
+      "title": "Read counter value",
+      "target": "/counter",
+      "expect": {
+        "path": "counter",
+        "equals": 2
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "counter-non-negative",
+      "title": "Counter is never negative",
+      "severity": "critical",
+      "kind": "numeric-min",
+      "path": "counter",
+      "min": 0
+    },
+    {
+      "id": "counter-final-value",
+      "title": "Counter final value matches fixture",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "counter",
+      "equals": 2
+    },
+    {
+      "id": "poke-actors-declared",
+      "title": "Every poke has a declared actor",
+      "severity": "high",
+      "kind": "poke-actors-declared"
+    },
+    {
+      "id": "supply-conserved",
+      "title": "NOCK-denominated balances conserve supply",
+      "severity": "critical",
+      "kind": "supply-conservation",
+      "balancesPath": "balances",
+      "supplyPath": "totalSupply"
+    }
+  ]
+}

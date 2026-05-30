@@ -10,9 +10,11 @@ import {
   Radar,
   Scale,
   ShieldCheck,
+  Terminal,
   Workflow
 } from "lucide-react";
 import { ModuleExplorer } from "@/components/module-explorer";
+import { sampleLabReport } from "@/lib/lab-report";
 import { labModules, parallelTracks, strategyPhases } from "@/lib/strategy";
 
 const iconByCategory = {
@@ -79,6 +81,104 @@ export default function Home() {
                 </article>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#242424] bg-[#fdfbf4]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#6c3324]">
+                First working artifact
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold">Fixture-driven lab report</h2>
+            </div>
+            <a
+              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              href="/api/reports/sample"
+            >
+              <Code2 size={16} aria-hidden="true" />
+              Report JSON
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className="border border-[#242424] bg-[#f7f3ea] p-5 shadow-[4px_4px_0_#242424]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                    {sampleLabReport.fixtureId}
+                  </p>
+                  <h3 className="mt-1 text-2xl font-semibold">{sampleLabReport.app.name}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#44443d]">
+                    Mock-backed report for a NockApp fakenet run. The next adapter replaces this
+                    mock execution with gRPC calls against a local fakenet node.
+                  </p>
+                </div>
+                <span className="border border-[#242424] bg-[#e8ead7] px-3 py-2 font-mono text-xs uppercase">
+                  {sampleLabReport.summary.status}
+                </span>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <Metric
+                  label="Steps"
+                  value={`${sampleLabReport.summary.stepsPassed}/${sampleLabReport.steps.length}`}
+                />
+                <Metric
+                  label="Invariants"
+                  value={`${sampleLabReport.summary.invariantsPassed}/${sampleLabReport.invariants.length}`}
+                />
+                <Metric label="Runtime" value={`${sampleLabReport.summary.durationMs}ms`} />
+              </div>
+
+              <div className="mt-5 border border-[#242424] bg-[#171717] p-3 font-mono text-xs text-[#fdfbf4]">
+                <div className="flex items-center gap-2">
+                  <Terminal size={14} aria-hidden="true" />
+                  npm run lab:sample
+                </div>
+              </div>
+            </article>
+
+            <div className="grid gap-4">
+              <article className="border border-[#242424] bg-[#f7f3ea] p-5">
+                <h3 className="text-lg font-semibold">Scripted run</h3>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  {sampleLabReport.steps.map((step) => (
+                    <div className="border border-[#8b8b7a] bg-white p-3" key={step.id}>
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium">{step.title}</p>
+                        <span className="font-mono text-xs uppercase text-[#536023]">
+                          {step.status}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-[#44443d]">{step.observed}</p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              <article className="border border-[#242424] bg-[#f7f3ea] p-5">
+                <h3 className="text-lg font-semibold">Invariant checks</h3>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  {sampleLabReport.invariants.map((invariant) => (
+                    <div className="border border-[#8b8b7a] bg-white p-3" key={invariant.id}>
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="font-medium">{invariant.title}</p>
+                        <span className="font-mono text-xs uppercase text-[#536023]">
+                          {invariant.status}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-[#44443d]">
+                        {invariant.observed}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            </div>
           </div>
         </div>
       </section>

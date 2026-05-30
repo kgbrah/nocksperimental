@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lab:sample": "node scripts/run-lab.mjs fixtures/hello-counter.lab.json --out .nocklab/hello-counter.report.json --markdown .nocklab/hello-counter.report.md --strict"
   },
   "dependencies": {
     "lucide-react": "^0.475.0",

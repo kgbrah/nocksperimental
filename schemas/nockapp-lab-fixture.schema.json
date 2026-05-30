@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.dev/schemas/nockapp-lab-fixture.schema.json",
+  "title": "Nocksperimental NockApp Lab Fixture",
+  "type": "object",
+  "required": ["id", "app", "environment", "initialState", "steps", "invariants"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "app": {
+      "type": "object",
+      "required": ["name", "slug", "version", "kernel"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "version": { "type": "string" },
+        "kernel": { "type": "string" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["mode", "grpcEndpoint", "fakenetCommand", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet"]
+        },
+        "grpcEndpoint": { "type": "string" },
+        "fakenetCommand": { "type": "string" },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "pkh"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "pkh": { "type": "string" }
+        }
+      }
+    },
+    "initialState": {
+      "type": "object"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "title"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "enum": ["fakenet", "poke", "peek", "invariant", "bridge"]
+          },
+          "title": { "type": "string" },
+          "actor": { "type": "string" },
+          "target": { "type": "string" },
+          "input": {},
+          "statePatch": {
+            "type": "object"
+          },
+          "expectation": { "type": "string" },
+          "expect": {
+            "type": "object",
+            "properties": {
+              "path": { "type": "string" },
+              "equals": {}
+            }
+          }
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "severity", "kind"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "severity": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "kind": {
+            "enum": ["numeric-min", "state-equals", "poke-actors-declared", "supply-conservation"]
+          },
+          "path": { "type": "string" },
+          "min": { "type": "number" },
+          "equals": {},
+          "balancesPath": { "type": "string" },
+          "supplyPath": { "type": "string" }
+        }
+      }
+    }
+  }
+}

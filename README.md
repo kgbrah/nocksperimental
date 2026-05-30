@@ -36,6 +36,7 @@ Open `http://localhost:3000`.
 - `npm run dev` starts the Next.js app.
 - `npm run build` checks a production build.
 - `npm run lint` runs ESLint.
+- `npm run lab:sample` generates a sample JSON and Markdown lab report in `.nocklab/`.
 
 ## Initial MVP
 
@@ -43,4 +44,21 @@ Open `http://localhost:3000`.
 - Filterable module plan.
 - Strategy roadmap in `docs/strategy.md`.
 - Lab API at `/api/lab`.
+- Sample report API at `/api/reports/sample`.
+- Fixture-driven runner in `scripts/run-lab.mjs`.
 - Structured strategy data in `src/lib/strategy.ts`.
+
+## First Lab Runner
+
+The first runner is intentionally fixture-driven. It validates the shape of a run, applies mock `poke` state patches, evaluates `peek` expectations, checks invariant packs, and emits CI-friendly report artifacts.
+
+```bash
+npm run lab:sample
+```
+
+This creates:
+
+- `.nocklab/hello-counter.report.json`
+- `.nocklab/hello-counter.report.md`
+
+The current runner does not call a live Nockchain node yet. The next adapter milestone is replacing mock step execution with local fakenet gRPC calls.
