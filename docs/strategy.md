@@ -183,3 +183,19 @@ The pre-audit layer slice turns the lab from one-off reports into reusable team 
 - 3-6 month verification gate: `npm run verify:3-6`
 
 This proves the long-term wedge in a low-capital way: the repo now models the reports teams would retain before launch, during audits, for upgrades, and while integrating with other NockApp infrastructure.
+
+## 6-18 Month Build Slice
+
+The ecosystem-trust slice turns report evidence into reusable public signals:
+
+- trust signal schema: `schemas/nockapp-trust-signal.schema.json`
+- trust registry data: `src/data/trust-signals.json`
+- verified report badge API and page: `/api/trust/badges`, `/trust/badges`
+- solver execution-quality API and page: `/api/trust/solver-scores`, `/trust/solver-scores`
+- native token compatibility API and page: `/api/trust/token-compatibility`, `/trust/token-compatibility`
+- compute benchmark API and page: `/api/trust/compute-benchmarks`, `/trust/compute-benchmarks`
+- trust overview API and page: `/api/trust`, `/trust`
+- trust signal docs: `docs/trust-signals.md`
+- 6-18 month verification gate: `npm run verify:6-18`
+
+This completes the roadmap's trust-signal layer in a low-capital way: apps, wallets, funds, and compute providers now have explicit data contracts and UI surfaces for using Nocksperimental evidence as ecosystem trust signals.

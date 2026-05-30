@@ -1,0 +1,230 @@
+{
+  "$schema": "../../schemas/nockapp-trust-signal.schema.json",
+  "version": "v0",
+  "verifiedBadges": [
+    {
+      "id": "badge-payment-flow-verified",
+      "label": "Payment Flow Verified",
+      "kind": "app-report",
+      "status": "verified",
+      "reportSlug": "payment-flow",
+      "fixtureId": "payment-flow-v0",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "expiresAt": "2027-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:3a6d6bff59cb624f-payment-flow",
+        "snapshotRoot": "3a6d6bff59cb624f",
+        "signature": "nocklab-sig-payment-flow-v0",
+        "invariantPacks": ["payments-core-v0"]
+      }
+    },
+    {
+      "id": "badge-solver-a-qualified",
+      "label": "Solver A Qualified",
+      "kind": "solver-score",
+      "status": "verified",
+      "reportSlug": "intent-settlement",
+      "fixtureId": "intent-settlement-v0",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "expiresAt": "2027-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:b84c2c688d08c3c2-intent-settlement",
+        "snapshotRoot": "b84c2c688d08c3c2",
+        "signature": "nocklab-sig-solver-a-v0",
+        "invariantPacks": ["intents-core-v0"]
+      }
+    },
+    {
+      "id": "badge-mock-token-compatible",
+      "label": "MOCK Token Compatible",
+      "kind": "token-compatibility",
+      "status": "verified",
+      "reportSlug": "token-issuance",
+      "fixtureId": "token-issuance-v0",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "expiresAt": "2027-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:cd7cc46d9b8d0f59-token-issuance",
+        "snapshotRoot": "cd7cc46d9b8d0f59",
+        "signature": "nocklab-sig-token-compatible-v0",
+        "invariantPacks": ["token-issuance-core-v0"]
+      }
+    },
+    {
+      "id": "badge-compute-provider-alpha",
+      "label": "Alpha Compute Benchmark",
+      "kind": "compute-benchmark",
+      "status": "verified",
+      "reportSlug": "compute-benchmark-alpha",
+      "fixtureId": "compute-benchmark-profile-v0",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "expiresAt": "2027-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:benchmark-alpha-provider-profile",
+        "snapshotRoot": "compute-alpha-jobclass-root",
+        "signature": "nocklab-sig-compute-alpha-v0",
+        "invariantPacks": []
+      }
+    }
+  ],
+  "solverScorecards": [
+    {
+      "id": "solver-score-solver-a-v0",
+      "solverSlug": "solver-a",
+      "solverName": "Solver A",
+      "status": "qualified",
+      "score": 94,
+      "grade": "A",
+      "reportSlug": "intent-settlement",
+      "fixtureId": "intent-settlement-v0",
+      "metrics": {
+        "fillRate": 0.99,
+        "failureRate": 0.0,
+        "medianSettlementMs": 740,
+        "proofLatencyMs": 1180,
+        "replayCount": 128
+      },
+      "signals": [
+        "settles intent lifecycle",
+        "records chosen solver",
+        "keeps failure alert clear",
+        "passes replay determinism check"
+      ]
+    }
+  ],
+  "tokenCompatibilityReports": [
+    {
+      "id": "token-compat-mock-v0",
+      "tokenSymbol": "MOCK",
+      "issuerWorkspace": "issuer-upgrade-private",
+      "status": "compatible",
+      "score": 96,
+      "reportSlug": "token-issuance",
+      "fixtureId": "token-issuance-v0",
+      "badgeId": "badge-mock-token-compatible",
+      "wallets": [
+        {
+          "name": "Reference Wallet",
+          "status": "pass",
+          "notes": "Reads metadata, total supply, holder balance, and transfer events."
+        },
+        {
+          "name": "Treasury Wallet",
+          "status": "pass",
+          "notes": "Accepts issuer and treasury authority model."
+        },
+        {
+          "name": "Indexer Wallet",
+          "status": "pass",
+          "notes": "Can display issuance lifecycle and stable decimal metadata."
+        }
+      ],
+      "requirements": {
+        "supplyConserved": true,
+        "metadataStable": true,
+        "authorizedIssuance": true,
+        "transferCompatible": true
+      }
+    }
+  ],
+  "computeBenchmarkProfiles": [
+    {
+      "id": "compute-profile-alpha-v0",
+      "providerSlug": "alpha-compute",
+      "providerName": "Alpha Compute",
+      "status": "qualified",
+      "score": 91,
+      "benchmarkReportSlug": "compute-benchmark-alpha",
+      "badgeId": "badge-compute-provider-alpha",
+      "jobClasses": [
+        {
+          "name": "noun-eval-small",
+          "score": 94,
+          "p50Ms": 180,
+          "p95Ms": 420,
+          "reproducibility": 0.995
+        },
+        {
+          "name": "proof-batch-medium",
+          "score": 89,
+          "p50Ms": 1280,
+          "p95Ms": 2440,
+          "reproducibility": 0.982
+        },
+        {
+          "name": "state-replay-large",
+          "score": 90,
+          "p50Ms": 3120,
+          "p95Ms": 6100,
+          "reproducibility": 0.976
+        }
+      ],
+      "sla": {
+        "uptime": 0.998,
+        "failureRate": 0.004,
+        "sampleSize": 512
+      }
+    }
+  ],
+  "trustConsumers": [
+    {
+      "id": "consumer-payments-app",
+      "name": "Payment Flow App",
+      "category": "app",
+      "uses": [
+        {
+          "kind": "badge",
+          "badgeId": "badge-payment-flow-verified",
+          "reportSlug": "payment-flow",
+          "purpose": "Display launch readiness to users before routing value."
+        }
+      ]
+    },
+    {
+      "id": "consumer-reference-wallet",
+      "name": "Reference Wallet",
+      "category": "wallet",
+      "uses": [
+        {
+          "kind": "token-compatibility",
+          "compatibilityReportId": "token-compat-mock-v0",
+          "purpose": "Gate token listing by compatibility score and issuer authority evidence."
+        }
+      ]
+    },
+    {
+      "id": "consumer-audit-fund",
+      "name": "Audit Readiness Fund",
+      "category": "fund",
+      "uses": [
+        {
+          "kind": "solver-score",
+          "scorecardId": "solver-score-solver-a-v0",
+          "purpose": "Screen solver quality before routing intent flow."
+        },
+        {
+          "kind": "badge",
+          "badgeId": "badge-payment-flow-verified",
+          "reportSlug": "payment-flow",
+          "purpose": "Require verified reports before integration diligence."
+        }
+      ]
+    },
+    {
+      "id": "consumer-alpha-provider",
+      "name": "Alpha Compute",
+      "category": "provider",
+      "uses": [
+        {
+          "kind": "compute-benchmark",
+          "benchmarkProfileId": "compute-profile-alpha-v0",
+          "purpose": "Publish neutral benchmark evidence for provider reputation."
+        }
+      ]
+    }
+  ]
+}

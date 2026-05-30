@@ -47,6 +47,7 @@ Open `http://localhost:3000`.
 - `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
 - `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
 - `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
+- `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
 
 ## Initial MVP
 
@@ -60,6 +61,11 @@ Open `http://localhost:3000`.
 - Hosted report viewer at `/reports/sample`.
 - Hosted report history at `/reports/history`.
 - Private team workspaces at `/workspaces`.
+- Trust signal registry at `/trust`.
+- Verified badges at `/trust/badges`.
+- Solver scorecards at `/trust/solver-scores`.
+- Token compatibility reports at `/trust/token-compatibility`.
+- Compute benchmark profiles at `/trust/compute-benchmarks`.
 - Fixture-driven runner in `scripts/run-lab.mjs`.
 - Config-driven CI run in `nocklab.config.json`.
 - GitHub Actions artifact workflow in `.github/workflows/nocklab.yml`.
@@ -117,4 +123,20 @@ Run the verification gate with:
 
 ```bash
 npm run verify:3-6
+```
+
+## 6-18 Month Slice
+
+The repo now includes the ecosystem trust primitives from the strategy:
+
+- verified report badges with report hash, snapshot root, invariant packs, and signature fields
+- solver execution-quality scorecards
+- native token compatibility reports for wallet listing decisions
+- compute provider benchmark profiles
+- adoption proof for apps, wallets, funds, and providers
+
+Run the verification gate with:
+
+```bash
+npm run verify:6-18
 ```

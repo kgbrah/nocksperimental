@@ -19,6 +19,7 @@ import { ModuleExplorer } from "@/components/module-explorer";
 import { sampleLabReport } from "@/lib/lab-report";
 import { privateWorkspaces, reportHistory } from "@/lib/report-history";
 import { labModules, parallelTracks, strategyPhases } from "@/lib/strategy";
+import { trustConsumers, verifiedBadges } from "@/lib/trust-signals";
 
 const iconByCategory = {
   "Core testing": Beaker,
@@ -120,6 +121,13 @@ export default function Home() {
                 <LockKeyhole size={16} aria-hidden="true" />
                 Workspaces
               </a>
+              <a
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/trust"
+              >
+                <BadgeCheck size={16} aria-hidden="true" />
+                Trust
+              </a>
             </div>
           </div>
 
@@ -159,6 +167,8 @@ export default function Home() {
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 <Callout label="Hosted reports" value={reportHistory.length.toString()} />
                 <Callout label="Private workspaces" value={privateWorkspaces.length.toString()} />
+                <Callout label="Verified badges" value={verifiedBadges.length.toString()} />
+                <Callout label="Trust consumers" value={trustConsumers.length.toString()} />
               </div>
 
               <div className="mt-5 border border-[#242424] bg-[#171717] p-3 font-mono text-xs text-[#fdfbf4]">

@@ -19,7 +19,8 @@
     "lab:ci": "node scripts/run-lab.mjs run --config nocklab.config.json --ci --strict",
     "verify:30-day": "node scripts/verify-30-day.mjs",
     "verify:90-day": "node scripts/verify-90-day.mjs",
-    "verify:3-6": "node scripts/verify-3-6-month.mjs"
+    "verify:3-6": "node scripts/verify-3-6-month.mjs",
+    "verify:6-18": "node scripts/verify-6-18-month.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.475.0",
