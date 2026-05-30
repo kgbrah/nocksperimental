@@ -1,0 +1,130 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "bridge-settlement-v0",
+  "app": {
+    "name": "Bridge Settlement Monitor",
+    "slug": "bridge-settlement-monitor",
+    "version": "0.0.1",
+    "kernel": "mock-bridge-monitor-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock bridge lifecycle for 30-day report contracts.",
+      "Uses the same report engine as NockApp test fixtures."
+    ]
+  },
+  "actors": [
+    {
+      "name": "relayer",
+      "pkh": "bridge-relayer-mock-pkh"
+    }
+  ],
+  "initialState": {
+    "settlement": {
+      "status": "initiated",
+      "observedOnBase": false,
+      "proofSeen": false,
+      "finalized": false,
+      "amount": 250
+    },
+    "alerts": {
+      "delayed": false,
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock bridge monitor fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "observe-base-lock",
+      "type": "bridge",
+      "title": "Observe Base-side lock",
+      "target": "/settlement",
+      "statePatch": {
+        "settlement": {
+          "status": "observed",
+          "observedOnBase": true
+        }
+      },
+      "expect": {
+        "path": "settlement.observedOnBase",
+        "equals": true
+      }
+    },
+    {
+      "id": "observe-proof",
+      "type": "bridge",
+      "title": "Observe settlement proof",
+      "target": "/settlement",
+      "statePatch": {
+        "settlement": {
+          "status": "proof-seen",
+          "proofSeen": true
+        }
+      },
+      "expect": {
+        "path": "settlement.proofSeen",
+        "equals": true
+      }
+    },
+    {
+      "id": "finalize-settlement",
+      "type": "bridge",
+      "title": "Finalize settlement",
+      "target": "/settlement",
+      "statePatch": {
+        "settlement": {
+          "status": "finalized",
+          "finalized": true
+        }
+      },
+      "expect": {
+        "path": "settlement.status",
+        "equals": "finalized"
+      }
+    },
+    {
+      "id": "peek-alerts",
+      "type": "peek",
+      "title": "Read alert status",
+      "target": "/alerts",
+      "expect": {
+        "path": "alerts.failed",
+        "equals": false
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "bridge-terminal-state",
+      "title": "Bridge reaches finalized state",
+      "severity": "critical",
+      "kind": "timeline-state",
+      "path": "settlement.status",
+      "equals": "finalized"
+    },
+    {
+      "id": "proof-seen-before-finalized",
+      "title": "Proof is seen before finalization",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "settlement.proofSeen",
+      "equals": true
+    },
+    {
+      "id": "no-failure-alert",
+      "title": "Failure alert remains clear",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}

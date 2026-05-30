@@ -36,15 +36,21 @@ Open `http://localhost:3000`.
 - `npm run dev` starts the Next.js app.
 - `npm run build` checks a production build.
 - `npm run lint` runs ESLint.
-- `npm run lab:sample` generates a sample JSON and Markdown lab report in `.nocklab/`.
+- `npm run lab:sample` generates the starter JSON and Markdown lab report in `.nocklab/`.
+- `npm run lab:bridge` generates a mock bridge settlement report in `.nocklab/`.
+- `npm run lab:all` generates every bundled fixture report.
+- `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
 
 ## Initial MVP
 
 - NockApp Lab dashboard.
 - Filterable module plan.
 - Strategy roadmap in `docs/strategy.md`.
+- Invariant catalog in `docs/invariants.md`.
 - Lab API at `/api/lab`.
+- Invariant API at `/api/invariants`.
 - Sample report API at `/api/reports/sample`.
+- Hosted report viewer at `/reports/sample`.
 - Fixture-driven runner in `scripts/run-lab.mjs`.
 - Structured strategy data in `src/lib/strategy.ts`.
 
@@ -56,9 +62,17 @@ The first runner is intentionally fixture-driven. It validates the shape of a ru
 npm run lab:sample
 ```
 
+Run every bundled fixture with:
+
+```bash
+npm run lab:all
+```
+
 This creates:
 
 - `.nocklab/hello-counter.report.json`
 - `.nocklab/hello-counter.report.md`
+- `.nocklab/bridge-settlement.report.json`
+- `.nocklab/bridge-settlement.report.md`
 
 The current runner does not call a live Nockchain node yet. The next adapter milestone is replacing mock step execution with local fakenet gRPC calls.

@@ -7,7 +7,10 @@ export function GET() {
     modules: labModules,
     phases: strategyPhases,
     parallelTracks,
-    invariantCatalog,
+    invariantCatalog: {
+      version: "v0",
+      items: invariantCatalog
+    },
     sampleReport: sampleLabReport
   });
 }

@@ -1,6 +1,12 @@
 export type LabStatus = "pass" | "warn" | "fail";
 export type LabStepType = "fakenet" | "poke" | "peek" | "invariant" | "bridge";
 export type InvariantSeverity = "critical" | "high" | "medium" | "low";
+export type InvariantKind =
+  | "numeric-min"
+  | "state-equals"
+  | "poke-actors-declared"
+  | "supply-conservation"
+  | "timeline-state";
 
 export type AppProfile = {
   name: string;
@@ -63,28 +69,57 @@ export type LabRunReport = {
   nextActions: string[];
 };
 
+export type InvariantCatalogItem = {
+  id: string;
+  kind: InvariantKind;
+  name: string;
+  purpose: string;
+  requiredFields: string[];
+  example: string;
+};
+
 export const invariantCatalog = [
   {
-    id: "state.numeric-min",
+    id: "state.numeric-min.v0",
+    kind: "numeric-min",
     name: "Numeric floor",
-    purpose: "Verify a state value never drops below a configured minimum."
+    purpose: "Verify a state value never drops below a configured minimum.",
+    requiredFields: ["path", "min"],
+    example: "counter >= 0"
   },
   {
-    id: "state.equals",
+    id: "state.equals.v0",
+    kind: "state-equals",
     name: "Expected state value",
-    purpose: "Verify a path has an exact expected value after scripted interactions."
+    purpose: "Verify a path has an exact expected value after scripted interactions.",
+    requiredFields: ["path", "equals"],
+    example: "bridge.status == finalized"
   },
   {
-    id: "actors.poke-authorized",
+    id: "actors.poke-declared.v0",
+    kind: "poke-actors-declared",
     name: "Poke actor declared",
-    purpose: "Verify every poke in the fixture has a declared actor."
+    purpose: "Verify every poke in the fixture has a declared actor.",
+    requiredFields: [],
+    example: "2/2 poke steps declare actors from fixture.actors"
   },
   {
-    id: "balances.supply-conserved",
+    id: "balances.supply-conserved.v0",
+    kind: "supply-conservation",
     name: "Supply conservation",
-    purpose: "Verify account balances sum to the declared supply after a run."
+    purpose: "Verify account balances sum to the declared supply after a run.",
+    requiredFields: ["balancesPath", "supplyPath"],
+    example: "sum(balances) == totalSupply"
+  },
+  {
+    id: "timeline.expected-state.v0",
+    kind: "timeline-state",
+    name: "Expected timeline state",
+    purpose: "Verify an operational lifecycle reaches a required terminal state.",
+    requiredFields: ["path", "equals"],
+    example: "settlement.status == finalized"
   }
-];
+] satisfies InvariantCatalogItem[];
 
 export const sampleLabReport: LabRunReport = {
   reportId: "lab_hello_counter_001",

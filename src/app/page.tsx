@@ -96,10 +96,10 @@ export default function Home() {
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
-              href="/api/reports/sample"
+              href="/reports/sample"
             >
-              <Code2 size={16} aria-hidden="true" />
-              Report JSON
+              <FileCheck2 size={16} aria-hidden="true" />
+              Open Report
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </div>
@@ -137,7 +137,7 @@ export default function Home() {
               <div className="mt-5 border border-[#242424] bg-[#171717] p-3 font-mono text-xs text-[#fdfbf4]">
                 <div className="flex items-center gap-2">
                   <Terminal size={14} aria-hidden="true" />
-                  npm run lab:sample
+                  npm run lab:all
                 </div>
               </div>
             </article>

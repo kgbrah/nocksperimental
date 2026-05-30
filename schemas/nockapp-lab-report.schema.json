@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.dev/schemas/nockapp-lab-report.schema.json",
+  "title": "Nocksperimental NockApp Lab Report",
+  "type": "object",
+  "required": [
+    "reportId",
+    "fixtureId",
+    "generatedAt",
+    "app",
+    "environment",
+    "summary",
+    "steps",
+    "invariants",
+    "stateDiffs",
+    "nextActions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reportId": { "type": "string" },
+    "fixtureId": { "type": "string" },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "app": {
+      "type": "object",
+      "required": ["name", "slug", "version", "kernel"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "version": { "type": "string" },
+        "kernel": { "type": "string" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["mode", "grpcEndpoint", "fakenetCommand", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet"]
+        },
+        "grpcEndpoint": { "type": "string" },
+        "fakenetCommand": { "type": "string" },
+        "notes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "status",
+        "stepsPassed",
+        "stepsFailed",
+        "invariantsPassed",
+        "invariantsFailed",
+        "durationMs"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "warn", "fail"] },
+        "stepsPassed": { "type": "integer", "minimum": 0 },
+        "stepsFailed": { "type": "integer", "minimum": 0 },
+        "invariantsPassed": { "type": "integer", "minimum": 0 },
+        "invariantsFailed": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "title", "status", "expectation", "observed", "durationMs"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "enum": ["fakenet", "poke", "peek", "invariant", "bridge"] },
+          "title": { "type": "string" },
+          "status": { "enum": ["pass", "warn", "fail"] },
+          "actor": { "type": "string" },
+          "target": { "type": "string" },
+          "expectation": { "type": "string" },
+          "observed": { "type": "string" },
+          "durationMs": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "severity", "status", "observed", "expected"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "severity": { "enum": ["critical", "high", "medium", "low"] },
+          "status": { "enum": ["pass", "warn", "fail"] },
+          "observed": { "type": "string" },
+          "expected": { "type": "string" }
+        }
+      }
+    },
+    "stateDiffs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "before", "after"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "before": { "type": "string" },
+          "after": { "type": "string" }
+        }
+      }
+    },
+    "nextActions": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}

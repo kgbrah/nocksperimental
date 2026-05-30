@@ -47,6 +47,7 @@ function printHelp() {
 
 Examples:
   npm run lab:sample
+  npm run lab:bridge
   node scripts/run-lab.mjs fixtures/hello-counter.lab.json --strict
 `);
 }
@@ -140,7 +141,10 @@ function runStep({ step, index, state, actors, environment }) {
 
   if (step.type === "bridge" || step.type === "invariant") {
     mergeState(state, step.statePatch ?? {});
-    observed = JSON.stringify(diffState(before, state));
+    const result = evaluateExpectation(step.expect, state);
+    status = result.status;
+    expectation = step.expect ? result.expectation : expectation;
+    observed = step.expect ? result.observed : JSON.stringify(diffState(before, state));
   }
 
   return {
@@ -189,6 +193,17 @@ function evaluateInvariant({ invariant, state, steps, actors }) {
   }
 
   if (invariant.kind === "state-equals") {
+    const actual = getPath(state, invariant.path);
+
+    return invariantResult(
+      invariant,
+      deepEqual(actual, invariant.equals),
+      formatValue(actual),
+      `${invariant.path} == ${formatValue(invariant.equals)}`
+    );
+  }
+
+  if (invariant.kind === "timeline-state") {
     const actual = getPath(state, invariant.path);
 
     return invariantResult(

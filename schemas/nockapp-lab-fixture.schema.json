@@ -95,7 +95,13 @@
             "enum": ["critical", "high", "medium", "low"]
           },
           "kind": {
-            "enum": ["numeric-min", "state-equals", "poke-actors-declared", "supply-conservation"]
+            "enum": [
+              "numeric-min",
+              "state-equals",
+              "poke-actors-declared",
+              "supply-conservation",
+              "timeline-state"
+            ]
           },
           "path": { "type": "string" },
           "min": { "type": "number" },
