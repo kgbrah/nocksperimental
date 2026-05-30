@@ -1,0 +1,34 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "payments-core-v0",
+  "name": "Payments Core",
+  "version": "0.1.0",
+  "domain": "payments",
+  "description": "Safety checks for escrowed payment settlement, declared actors, and balance conservation.",
+  "invariants": [
+    {
+      "id": "payments-supply-conserved",
+      "title": "Payment ledger conserves supply",
+      "severity": "critical",
+      "kind": "supply-conservation",
+      "balancesPath": "ledger.balances",
+      "supplyPath": "ledger.totalSupply"
+    },
+    {
+      "id": "payments-terminal-settled",
+      "title": "Payment reaches settled terminal state",
+      "severity": "critical",
+      "kind": "timeline-state",
+      "path": "payment.status",
+      "equals": "settled"
+    },
+    {
+      "id": "payments-authorized-actors",
+      "title": "Payment pokes are performed by authorized actors",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["customer", "merchant", "escrow-agent"],
+      "stepType": "poke"
+    }
+  ]
+}

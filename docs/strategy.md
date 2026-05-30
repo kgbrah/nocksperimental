@@ -163,3 +163,23 @@ The developer-workflow slice adds the pieces needed for a NockApp repository to 
 - bridge settlement fixture with clear alert states
 - bridge delayed fixture with triggered warning alert state
 - 30-90 verification gate: `npm run verify:90-day`
+
+## 3-6 Month Build Slice
+
+The pre-audit layer slice turns the lab from one-off reports into reusable team infrastructure:
+
+- state snapshot timeline and per-step state diffs in generated reports
+- invariant pack schema: `schemas/nockapp-invariant-pack.schema.json`
+- payment invariant pack: `packs/payments.invariants.json`
+- intent invariant pack: `packs/intents.invariants.json`
+- token issuance invariant pack: `packs/tokens.invariants.json`
+- payment fixture: `fixtures/payment-flow.lab.json`
+- intent fixture: `fixtures/intent-settlement.lab.json`
+- token issuance fixture: `fixtures/token-issuance.lab.json`
+- hosted report history data: `src/data/report-history.json`
+- hosted report history API and page: `/api/history`, `/reports/history`
+- private workspace data: `src/data/private-workspaces.json`
+- private workspace API and page: `/api/workspaces`, `/workspaces`
+- 3-6 month verification gate: `npm run verify:3-6`
+
+This proves the long-term wedge in a low-capital way: the repo now models the reports teams would retain before launch, during audits, for upgrades, and while integrating with other NockApp infrastructure.

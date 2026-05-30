@@ -10,9 +10,11 @@
     "app",
     "environment",
     "summary",
+    "invariantPacks",
     "steps",
     "invariants",
     "alerts",
+    "stateSnapshots",
     "stateDiffs",
     "nextActions"
   ],
@@ -61,6 +63,7 @@
         "invariantsFailed",
         "alertsClear",
         "alertsTriggered",
+        "snapshotsCaptured",
         "durationMs"
       ],
       "additionalProperties": false,
@@ -72,14 +75,41 @@
         "invariantsFailed": { "type": "integer", "minimum": 0 },
         "alertsClear": { "type": "integer", "minimum": 0 },
         "alertsTriggered": { "type": "integer", "minimum": 0 },
+        "snapshotsCaptured": { "type": "integer", "minimum": 0 },
         "durationMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "invariantPacks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "domain": { "type": "string" },
+          "version": { "type": "string" },
+          "path": { "type": "string" }
+        }
       }
     },
     "steps": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "type", "title", "status", "expectation", "observed", "durationMs"],
+        "required": [
+          "id",
+          "type",
+          "title",
+          "status",
+          "expectation",
+          "observed",
+          "beforeHash",
+          "afterHash",
+          "stateDiffs",
+          "durationMs"
+        ],
         "additionalProperties": false,
         "properties": {
           "id": { "type": "string" },
@@ -90,6 +120,14 @@
           "target": { "type": "string" },
           "expectation": { "type": "string" },
           "observed": { "type": "string" },
+          "beforeHash": { "type": "string" },
+          "afterHash": { "type": "string" },
+          "stateDiffs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/stateDiff"
+            }
+          },
           "durationMs": { "type": "integer", "minimum": 0 }
         }
       }
@@ -130,19 +168,38 @@
     "stateDiffs": {
       "type": "array",
       "items": {
+        "$ref": "#/$defs/stateDiff"
+      }
+    },
+    "stateSnapshots": {
+      "type": "array",
+      "items": {
         "type": "object",
-        "required": ["path", "before", "after"],
+        "required": ["label", "stateHash", "state"],
         "additionalProperties": false,
         "properties": {
-          "path": { "type": "string" },
-          "before": { "type": "string" },
-          "after": { "type": "string" }
+          "label": { "type": "string" },
+          "stepId": { "type": "string" },
+          "stateHash": { "type": "string" },
+          "state": {}
         }
       }
     },
     "nextActions": {
       "type": "array",
       "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "stateDiff": {
+      "type": "object",
+      "required": ["path", "before", "after"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "before": { "type": "string" },
+        "after": { "type": "string" }
+      }
     }
   }
 }

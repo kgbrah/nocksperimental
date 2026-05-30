@@ -51,6 +51,10 @@
         }
       }
     },
+    "invariantPacks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "initialState": {
       "type": "object"
     },
@@ -109,14 +113,23 @@
               "state-equals",
               "poke-actors-declared",
               "supply-conservation",
-              "timeline-state"
+              "timeline-state",
+              "authorized-actor"
             ]
           },
           "path": { "type": "string" },
           "min": { "type": "number" },
           "equals": {},
           "balancesPath": { "type": "string" },
-          "supplyPath": { "type": "string" }
+          "supplyPath": { "type": "string" },
+          "actors": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "stepType": {
+            "enum": ["fakenet", "poke", "peek", "invariant", "bridge"]
+          },
+          "packId": { "type": "string" }
         }
       }
     },

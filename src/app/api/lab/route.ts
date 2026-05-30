@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { invariantCatalog, sampleLabReport } from "@/lib/lab-report";
+import { privateWorkspaces, reportHistory } from "@/lib/report-history";
 import { labModules, parallelTracks, strategyPhases } from "@/lib/strategy";
 
 export function GET() {
@@ -11,6 +12,8 @@ export function GET() {
       version: "v0",
       items: invariantCatalog
     },
+    reportHistory,
+    privateWorkspaces,
     sampleReport: sampleLabReport
   });
 }

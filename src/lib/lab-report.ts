@@ -8,7 +8,8 @@ export type InvariantKind =
   | "state-equals"
   | "poke-actors-declared"
   | "supply-conservation"
-  | "timeline-state";
+  | "timeline-state"
+  | "authorized-actor";
 
 export type AppProfile = {
   name: string;
@@ -33,6 +34,9 @@ export type LabStepReport = {
   target?: string;
   expectation: string;
   observed: string;
+  beforeHash: string;
+  afterHash: string;
+  stateDiffs: StateDiff[];
   durationMs: number;
 };
 
@@ -61,6 +65,21 @@ export type StateDiff = {
   after: string;
 };
 
+export type StateSnapshot = {
+  label: string;
+  stepId?: string;
+  stateHash: string;
+  state: Record<string, unknown>;
+};
+
+export type InvariantPackRef = {
+  id: string;
+  name: string;
+  domain?: string;
+  version?: string;
+  path: string;
+};
+
 export type LabRunReport = {
   reportId: string;
   fixtureId: string;
@@ -75,11 +94,14 @@ export type LabRunReport = {
     invariantsFailed: number;
     alertsClear: number;
     alertsTriggered: number;
+    snapshotsCaptured: number;
     durationMs: number;
   };
+  invariantPacks: InvariantPackRef[];
   steps: LabStepReport[];
   invariants: InvariantReport[];
   alerts: AlertReport[];
+  stateSnapshots: StateSnapshot[];
   stateDiffs: StateDiff[];
   nextActions: string[];
 };
@@ -133,6 +155,14 @@ export const invariantCatalog = [
     purpose: "Verify an operational lifecycle reaches a required terminal state.",
     requiredFields: ["path", "equals"],
     example: "settlement.status == finalized"
+  },
+  {
+    id: "actors.authorized.v0",
+    kind: "authorized-actor",
+    name: "Authorized actor",
+    purpose: "Verify all steps of a type are performed by an allowed actor set.",
+    requiredFields: ["actors", "stepType"],
+    example: "all poke actors in [merchant, treasury]"
   }
 ] satisfies InvariantCatalogItem[];
 
@@ -164,8 +194,10 @@ export const sampleLabReport: LabRunReport = {
     invariantsFailed: 0,
     alertsClear: 0,
     alertsTriggered: 0,
+    snapshotsCaptured: 5,
     durationMs: 128
   },
+  invariantPacks: [],
   steps: [
     {
       id: "boot-fakenet",
@@ -174,6 +206,9 @@ export const sampleLabReport: LabRunReport = {
       status: "pass",
       expectation: "gRPC endpoint configured at 127.0.0.1:5555",
       observed: "Mock endpoint accepted for deterministic run",
+      beforeHash: "7f278f7d37bf2b99",
+      afterHash: "7f278f7d37bf2b99",
+      stateDiffs: [],
       durationMs: 24
     },
     {
@@ -185,6 +220,9 @@ export const sampleLabReport: LabRunReport = {
       target: "/counter",
       expectation: "counter moves from 0 to 1",
       observed: "counter=1",
+      beforeHash: "7f278f7d37bf2b99",
+      afterHash: "3e0e6d4db4892e2d",
+      stateDiffs: [{ path: "counter", before: "0", after: "1" }],
       durationMs: 31
     },
     {
@@ -196,6 +234,13 @@ export const sampleLabReport: LabRunReport = {
       target: "/counter",
       expectation: "counter moves from 1 to 2",
       observed: "counter=2",
+      beforeHash: "3e0e6d4db4892e2d",
+      afterHash: "937aeb078db9aa10",
+      stateDiffs: [
+        { path: "counter", before: "1", after: "2" },
+        { path: "balances.alice", before: "1000", after: "700" },
+        { path: "balances.bob", before: "0", after: "300" }
+      ],
       durationMs: 29
     },
     {
@@ -206,6 +251,9 @@ export const sampleLabReport: LabRunReport = {
       target: "/counter",
       expectation: "peek returns 2",
       observed: "2",
+      beforeHash: "937aeb078db9aa10",
+      afterHash: "937aeb078db9aa10",
+      stateDiffs: [],
       durationMs: 44
     }
   ],
@@ -244,6 +292,37 @@ export const sampleLabReport: LabRunReport = {
     }
   ],
   alerts: [],
+  stateSnapshots: [
+    {
+      label: "Initial state",
+      stateHash: "7f278f7d37bf2b99",
+      state: { counter: 0, totalSupply: 1000, balances: { alice: 1000, bob: 0 } }
+    },
+    {
+      label: "After boot-fakenet",
+      stepId: "boot-fakenet",
+      stateHash: "7f278f7d37bf2b99",
+      state: { counter: 0, totalSupply: 1000, balances: { alice: 1000, bob: 0 } }
+    },
+    {
+      label: "After poke-increment-alice",
+      stepId: "poke-increment-alice",
+      stateHash: "3e0e6d4db4892e2d",
+      state: { counter: 1, totalSupply: 1000, balances: { alice: 1000, bob: 0 } }
+    },
+    {
+      label: "After poke-increment-bob",
+      stepId: "poke-increment-bob",
+      stateHash: "937aeb078db9aa10",
+      state: { counter: 2, totalSupply: 1000, balances: { alice: 700, bob: 300 } }
+    },
+    {
+      label: "After peek-counter",
+      stepId: "peek-counter",
+      stateHash: "937aeb078db9aa10",
+      state: { counter: 2, totalSupply: 1000, balances: { alice: 700, bob: 300 } }
+    }
+  ],
   stateDiffs: [
     {
       path: "counter",

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.dev/schemas/nockapp-lab-workspace.schema.json",
+  "title": "Nocksperimental Private Workspace",
+  "type": "object",
+  "required": ["version", "workspaces"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "workspaces": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "visibility",
+          "plan",
+          "seats",
+          "retentionDays",
+          "environments",
+          "stages",
+          "members"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "visibility": { "const": "private" },
+          "plan": { "enum": ["team", "audit", "enterprise"] },
+          "seats": { "type": "integer", "minimum": 1 },
+          "retentionDays": { "type": "integer", "minimum": 1 },
+          "environments": {
+            "type": "array",
+            "items": {
+              "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet"]
+            }
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "enum": ["pre-launch", "audit", "upgrade", "integration"]
+            }
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["role", "count"],
+              "additionalProperties": false,
+              "properties": {
+                "role": { "type": "string" },
+                "count": { "type": "integer", "minimum": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

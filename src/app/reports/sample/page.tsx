@@ -1,4 +1,4 @@
-import { ArrowLeft, Code2, FileCheck2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Code2, FileCheck2, History, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { sampleLabReport } from "@/lib/lab-report";
 
@@ -33,7 +33,7 @@ export default function SampleReportPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:grid-cols-3 lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:grid-cols-4 lg:px-8">
         <Metric label="Status" value={sampleLabReport.summary.status} />
         <Metric
           label="Steps"
@@ -42,6 +42,10 @@ export default function SampleReportPage() {
         <Metric
           label="Invariants"
           value={`${sampleLabReport.summary.invariantsPassed}/${sampleLabReport.invariants.length}`}
+        />
+        <Metric
+          label="Snapshots"
+          value={sampleLabReport.summary.snapshotsCaptured.toString()}
         />
       </section>
 
@@ -117,6 +121,28 @@ export default function SampleReportPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
+        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+          <div className="flex items-center gap-2">
+            <History size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Snapshot Timeline</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {sampleLabReport.stateSnapshots.map((snapshot) => (
+              <div className="border border-[#8b8b7a] bg-white p-3" key={snapshot.label}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium">{snapshot.label}</p>
+                  <span className="font-mono text-xs uppercase text-[#536023]">
+                    {snapshot.stepId ?? "initial"}
+                  </span>
+                </div>
+                <p className="mt-2 font-mono text-xs text-[#6c3324]">{snapshot.stateHash}</p>
+              </div>
+            ))}
           </div>
         </article>
       </section>

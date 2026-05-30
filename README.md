@@ -39,10 +39,14 @@ Open `http://localhost:3000`.
 - `npm run lab:sample` generates the starter JSON and Markdown lab report in `.nocklab/`.
 - `npm run lab:bridge` generates a mock bridge settlement report in `.nocklab/`.
 - `npm run lab:bridge:delayed` generates a bridge report with a triggered warning alert.
+- `npm run lab:payment` generates a payment flow report with the payments invariant pack.
+- `npm run lab:intent` generates an intent settlement report with the intents invariant pack.
+- `npm run lab:token` generates a token issuance report with the token invariant pack.
 - `npm run lab:all` generates every bundled fixture report.
 - `npm run lab:ci` runs the config-driven CI workflow locally and writes a manifest plus summary.
 - `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
 - `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
+- `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
 
 ## Initial MVP
 
@@ -54,6 +58,8 @@ Open `http://localhost:3000`.
 - Invariant API at `/api/invariants`.
 - Sample report API at `/api/reports/sample`.
 - Hosted report viewer at `/reports/sample`.
+- Hosted report history at `/reports/history`.
+- Private team workspaces at `/workspaces`.
 - Fixture-driven runner in `scripts/run-lab.mjs`.
 - Config-driven CI run in `nocklab.config.json`.
 - GitHub Actions artifact workflow in `.github/workflows/nocklab.yml`.
@@ -87,7 +93,28 @@ This creates:
 - `.nocklab/bridge-settlement.report.md`
 - `.nocklab/bridge-delayed.report.json`
 - `.nocklab/bridge-delayed.report.md`
+- `.nocklab/payment-flow.report.json`
+- `.nocklab/payment-flow.report.md`
+- `.nocklab/intent-settlement.report.json`
+- `.nocklab/intent-settlement.report.md`
+- `.nocklab/token-issuance.report.json`
+- `.nocklab/token-issuance.report.md`
 - `.nocklab/manifest.json`
 - `.nocklab/summary.md`
 
 The current runner does not call a live Nockchain node yet. The next adapter milestone is replacing mock step execution with local fakenet gRPC calls.
+
+## 3-6 Month Slice
+
+The repo now includes the pre-audit layer primitives from the strategy:
+
+- state snapshot timelines and per-step state diffs in generated reports
+- reusable invariant packs for payments, intents, and token issuance
+- hosted report history data, API, and page
+- private team workspace data, API, and page
+
+Run the verification gate with:
+
+```bash
+npm run verify:3-6
+```

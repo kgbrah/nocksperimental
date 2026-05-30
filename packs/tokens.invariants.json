@@ -1,0 +1,42 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "token-issuance-core-v0",
+  "name": "Token Issuance Core",
+  "version": "0.1.0",
+  "domain": "token-issuance",
+  "description": "Safety checks for issuer authority, token metadata, terminal issuance state, and supply conservation.",
+  "invariants": [
+    {
+      "id": "token-supply-conserved",
+      "title": "Token balances conserve total supply",
+      "severity": "critical",
+      "kind": "supply-conservation",
+      "balancesPath": "token.balances",
+      "supplyPath": "token.totalSupply"
+    },
+    {
+      "id": "token-issuance-finalized",
+      "title": "Token issuance reaches finalized state",
+      "severity": "critical",
+      "kind": "timeline-state",
+      "path": "token.issuance.status",
+      "equals": "finalized"
+    },
+    {
+      "id": "token-metadata-decimals-stable",
+      "title": "Token decimal metadata remains stable",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "token.metadata.decimals",
+      "equals": 6
+    },
+    {
+      "id": "token-authorized-actors",
+      "title": "Token pokes are performed by issuance authorities",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["issuer", "treasury"],
+      "stepType": "poke"
+    }
+  ]
+}

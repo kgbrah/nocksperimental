@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 
@@ -30,7 +31,7 @@ if (configPath) {
   const markdownPath = readFlag("--markdown");
   const outDir = readFlag("--out-dir");
   const startedAt = Date.now();
-  const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+  const fixture = await loadFixture(fixturePath);
   const report = buildReport(fixture, startedAt);
 
   if (outDir) {
@@ -66,7 +67,7 @@ async function runConfig(config, configPath) {
 
   for (const fixtureConfig of fixtures) {
     const fixturePath = resolveFrom(configDir, fixtureConfig.path);
-    const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+    const fixture = await loadFixture(fixturePath);
     const report = buildReport(fixture, Date.now());
     const written = await writeReportBundle(report, reportDir, fixtureConfig.slug);
     results.push({ fixturePath, report, written });
@@ -101,6 +102,45 @@ async function runConfig(config, configPath) {
   return results;
 }
 
+async function loadFixture(fixturePath) {
+  const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+  const fixtureDir = path.dirname(fixturePath);
+  const packs = [];
+
+  for (const packPath of fixture.invariantPacks ?? []) {
+    const resolvedPackPath = resolveFrom(fixtureDir, packPath);
+    const pack = JSON.parse(await readFile(resolvedPackPath, "utf8"));
+    packs.push({
+      id: pack.id,
+      name: pack.name,
+      domain: pack.domain,
+      version: pack.version,
+      path: packPath,
+      invariants: pack.invariants ?? []
+    });
+  }
+
+  return {
+    ...fixture,
+    invariantPackRefs: packs.map(({ id, name, domain, version, path }) => ({
+      id,
+      name,
+      domain,
+      version,
+      path
+    })),
+    invariants: [
+      ...packs.flatMap((pack) =>
+        pack.invariants.map((invariant) => ({
+          ...invariant,
+          packId: pack.id
+        }))
+      ),
+      ...(fixture.invariants ?? [])
+    ]
+  };
+}
+
 function readFlag(flag) {
   const index = args.indexOf(flag);
   return index === -1 ? null : args[index + 1] ?? null;
@@ -125,9 +165,22 @@ function buildReport(fixture, startedAt) {
   const initialState = structuredClone(fixture.initialState);
   const state = structuredClone(initialState);
   const actors = new Set((fixture.actors ?? []).map((actor) => actor.name));
-  const stepReports = fixture.steps.map((step, index) =>
-    runStep({ step, index, state, actors, environment: fixture.environment })
-  );
+  const stateSnapshots = [
+    snapshotState({ label: "Initial state", state })
+  ];
+  const stepReports = [];
+
+  fixture.steps.forEach((step, index) => {
+    const stepReport = runStep({ step, index, state, actors, environment: fixture.environment });
+    stepReports.push(stepReport);
+    stateSnapshots.push(
+      snapshotState({
+        label: `After ${step.id}`,
+        stepId: step.id,
+        state
+      })
+    );
+  });
   const invariantReports = fixture.invariants.map((invariant) =>
     evaluateInvariant({ invariant, state, steps: fixture.steps, actors })
   );
@@ -161,11 +214,14 @@ function buildReport(fixture, startedAt) {
       invariantsFailed: failedInvariants,
       alertsClear: alertReports.filter((alert) => alert.state === "clear").length,
       alertsTriggered: alertReports.filter((alert) => alert.state === "triggered").length,
+      snapshotsCaptured: stateSnapshots.length,
       durationMs: Math.max(Date.now() - startedAt, stepReports.length * 17)
     },
+    invariantPacks: fixture.invariantPackRefs ?? [],
     steps: stepReports,
     invariants: invariantReports,
     alerts: alertReports,
+    stateSnapshots,
     stateDiffs: diffState(initialState, state),
     nextActions: [
       "Replace mock step execution with a local fakenet gRPC adapter.",
@@ -191,6 +247,7 @@ function assertFixture(fixture) {
 
 function runStep({ step, index, state, actors, environment }) {
   const before = structuredClone(state);
+  const beforeHash = hashState(before);
   const durationMs = 19 + index * 7;
   let status = "pass";
   let observed = "";
@@ -229,6 +286,8 @@ function runStep({ step, index, state, actors, environment }) {
     observed = step.expect ? result.observed : JSON.stringify(diffState(before, state));
   }
 
+  const after = structuredClone(state);
+
   return {
     id: step.id,
     type: step.type,
@@ -238,6 +297,9 @@ function runStep({ step, index, state, actors, environment }) {
     target: step.target,
     expectation,
     observed,
+    beforeHash,
+    afterHash: hashState(after),
+    stateDiffs: diffState(before, after),
     durationMs
   };
 }
@@ -359,6 +421,21 @@ function evaluateInvariant({ invariant, state, steps, actors }) {
     );
   }
 
+  if (invariant.kind === "authorized-actor") {
+    const allowedActors = new Set(invariant.actors ?? []);
+    const scopedSteps = steps.filter((step) => step.type === (invariant.stepType ?? "poke"));
+    const unauthorized = scopedSteps.filter((step) => step.actor && !allowedActors.has(step.actor));
+
+    return invariantResult(
+      invariant,
+      unauthorized.length === 0,
+      unauthorized.length === 0
+        ? `${scopedSteps.length}/${scopedSteps.length} ${invariant.stepType ?? "poke"} actors authorized`
+        : unauthorized.map((step) => step.actor).join(", "),
+      `actors in [${[...allowedActors].join(", ")}]`
+    );
+  }
+
   return invariantResult(invariant, false, "unsupported invariant kind", invariant.kind);
 }
 
@@ -421,6 +498,37 @@ function diffState(before, after, prefix = "") {
   return diffs;
 }
 
+function snapshotState({ label, stepId, state }) {
+  const snapshot = {
+    label,
+    stateHash: hashState(state),
+    state: structuredClone(state)
+  };
+
+  if (stepId) {
+    snapshot.stepId = stepId;
+  }
+
+  return snapshot;
+}
+
+function hashState(state) {
+  return createHash("sha256").update(stableStringify(state)).digest("hex").slice(0, 16);
+}
+
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  if (isPlainObject(value)) {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
 function getPath(source, pathExpression) {
   return String(pathExpression)
     .split(".")
@@ -447,6 +555,9 @@ function deepEqual(left, right) {
 }
 
 function formatValue(value) {
+  if (value === undefined) {
+    return "undefined";
+  }
   return typeof value === "string" ? value : JSON.stringify(value);
 }
 
@@ -480,11 +591,13 @@ function toMarkdown(report) {
     `- Steps: ${report.summary.stepsPassed} passed, ${report.summary.stepsFailed} failed`,
     `- Invariants: ${report.summary.invariantsPassed} passed, ${report.summary.invariantsFailed} failed`,
     `- Alerts: ${report.summary.alertsClear} clear, ${report.summary.alertsTriggered} triggered`,
+    `- Snapshots: ${report.summary.snapshotsCaptured}`,
     "",
     "## Steps",
     "",
     ...report.steps.map(
-      (step) => `- ${step.status.toUpperCase()} ${step.id}: ${step.observed} (${step.expectation})`
+      (step) =>
+        `- ${step.status.toUpperCase()} ${step.id}: ${step.observed} (${step.expectation}); ${step.beforeHash} -> ${step.afterHash}`
     ),
     "",
     "## Invariants",
@@ -506,6 +619,10 @@ function toMarkdown(report) {
     "## State Diffs",
     "",
     ...report.stateDiffs.map((diff) => `- ${diff.path}: ${diff.before} -> ${diff.after}`),
+    "",
+    "## Snapshot Timeline",
+    "",
+    ...report.stateSnapshots.map((snapshot) => `- ${snapshot.label}: ${snapshot.stateHash}`),
     ""
   ];
 
@@ -518,17 +635,18 @@ function toCiSummary(manifest, results) {
     "",
     `Status: ${manifest.status}`,
     "",
-    "| Fixture | App | Status | Steps | Invariants | Alerts |",
-    "| --- | --- | --- | --- | --- | --- |",
+    "| Fixture | App | Status | Steps | Invariants | Alerts | Snapshots |",
+    "| --- | --- | --- | --- | --- | --- | --- |",
     ...results.map(({ report }) =>
-      [
+      `| ${[
         report.fixtureId,
         report.app.slug,
         report.summary.status,
         `${report.summary.stepsPassed}/${report.steps.length}`,
         `${report.summary.invariantsPassed}/${report.invariants.length}`,
-        `${report.summary.alertsTriggered} triggered`
-      ].join(" | ")
+        `${report.summary.alertsTriggered} triggered`,
+        report.summary.snapshotsCaptured
+      ].join(" | ")} |`
     )
   ];
 

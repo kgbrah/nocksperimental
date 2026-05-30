@@ -17,6 +17,18 @@
     {
       "path": "fixtures/bridge-delayed.lab.json",
       "slug": "bridge-delayed"
+    },
+    {
+      "path": "fixtures/payment-flow.lab.json",
+      "slug": "payment-flow"
+    },
+    {
+      "path": "fixtures/intent-settlement.lab.json",
+      "slug": "intent-settlement"
+    },
+    {
+      "path": "fixtures/token-issuance.lab.json",
+      "slug": "token-issuance"
     }
   ]
 }

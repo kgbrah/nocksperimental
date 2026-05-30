@@ -1,0 +1,186 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "token-issuance-v0",
+  "app": {
+    "name": "Token Issuance",
+    "slug": "token-issuance",
+    "version": "0.1.0",
+    "kernel": "mock-token-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock token issuance lifecycle for future native token compatibility reports.",
+      "Focuses on issuer authority, metadata, and supply accounting."
+    ]
+  },
+  "actors": [
+    {
+      "name": "issuer",
+      "pkh": "token-issuer-mock-pkh"
+    },
+    {
+      "name": "treasury",
+      "pkh": "token-treasury-mock-pkh"
+    },
+    {
+      "name": "holder",
+      "pkh": "token-holder-mock-pkh"
+    }
+  ],
+  "invariantPacks": ["../packs/tokens.invariants.json"],
+  "initialState": {
+    "token": {
+      "symbol": "MOCK",
+      "totalSupply": 1000,
+      "maxSupply": 2000,
+      "mintAuthority": "issuer",
+      "burnAuthority": "issuer",
+      "metadata": {
+        "name": "Mock Token",
+        "decimals": 6
+      },
+      "balances": {
+        "issuer": 1000,
+        "treasury": 0,
+        "holder": 0
+      },
+      "issuance": {
+        "status": "draft",
+        "events": []
+      }
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock token fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "mint-treasury-allocation",
+      "type": "poke",
+      "title": "Issuer mints treasury allocation",
+      "actor": "issuer",
+      "target": "/token/mint",
+      "operations": [
+        {
+          "kind": "increment",
+          "path": "token.totalSupply",
+          "by": 250
+        },
+        {
+          "kind": "increment",
+          "path": "token.balances.treasury",
+          "by": 250
+        },
+        {
+          "kind": "set",
+          "path": "token.issuance.status",
+          "value": "minted"
+        },
+        {
+          "kind": "append-event",
+          "path": "token.issuance.events",
+          "value": {
+            "type": "minted",
+            "actor": "issuer",
+            "amount": 250
+          }
+        }
+      ],
+      "expect": {
+        "path": "token.totalSupply",
+        "equals": 1250
+      }
+    },
+    {
+      "id": "distribute-holder-allocation",
+      "type": "poke",
+      "title": "Treasury distributes holder allocation",
+      "actor": "treasury",
+      "target": "/token/transfer",
+      "operations": [
+        {
+          "kind": "transfer",
+          "fromPath": "token.balances.treasury",
+          "toPath": "token.balances.holder",
+          "amount": 100
+        },
+        {
+          "kind": "append-event",
+          "path": "token.issuance.events",
+          "value": {
+            "type": "distributed",
+            "actor": "treasury",
+            "amount": 100
+          }
+        }
+      ],
+      "expect": {
+        "path": "token.balances.holder",
+        "equals": 100
+      }
+    },
+    {
+      "id": "finalize-token-issuance",
+      "type": "poke",
+      "title": "Issuer finalizes token issuance",
+      "actor": "issuer",
+      "target": "/token/finalize",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "token.issuance.status",
+          "value": "finalized"
+        },
+        {
+          "kind": "append-event",
+          "path": "token.issuance.events",
+          "value": {
+            "type": "finalized",
+            "actor": "issuer"
+          }
+        }
+      ],
+      "expect": {
+        "path": "token.issuance.status",
+        "equals": "finalized"
+      }
+    },
+    {
+      "id": "peek-token-metadata",
+      "type": "peek",
+      "title": "Read token metadata",
+      "target": "/token/metadata",
+      "expect": {
+        "path": "token.metadata.name",
+        "equals": "Mock Token"
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "token-final-total-supply",
+      "title": "Token total supply matches minted allocation",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "token.totalSupply",
+      "equals": 1250
+    },
+    {
+      "id": "token-no-failure-alert",
+      "title": "Token failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}

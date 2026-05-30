@@ -1,0 +1,42 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "intents-core-v0",
+  "name": "Intent Settlement Core",
+  "version": "0.1.0",
+  "domain": "intents",
+  "description": "Safety checks for declaration, solver response, settlement, and failure-free intent lifecycle runs.",
+  "invariants": [
+    {
+      "id": "intent-terminal-settled",
+      "title": "Intent reaches settled terminal state",
+      "severity": "critical",
+      "kind": "timeline-state",
+      "path": "intent.status",
+      "equals": "settled"
+    },
+    {
+      "id": "intent-solver-recorded",
+      "title": "Settled intent records the chosen solver",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "intent.solver",
+      "equals": "solver-a"
+    },
+    {
+      "id": "intent-authorized-actors",
+      "title": "Intent pokes are performed by authorized actors",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["user", "solver-a"],
+      "stepType": "poke"
+    },
+    {
+      "id": "intent-no-failure-alert",
+      "title": "Intent failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}

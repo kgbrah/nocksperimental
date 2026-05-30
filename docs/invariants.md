@@ -9,6 +9,7 @@ The v0 catalog covers invariants that can be evaluated from fixture state alone.
 | `actors.poke-declared.v0` | `poke-actors-declared` | Verify every `poke` step has an actor declared in the fixture. | none |
 | `balances.supply-conserved.v0` | `supply-conservation` | Verify balances sum to the declared supply. | `balancesPath`, `supplyPath` |
 | `timeline.expected-state.v0` | `timeline-state` | Verify an operational lifecycle reaches a required terminal state. | `path`, `equals` |
+| `actors.authorized.v0` | `authorized-actor` | Verify all steps of a type are performed by an allowed actor set. | `actors`, `stepType` |
 
 ## Design Rules
 
@@ -22,3 +23,11 @@ The v0 catalog covers invariants that can be evaluated from fixture state alone.
 - **NockApp starter pack:** counter floor, expected state, declared poke actors.
 - **Settlement pack:** bridge status, proof status, timeline terminal state.
 - **Token pack:** supply conservation, mint/burn authority, metadata consistency.
+
+## Domain Pack Files
+
+Reusable invariant packs live under `packs/` and can be imported by fixtures through `invariantPacks`.
+
+- `packs/payments.invariants.json`: escrowed payment settlement, authorized payment actors, and payment ledger supply conservation.
+- `packs/intents.invariants.json`: intent terminal state, solver recording, authorized intent actors, and clear failure state.
+- `packs/tokens.invariants.json`: token issuance finalization, metadata stability, issuance authority, and token supply conservation.

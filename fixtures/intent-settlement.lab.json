@@ -1,0 +1,192 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "intent-settlement-v0",
+  "app": {
+    "name": "Intent Settlement",
+    "slug": "intent-settlement",
+    "version": "0.1.0",
+    "kernel": "mock-intent-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock intent lifecycle from declaration through solver response and settlement.",
+      "Uses pack-level invariants to model a future solver QA workflow."
+    ]
+  },
+  "actors": [
+    {
+      "name": "user",
+      "pkh": "intent-user-mock-pkh"
+    },
+    {
+      "name": "solver-a",
+      "pkh": "intent-solver-a-mock-pkh"
+    }
+  ],
+  "invariantPacks": ["../packs/intents.invariants.json"],
+  "initialState": {
+    "ledger": {
+      "totalSupply": 6000,
+      "balances": {
+        "user": 1000,
+        "solver-a": 0,
+        "liquidity-pool": 5000
+      }
+    },
+    "intent": {
+      "status": "declared",
+      "amount": 400,
+      "solver": null,
+      "quote": null,
+      "settlement": null,
+      "events": []
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock intent fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "declare-intent",
+      "type": "poke",
+      "title": "User declares an execution intent",
+      "actor": "user",
+      "target": "/intent/declare",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "intent.status",
+          "value": "open"
+        },
+        {
+          "kind": "append-event",
+          "path": "intent.events",
+          "value": {
+            "type": "declared",
+            "actor": "user"
+          }
+        }
+      ],
+      "expect": {
+        "path": "intent.status",
+        "equals": "open"
+      }
+    },
+    {
+      "id": "solver-quotes",
+      "type": "poke",
+      "title": "Solver responds with executable quote",
+      "actor": "solver-a",
+      "target": "/intent/quote",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "intent.status",
+          "value": "quoted"
+        },
+        {
+          "kind": "set",
+          "path": "intent.solver",
+          "value": "solver-a"
+        },
+        {
+          "kind": "set",
+          "path": "intent.quote",
+          "value": {
+            "outputAmount": 475,
+            "fee": 5
+          }
+        },
+        {
+          "kind": "append-event",
+          "path": "intent.events",
+          "value": {
+            "type": "quoted",
+            "actor": "solver-a"
+          }
+        }
+      ],
+      "expect": {
+        "path": "intent.solver",
+        "equals": "solver-a"
+      }
+    },
+    {
+      "id": "settle-intent",
+      "type": "poke",
+      "title": "Solver settles the intent",
+      "actor": "solver-a",
+      "target": "/intent/settle",
+      "operations": [
+        {
+          "kind": "transfer",
+          "fromPath": "ledger.balances.liquidity-pool",
+          "toPath": "ledger.balances.user",
+          "amount": 75
+        },
+        {
+          "kind": "set",
+          "path": "intent.status",
+          "value": "settled"
+        },
+        {
+          "kind": "set",
+          "path": "intent.settlement",
+          "value": {
+            "result": "filled",
+            "outputAmount": 475
+          }
+        },
+        {
+          "kind": "append-event",
+          "path": "intent.events",
+          "value": {
+            "type": "settled",
+            "actor": "solver-a"
+          }
+        }
+      ],
+      "expect": {
+        "path": "intent.status",
+        "equals": "settled"
+      }
+    },
+    {
+      "id": "peek-intent-settlement",
+      "type": "peek",
+      "title": "Read settled intent result",
+      "target": "/intent",
+      "expect": {
+        "path": "intent.settlement.result",
+        "equals": "filled"
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "intent-ledger-supply-conserved",
+      "title": "Intent ledger conserves supply",
+      "severity": "critical",
+      "kind": "supply-conservation",
+      "balancesPath": "ledger.balances",
+      "supplyPath": "ledger.totalSupply"
+    },
+    {
+      "id": "intent-settlement-filled",
+      "title": "Intent settlement result is filled",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "intent.settlement.result",
+      "equals": "filled"
+    }
+  ]
+}

@@ -7,6 +7,8 @@ import {
   Code2,
   FileCheck2,
   GitBranch,
+  History,
+  LockKeyhole,
   Radar,
   Scale,
   ShieldCheck,
@@ -15,6 +17,7 @@ import {
 } from "lucide-react";
 import { ModuleExplorer } from "@/components/module-explorer";
 import { sampleLabReport } from "@/lib/lab-report";
+import { privateWorkspaces, reportHistory } from "@/lib/report-history";
 import { labModules, parallelTracks, strategyPhases } from "@/lib/strategy";
 
 const iconByCategory = {
@@ -94,14 +97,30 @@ export default function Home() {
               </p>
               <h2 className="mt-2 text-2xl font-semibold">Fixture-driven lab report</h2>
             </div>
-            <a
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
-              href="/reports/sample"
-            >
-              <FileCheck2 size={16} aria-hidden="true" />
-              Open Report
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+                href="/reports/sample"
+              >
+                <FileCheck2 size={16} aria-hidden="true" />
+                Open Report
+                <ArrowUpRight size={14} aria-hidden="true" />
+              </a>
+              <a
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/reports/history"
+              >
+                <History size={16} aria-hidden="true" />
+                History
+              </a>
+              <a
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/workspaces"
+              >
+                <LockKeyhole size={16} aria-hidden="true" />
+                Workspaces
+              </a>
+            </div>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
@@ -131,13 +150,21 @@ export default function Home() {
                   label="Invariants"
                   value={`${sampleLabReport.summary.invariantsPassed}/${sampleLabReport.invariants.length}`}
                 />
-                <Metric label="Runtime" value={`${sampleLabReport.summary.durationMs}ms`} />
+                <Metric
+                  label="Snapshots"
+                  value={sampleLabReport.summary.snapshotsCaptured.toString()}
+                />
+              </div>
+
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Callout label="Hosted reports" value={reportHistory.length.toString()} />
+                <Callout label="Private workspaces" value={privateWorkspaces.length.toString()} />
               </div>
 
               <div className="mt-5 border border-[#242424] bg-[#171717] p-3 font-mono text-xs text-[#fdfbf4]">
                 <div className="flex items-center gap-2">
                   <Terminal size={14} aria-hidden="true" />
-                  npm run lab:all
+                  npm run lab:ci
                 </div>
               </div>
             </article>
@@ -232,7 +259,10 @@ export default function Home() {
                 <ul className="mt-4 space-y-2 text-sm leading-6 text-[#44443d]">
                   {phase.ship.map((item) => (
                     <li className="flex gap-2" key={item}>
-                      <FileCheck2 className="mt-1 size-4 shrink-0 text-[#536023]" aria-hidden="true" />
+                      <FileCheck2
+                        className="mt-1 size-4 shrink-0 text-[#536023]"
+                        aria-hidden="true"
+                      />
                       <span>{item}</span>
                     </li>
                   ))}

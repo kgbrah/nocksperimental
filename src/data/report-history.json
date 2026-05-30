@@ -1,0 +1,62 @@
+{
+  "$schema": "../../schemas/nockapp-report-history.schema.json",
+  "version": "v0",
+  "reports": [
+    {
+      "id": "hist-payment-prelaunch-001",
+      "workspaceSlug": "launch-lab-private",
+      "workspaceName": "Launch Lab Private",
+      "appName": "Payment Flow",
+      "fixtureId": "payment-flow-v0",
+      "reportSlug": "payment-flow",
+      "status": "pass",
+      "stage": "pre-launch",
+      "generatedAt": "2026-05-30T01:44:34.132Z",
+      "invariantPacks": ["payments-core-v0"],
+      "snapshotsCaptured": 6,
+      "summary": "Escrowed payment path settles with conserved balances, declared actors, and receipt state."
+    },
+    {
+      "id": "hist-bridge-audit-001",
+      "workspaceSlug": "audit-room-private",
+      "workspaceName": "Audit Room Private",
+      "appName": "Bridge Settlement Monitor",
+      "fixtureId": "bridge-settlement-v0",
+      "reportSlug": "bridge-settlement",
+      "status": "pass",
+      "stage": "audit",
+      "generatedAt": "2026-05-30T01:44:34.128Z",
+      "invariantPacks": [],
+      "snapshotsCaptured": 6,
+      "summary": "Bridge lifecycle reaches finalized state with proof observed and no failure alert."
+    },
+    {
+      "id": "hist-token-upgrade-001",
+      "workspaceSlug": "issuer-upgrade-private",
+      "workspaceName": "Issuer Upgrade Private",
+      "appName": "Token Issuance",
+      "fixtureId": "token-issuance-v0",
+      "reportSlug": "token-issuance",
+      "status": "pass",
+      "stage": "upgrade",
+      "generatedAt": "2026-05-30T01:44:34.136Z",
+      "invariantPacks": ["token-issuance-core-v0"],
+      "snapshotsCaptured": 6,
+      "summary": "Token issuance finalizes with stable metadata, authorized issuance pokes, and conserved supply."
+    },
+    {
+      "id": "hist-intent-integration-001",
+      "workspaceSlug": "solver-integration-private",
+      "workspaceName": "Solver Integration Private",
+      "appName": "Intent Settlement",
+      "fixtureId": "intent-settlement-v0",
+      "reportSlug": "intent-settlement",
+      "status": "pass",
+      "stage": "integration",
+      "generatedAt": "2026-05-30T01:44:34.134Z",
+      "invariantPacks": ["intents-core-v0"],
+      "snapshotsCaptured": 6,
+      "summary": "Intent lifecycle records solver response and filled settlement without a failure alert."
+    }
+  ]
+}

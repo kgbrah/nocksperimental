@@ -1,0 +1,90 @@
+{
+  "$schema": "../../schemas/nockapp-lab-workspace.schema.json",
+  "version": "v0",
+  "workspaces": [
+    {
+      "id": "ws-launch-lab-private",
+      "slug": "launch-lab-private",
+      "name": "Launch Lab Private",
+      "visibility": "private",
+      "plan": "team",
+      "seats": 4,
+      "retentionDays": 365,
+      "environments": ["mock-fakenet", "local-fakenet"],
+      "stages": ["pre-launch", "integration"],
+      "members": [
+        {
+          "role": "builder",
+          "count": 2
+        },
+        {
+          "role": "reviewer",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "id": "ws-audit-room-private",
+      "slug": "audit-room-private",
+      "name": "Audit Room Private",
+      "visibility": "private",
+      "plan": "audit",
+      "seats": 6,
+      "retentionDays": 730,
+      "environments": ["mock-fakenet", "local-fakenet", "docker-fakenet"],
+      "stages": ["audit", "upgrade"],
+      "members": [
+        {
+          "role": "auditor",
+          "count": 3
+        },
+        {
+          "role": "maintainer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "id": "ws-issuer-upgrade-private",
+      "slug": "issuer-upgrade-private",
+      "name": "Issuer Upgrade Private",
+      "visibility": "private",
+      "plan": "team",
+      "seats": 5,
+      "retentionDays": 730,
+      "environments": ["mock-fakenet", "local-fakenet"],
+      "stages": ["upgrade", "pre-launch"],
+      "members": [
+        {
+          "role": "issuer",
+          "count": 2
+        },
+        {
+          "role": "wallet-reviewer",
+          "count": 3
+        }
+      ]
+    },
+    {
+      "id": "ws-solver-integration-private",
+      "slug": "solver-integration-private",
+      "name": "Solver Integration Private",
+      "visibility": "private",
+      "plan": "enterprise",
+      "seats": 8,
+      "retentionDays": 1095,
+      "environments": ["mock-fakenet", "local-fakenet"],
+      "stages": ["integration", "upgrade"],
+      "members": [
+        {
+          "role": "solver-operator",
+          "count": 4
+        },
+        {
+          "role": "protocol-engineer",
+          "count": 4
+        }
+      ]
+    }
+  ]
+}
