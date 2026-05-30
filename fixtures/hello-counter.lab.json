@@ -51,8 +51,10 @@
         "action": "increment",
         "by": 1
       },
-      "statePatch": {
-        "counter": 1
+      "operation": {
+        "kind": "increment",
+        "path": "counter",
+        "by": 1
       },
       "expect": {
         "path": "counter",
@@ -69,13 +71,19 @@
         "action": "increment",
         "by": 1
       },
-      "statePatch": {
-        "counter": 2,
-        "balances": {
-          "alice": 700,
-          "bob": 300
+      "operations": [
+        {
+          "kind": "increment",
+          "path": "counter",
+          "by": 1
+        },
+        {
+          "kind": "transfer",
+          "fromPath": "balances.alice",
+          "toPath": "balances.bob",
+          "amount": 300
         }
-      },
+      ],
       "expect": {
         "path": "counter",
         "equals": 2

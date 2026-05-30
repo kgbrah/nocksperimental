@@ -2,14 +2,20 @@
   "name": "nocksperimental",
   "version": "0.1.0",
   "private": true,
+  "bin": {
+    "nocklab": "./scripts/run-lab.mjs"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
     "lint": "eslint",
     "lab:sample": "node scripts/run-lab.mjs fixtures/hello-counter.lab.json --out .nocklab/hello-counter.report.json --markdown .nocklab/hello-counter.report.md --strict",
     "lab:bridge": "node scripts/run-lab.mjs fixtures/bridge-settlement.lab.json --out .nocklab/bridge-settlement.report.json --markdown .nocklab/bridge-settlement.report.md --strict",
-    "lab:all": "npm run lab:sample && npm run lab:bridge",
-    "verify:30-day": "node scripts/verify-30-day.mjs"
+    "lab:bridge:delayed": "node scripts/run-lab.mjs fixtures/bridge-delayed.lab.json --out .nocklab/bridge-delayed.report.json --markdown .nocklab/bridge-delayed.report.md --strict",
+    "lab:all": "npm run lab:sample && npm run lab:bridge && npm run lab:bridge:delayed",
+    "lab:ci": "node scripts/run-lab.mjs run --config nocklab.config.json --ci --strict",
+    "verify:30-day": "node scripts/verify-30-day.mjs",
+    "verify:90-day": "node scripts/verify-90-day.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.475.0",

@@ -1,0 +1,22 @@
+{
+  "$schema": "./schemas/nockapp-lab-config.schema.json",
+  "reportDir": ".nocklab",
+  "manifest": ".nocklab/manifest.json",
+  "ci": {
+    "summary": ".nocklab/summary.md"
+  },
+  "fixtures": [
+    {
+      "path": "fixtures/hello-counter.lab.json",
+      "slug": "hello-counter"
+    },
+    {
+      "path": "fixtures/bridge-settlement.lab.json",
+      "slug": "bridge-settlement"
+    },
+    {
+      "path": "fixtures/bridge-delayed.lab.json",
+      "slug": "bridge-delayed"
+    }
+  ]
+}

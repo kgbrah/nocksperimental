@@ -1,6 +1,8 @@
 export type LabStatus = "pass" | "warn" | "fail";
 export type LabStepType = "fakenet" | "poke" | "peek" | "invariant" | "bridge";
 export type InvariantSeverity = "critical" | "high" | "medium" | "low";
+export type AlertSeverity = "critical" | "warning" | "info";
+export type AlertState = "clear" | "triggered";
 export type InvariantKind =
   | "numeric-min"
   | "state-equals"
@@ -43,6 +45,16 @@ export type InvariantReport = {
   expected: string;
 };
 
+export type AlertReport = {
+  id: string;
+  title: string;
+  severity: AlertSeverity;
+  state: AlertState;
+  observed: string;
+  condition: string;
+  message: string;
+};
+
 export type StateDiff = {
   path: string;
   before: string;
@@ -61,10 +73,13 @@ export type LabRunReport = {
     stepsFailed: number;
     invariantsPassed: number;
     invariantsFailed: number;
+    alertsClear: number;
+    alertsTriggered: number;
     durationMs: number;
   };
   steps: LabStepReport[];
   invariants: InvariantReport[];
+  alerts: AlertReport[];
   stateDiffs: StateDiff[];
   nextActions: string[];
 };
@@ -147,6 +162,8 @@ export const sampleLabReport: LabRunReport = {
     stepsFailed: 0,
     invariantsPassed: 4,
     invariantsFailed: 0,
+    alertsClear: 0,
+    alertsTriggered: 0,
     durationMs: 128
   },
   steps: [
@@ -226,6 +243,7 @@ export const sampleLabReport: LabRunReport = {
       expected: "totalSupply=1000"
     }
   ],
+  alerts: [],
   stateDiffs: [
     {
       path: "counter",

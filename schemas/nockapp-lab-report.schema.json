@@ -12,6 +12,7 @@
     "summary",
     "steps",
     "invariants",
+    "alerts",
     "stateDiffs",
     "nextActions"
   ],
@@ -58,6 +59,8 @@
         "stepsFailed",
         "invariantsPassed",
         "invariantsFailed",
+        "alertsClear",
+        "alertsTriggered",
         "durationMs"
       ],
       "additionalProperties": false,
@@ -67,6 +70,8 @@
         "stepsFailed": { "type": "integer", "minimum": 0 },
         "invariantsPassed": { "type": "integer", "minimum": 0 },
         "invariantsFailed": { "type": "integer", "minimum": 0 },
+        "alertsClear": { "type": "integer", "minimum": 0 },
+        "alertsTriggered": { "type": "integer", "minimum": 0 },
         "durationMs": { "type": "integer", "minimum": 0 }
       }
     },
@@ -102,6 +107,23 @@
           "status": { "enum": ["pass", "warn", "fail"] },
           "observed": { "type": "string" },
           "expected": { "type": "string" }
+        }
+      }
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "severity", "state", "observed", "condition", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "severity": { "enum": ["critical", "warning", "info"] },
+          "state": { "enum": ["clear", "triggered"] },
+          "observed": { "type": "string" },
+          "condition": { "type": "string" },
+          "message": { "type": "string" }
         }
       }
     },

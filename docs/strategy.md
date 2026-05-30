@@ -149,3 +149,17 @@ The first executable slice is a fixture-driven runner:
 - dashboard report preview on the home page
 
 This creates a stable contract for the first real adapter. The runner currently applies mock state transitions, evaluates `peek` expectations, checks invariant packs, and emits JSON plus Markdown reports. The next engineering milestone is a local fakenet adapter that replaces mock execution with calls to the Nockchain gRPC service.
+
+## 30-90 Day Build Slice
+
+The developer-workflow slice adds the pieces needed for a NockApp repository to run repeatable checks and publish artifacts:
+
+- package CLI entry: `nocklab`
+- config-driven runs: `nocklab.config.json`
+- local CI command: `npm run lab:ci`
+- CI artifact workflow: `.github/workflows/nocklab.yml`
+- CI docs: `docs/ci.md`
+- operation-driven `peek`/`poke` fixture simulation
+- bridge settlement fixture with clear alert states
+- bridge delayed fixture with triggered warning alert state
+- 30-90 verification gate: `npm run verify:90-day`

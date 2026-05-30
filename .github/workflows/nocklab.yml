@@ -1,0 +1,35 @@
+name: NockApp Lab
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate lab reports
+        run: npm run lab:ci
+
+      - name: Publish lab reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: nocklab-reports
+          path: .nocklab/
+
+      - name: Write step summary
+        run: cat .nocklab/summary.md >> "$GITHUB_STEP_SUMMARY"

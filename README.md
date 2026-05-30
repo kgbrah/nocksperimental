@@ -38,8 +38,11 @@ Open `http://localhost:3000`.
 - `npm run lint` runs ESLint.
 - `npm run lab:sample` generates the starter JSON and Markdown lab report in `.nocklab/`.
 - `npm run lab:bridge` generates a mock bridge settlement report in `.nocklab/`.
+- `npm run lab:bridge:delayed` generates a bridge report with a triggered warning alert.
 - `npm run lab:all` generates every bundled fixture report.
+- `npm run lab:ci` runs the config-driven CI workflow locally and writes a manifest plus summary.
 - `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
+- `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
 
 ## Initial MVP
 
@@ -52,6 +55,8 @@ Open `http://localhost:3000`.
 - Sample report API at `/api/reports/sample`.
 - Hosted report viewer at `/reports/sample`.
 - Fixture-driven runner in `scripts/run-lab.mjs`.
+- Config-driven CI run in `nocklab.config.json`.
+- GitHub Actions artifact workflow in `.github/workflows/nocklab.yml`.
 - Structured strategy data in `src/lib/strategy.ts`.
 
 ## First Lab Runner
@@ -68,11 +73,21 @@ Run every bundled fixture with:
 npm run lab:all
 ```
 
+Run the repo the way CI does with:
+
+```bash
+npm run lab:ci
+```
+
 This creates:
 
 - `.nocklab/hello-counter.report.json`
 - `.nocklab/hello-counter.report.md`
 - `.nocklab/bridge-settlement.report.json`
 - `.nocklab/bridge-settlement.report.md`
+- `.nocklab/bridge-delayed.report.json`
+- `.nocklab/bridge-delayed.report.md`
+- `.nocklab/manifest.json`
+- `.nocklab/summary.md`
 
 The current runner does not call a live Nockchain node yet. The next adapter milestone is replacing mock step execution with local fakenet gRPC calls.

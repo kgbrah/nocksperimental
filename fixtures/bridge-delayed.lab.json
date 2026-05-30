@@ -1,9 +1,9 @@
 {
   "$schema": "../schemas/nockapp-lab-fixture.schema.json",
-  "id": "bridge-settlement-v0",
+  "id": "bridge-delayed-v0",
   "app": {
-    "name": "Bridge Settlement Monitor",
-    "slug": "bridge-settlement-monitor",
+    "name": "Bridge Delayed Alert",
+    "slug": "bridge-delayed-alert",
     "version": "0.0.1",
     "kernel": "mock-bridge-monitor-v0"
   },
@@ -12,8 +12,8 @@
     "grpcEndpoint": "127.0.0.1:5555",
     "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
     "notes": [
-      "Mock bridge lifecycle for 30-day report contracts.",
-      "Uses the same report engine as NockApp test fixtures."
+      "Mock bridge lifecycle for alert-state reports.",
+      "This fixture intentionally triggers a warning, not a failing strict exit."
     ]
   },
   "actors": [
@@ -24,11 +24,12 @@
   ],
   "initialState": {
     "settlement": {
-      "status": "initiated",
-      "observedOnBase": false,
+      "status": "observed",
+      "observedOnBase": true,
       "proofSeen": false,
       "finalized": false,
-      "amount": 250
+      "amount": 250,
+      "ageBlocks": 18
     },
     "alerts": {
       "delayed": false,
@@ -43,98 +44,51 @@
       "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
     },
     {
-      "id": "observe-base-lock",
+      "id": "age-settlement",
       "type": "bridge",
-      "title": "Observe Base-side lock",
+      "title": "Age settlement past delay threshold",
       "target": "/settlement",
       "operations": [
         {
-          "kind": "set",
-          "path": "settlement.status",
-          "value": "observed"
+          "kind": "increment",
+          "path": "settlement.ageBlocks",
+          "by": 14
         },
         {
           "kind": "set",
-          "path": "settlement.observedOnBase",
+          "path": "settlement.status",
+          "value": "delayed"
+        },
+        {
+          "kind": "set",
+          "path": "alerts.delayed",
           "value": true
         }
       ],
       "expect": {
-        "path": "settlement.observedOnBase",
+        "path": "alerts.delayed",
         "equals": true
       }
     },
     {
-      "id": "observe-proof",
-      "type": "bridge",
-      "title": "Observe settlement proof",
-      "target": "/settlement",
-      "operations": [
-        {
-          "kind": "set",
-          "path": "settlement.status",
-          "value": "proof-seen"
-        },
-        {
-          "kind": "set",
-          "path": "settlement.proofSeen",
-          "value": true
-        }
-      ],
-      "expect": {
-        "path": "settlement.proofSeen",
-        "equals": true
-      }
-    },
-    {
-      "id": "finalize-settlement",
-      "type": "bridge",
-      "title": "Finalize settlement",
-      "target": "/settlement",
-      "operations": [
-        {
-          "kind": "set",
-          "path": "settlement.status",
-          "value": "finalized"
-        },
-        {
-          "kind": "set",
-          "path": "settlement.finalized",
-          "value": true
-        }
-      ],
-      "expect": {
-        "path": "settlement.status",
-        "equals": "finalized"
-      }
-    },
-    {
-      "id": "peek-alerts",
+      "id": "peek-delay-state",
       "type": "peek",
-      "title": "Read alert status",
+      "title": "Read delayed alert state",
       "target": "/alerts",
       "expect": {
-        "path": "alerts.failed",
-        "equals": false
+        "path": "settlement.status",
+        "equals": "delayed"
       }
     }
   ],
   "invariants": [
     {
-      "id": "bridge-terminal-state",
-      "title": "Bridge reaches finalized state",
-      "severity": "critical",
+      "id": "bridge-status-delayed",
+      "title": "Bridge reaches delayed state",
+      "severity": "medium",
       "kind": "timeline-state",
       "path": "settlement.status",
-      "equals": "finalized"
-    },
-    {
-      "id": "proof-seen-before-finalized",
-      "title": "Proof is seen before finalization",
-      "severity": "critical",
-      "kind": "state-equals",
-      "path": "settlement.proofSeen",
-      "equals": true
+      "equals": "delayed"
     },
     {
       "id": "no-failure-alert",

@@ -69,6 +69,15 @@
           "actor": { "type": "string" },
           "target": { "type": "string" },
           "input": {},
+          "operation": {
+            "$ref": "#/$defs/operation"
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/operation"
+            }
+          },
           "statePatch": {
             "type": "object"
           },
@@ -110,6 +119,79 @@
           "supplyPath": { "type": "string" }
         }
       }
+    },
+    "alertPolicies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "severity", "condition", "message", "clearMessage"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "severity": {
+            "enum": ["critical", "warning", "info"]
+          },
+          "condition": {
+            "type": "object",
+            "required": ["path", "equals"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string" },
+              "equals": {}
+            }
+          },
+          "message": { "type": "string" },
+          "clearMessage": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "operation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "path", "by"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "increment" },
+            "path": { "type": "string" },
+            "by": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "path", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "set" },
+            "path": { "type": "string" },
+            "value": {}
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "fromPath", "toPath", "amount"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "transfer" },
+            "fromPath": { "type": "string" },
+            "toPath": { "type": "string" },
+            "amount": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "path", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "append-event" },
+            "path": { "type": "string" },
+            "value": {}
+          }
+        }
+      ]
     }
   }
 }

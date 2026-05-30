@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.dev/schemas/nockapp-lab-config.schema.json",
+  "title": "Nocksperimental NockApp Lab Config",
+  "type": "object",
+  "required": ["fixtures"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "reportDir": { "type": "string" },
+    "manifest": { "type": "string" },
+    "ci": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string" }
+      }
+    },
+    "fixtures": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "slug": { "type": "string" }
+        }
+      }
+    }
+  }
+}
