@@ -95,6 +95,7 @@ if (hello && !hello.steps?.some((step) => step.type === "peek" && step.status ==
 const workflow = readText(".github/workflows/nocklab.yml");
 expectIncludes(workflow, "npm run lab:ci", "workflow runs lab:ci");
 expectIncludes(workflow, "actions/upload-artifact", "workflow uploads artifacts");
+expectIncludes(workflow, "include-hidden-files: true", "workflow uploads hidden .nocklab directory");
 
 if (failures.length > 0) {
   process.stderr.write(`90-day verification failed:\n${failures.map((item) => `- ${item}`).join("\n")}\n`);

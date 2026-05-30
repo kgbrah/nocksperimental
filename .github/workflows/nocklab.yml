@@ -30,6 +30,7 @@ jobs:
         with:
           name: nocklab-reports
           path: .nocklab/
+          include-hidden-files: true
 
       - name: Write step summary
         run: cat .nocklab/summary.md >> "$GITHUB_STEP_SUMMARY"
