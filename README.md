@@ -1,15 +1,26 @@
 # nocksperimental
 
-Nocksperimental is a Nockchain product lab. The first product slice is a NockApp launchpad and registry: a place to discover app templates, publish experiments, and turn useful Nockchain infrastructure into revenue paid in NOCK.
+Nocksperimental is a Nockchain product lab focused on testing, simulation, and monitoring infrastructure for NockApps.
+
+The current product thesis: serious NockApps will need deterministic local testing, state replay, invariant checks, and shareable audit-readiness reports before meaningful value can safely flow through them.
 
 ## Product Direction
 
-The least capital-intensive wedge is developer and app distribution tooling:
+The primary wedge is a NockApp testing lab:
 
-- Registry for NockApp templates, experiments, infrastructure, and app listings.
-- Launchpad metadata for install commands, maturity, revenue model, and integration targets.
-- API surface for explorers, wallets, CLIs, and future NockApp runtimes to discover projects.
-- Later: paid verified listings, deploy automation, API keys, audits, and NOCK-denominated publishing.
+- fakenet/test-run profiles
+- scripted `peek` and `poke` fixtures
+- state snapshots and replay logs
+- invariant checks for app-specific safety rules
+- CI-friendly JSON and Markdown reports
+- hosted report history and verification badges later
+
+Parallel tracks can reuse the same core engine:
+
+- bridge and settlement monitoring
+- native token test harnesses
+- intent simulation and solver scoring
+- compute benchmark reports
 
 ## Local Development
 
@@ -28,7 +39,8 @@ Open `http://localhost:3000`.
 
 ## Initial MVP
 
-- Product dashboard for the top Nockchain product opportunities.
-- Filterable NockApp template registry.
-- Registry API at `/api/registry`.
-- Structured data in `src/lib/registry.ts`.
+- NockApp Lab dashboard.
+- Filterable module plan.
+- Strategy roadmap in `docs/strategy.md`.
+- Lab API at `/api/lab`.
+- Structured strategy data in `src/lib/strategy.ts`.

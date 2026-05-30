@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Nocksperimental",
-  description: "A Nockchain launchpad and product lab for NOCK revenue experiments."
+  description: "Testing, simulation, and monitoring infrastructure for Nockchain apps."
 };
 
 export default function RootLayout({
