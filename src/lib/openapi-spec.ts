@@ -140,6 +140,12 @@ const generatedReportVerifierEndpoint = {
   description: "Generated report evidence verifier"
 };
 
+const fakenetEvidenceReceiptDetailEndpoint = {
+  id: "fakenet-evidence-receipt-detail",
+  path: "/api/fakenet/evidence/receipts/{receiptId}",
+  description: "Read persisted fakenet evidence receipt"
+};
+
 export function createOpenApiSpec() {
   const endpoints = [
     wellKnownEndpoint,
@@ -161,7 +167,8 @@ export function createOpenApiSpec() {
     workspaceEvidenceVerifierEndpoint,
     generatedReportVerifierEndpoint,
     generatedReportProvenanceEndpoint,
-    generatedReportEvidenceEndpoint
+    generatedReportEvidenceEndpoint,
+    fakenetEvidenceReceiptDetailEndpoint
   ];
 
   return {

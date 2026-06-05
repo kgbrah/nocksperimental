@@ -48,6 +48,11 @@ export const registryEndpoints = [
     description: "Submit bring-your-own fakenet evidence"
   },
   {
+    id: "fakenet-evidence-receipts",
+    path: "/api/fakenet/evidence/receipts",
+    description: "List persisted fakenet evidence receipts"
+  },
+  {
     id: "local-fakenet-evidence-verifier",
     path: "/api/fakenet/evidence/verify",
     description: "Local fakenet evidence verifier"
@@ -174,6 +179,7 @@ export function createWellKnownRegistryManifest() {
       fakenetConnect: endpointUrl("bring-your-own-fakenet"),
       fakenetEvidence: endpointUrl("local-fakenet-evidence"),
       fakenetEvidenceSubmit: endpointUrl("fakenet-evidence-submit"),
+      fakenetEvidenceReceipts: endpointUrl("fakenet-evidence-receipts"),
       fakenetEvidenceVerifier: endpointUrl("local-fakenet-evidence-verifier"),
       fakenetCommands: endpointUrl("local-fakenet-commands"),
       fakenetDiagnostics: endpointUrl("local-fakenet-diagnostics"),
@@ -197,6 +203,7 @@ export function createWellKnownRegistryManifest() {
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",
+      "fakenet-evidence-receipts",
       "local-fakenet-evidence-verifier",
       "local-fakenet-command-kit",
       "local-fakenet-diagnostics",

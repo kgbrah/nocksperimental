@@ -17,6 +17,8 @@ type FakenetEvidenceSubmissionInput = {
   report?: unknown;
 };
 
+export type FakenetEvidenceReceipt = ReturnType<typeof verifyFakenetEvidenceSubmission>;
+
 type SubmittedReportSummary = {
   reportId: string;
   fixtureId: string;
@@ -59,6 +61,8 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
     .sort()
     .at(-1) ?? new Date(0).toISOString();
 
+  const receiptId = accepted ? `fakenet_submission_${stableId(JSON.stringify({ endpoint, walletAddress, reportIds }))}` : null;
+
   return {
     version: "v0",
     service: registryServiceName,
@@ -67,7 +71,7 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
     accepted,
     verified,
     status: verified ? "verified" : accepted ? "attention" : "rejected",
-    receiptId: accepted ? `fakenet_submission_${stableId(JSON.stringify({ endpoint, walletAddress, reportIds }))}` : null,
+    receiptId,
     generatedAt,
     profile: {
       connectionId: profile.connectionId,
@@ -91,6 +95,10 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
       profile: profile.links.profile,
       connect: `${registryCanonicalBaseUrl}/api/fakenet/connect`,
       submit: `${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`,
+      receipts: `${registryCanonicalBaseUrl}/api/fakenet/evidence/receipts`,
+      receipt: receiptId
+        ? `${registryCanonicalBaseUrl}/api/fakenet/evidence/receipts/${receiptId}`
+        : null,
       verify: createVerifyLink(generatedAt, reportIds, endpoint, walletAddress)
     }
   };
@@ -103,7 +111,7 @@ export function createFakenetEvidenceSubmissionHelp() {
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`,
     method: "POST",
-    description: "Submit bring-your-own fakenet report JSON and receive a stateless verification receipt.",
+    description: "Submit bring-your-own fakenet report JSON and receive a persisted verification receipt.",
     body: {
       connection: {
         endpoint: "127.0.0.1:5555",
@@ -114,6 +122,7 @@ export function createFakenetEvidenceSubmissionHelp() {
     },
     links: {
       connect: `${registryCanonicalBaseUrl}/api/fakenet/connect`,
+      receipts: `${registryCanonicalBaseUrl}/api/fakenet/evidence/receipts`,
       commands: `${registryCanonicalBaseUrl}/api/fakenet/commands`
     }
   };

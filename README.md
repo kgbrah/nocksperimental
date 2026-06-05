@@ -64,6 +64,8 @@ The public fakenet surfaces are available at:
 - `/api/fakenet/diagnostics`
 - `/api/fakenet/evidence`
 - `/api/fakenet/evidence/submit`
+- `/api/fakenet/evidence/receipts`
+- `/api/fakenet/evidence/receipts/[receiptId]`
 - `/api/fakenet/evidence/verify`
 - `/api/fakenet/support-bundle`
 - `/api/fakenet/support-bundle.md`
@@ -78,13 +80,15 @@ curl -G https://nocksperimental.com/api/fakenet/connect \
   --data-urlencode networkId=local-fakenet
 ```
 
-After running the generated commands beside the fakenet node, POST the generated report JSON back for a stateless verification receipt:
+After running the generated commands beside the fakenet node, POST the generated report JSON back for a persisted verification receipt:
 
 ```bash
 curl https://nocksperimental.com/api/fakenet/evidence/submit \
   -H "content-type: application/json" \
   --data @fakenet-evidence-submission.json
 ```
+
+Submitted receipts can be read back through `GET /api/fakenet/evidence/receipts` and `GET /api/fakenet/evidence/receipts/{receiptId}`.
 
 ## Lab Runner
 

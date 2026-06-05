@@ -335,9 +335,33 @@ async function expectFakenetEvidenceSubmission(baseUrl) {
   });
   const receipt = await response.json();
 
-  if (response.status !== 200 || receipt.verified !== true || !receipt.receiptId?.startsWith("fakenet_submission_")) {
+  if (
+    response.status !== 200 ||
+    receipt.verified !== true ||
+    receipt.storage?.persisted !== true ||
+    !receipt.receiptId?.startsWith("fakenet_submission_")
+  ) {
     throw new Error(
       `fakenet evidence submission: expected verified receipt HTTP 200; got ${response.status} ${JSON.stringify(receipt).slice(0, 500)}`
+    );
+  }
+
+  const listResponse = await fetch(`${baseUrl}/api/fakenet/evidence/receipts`);
+  const receiptList = await listResponse.json();
+  const indexedReceipt = receiptList.receipts?.find((candidate) => candidate.receiptId === receipt.receiptId);
+
+  if (listResponse.status !== 200 || !indexedReceipt) {
+    throw new Error(
+      `fakenet evidence receipts: expected submitted receipt in index; got ${listResponse.status} ${JSON.stringify(receiptList).slice(0, 500)}`
+    );
+  }
+
+  const detailResponse = await fetch(`${baseUrl}/api/fakenet/evidence/receipts/${receipt.receiptId}`);
+  const detail = await detailResponse.json();
+
+  if (detailResponse.status !== 200 || detail.receiptId !== receipt.receiptId) {
+    throw new Error(
+      `fakenet evidence receipt detail: expected submitted receipt; got ${detailResponse.status} ${JSON.stringify(detail).slice(0, 500)}`
     );
   }
 }

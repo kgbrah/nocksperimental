@@ -75,6 +75,40 @@ async function main() {
   assertIncludes(receipt.reports.map((report) => report.reportId), healthReport.reportId, "health report receipt");
   assertIncludes(receipt.links.profile, "/api/fakenet/connect?", "receipt profile link");
   assertIncludes(receipt.links.verify, "/api/fakenet/evidence/verify?", "receipt verify link");
+  assertEqual(receipt.storage.persisted, true, "receipt persisted");
+  assertEqual(receipt.storage.backend, "memory", "receipt persistence backend");
+  assertIncludes(receipt.links.receipt, `/api/fakenet/evidence/receipts/${receipt.receiptId}`, "receipt detail link");
+  assertEqual(
+    receipt.links.receipts,
+    "https://nocksperimental.com/api/fakenet/evidence/receipts",
+    "receipt index link"
+  );
+
+  const { GET: listReceipts } = loadTypeScriptModule("src/app/api/fakenet/evidence/receipts/route.ts");
+  const receiptListResponse = await listReceipts();
+  const receiptList = await receiptListResponse.json();
+  const indexedReceipt = receiptList.receipts.find((candidate) => candidate.receiptId === receipt.receiptId);
+
+  assertEqual(receiptListResponse.status, 200, "receipt list status");
+  assertEqual(receiptList.version, "v0", "receipt list version");
+  assertIncludes(
+    receiptList.links.submit,
+    "/api/fakenet/evidence/submit",
+    "receipt list submit link"
+  );
+  assertEqual(Boolean(indexedReceipt), true, "submitted receipt appears in receipt index");
+  assertEqual(indexedReceipt.summary.reportCount, 2, "indexed receipt report count");
+
+  const { GET: getReceipt } = loadTypeScriptModule("src/app/api/fakenet/evidence/receipts/[receiptId]/route.ts");
+  const detailResponse = await getReceipt(
+    new Request(`https://nocksperimental.com/api/fakenet/evidence/receipts/${receipt.receiptId}`),
+    { params: { receiptId: receipt.receiptId } }
+  );
+  const detail = await detailResponse.json();
+
+  assertEqual(detailResponse.status, 200, "receipt detail status");
+  assertEqual(detail.receiptId, receipt.receiptId, "receipt detail id");
+  assertEqual(detail.summary.endpoint, "127.0.0.1:5555", "receipt detail endpoint");
 
   const mismatchResponse = await POST(
     new Request("https://nocksperimental.com/api/fakenet/evidence/submit", {
@@ -133,6 +167,16 @@ async function main() {
     "Submit bring-your-own fakenet evidence",
     "OpenAPI fakenet evidence submit POST path"
   );
+  assertEqual(
+    openApiBody.paths["/api/fakenet/evidence/receipts"]?.get?.summary,
+    "List persisted fakenet evidence receipts",
+    "OpenAPI fakenet evidence receipts GET path"
+  );
+  assertEqual(
+    openApiBody.paths["/api/fakenet/evidence/receipts/{receiptId}"]?.get?.summary,
+    "Read persisted fakenet evidence receipt",
+    "OpenAPI fakenet evidence receipt detail GET path"
+  );
 
   const profileSource = readFileSync(path.join(process.cwd(), "src/lib/fakenet-connection-profile.ts"), "utf8");
   assertIncludes(profileSource, "submitEvidence", "connection profile includes submit evidence command");
@@ -141,6 +185,7 @@ async function main() {
   const fakenetPageSource = readFileSync(path.join(process.cwd(), "src/app/fakenet/page.tsx"), "utf8");
   assertIncludes(fakenetPageSource, "Submit Evidence", "fakenet page shows submit evidence link");
   assertIncludes(fakenetPageSource, "/api/fakenet/evidence/submit", "fakenet page links submit API");
+  assertIncludes(fakenetPageSource, "/api/fakenet/evidence/receipts", "fakenet page links receipt index");
 
   const packageJson = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
   assertEqual(
@@ -155,6 +200,7 @@ async function main() {
 
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "POST the generated report JSON", "README documents evidence submission");
+  assertIncludes(readme, "GET /api/fakenet/evidence/receipts", "README documents receipt persistence");
 }
 
 function createReport({ reportId, fixtureId, appSlug, endpoint, walletAddress, status }) {
@@ -260,6 +306,14 @@ function createModuleRequire() {
             status: init.status ?? 200,
             json: async () => body
           })
+        }
+      };
+    }
+
+    if (specifier === "@opennextjs/cloudflare") {
+      return {
+        getCloudflareContext: () => {
+          throw new Error("Cloudflare context is unavailable in script tests.");
         }
       };
     }

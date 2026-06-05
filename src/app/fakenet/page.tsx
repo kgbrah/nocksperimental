@@ -182,6 +182,13 @@ export default function FakenetReadinessPage() {
               Submit API
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
+            <Link
+              className="mt-3 inline-flex w-fit items-center gap-2 border border-[#242424] bg-white px-4 py-2 text-sm font-medium text-[#171717]"
+              href="/api/fakenet/evidence/receipts"
+            >
+              Receipts
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </Link>
           </div>
         </article>
       </section>

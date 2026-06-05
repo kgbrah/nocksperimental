@@ -12,6 +12,12 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  "kv_namespaces": [
+    {
+      "binding": "NOCKS_FAKENET_RECEIPTS",
+      "id": "cbdaadccc1d54e4e84c197559a592230"
+    }
+  ],
   "rules": [
     {
       "type": "Data",
