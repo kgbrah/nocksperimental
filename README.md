@@ -14,6 +14,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
+- Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
@@ -158,6 +159,15 @@ The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs 
 - `/api/nockchain/wallet`
 
 Use it when a balance, reward, or transaction test needs to say which wallet command was run, which endpoint mode was used, and which wallet secrets must stay out of receipts and support bundles.
+
+## Nockchain Upstream Watch
+
+The upstream watch board records the live GitHub API sources and the current observed Nockchain/Zorp snapshot used to decide whether Nocksperimental assumptions need review. It separates canonical Nockchain commit/release drift from Zorp lineage updates, state-jam Drive inventory, wallet/API command drift, fakenet mining symptoms, and Rust workspace ownership changes.
+
+- `/nockchain/watch`
+- `/api/nockchain/watch`
+
+Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
 ## Nockup Validation Receipts
 

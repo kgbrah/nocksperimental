@@ -53,6 +53,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/operations`, 200, "Nockchain operations atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/wallet`, 200, "Nockchain wallet/API atlas");
+    await expectStatus(`${baseUrl}/api/nockchain/watch`, 200, "Nockchain upstream watch board");
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
     await expectStatus(
@@ -78,6 +79,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
     await expectStatus(`${baseUrl}/nockchain/wallet`, 200, "Nockchain wallet page");
+    await expectStatus(`${baseUrl}/nockchain/watch`, 200, "Nockchain watch page");
     await expectStatus(`${baseUrl}/workspaces`, 200, "workspaces page");
     await expectStatus(`${baseUrl}/api/workspaces`, 200, "workspaces API");
     await expectStatus(

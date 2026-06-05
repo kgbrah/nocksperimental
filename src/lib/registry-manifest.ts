@@ -65,6 +65,11 @@ export const registryEndpoints = [
     description: "Nockchain wallet/API atlas"
   },
   {
+    id: "nockchain-watch",
+    path: "/api/nockchain/watch",
+    description: "Nockchain upstream watch board"
+  },
+  {
     id: "nockup-validation-submit",
     path: "/api/nockchain/nockup/submit",
     description: "Submit Nockup scaffold validation evidence"
@@ -270,6 +275,7 @@ export function createWellKnownRegistryManifest() {
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
       nockchainOperationsAtlas: endpointUrl("nockchain-operations-atlas"),
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
+      nockchainWatch: endpointUrl("nockchain-watch"),
       nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
       nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
       checkpoint: endpointUrl("registry-checkpoint"),
@@ -309,6 +315,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-rust-workspace-atlas",
       "nockchain-operations-atlas",
       "nockchain-wallet-api-atlas",
+      "nockchain-upstream-watch",
       "nockup-validation-submit",
       "nockup-validation-receipts",
       "bring-your-own-fakenet",

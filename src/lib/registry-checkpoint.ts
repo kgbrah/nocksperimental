@@ -6,6 +6,7 @@ import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
+import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 import {
   registryCanonicalBaseUrl,
@@ -32,6 +33,7 @@ export function createRegistryCheckpoint() {
   const nockchainRustAtlas = createNockchainRustAtlas();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
+  const nockchainWatch = createNockchainWatchBoard();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
@@ -61,6 +63,7 @@ export function createRegistryCheckpoint() {
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
+    nockchainWatchItems: nockchainWatch.watchQueue.length,
     stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
@@ -129,6 +132,16 @@ export function createRegistryCheckpoint() {
       safety: nockchainWalletAtlas.safety,
       triageScenarios: nockchainWalletAtlas.triageScenarios
     }),
+    nockchainWatch: createSha256Root({
+      observedAt: nockchainWatch.observedAt,
+      status: nockchainWatch.status,
+      sources: nockchainWatch.sources,
+      pinned: nockchainWatch.pinned,
+      observed: nockchainWatch.observed,
+      drift: nockchainWatch.drift,
+      watchQueue: nockchainWatch.watchQueue,
+      monitor: nockchainWatch.monitor
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -152,6 +165,10 @@ export function createRegistryCheckpoint() {
       nockchainWalletAtlasAvailable:
         nockchainWalletAtlas.walletCommands.length > 0 &&
         nockchainWalletAtlas.endpointModes.length > 0,
+      nockchainWatchInSync:
+        nockchainWatch.status === "in-sync" &&
+        nockchainWatch.drift.commitMatchesPinned &&
+        nockchainWatch.drift.releaseMatchesPinned,
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -236,6 +253,17 @@ export function createRegistryCheckpoint() {
       endpointModeIds: nockchainWalletAtlas.endpointModes.map((mode) => mode.id),
       localWalletAddress: nockchainWalletAtlas.localFakenetProfile.walletAddress
     },
+    nockchainWatch: {
+      status: nockchainWatch.status,
+      observedAt: nockchainWatch.observedAt,
+      watchItemCount: nockchainWatch.watchQueue.length,
+      highSeverityItemIds: nockchainWatch.watchQueue
+        .filter((item) => item.severity === "high")
+        .map((item) => item.id),
+      sourceIds: nockchainWatch.sources.map((source) => source.id),
+      commitMatchesPinned: nockchainWatch.drift.commitMatchesPinned,
+      releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -252,6 +280,7 @@ export function createRegistryCheckpoint() {
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
+      nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`
