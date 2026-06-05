@@ -11,6 +11,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Fixture-driven NockApp lab runner with strict JSON schemas.
 - Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
+- Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
@@ -90,6 +91,14 @@ curl https://nocksperimental.com/api/fakenet/evidence/submit \
 ```
 
 Submitted receipts can be read back through `GET /api/fakenet/evidence/receipts` and `GET /api/fakenet/evidence/receipts/{receiptId}`.
+
+## Nockchain Upstream Intelligence
+
+The upstream intelligence endpoint publishes the current Nockchain source-of-truth map used by Nocksperimental: latest scanned commit/release, docs authority order, protocol track, Rust workspace crate groups, operational scripts, PMA/state-jam safety rules, and product implications.
+
+- `/api/nockchain/upstream`
+
+Use it when a receipt, fakenet test, or integration needs to explain which Nockchain build, protocol track, script family, or canonical doc supports an assumption.
 
 ## VESL Evidence Bridge
 

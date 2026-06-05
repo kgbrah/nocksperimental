@@ -28,6 +28,11 @@ export const registryEndpoints = [
     description: "Public runtime readiness probe"
   },
   {
+    id: "nockchain-upstream",
+    path: "/api/nockchain/upstream",
+    description: "Nockchain upstream intelligence"
+  },
+  {
     id: "local-fakenet-readiness",
     path: "/api/fakenet",
     description: "Local fakenet readiness summary"
@@ -183,6 +188,7 @@ export function createWellKnownRegistryManifest() {
       registry: `${registryCanonicalBaseUrl}/api/registry`,
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
       health: endpointUrl("health"),
+      nockchainUpstream: endpointUrl("nockchain-upstream"),
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
@@ -212,6 +218,7 @@ export function createWellKnownRegistryManifest() {
       "append-only-trust-updates",
       "registry-checkpoints",
       "public-verification-index",
+      "nockchain-upstream-intelligence",
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",

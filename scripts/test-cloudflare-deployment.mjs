@@ -47,6 +47,7 @@ function main() {
   assertIncludes(smokeScript, "/.well-known/nocksperimental.json", "Cloudflare smoke checks well-known manifest");
   assertIncludes(smokeScript, "/openapi.json", "Cloudflare smoke checks OpenAPI spec");
   assertIncludes(smokeScript, "/api/health", "Cloudflare smoke checks health API");
+  assertIncludes(smokeScript, "/api/nockchain/upstream", "Cloudflare smoke checks Nockchain upstream intelligence");
   assertIncludes(smokeScript, "/fakenet", "Cloudflare smoke checks fakenet readiness page");
   assertIncludes(smokeScript, "/api/fakenet", "Cloudflare smoke checks fakenet readiness API");
   assertIncludes(smokeScript, "/api/fakenet/evidence/receipts", "Cloudflare smoke checks fakenet receipt persistence");
@@ -92,6 +93,7 @@ function main() {
   assertIncludes(deploymentDocs, "/.well-known/nocksperimental.json", "deployment docs well-known manifest");
   assertIncludes(deploymentDocs, "/openapi.json", "deployment docs OpenAPI spec");
   assertIncludes(deploymentDocs, "/api/health", "deployment docs health endpoint");
+  assertIncludes(deploymentDocs, "/api/nockchain/upstream", "deployment docs Nockchain upstream endpoint");
   assertIncludes(deploymentDocs, "/fakenet", "deployment docs fakenet readiness page");
   assertIncludes(deploymentDocs, "/api/fakenet", "deployment docs fakenet readiness endpoint");
   assertIncludes(deploymentDocs, "NOCKS_FAKENET_RECEIPTS", "deployment docs fakenet receipts KV binding");

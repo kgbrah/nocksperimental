@@ -46,6 +46,7 @@ async function main() {
     await expectStatus(`${baseUrl}/.well-known/nocksperimental.json`, 200, "well-known registry manifest");
     await expectStatus(`${baseUrl}/openapi.json`, 200, "OpenAPI spec");
     await expectStatus(`${baseUrl}/api/health`, 200, "health API");
+    await expectNockchainUpstream(`${baseUrl}/api/nockchain/upstream`);
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
     await expectStatus(
@@ -699,6 +700,33 @@ async function expectGeneratedReports(url) {
         manifestPath: reportIndex.manifestPath,
         totals: reportIndex.totals
       })}`
+    );
+  }
+}
+
+async function expectNockchainUpstream(url) {
+  const response = await fetch(url);
+  const body = await response.text();
+
+  if (response.status !== 200) {
+    throw new Error(`Nockchain upstream intelligence: expected HTTP 200, got ${response.status}; body: ${body.slice(0, 500)}`);
+  }
+
+  const upstream = JSON.parse(body);
+
+  if (
+    upstream.repository?.fullName !== "nockchain/nockchain" ||
+    upstream.latestCommit?.shortSha !== "5d022ced5504" ||
+    !upstream.docs?.canonicalSpine?.some((doc) => doc.path === "PROTOCOL.md") ||
+    !upstream.workspace?.crateGroups?.chainRuntime?.includes("nockchain")
+  ) {
+    throw new Error(
+      `Nockchain upstream intelligence: unexpected body ${JSON.stringify({
+        repository: upstream.repository,
+        latestCommit: upstream.latestCommit,
+        docs: upstream.docs?.canonicalSpine,
+        chainRuntime: upstream.workspace?.crateGroups?.chainRuntime
+      }).slice(0, 500)}`
     );
   }
 }
