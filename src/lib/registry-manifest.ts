@@ -35,6 +35,11 @@ export const registryEndpoints = [
     description: "Nockchain upstream intelligence"
   },
   {
+    id: "nockchain-docs-atlas",
+    path: "/api/nockchain/docs-atlas",
+    description: "Nockchain docs and protocol atlas"
+  },
+  {
     id: "zorp-upstream",
     path: "/api/nockchain/zorp",
     description: "Zorp/Nockchain upstream map"
@@ -249,6 +254,7 @@ export function createWellKnownRegistryManifest() {
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
       health: endpointUrl("health"),
       nockchainUpstream: endpointUrl("nockchain-upstream"),
+      nockchainDocsAtlas: endpointUrl("nockchain-docs-atlas"),
       zorpUpstream: endpointUrl("zorp-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
@@ -285,6 +291,7 @@ export function createWellKnownRegistryManifest() {
       "registry-checkpoints",
       "public-verification-index",
       "nockchain-upstream-intelligence",
+      "nockchain-docs-protocol-atlas",
       "zorp-nockchain-upstream-map",
       "nockchain-state-jam-provenance",
       "nockchain-rust-workspace-atlas",

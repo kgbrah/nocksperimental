@@ -47,6 +47,7 @@ async function main() {
     await expectStatus(`${baseUrl}/openapi.json`, 200, "OpenAPI spec");
     await expectStatus(`${baseUrl}/api/health`, 200, "health API");
     await expectNockchainUpstream(`${baseUrl}/api/nockchain/upstream`);
+    await expectStatus(`${baseUrl}/api/nockchain/docs-atlas`, 200, "Nockchain docs and protocol atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/zorp`, 200, "Zorp/Nockchain upstream map API");
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");

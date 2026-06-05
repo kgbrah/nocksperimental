@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
+import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -25,6 +26,7 @@ import {
 export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
+  const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
@@ -51,6 +53,7 @@ export function createRegistryCheckpoint() {
     scoreHistories: scoreHistorySummaries.length,
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
+    nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     stateJamSources: stateJamRegistry.sources.length
   };
@@ -76,6 +79,16 @@ export function createRegistryCheckpoint() {
       repositories: zorpUpstream.repositories,
       layers: zorpUpstream.layers,
       monitor: zorpUpstream.monitor
+    }),
+    nockchainDocsAtlas: createSha256Root({
+      scannedAt: nockchainDocsAtlas.scannedAt,
+      upstream: nockchainDocsAtlas.upstream,
+      trustContract: nockchainDocsAtlas.trustContract,
+      tier0: nockchainDocsAtlas.tier0,
+      tier1: nockchainDocsAtlas.tier1,
+      legacyOrExperimental: nockchainDocsAtlas.legacyOrExperimental,
+      protocolSpecs: nockchainDocsAtlas.protocolSpecs,
+      consistencyChecks: nockchainDocsAtlas.consistencyChecks
     }),
     stateJamRegistry: createSha256Root({
       generatedAt: stateJamRegistry.generatedAt,
@@ -107,6 +120,7 @@ export function createRegistryCheckpoint() {
         trustUpdateChainSummary.signedEntryCount === trustUpdateChainSummary.validSignatureCount,
       generatedReportsAvailable: generatedReports.totals.reportCount > 0,
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
+      nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainRustAtlasAvailable: nockchainRustAtlas.crates.length > 0,
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
@@ -166,6 +180,12 @@ export function createRegistryCheckpoint() {
         interval: zorpUpstream.monitor.interval
       }
     },
+    nockchainDocsAtlas: {
+      tier0Count: nockchainDocsAtlas.tier0.length,
+      tier1Count: nockchainDocsAtlas.tier1.length,
+      protocolSpecCount: nockchainDocsAtlas.protocolSpecs.specs.length,
+      consistencyAlerts: nockchainDocsAtlas.consistencyChecks.alerts.map((alert) => alert.id)
+    },
     nockchainRustAtlas: {
       crateCount: nockchainRustAtlas.crates.length,
       groupCount: nockchainRustAtlas.groups.length,
@@ -184,6 +204,7 @@ export function createRegistryCheckpoint() {
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
+      nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
