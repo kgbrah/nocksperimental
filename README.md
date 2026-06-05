@@ -110,6 +110,8 @@ The docs atlas publishes the canonical Nockchain read order, Tier 0/Tier 1 autho
 
 Use it when a protocol-sensitive receipt needs to cite which Nockchain doc or spec supports an activation height, consensus-critical flag, or runtime assumption.
 
+Shared Nockchain receipt provenance now embeds the docs atlas URL, Tier 0/Tier 1 source lists, selected protocol specs, and active doc consistency alerts so fakenet, VESL, and Nockup receipts can preserve upstream ambiguity in machine-readable form.
+
 ## Zorp/Nockchain Upstream Map
 
 The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos.

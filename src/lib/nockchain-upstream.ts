@@ -3,6 +3,7 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 
 export const nockchainUpstreamIntelligence = {
   version: "v0",
@@ -217,6 +218,11 @@ export const nockchainUpstreamIntelligence = {
       "nockchainCommit",
       "protocolTrack",
       "activationHeight",
+      "protocolSpec",
+      "protocolStatus",
+      "consensusCritical",
+      "docsAuthority",
+      "docConsistencyAlerts",
       "network",
       "stateJamFingerprint",
       "peerCount",
@@ -255,6 +261,11 @@ export type NockchainReceiptContext = {
 };
 
 export function createNockchainReceiptProvenance(context: NockchainReceiptContext) {
+  const docsAtlas = createNockchainDocsAtlas();
+  const previousSpec = docsAtlas.protocolSpecs.specs.find((spec) => spec.sequence === "012");
+  const nextSpec = docsAtlas.protocolSpecs.specs.find((spec) => spec.sequence === "013");
+  const latestConsensusCriticalSpec = docsAtlas.protocolSpecs.specs.find((spec) => spec.sequence === "014");
+
   return {
     source: "nockchain-upstream-intelligence",
     scannedAt: nockchainUpstreamIntelligence.scannedAt,
@@ -278,16 +289,31 @@ export function createNockchainReceiptProvenance(context: NockchainReceiptContex
       authority: nockchainUpstreamIntelligence.protocol.authority,
       draft: nockchainUpstreamIntelligence.protocol.currentTrack.draft,
       next: nockchainUpstreamIntelligence.protocol.currentTrack.next,
-      previous: nockchainUpstreamIntelligence.protocol.currentTrack.previous
+      previous: nockchainUpstreamIntelligence.protocol.currentTrack.previous,
+      specs: {
+        previous: previousSpec,
+        next: nextSpec,
+        latestConsensusCritical: latestConsensusCriticalSpec
+      },
+      consistencyAlerts: docsAtlas.consistencyChecks.alerts
     },
     docs: {
       policy: nockchainUpstreamIntelligence.docs.policy,
-      canonicalSources: nockchainUpstreamIntelligence.docs.canonicalSpine.map((source) => source.path)
+      canonicalSources: nockchainUpstreamIntelligence.docs.canonicalSpine.map((source) => source.path),
+      atlas: {
+        url: docsAtlas.canonicalUrl,
+        trustContract: docsAtlas.trustContract,
+        tier0Sources: docsAtlas.tier0.map((source) => source.path),
+        tier1Sources: docsAtlas.tier1.map((source) => source.path),
+        legacyOrExperimentalSources: docsAtlas.legacyOrExperimental.map((source) => source.path)
+      },
+      consistencyAlerts: docsAtlas.consistencyChecks.alerts
     },
     context: normalizeReceiptContext(context),
     watchItems: nockchainUpstreamIntelligence.watchItems,
     links: {
       upstream: nockchainUpstreamIntelligence.canonicalUrl,
+      docsAtlas: docsAtlas.canonicalUrl,
       repository: nockchainUpstreamIntelligence.links.repository,
       release: nockchainUpstreamIntelligence.links.release,
       research: nockchainUpstreamIntelligence.links.research
