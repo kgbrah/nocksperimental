@@ -59,6 +59,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/fakenet/support-bundle.md`, 200, "local fakenet support bundle markdown");
     await expectStatus(`${baseUrl}/api/fakenet/evidence`, 200, "local fakenet evidence capsule");
     await expectFakenetEvidenceSubmission(baseUrl);
+    await expectVeslEvidenceSubmission(baseUrl);
     await expectLocalFakenetEvidenceVerification(baseUrl);
     await expectStatus(`${baseUrl}/api/fakenet/runbook.sh`, 200, "local fakenet shell runbook");
     await expectStatus(`${baseUrl}/registry`, 200, "registry page");
@@ -362,6 +363,88 @@ async function expectFakenetEvidenceSubmission(baseUrl) {
   if (detailResponse.status !== 200 || detail.receiptId !== receipt.receiptId) {
     throw new Error(
       `fakenet evidence receipt detail: expected submitted receipt; got ${detailResponse.status} ${JSON.stringify(detail).slice(0, 500)}`
+    );
+  }
+}
+
+async function expectVeslEvidenceSubmission(baseUrl) {
+  const response = await fetch(`${baseUrl}/api/vesl/evidence/submit`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      connection: {
+        project: "vesl-smoke",
+        repo: "zkvesl/vesl-nockup",
+        template: "vesl",
+        settlementMode: "local",
+        chainEndpoint: "http://127.0.0.1:5555"
+      },
+      verifyJam: {
+        status: "fresh",
+        projectPath: ".",
+        outJam: "out.jam",
+        fingerprint: "sha256:vesl-smoke-fresh"
+      },
+      effects: [
+        {
+          id: "effect-settle-registered",
+          tag: "%settle-registered",
+          source: "vesl-test watch",
+          observedAt: "2026-06-05T15:00:00.000Z"
+        },
+        {
+          id: "effect-settle-noted",
+          tag: "%settle-noted",
+          source: "vesl-test watch",
+          observedAt: "2026-06-05T15:00:02.000Z"
+        }
+      ],
+      peeks: [
+        {
+          id: "peek-settle-registered",
+          path: "[%settle-registered 1 ~]",
+          status: "present",
+          source: "vesl-test inspect peek"
+        }
+      ],
+      hull: {
+        health: {
+          status: "ok"
+        }
+      }
+    })
+  });
+  const receipt = await response.json();
+
+  if (
+    response.status !== 200 ||
+    receipt.verified !== true ||
+    receipt.storage?.persisted !== true ||
+    !receipt.receiptId?.startsWith("vesl_submission_")
+  ) {
+    throw new Error(
+      `VESL evidence submission: expected verified receipt HTTP 200; got ${response.status} ${JSON.stringify(receipt).slice(0, 500)}`
+    );
+  }
+
+  const listResponse = await fetch(`${baseUrl}/api/vesl/evidence/receipts`);
+  const receiptList = await listResponse.json();
+  const indexedReceipt = receiptList.receipts?.find((candidate) => candidate.receiptId === receipt.receiptId);
+
+  if (listResponse.status !== 200 || !indexedReceipt) {
+    throw new Error(
+      `VESL evidence receipts: expected submitted receipt in index; got ${listResponse.status} ${JSON.stringify(receiptList).slice(0, 500)}`
+    );
+  }
+
+  const detailResponse = await fetch(`${baseUrl}/api/vesl/evidence/receipts/${receipt.receiptId}`);
+  const detail = await detailResponse.json();
+
+  if (detailResponse.status !== 200 || detail.receiptId !== receipt.receiptId) {
+    throw new Error(
+      `VESL evidence receipt detail: expected submitted receipt; got ${detailResponse.status} ${JSON.stringify(detail).slice(0, 500)}`
     );
   }
 }

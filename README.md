@@ -11,6 +11,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Fixture-driven NockApp lab runner with strict JSON schemas.
 - Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
+- VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
 - Public trust registry with verified badges, trust feed, registry checkpoint, signed trust updates, solver scorecards, token compatibility reports, and compute benchmark profiles.
@@ -89,6 +90,26 @@ curl https://nocksperimental.com/api/fakenet/evidence/submit \
 ```
 
 Submitted receipts can be read back through `GET /api/fakenet/evidence/receipts` and `GET /api/fakenet/evidence/receipts/{receiptId}`.
+
+## VESL Evidence Bridge
+
+The VESL evidence bridge accepts lifecycle evidence from `vesl-test`, `vesl-hull`, local settlement checks, or fakenet settlement probes and returns a persisted receipt suitable for sharing with collaborators.
+
+Public VESL bridge endpoints:
+
+- `/api/vesl/evidence/submit`
+- `/api/vesl/evidence/receipts`
+- `/api/vesl/evidence/receipts/[receiptId]`
+
+Submit a VESL evidence payload:
+
+```bash
+curl https://nocksperimental.com/api/vesl/evidence/submit \
+  -H "content-type: application/json" \
+  --data @vesl-evidence-submission.json
+```
+
+Receipts are persisted through the `NOCKS_VESL_RECEIPTS` Workers KV binding in production. The bridge intentionally records evidence summaries and provenance, not private keys, seed material, API tokens, or raw state-jam artifacts.
 
 ## Lab Runner
 
@@ -222,6 +243,7 @@ curl https://nocksperimental.com/.well-known/nocksperimental.json
 - `docs/trust-signals.md` documents trust registry primitives.
 - `docs/workspaces.md` covers private workspace evidence and upload-token flows.
 - `docs/deployment.md` covers Cloudflare deployment details.
+- `docs/research/zorp-nockchain.md` tracks Zorp/Nockchain repo and state-jam interpretation.
 
 ## Roadmap
 

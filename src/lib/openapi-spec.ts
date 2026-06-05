@@ -146,6 +146,12 @@ const fakenetEvidenceReceiptDetailEndpoint = {
   description: "Read persisted fakenet evidence receipt"
 };
 
+const veslEvidenceReceiptDetailEndpoint = {
+  id: "vesl-evidence-receipt-detail",
+  path: "/api/vesl/evidence/receipts/{receiptId}",
+  description: "Read persisted VESL evidence receipt"
+};
+
 export function createOpenApiSpec() {
   const endpoints = [
     wellKnownEndpoint,
@@ -168,7 +174,8 @@ export function createOpenApiSpec() {
     generatedReportVerifierEndpoint,
     generatedReportProvenanceEndpoint,
     generatedReportEvidenceEndpoint,
-    fakenetEvidenceReceiptDetailEndpoint
+    fakenetEvidenceReceiptDetailEndpoint,
+    veslEvidenceReceiptDetailEndpoint
   ];
 
   return {
@@ -198,7 +205,8 @@ export function createOpenApiSpec() {
 
       if (
         endpoint.path === "/api/fakenet/connect" ||
-        endpoint.path === "/api/fakenet/evidence/submit"
+        endpoint.path === "/api/fakenet/evidence/submit" ||
+        endpoint.path === "/api/vesl/evidence/submit"
       ) {
         paths[endpoint.path].post = {
           summary: endpoint.description,
@@ -209,7 +217,9 @@ export function createOpenApiSpec() {
             "400": {
               description: endpoint.path === "/api/fakenet/connect"
                 ? "Invalid fakenet connection profile"
-                : "Invalid fakenet evidence submission"
+                : endpoint.path === "/api/fakenet/evidence/submit"
+                  ? "Invalid fakenet evidence submission"
+                  : "Invalid VESL evidence submission"
             }
           }
         };

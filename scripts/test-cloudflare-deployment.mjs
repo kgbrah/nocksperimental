@@ -28,6 +28,7 @@ function main() {
   assertEqual(wrangler.assets.directory, ".open-next/assets", "Worker assets directory");
   assertEqual(wrangler.assets.binding, "ASSETS", "Worker assets binding");
   assertEqual(wrangler.kv_namespaces[0].binding, "NOCKS_FAKENET_RECEIPTS", "fakenet receipts KV binding");
+  assertEqual(wrangler.kv_namespaces[1].binding, "NOCKS_VESL_RECEIPTS", "VESL receipts KV binding");
   assertEqual(wrangler.routes[0].pattern, "nocksperimental.com", "production custom domain");
   assertEqual(wrangler.routes[0].custom_domain, true, "production custom domain flag");
   assertIncludes(wrangler.compatibility_flags, "nodejs_compat", "Node compatibility flag");
@@ -49,6 +50,8 @@ function main() {
   assertIncludes(smokeScript, "/fakenet", "Cloudflare smoke checks fakenet readiness page");
   assertIncludes(smokeScript, "/api/fakenet", "Cloudflare smoke checks fakenet readiness API");
   assertIncludes(smokeScript, "/api/fakenet/evidence/receipts", "Cloudflare smoke checks fakenet receipt persistence");
+  assertIncludes(smokeScript, "/api/vesl/evidence/submit", "Cloudflare smoke checks VESL evidence submit");
+  assertIncludes(smokeScript, "/api/vesl/evidence/receipts", "Cloudflare smoke checks VESL receipt persistence");
   assertIncludes(smokeScript, "/api/registry", "Cloudflare smoke checks registry manifest");
   assertIncludes(smokeScript, "/api/registry/checkpoint", "Cloudflare smoke checks registry checkpoint");
   assertIncludes(smokeScript, "/verify", "Cloudflare smoke checks verification page");
@@ -93,6 +96,8 @@ function main() {
   assertIncludes(deploymentDocs, "/api/fakenet", "deployment docs fakenet readiness endpoint");
   assertIncludes(deploymentDocs, "NOCKS_FAKENET_RECEIPTS", "deployment docs fakenet receipts KV binding");
   assertIncludes(deploymentDocs, "/api/fakenet/evidence/receipts", "deployment docs fakenet receipt persistence");
+  assertIncludes(deploymentDocs, "NOCKS_VESL_RECEIPTS", "deployment docs VESL receipts KV binding");
+  assertIncludes(deploymentDocs, "/api/vesl/evidence/receipts", "deployment docs VESL receipt persistence");
   assertIncludes(deploymentDocs, "/api/registry", "deployment docs registry endpoint");
   assertIncludes(deploymentDocs, "/api/registry/checkpoint", "deployment docs registry checkpoint");
   assertIncludes(deploymentDocs, "/verify", "deployment docs verification page");

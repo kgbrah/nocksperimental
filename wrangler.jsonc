@@ -16,6 +16,10 @@
     {
       "binding": "NOCKS_FAKENET_RECEIPTS",
       "id": "cbdaadccc1d54e4e84c197559a592230"
+    },
+    {
+      "binding": "NOCKS_VESL_RECEIPTS",
+      "id": "11a8ab977dd84b5fbee0bde2509ecc3c"
     }
   ],
   "rules": [

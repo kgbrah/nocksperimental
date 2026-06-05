@@ -53,6 +53,16 @@ export const registryEndpoints = [
     description: "List persisted fakenet evidence receipts"
   },
   {
+    id: "vesl-evidence-submit",
+    path: "/api/vesl/evidence/submit",
+    description: "Submit VESL lifecycle evidence"
+  },
+  {
+    id: "vesl-evidence-receipts",
+    path: "/api/vesl/evidence/receipts",
+    description: "List persisted VESL evidence receipts"
+  },
+  {
     id: "local-fakenet-evidence-verifier",
     path: "/api/fakenet/evidence/verify",
     description: "Local fakenet evidence verifier"
@@ -180,6 +190,8 @@ export function createWellKnownRegistryManifest() {
       fakenetEvidence: endpointUrl("local-fakenet-evidence"),
       fakenetEvidenceSubmit: endpointUrl("fakenet-evidence-submit"),
       fakenetEvidenceReceipts: endpointUrl("fakenet-evidence-receipts"),
+      veslEvidenceSubmit: endpointUrl("vesl-evidence-submit"),
+      veslEvidenceReceipts: endpointUrl("vesl-evidence-receipts"),
       fakenetEvidenceVerifier: endpointUrl("local-fakenet-evidence-verifier"),
       fakenetCommands: endpointUrl("local-fakenet-commands"),
       fakenetDiagnostics: endpointUrl("local-fakenet-diagnostics"),
@@ -204,6 +216,8 @@ export function createWellKnownRegistryManifest() {
       "local-fakenet-evidence",
       "fakenet-evidence-submit",
       "fakenet-evidence-receipts",
+      "vesl-evidence-bridge",
+      "vesl-evidence-receipts",
       "local-fakenet-evidence-verifier",
       "local-fakenet-command-kit",
       "local-fakenet-diagnostics",

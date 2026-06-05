@@ -20,7 +20,7 @@ export type AppProfile = {
 };
 
 export type LabEnvironment = {
-  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet";
+  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "vesl-local" | "vesl-fakenet";
   grpcEndpoint: string;
   fakenetCommand: string;
   balanceCheck?: LocalFakenetBalanceCheck;
