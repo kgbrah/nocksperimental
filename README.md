@@ -118,8 +118,11 @@ Shared Nockchain receipt provenance now embeds the docs atlas URL, Tier 0/Tier 1
 The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos.
 
 - `/api/nockchain/zorp`
+- `/nockchain/zorp`
 
 Use it when interpreting whether a source is current protocol authority, historical lineage, state-jam provenance, or future product signal for Nocksperimental receipts.
+
+The Zorp intelligence page renders the same map as an operator brief: priority repos, lineage risk flags, state-jam metadata boundaries, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 ## Nockchain State-Jam Provenance
 

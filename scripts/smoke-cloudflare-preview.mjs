@@ -73,6 +73,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/registry`, 200, "registry manifest API");
     await expectStatus(`${baseUrl}/api/registry/checkpoint`, 200, "registry checkpoint API");
     await expectStatus(`${baseUrl}/nockchain`, 200, "Nockchain evidence page");
+    await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
     await expectStatus(`${baseUrl}/workspaces`, 200, "workspaces page");

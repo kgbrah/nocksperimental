@@ -214,6 +214,42 @@ const zorpLayers = [
   }
 ] as const;
 
+const zorpMonitorBrief = {
+  generatedAt: "2026-06-05T23:58:00.000Z",
+  snapshot: {
+    publicRepoCount: zorpRepositories.length,
+    activeCoreRepos: zorpRepositories.filter(
+      (repo) => repo.primarySignal === "language-authoring" && !repo.archived
+    ).length,
+    archivedLineageRepos: zorpRepositories.filter(
+      (repo) => ["nockapp-lineage", "runtime-lineage"].includes(repo.primarySignal) && repo.archived
+    ).length,
+    latestOrgUpdateAt: zorpRepositories
+      .map((repo) => repo.updatedAt)
+      .sort()
+      .at(-1)
+  },
+  priorityRepos: [
+    "nockchain/nockchain",
+    "zorp-corp/jock-lang",
+    "zorp-corp/nockapp",
+    "zorp-corp/sword"
+  ],
+  riskFlags: [
+    "legacy-repos-are-lineage-not-authority",
+    "state-jam-folder-is-metadata-only",
+    "forked-tooling-is-low-signal-until-used-by-nockchain"
+  ],
+  operatorActions: [
+    "Promote Nockchain release, protocol-doc, fakenet, PMA, wallet, or libp2p changes into receipt fields before relying on test output.",
+    "Treat zorp-corp/jock-lang changes as fixture-authoring signals and zorp-corp/nockapp or zorp-corp/sword changes as historical context.",
+    "Inventory Drive state-jam artifacts by source URL, filename, size, hash, network, height or event boundary, and producing Nockchain build before trusting them.",
+    "Escalate new Zorp repos only when they affect Nock authoring, NockApp fixture generation, PMA/state, proofs, or Nockchain operations."
+  ],
+  interpretation:
+    "Zorp is useful as Nockchain lineage, language-authoring signal, and state-artifact provenance. Current protocol and operational authority stays with nockchain/nockchain and its Tier 0 docs."
+} as const;
+
 export function createZorpUpstreamMap() {
   const nockchain = nockchainUpstreamIntelligence;
 
@@ -276,6 +312,7 @@ export function createZorpUpstreamMap() {
         "new or renamed state-jam artifacts in the Drive folder"
       ]
     },
+    monitorBrief: zorpMonitorBrief,
     nocksperimentalImplications: {
       receiptFields: [
         "zorpSource",
@@ -299,6 +336,7 @@ export function createZorpUpstreamMap() {
       rustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       registry: `${registryCanonicalBaseUrl}/api/registry`,
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
+      zorpIntelligence: `${registryCanonicalBaseUrl}/nockchain/zorp`,
       research: `${registryCanonicalBaseUrl}/docs/research/zorp-nockchain.md`
     }
   };
