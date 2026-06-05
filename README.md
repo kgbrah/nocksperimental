@@ -19,6 +19,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
+- Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
 - Public trust registry with verified badges, trust feed, registry checkpoint, signed trust updates, solver scorecards, token compatibility reports, and compute benchmark profiles.
@@ -277,6 +278,7 @@ Current verifier families:
 - badge issuance: `/api/trust/badges/verify`
 - generated reports: `/api/reports/generated/verify`
 - local fakenet evidence: `/api/fakenet/evidence/verify`
+- Launch Evidence: `/api/launch-evidence/verify`
 - workspace evidence: `/api/workspaces/evidence/verify`
 - workspace upload tokens: `/api/workspaces/upload-token/verify`
 - trust updates: `/api/trust/updates/verify`
@@ -292,6 +294,27 @@ Registry and discovery endpoints:
 - `/api/trust/updates`
 - `/openapi.json`
 - `/.well-known/nocksperimental.json`
+
+## Launch Evidence
+
+Launch Evidence is the first paid Nocksperimental product lane for NockApp builders and auditors. It aggregates lab reports, fakenet evidence, VESL lifecycle receipts, workspace uploads, and future nockup/state-export evidence into launch-readiness cases.
+
+Public Launch Evidence surfaces:
+
+- `/launch-evidence`
+- `/launch-evidence/[caseId]`
+- `/api/launch-evidence`
+- `/api/launch-evidence/[caseId]`
+- `/api/launch-evidence/verify`
+
+Verify the bundled VESL demo launch case:
+
+```bash
+curl -G https://nocksperimental.com/api/launch-evidence/verify \
+  --data-urlencode caseId=case-vesl-demo-launch-001 \
+  --data-urlencode reportHash=sha256:launch-vesl-demo-001 \
+  --data-urlencode snapshotRoot=launch-vesl-demo-root-001
+```
 
 ## Workspaces
 
@@ -333,6 +356,8 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
 - `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
 - `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
+- `npm run verify:launch-evidence` checks Launch Evidence routes, registry discovery, manifests, and verifier behavior.
+- `npm run test:launch-evidence-api` and `npm run test:launch-evidence-pages` run the focused Launch Evidence API and page suites.
 - `npm run test:x402` runs the x402 metered-trust-API suite (config, verifier, meter cycle, facilitator mode, gating, discovery).
 - `npm run smoke:cloudflare` validates the OpenNext Cloudflare preview bundle.
 - `npm run deploy` builds and deploys to Cloudflare Workers through OpenNext.
