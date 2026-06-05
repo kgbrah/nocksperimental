@@ -7,6 +7,8 @@ type VerificationRequestBody = {
   snapshotRoot?: unknown;
 };
 
+type LaunchEvidenceVerification = ReturnType<typeof verifyLaunchEvidenceReport>;
+
 export function GET(request: Request) {
   const url = new URL(request.url);
   const verification = verifyLaunchEvidenceReport({
@@ -58,7 +60,7 @@ async function parseVerificationRequestBody(
   return { ok: true, value: body };
 }
 
-function redactPrivateVerification<T extends { caseId?: string | null; verified: boolean }>(verification: T): T {
+function redactPrivateVerification(verification: LaunchEvidenceVerification) {
   const launchCase = verification.caseId ? launchEvidenceCaseForId(verification.caseId) : null;
 
   if (launchCase?.visibility !== "private") {
@@ -66,13 +68,16 @@ function redactPrivateVerification<T extends { caseId?: string | null; verified:
   }
 
   return {
-    ...verification,
+    version: verification.version,
+    service: verification.service,
+    subject: verification.subject,
+    canonicalUrl: verification.canonicalUrl,
     verified: false,
-    reportSlug: null,
-    report: null,
-    links: {
-      case: null,
-      api: null
+    checks: {
+      caseMatched: false,
+      reportHashMatched: false,
+      snapshotRootMatched: false,
+      publicOrShared: false
     }
   };
 }
