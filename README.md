@@ -222,7 +222,7 @@ npm run deploy
 From Windows PowerShell, launch the WSL deploy pipeline so OpenNext bundles the app correctly:
 
 ```powershell
-wsl -d Ubuntu-22.04 --cd /home/kgbrah/nocklab/nocksperimental -- bash -lc 'env PATH=/home/kgbrah/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin npm run deploy'
+wsl -d Ubuntu-24.04 --cd /home/kg3333333/nocklab/nocksperimental -- bash -lc 'env PATH=/home/kg3333333/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin npm run deploy'
 ```
 
 Post-deploy smoke checks:
