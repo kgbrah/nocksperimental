@@ -126,6 +126,16 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
 
+## Nockup Validation Receipts
+
+The Nockup validation API accepts scaffold/build/run evidence for NockApp projects created with upstream `nockup`. It records project and template identity, install path, command transcript hashes, hashed artifacts, optional fakenet context, Nockchain commit/release provenance, and active Nockup watch themes without storing raw chain state or secrets.
+
+- `/api/nockchain/nockup/submit`
+- `/api/nockchain/nockup/receipts`
+- `/api/nockchain/nockup/receipts/[receiptId]`
+
+Persisted Nockup validation receipts use the `NOCKS_NOCKUP_RECEIPTS` Workers KV binding in production. Use this when a scaffolded NockApp needs a shareable receipt showing which template was used, which commands passed, which artifacts were produced, and which Nockchain build context supported the test.
+
 ## VESL Evidence Bridge
 
 The VESL evidence bridge accepts lifecycle evidence from `vesl-test`, `vesl-hull`, local settlement checks, or fakenet settlement probes and returns a persisted receipt suitable for sharing with collaborators.
