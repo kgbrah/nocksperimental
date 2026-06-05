@@ -4,6 +4,7 @@ import {
   scoreHistorySummaryForSignal
 } from "@/lib/trust-score-history";
 import { tokenCompatibilityReports } from "@/lib/trust-signals";
+import { guard } from "@/lib/x402/meter";
 
 type TokenCompatibilityRouteContext = {
   params: Promise<{
@@ -11,7 +12,12 @@ type TokenCompatibilityRouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, { params }: TokenCompatibilityRouteContext) {
+export async function GET(request: Request, { params }: TokenCompatibilityRouteContext) {
+  const gate = await guard(request, "token-compatibility-detail");
+  if (gate.blocked) {
+    return gate.response;
+  }
+
   const { reportId } = await params;
   const report = tokenCompatibilityReports.find((candidate) => candidate.id === reportId);
 
@@ -34,5 +40,5 @@ export async function GET(_request: Request, { params }: TokenCompatibilityRoute
       generatedReport: `/reports/generated/${report.reportSlug}`,
       evidence: `/api/reports/generated/${report.reportSlug}/evidence`
     }
-  });
+  }, { headers: gate.headers });
 }

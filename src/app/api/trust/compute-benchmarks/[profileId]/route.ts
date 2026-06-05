@@ -4,6 +4,7 @@ import {
   scoreHistorySummaryForSignal
 } from "@/lib/trust-score-history";
 import { computeBenchmarkProfiles } from "@/lib/trust-signals";
+import { guard } from "@/lib/x402/meter";
 
 type ComputeBenchmarkRouteContext = {
   params: Promise<{
@@ -11,7 +12,12 @@ type ComputeBenchmarkRouteContext = {
   }>;
 };
 
-export async function GET(_request: Request, { params }: ComputeBenchmarkRouteContext) {
+export async function GET(request: Request, { params }: ComputeBenchmarkRouteContext) {
+  const gate = await guard(request, "compute-benchmark-detail");
+  if (gate.blocked) {
+    return gate.response;
+  }
+
   const { profileId } = await params;
   const profile = computeBenchmarkProfiles.find((candidate) => candidate.id === profileId);
 
@@ -34,5 +40,5 @@ export async function GET(_request: Request, { params }: ComputeBenchmarkRouteCo
       generatedReport: `/reports/generated/${profile.benchmarkReportSlug}`,
       evidence: `/api/reports/generated/${profile.benchmarkReportSlug}/evidence`
     }
-  });
+  }, { headers: gate.headers });
 }

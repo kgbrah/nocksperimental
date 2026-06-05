@@ -251,8 +251,25 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
 - `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
 - `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
+- `npm run test:x402` runs the x402 metered-trust-API suite (config, verifier, meter cycle, facilitator mode, gating, discovery).
 - `npm run smoke:cloudflare` validates the OpenNext Cloudflare preview bundle.
 - `npm run deploy` builds and deploys to Cloudflare Workers through OpenNext.
+
+## x402 Metered Trust API
+
+Nocksperimental can meter its verification/trust endpoints with the
+[x402](https://github.com/coinbase/x402) agentic-payments protocol (settled on
+Nockchain via VESL's [`x402-nockchain`](https://github.com/zkvesl/x402-nockchain)),
+paying revenue to the project wallet. Producing evidence stays free; consuming
+verification at scale is paid in micro-`$NOCK`.
+
+- **Off by default** (`NOCKS_X402_ENABLED`) — routes behave normally until you flip it on.
+- A **stub verifier** ships now; set `NOCKS_X402_FACILITATOR_URL` to settle on-chain — no route changes.
+- Metered: the deep verifiers (`/api/trust/badges/verify`, `/api/reports/generated/verify`,
+  `/api/fakenet/evidence/verify`, `/api/workspaces/evidence/verify`) and premium reads
+  (`/api/trust/compute-benchmarks/[id]`, `/api/trust/token-compatibility/[id]`). Submits and lists stay free.
+- Advertised at `/.well-known/nocksperimental.json` (`x402` block) and `/openapi.json` (402 responses).
+- Tests: `npm run test:x402`. Full guide: [docs/x402.md](docs/x402.md).
 
 ## Deployment
 
