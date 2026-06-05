@@ -48,6 +48,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/health`, 200, "health API");
     await expectNockchainUpstream(`${baseUrl}/api/nockchain/upstream`);
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
+    await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
     await expectStatus(

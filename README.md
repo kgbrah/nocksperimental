@@ -13,6 +13,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
+- Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
@@ -108,6 +109,14 @@ The state-jam provenance endpoint tracks metadata requirements and watched sourc
 - `/api/nockchain/state-jams`
 
 Use it when a fakenet receipt or bootstrap workflow needs to explain which state-jam source was considered, what provenance is still missing, and which Nockchain build/protocol context should be attached before trusting the artifact.
+
+## Nockchain Rust Workspace Atlas
+
+The Rust workspace atlas breaks the upstream Nockchain monorepo into crate groups with roles, primary cargo checks, risk posture, and Nocksperimental integration uses. It highlights chain runtime, operator tools, NockApp runtime, Hoon/nockup scaffolding, bridge/proof, and serialization support crates.
+
+- `/api/nockchain/rust-atlas`
+
+Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
 
 ## VESL Evidence Bridge
 

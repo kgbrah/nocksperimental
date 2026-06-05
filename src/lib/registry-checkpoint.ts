@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
+import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import {
   registryCanonicalBaseUrl,
@@ -23,6 +24,7 @@ import {
 export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
+  const nockchainRustAtlas = createNockchainRustAtlas();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
     appSlug: report.appSlug,
@@ -46,6 +48,7 @@ export function createRegistryCheckpoint() {
     computeBenchmarkProfiles: computeBenchmarkProfiles.length,
     scoreHistories: scoreHistorySummaries.length,
     trustConsumers: trustSignals.trustConsumers.length,
+    nockchainRustCrates: nockchainRustAtlas.crates.length,
     stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
@@ -69,6 +72,14 @@ export function createRegistryCheckpoint() {
       sources: stateJamRegistry.sources,
       upstream: stateJamRegistry.upstream
     }),
+    nockchainRustAtlas: createSha256Root({
+      scannedAt: nockchainRustAtlas.scannedAt,
+      upstream: nockchainRustAtlas.upstream,
+      workspace: nockchainRustAtlas.workspace,
+      groups: nockchainRustAtlas.groups,
+      crates: nockchainRustAtlas.crates,
+      watchThemes: nockchainRustAtlas.watchThemes
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -84,6 +95,7 @@ export function createRegistryCheckpoint() {
         trustUpdateChainSummary.signedEntryCount === trustUpdateChainSummary.validSignatureCount,
       generatedReportsAvailable: generatedReports.totals.reportCount > 0,
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
+      nockchainRustAtlasAvailable: nockchainRustAtlas.crates.length > 0,
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -127,6 +139,12 @@ export function createRegistryCheckpoint() {
         artifactPolicy: source.artifactPolicy
       }))
     },
+    nockchainRustAtlas: {
+      crateCount: nockchainRustAtlas.crates.length,
+      groupCount: nockchainRustAtlas.groups.length,
+      validationGates: nockchainRustAtlas.workspace.validationGates,
+      watchThemes: nockchainRustAtlas.watchThemes
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -138,6 +156,7 @@ export function createRegistryCheckpoint() {
       trustFeed: `${registryCanonicalBaseUrl}/api/trust/feed`,
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
+      nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`

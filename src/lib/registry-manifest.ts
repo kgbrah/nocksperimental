@@ -38,6 +38,11 @@ export const registryEndpoints = [
     description: "Nockchain state-jam provenance registry"
   },
   {
+    id: "nockchain-rust-atlas",
+    path: "/api/nockchain/rust-atlas",
+    description: "Nockchain Rust workspace atlas"
+  },
+  {
     id: "local-fakenet-readiness",
     path: "/api/fakenet",
     description: "Local fakenet readiness summary"
@@ -195,6 +200,7 @@ export function createWellKnownRegistryManifest() {
       health: endpointUrl("health"),
       nockchainUpstream: endpointUrl("nockchain-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
+      nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
@@ -226,6 +232,7 @@ export function createWellKnownRegistryManifest() {
       "public-verification-index",
       "nockchain-upstream-intelligence",
       "nockchain-state-jam-provenance",
+      "nockchain-rust-workspace-atlas",
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",
