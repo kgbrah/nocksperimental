@@ -244,6 +244,7 @@ curl https://nocksperimental.com/.well-known/nocksperimental.json
 - `docs/workspaces.md` covers private workspace evidence and upload-token flows.
 - `docs/deployment.md` covers Cloudflare deployment details.
 - `docs/research/zorp-nockchain.md` tracks Zorp/Nockchain repo and state-jam interpretation.
+- `docs/research/nockchain-rust-architecture.md` tracks Nockchain's Rust workspace, docs authority model, and Nocksperimental product implications.
 
 ## Roadmap
 
