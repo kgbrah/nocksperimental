@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.com/schemas/nockapp-launch-evidence.schema.json",
+  "title": "Nocksperimental Launch Evidence Registry",
+  "type": "object",
+  "required": ["version", "cases", "submissions", "reports"],
+  "properties": {
+    "version": { "type": "string" },
+    "cases": { "type": "array", "items": { "$ref": "#/$defs/case" } },
+    "submissions": { "type": "array", "items": { "$ref": "#/$defs/submission" } },
+    "reports": { "type": "array", "items": { "$ref": "#/$defs/report" } }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId"],
+      "properties": {
+        "caseId": { "type": "string" },
+        "workspaceSlug": { "type": "string" },
+        "subjectSlug": { "type": "string" },
+        "subjectName": { "type": "string" },
+        "subjectType": { "enum": ["nockapp", "template", "token", "bridge", "operator", "other"] },
+        "customerLane": { "enum": ["builder-auditor", "operator", "integrator"] },
+        "status": { "enum": ["draft", "submitted", "reviewing", "verified", "watch", "blocked", "closed"] },
+        "visibility": { "enum": ["private", "shared-link", "public"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "requestedBy": { "type": "string" },
+        "payment": {
+          "type": "object",
+          "required": ["status", "rail", "amount", "currency"],
+          "properties": {
+            "status": { "enum": ["prospective", "quoted", "invoiced", "paid", "waived"] },
+            "rail": { "enum": ["manual", "usd", "nock", "x402", "none"] },
+            "amount": { "type": ["number", "null"] },
+            "currency": { "type": ["string", "null"] },
+            "reference": { "type": ["string", "null"] }
+          }
+        },
+        "evidenceIds": { "type": "array", "items": { "type": "string" } },
+        "reportSlug": { "type": "string" },
+        "badgeId": { "type": ["string", "null"] }
+      }
+    },
+    "submission": {
+      "type": "object",
+      "required": ["evidenceId", "caseId", "sourceKind", "submittedAt", "submittedBy", "status", "reportHash", "snapshotRoot", "receiptId", "redactionSummary"],
+      "properties": {
+        "evidenceId": { "type": "string" },
+        "caseId": { "type": "string" },
+        "sourceKind": { "enum": ["lab", "fakenet", "vesl", "workspace-upload", "nockup", "state-export", "manual"] },
+        "sourceUrl": { "type": ["string", "null"] },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "submittedBy": { "type": "string" },
+        "status": { "enum": ["accepted", "attention", "rejected", "verified"] },
+        "reportHash": { "type": "string" },
+        "snapshotRoot": { "type": "string" },
+        "receiptId": { "type": ["string", "null"] },
+        "redactionSummary": { "type": "string" }
+      }
+    },
+    "report": {
+      "type": "object",
+      "required": ["reportSlug", "caseId", "summaryStatus", "score", "requiredChecks", "recommendedChecks", "evidenceSummary", "reviewerNotes", "publicSummary", "generatedAt", "reportHash", "snapshotRoot"],
+      "properties": {
+        "reportSlug": { "type": "string" },
+        "caseId": { "type": "string" },
+        "summaryStatus": { "enum": ["verified", "watch", "blocked"] },
+        "score": { "type": "number" },
+        "requiredChecks": { "type": "array", "items": { "$ref": "#/$defs/check" } },
+        "recommendedChecks": { "type": "array", "items": { "$ref": "#/$defs/check" } },
+        "evidenceSummary": { "type": "string" },
+        "reviewerNotes": { "type": "string" },
+        "publicSummary": { "type": "string" },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "reportHash": { "type": "string" },
+        "snapshotRoot": { "type": "string" }
+      }
+    },
+    "check": {
+      "type": "object",
+      "required": ["id", "label", "status", "summary"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "status": { "enum": ["pass", "warn", "fail"] },
+        "summary": { "type": "string" }
+      }
+    }
+  }
+}
