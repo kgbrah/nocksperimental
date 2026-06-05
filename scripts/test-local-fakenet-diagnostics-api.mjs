@@ -20,6 +20,7 @@ async function main() {
   const { GET } = loadTypeScriptModule("src/app/api/fakenet/diagnostics/route.ts");
   const readyRoot = await createDiagnosticsRoot("ready");
   const blockedRoot = await createDiagnosticsRoot("blocked");
+  const peerFaultRoot = await createDiagnosticsRoot("peer-fault");
   const missingRoot = await mkdtemp(path.join(tmpdir(), "nocklab-fakenet-diagnostics-missing-"));
   const originalCwd = process.cwd();
 
@@ -61,6 +62,49 @@ async function main() {
     assertEqual(readyBody.activeCount, 0, "ready active count");
     assertEqual(readyBody.diagnostics[0].id, "local-fakenet-ready", "ready diagnostic id");
     assertEqual(readyBody.diagnostics[0].severity, "info", "ready diagnostic severity");
+
+    process.chdir(peerFaultRoot);
+    const peerFaultResponse = await GET();
+    const peerFaultBody = await peerFaultResponse.json();
+
+    assertEqual(peerFaultResponse.status, 200, "peer fault response status");
+    assertEqual(peerFaultBody.readiness.status, "blocked", "peer fault readiness status");
+    assertEqual(peerFaultBody.activeCount, 2, "peer fault active count");
+    assertDiagnostic(peerFaultBody, "no-connected-peers", "warning", "npm run lab:local:chain");
+    assertDiagnostic(peerFaultBody, "block-commitment-mismatch", "blocker", "npm run lab:local:chain");
+    assertEqual(
+      peerFaultBody.nockchainTriage.upstream.commit.shortSha,
+      "5d022ced5504",
+      "peer fault upstream commit"
+    );
+    assertEqual(
+      peerFaultBody.nockchainTriage.upstream.protocol.next.codename,
+      "Nous",
+      "peer fault protocol context"
+    );
+    assertIncludes(
+      peerFaultBody.nockchainTriage.upstream.latestSignal,
+      "suppress all outgoing gossip while catching up",
+      "peer fault gossip suppression signal"
+    );
+    assertTriageIssue(peerFaultBody, "empty-routing-table", "observed");
+    assertTriageIssue(peerFaultBody, "no-connected-peers", "observed");
+    assertTriageIssue(peerFaultBody, "wrong-block-commitment", "observed");
+    assertIncludes(
+      peerFaultBody.nockchainTriage.operatorChecks.join("\n"),
+      "Confirm the node is caught up to the fakenet tip before mining",
+      "peer fault sync operator check"
+    );
+    assertIncludes(
+      peerFaultBody.nockchainTriage.stateArtifactSafety.metadataToTrack.join("\n"),
+      "source URL or Drive folder id",
+      "peer fault state artifact provenance"
+    );
+    assertEqual(
+      peerFaultBody.nockchainTriage.links.upstream,
+      "https://nocksperimental.com/api/nockchain/upstream",
+      "peer fault upstream link"
+    );
 
     process.chdir(missingRoot);
     const missingResponse = await GET();
@@ -175,14 +219,18 @@ async function createDiagnosticsRoot(mode) {
     }
   }));
 
-  if (mode === "ready") {
+  if (mode === "ready" || mode === "peer-fault") {
+    const chainFailed = mode === "peer-fault";
+
     await writeReport(path.join(reportDir, "local-fakenet-chain.report.json"), createReport({
       appSlug: "local-fakenet-chain",
       appName: "Local Fakenet Chain",
       fixtureId: "local-fakenet-chain-v0",
       generatedAt: "2026-06-04T10:02:00.000Z",
-      status: "pass",
-      observed: "local-fakenet chain height 128 with 3 peers",
+      status: chainFailed ? "fail" : "pass",
+      observed: chainFailed
+        ? "routing table is empty; no connected peers; wrong block commitment expected 0xexpected got 0xactual"
+        : "local-fakenet chain height 128 with 3 peers",
       adapter: {
         kind: "local-fakenet",
         grpcEndpoint: "127.0.0.1:5555",
@@ -190,13 +238,16 @@ async function createDiagnosticsRoot(mode) {
         latencyMs: 6,
         checkedAt: "2026-06-04T10:02:00.010Z",
         chain: {
-          status: "pass",
+          status: chainFailed ? "fail" : "pass",
           height: 128,
-          peerCount: 3,
+          peerCount: chainFailed ? 0 : 3,
           blockId: "block-001",
-          blockCommitment: "0xabc123def456",
-          raw: "height: 128\nconnected peers: 3\nblock commitment: 0xabc123def456",
-          checkedAt: "2026-06-04T10:02:00.020Z"
+          blockCommitment: chainFailed ? "0xactual" : "0xabc123def456",
+          raw: chainFailed
+            ? "height: 128\nrouting table is empty\nconnected peers: 0\nwrong block commitment expected 0xexpected got 0xactual"
+            : "height: 128\nconnected peers: 3\nblock commitment: 0xabc123def456",
+          checkedAt: "2026-06-04T10:02:00.020Z",
+          ...(chainFailed ? { error: "routing table is empty; no connected peers; wrong block commitment" } : {})
         }
       }
     }));
@@ -351,6 +402,17 @@ function assertDiagnostic(body, id, severity, command) {
 
   assertEqual(diagnostic.severity, severity, `${id} severity`);
   assertEqual(diagnostic.command, command, `${id} command`);
+}
+
+function assertTriageIssue(body, id, status) {
+  const issue = body.nockchainTriage.issues.find((candidate) => candidate.id === id);
+
+  if (!issue) {
+    throw new Error(`Missing Nockchain triage issue: ${id}`);
+  }
+
+  assertEqual(issue.status, status, `${id} triage status`);
+  assertIncludes(issue.checks.join("\n"), "fakenet", `${id} triage checks mention fakenet`);
 }
 
 function assertEndpoint(registryBody, id, pathName, description) {
