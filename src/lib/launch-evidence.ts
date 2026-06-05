@@ -209,8 +209,12 @@ export function verifyLaunchEvidenceReport(input: LaunchEvidenceVerificationInpu
         }
       : null,
     links: {
-      case: resolvedCase ? `${registryCanonicalBaseUrl}/launch-evidence/${resolvedCase.caseId}` : null,
-      api: resolvedCase ? `${registryCanonicalBaseUrl}/api/launch-evidence/${resolvedCase.caseId}` : null
+      case: resolvedCase
+        ? `${registryCanonicalBaseUrl}/launch-evidence/${encodePathSegment(resolvedCase.caseId)}`
+        : null,
+      api: resolvedCase
+        ? `${registryCanonicalBaseUrl}/api/launch-evidence/${encodePathSegment(resolvedCase.caseId)}`
+        : null
     }
   };
 }
@@ -247,16 +251,20 @@ function resolveLaunchEvidenceCase(entry: LaunchEvidenceCase): ResolvedLaunchEvi
     submissions,
     report,
     links: {
-      api: `/api/launch-evidence/${entry.caseId}`,
-      page: `/launch-evidence/${entry.caseId}`,
+      api: `/api/launch-evidence/${encodePathSegment(entry.caseId)}`,
+      page: `/launch-evidence/${encodePathSegment(entry.caseId)}`,
       verifier:
         `/api/launch-evidence/verify?caseId=${encodeURIComponent(entry.caseId)}` +
         `&reportHash=${encodeURIComponent(report.reportHash)}` +
         `&snapshotRoot=${encodeURIComponent(report.snapshotRoot)}`,
-      workspace: workspace ? `/workspaces/${workspace.slug}` : null,
-      badge: entry.badgeId ? `/trust/badges/${entry.badgeId}` : null
+      workspace: workspace ? `/workspaces/${encodePathSegment(workspace.slug)}` : null,
+      badge: entry.badgeId ? `/trust/badges/${encodePathSegment(entry.badgeId)}` : null
     }
   };
+}
+
+function encodePathSegment(value: string) {
+  return encodeURIComponent(value);
 }
 
 function normalizeInput(value?: string | null) {
