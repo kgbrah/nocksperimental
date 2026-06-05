@@ -138,6 +138,15 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
 
+## Nockchain Operations Atlas
+
+The operations atlas turns current upstream scripts and local diagnostics into a practical Nockchain runbook for fakenet, mining, peer discovery, block commitments, wallet checks, and PMA/state-jam safety. It keeps wrong-commitment, empty-routing-table, no-peers, behind-tip gossip suppression, gRPC, wallet, and state-artifact scenarios tied to Nockchain build/release provenance.
+
+- `/nockchain/operations`
+- `/api/nockchain/operations`
+
+Use it when deciding whether a fakenet symptom is a sync, peer, state-artifact, wallet, or command-source problem before treating a test failure as meaningful.
+
 ## Nockup Validation Receipts
 
 The Nockup validation API accepts scaffold/build/run evidence for NockApp projects created with upstream `nockup`. It records project and template identity, install path, command transcript hashes, hashed artifacts, optional fakenet context, Nockchain commit/release provenance, and active Nockup watch themes without storing raw chain state or secrets.

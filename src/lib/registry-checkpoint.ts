@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
+import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -28,6 +29,7 @@ export function createRegistryCheckpoint() {
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainRustAtlas = createNockchainRustAtlas();
+  const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
@@ -55,6 +57,7 @@ export function createRegistryCheckpoint() {
     zorpRepositories: zorpUpstream.repositories.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
+    nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
@@ -105,6 +108,14 @@ export function createRegistryCheckpoint() {
       crates: nockchainRustAtlas.crates,
       watchThemes: nockchainRustAtlas.watchThemes
     }),
+    nockchainOperationsAtlas: createSha256Root({
+      generatedAt: nockchainOperationsAtlas.generatedAt,
+      upstream: nockchainOperationsAtlas.upstream,
+      scriptSources: nockchainOperationsAtlas.scriptSources,
+      triageScenarios: nockchainOperationsAtlas.triageScenarios,
+      operatorChecklist: nockchainOperationsAtlas.operatorChecklist,
+      stateArtifactSafety: nockchainOperationsAtlas.stateArtifactSafety
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -122,6 +133,9 @@ export function createRegistryCheckpoint() {
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainRustAtlasAvailable: nockchainRustAtlas.crates.length > 0,
+      nockchainOperationsAtlasAvailable:
+        nockchainOperationsAtlas.triageScenarios.length > 0 &&
+        nockchainOperationsAtlas.scriptSources.length > 0,
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -192,6 +206,12 @@ export function createRegistryCheckpoint() {
       validationGates: nockchainRustAtlas.workspace.validationGates,
       watchThemes: nockchainRustAtlas.watchThemes
     },
+    nockchainOperationsAtlas: {
+      scenarioCount: nockchainOperationsAtlas.triageScenarios.length,
+      scriptSourceCount: nockchainOperationsAtlas.scriptSources.length,
+      scenarioIds: nockchainOperationsAtlas.triageScenarios.map((scenario) => scenario.id),
+      scriptSourceIds: nockchainOperationsAtlas.scriptSources.map((script) => script.id)
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -206,6 +226,7 @@ export function createRegistryCheckpoint() {
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
+      nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`

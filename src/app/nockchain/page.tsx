@@ -8,7 +8,8 @@ import {
   Layers3,
   Database,
   ShieldAlert,
-  ShieldCheck
+  ShieldCheck,
+  Terminal
 } from "lucide-react";
 import Link from "next/link";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
@@ -98,6 +99,13 @@ export default function NockchainEvidencePage() {
               >
                 <Layers3 size={16} aria-hidden="true" />
                 Rust Atlas
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/operations"
+              >
+                <Terminal size={16} aria-hidden="true" />
+                Operations
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
