@@ -25,6 +25,9 @@ pnpm-debug.log*
 # local code intelligence index
 .codegraph/
 
+# local implementation worktrees
+.worktrees/
+
 # system
 .DS_Store
 
