@@ -189,7 +189,10 @@ export function createOpenApiSpec() {
         }
       };
 
-      if (endpoint.path === "/api/fakenet/connect") {
+      if (
+        endpoint.path === "/api/fakenet/connect" ||
+        endpoint.path === "/api/fakenet/evidence/submit"
+      ) {
         paths[endpoint.path].post = {
           summary: endpoint.description,
           responses: {
@@ -197,7 +200,9 @@ export function createOpenApiSpec() {
               description: `${registryServiceName} ${endpoint.description}`
             },
             "400": {
-              description: "Invalid fakenet connection profile"
+              description: endpoint.path === "/api/fakenet/connect"
+                ? "Invalid fakenet connection profile"
+                : "Invalid fakenet evidence submission"
             }
           }
         };

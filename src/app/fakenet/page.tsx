@@ -168,6 +168,21 @@ export default function FakenetReadinessPage() {
               </div>
             ))}
           </div>
+          <div className="mt-5 border border-[#8b8b7a] bg-white p-3">
+            <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+              Submit Evidence
+            </div>
+            <p className="mt-2 break-words font-mono text-sm text-[#171717]">
+              {connectionTemplate.commands.submitEvidence}
+            </p>
+            <a
+              className="mt-3 inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              href="/api/fakenet/evidence/submit"
+            >
+              Submit API
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          </div>
         </article>
       </section>
 

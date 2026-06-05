@@ -134,11 +134,13 @@ export function createFakenetConnectionProfile(input: FakenetConnectionInput = {
       setup: "npm install",
       runAll: testFunctions.map((testFunction) => testFunction.runCommand).join(" && "),
       inspect: "curl http://127.0.0.1:3000/api/fakenet",
+      submitEvidence: `curl ${JSON.stringify(`${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`)} -H "content-type: application/json" --data @fakenet-evidence-submission.json`,
       submitProfile: `curl -G ${JSON.stringify(`${registryCanonicalBaseUrl}/api/fakenet/connect`)} --data-urlencode ${JSON.stringify(`endpoint=${endpointInput}`)} --data-urlencode ${JSON.stringify(`walletAddress=${walletAddress}`)} --data-urlencode ${JSON.stringify(`networkId=${networkId}`)}`
     },
     links: {
       profile: profileUrl,
       evidence: evidenceUrl,
+      submit: `${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`,
       readiness: `${registryCanonicalBaseUrl}/api/fakenet`,
       commands: `${registryCanonicalBaseUrl}/api/fakenet/commands`,
       runbook: `${registryCanonicalBaseUrl}/api/fakenet/runbook.sh`

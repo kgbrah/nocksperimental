@@ -58,6 +58,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/fakenet/support-bundle`, 200, "local fakenet support bundle API");
     await expectStatus(`${baseUrl}/api/fakenet/support-bundle.md`, 200, "local fakenet support bundle markdown");
     await expectStatus(`${baseUrl}/api/fakenet/evidence`, 200, "local fakenet evidence capsule");
+    await expectFakenetEvidenceSubmission(baseUrl);
     await expectLocalFakenetEvidenceVerification(baseUrl);
     await expectStatus(`${baseUrl}/api/fakenet/runbook.sh`, 200, "local fakenet shell runbook");
     await expectStatus(`${baseUrl}/registry`, 200, "registry page");
@@ -256,6 +257,87 @@ async function expectTrustUpdateVerification(baseUrl, updateId) {
   if (verifyResponse.status !== 200 || verification.verified !== true) {
     throw new Error(
       `trust update verifier: expected verified HTTP 200; got ${verifyResponse.status} ${JSON.stringify(verification).slice(0, 500)}`
+    );
+  }
+}
+
+async function expectFakenetEvidenceSubmission(baseUrl) {
+  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const response = await fetch(`${baseUrl}/api/fakenet/evidence/submit`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      connection: {
+        endpoint: "127.0.0.1:5555",
+        walletAddress,
+        networkId: "local-fakenet"
+      },
+      reports: [
+        {
+          reportId: "lab_local-fakenet-health-v0_smoke",
+          fixtureId: "local-fakenet-health-v0",
+          generatedAt: "2026-06-05T14:50:00.000Z",
+          app: {
+            name: "Local Fakenet Health",
+            slug: "local-fakenet-health",
+            version: "0.0.1",
+            kernel: "nockchain-local-fakenet"
+          },
+          environment: {
+            mode: "local-fakenet",
+            grpcEndpoint: "127.0.0.1:5555",
+            balanceCheck: {
+              address: walletAddress
+            }
+          },
+          summary: {
+            status: "pass",
+            stepsPassed: 1,
+            stepsFailed: 0,
+            invariantsPassed: 0,
+            invariantsFailed: 0,
+            alertsClear: 0,
+            alertsTriggered: 0,
+            snapshotsCaptured: 1,
+            durationMs: 10
+          },
+          invariantPacks: [],
+          steps: [
+            {
+              id: "probe-local-fakenet",
+              type: "fakenet",
+              title: "Probe local fakenet",
+              status: "pass",
+              expectation: "fakenet endpoint accepts TCP connections",
+              observed: "fakenet endpoint accepted TCP connections",
+              adapter: {
+                kind: "local-fakenet",
+                grpcEndpoint: "127.0.0.1:5555",
+                reachable: true
+              },
+              beforeHash: "before",
+              afterHash: "after",
+              stateDiffs: [],
+              durationMs: 10
+            }
+          ],
+          invariants: [],
+          alerts: [],
+          adapterObservations: [],
+          stateSnapshots: [],
+          stateDiffs: [],
+          nextActions: []
+        }
+      ]
+    })
+  });
+  const receipt = await response.json();
+
+  if (response.status !== 200 || receipt.verified !== true || !receipt.receiptId?.startsWith("fakenet_submission_")) {
+    throw new Error(
+      `fakenet evidence submission: expected verified receipt HTTP 200; got ${response.status} ${JSON.stringify(receipt).slice(0, 500)}`
     );
   }
 }
