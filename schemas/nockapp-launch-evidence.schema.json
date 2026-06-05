@@ -4,6 +4,7 @@
   "title": "Nocksperimental Launch Evidence Registry",
   "type": "object",
   "required": ["version", "cases", "submissions", "reports"],
+  "additionalProperties": false,
   "properties": {
     "version": { "type": "string" },
     "cases": { "type": "array", "items": { "$ref": "#/$defs/case" } },
@@ -14,6 +15,7 @@
     "case": {
       "type": "object",
       "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectName", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId"],
+      "additionalProperties": false,
       "properties": {
         "caseId": { "type": "string" },
         "workspaceSlug": { "type": "string" },
@@ -29,6 +31,7 @@
         "payment": {
           "type": "object",
           "required": ["status", "rail", "amount", "currency", "reference"],
+          "additionalProperties": false,
           "properties": {
             "status": { "enum": ["prospective", "quoted", "invoiced", "paid", "waived"] },
             "rail": { "enum": ["manual", "usd", "nock", "x402", "none"] },
@@ -45,6 +48,7 @@
     "submission": {
       "type": "object",
       "required": ["evidenceId", "caseId", "sourceKind", "sourceUrl", "submittedAt", "submittedBy", "status", "reportHash", "snapshotRoot", "receiptId", "redactionSummary"],
+      "additionalProperties": false,
       "properties": {
         "evidenceId": { "type": "string" },
         "caseId": { "type": "string" },
@@ -62,6 +66,7 @@
     "report": {
       "type": "object",
       "required": ["reportSlug", "caseId", "summaryStatus", "score", "requiredChecks", "recommendedChecks", "evidenceSummary", "reviewerNotes", "publicSummary", "generatedAt", "reportHash", "snapshotRoot"],
+      "additionalProperties": false,
       "properties": {
         "reportSlug": { "type": "string" },
         "caseId": { "type": "string" },
@@ -80,6 +85,7 @@
     "check": {
       "type": "object",
       "required": ["id", "label", "status", "summary"],
+      "additionalProperties": false,
       "properties": {
         "id": { "type": "string" },
         "label": { "type": "string" },

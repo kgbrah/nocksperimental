@@ -316,6 +316,8 @@ curl -G https://nocksperimental.com/api/launch-evidence/verify \
   --data-urlencode snapshotRoot=launch-vesl-demo-root-001
 ```
 
+Private Launch Evidence cases are hidden from public index/detail routes; verifier lookups for matching private evidence return the same public miss shape as unknown evidence.
+
 ## Workspaces
 
 Workspace surfaces model private team evidence without exposing sensitive upload credentials publicly.

@@ -34,6 +34,23 @@
       "evidenceIds": ["evidence-payment-flow-lab-001", "evidence-payment-flow-workspace-001"],
       "reportSlug": "launch-payment-flow-001",
       "badgeId": null
+    },
+    {
+      "caseId": "case-confidential-operator-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "confidential-operator",
+      "subjectName": "Confidential Operator App",
+      "subjectType": "operator",
+      "customerLane": "operator",
+      "status": "verified",
+      "visibility": "private",
+      "createdAt": "2026-06-05T19:00:00.000Z",
+      "updatedAt": "2026-06-05T19:20:00.000Z",
+      "requestedBy": "private-operator",
+      "payment": { "status": "invoiced", "rail": "nock", "amount": 12500, "currency": "NOCK", "reference": "private-launch-operator-001" },
+      "evidenceIds": ["evidence-confidential-operator-manual-001"],
+      "reportSlug": "launch-confidential-operator-001",
+      "badgeId": null
     }
   ],
   "submissions": [
@@ -41,7 +58,8 @@
     { "evidenceId": "evidence-vesl-demo-fakenet-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "fakenet", "sourceUrl": "/api/fakenet/evidence", "submittedAt": "2026-06-05T18:08:00.000Z", "submittedBy": "fakenet-adapter", "status": "accepted", "reportHash": "sha256:8eb7d3fff4f531eaa72893ce022df3b196edb72278d5043619c25c37a8688044", "snapshotRoot": "local-fakenet-root-v0", "receiptId": null, "redactionSummary": "Wallet address and endpoint only; no signing material included." },
     { "evidenceId": "evidence-vesl-demo-vesl-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "vesl", "sourceUrl": "/api/vesl/evidence/submit", "submittedAt": "2026-06-05T18:12:00.000Z", "submittedBy": "vesl-test", "status": "verified", "reportHash": "sha256:vesl-demo-report-v0", "snapshotRoot": "vesl-demo-snapshot-root-v0", "receiptId": "vesl_submission_demo", "redactionSummary": "Lifecycle tags, peek status, and hull health only." },
     { "evidenceId": "evidence-payment-flow-lab-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/payment-flow", "submittedAt": "2026-06-05T18:35:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:4cade57672628cbe3441d134eff67d6c589a8d94c70ff989a61da26d67430c91", "snapshotRoot": "3a6d6bff59cb624f", "receiptId": null, "redactionSummary": "Generated report hash and snapshot root only." },
-    { "evidenceId": "evidence-payment-flow-workspace-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "workspace-upload", "sourceUrl": "/api/workspaces/launch-lab-private/evidence", "submittedAt": "2026-06-05T18:40:00.000Z", "submittedBy": "workspace-upload-token", "status": "attention", "reportHash": "sha256:workspace-payment-flow-v0", "snapshotRoot": "workspace-payment-root-v0", "receiptId": null, "redactionSummary": "Upload policy accepted metadata; reviewer notes pending." }
+    { "evidenceId": "evidence-payment-flow-workspace-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "workspace-upload", "sourceUrl": "/api/workspaces/launch-lab-private/evidence", "submittedAt": "2026-06-05T18:40:00.000Z", "submittedBy": "workspace-upload-token", "status": "attention", "reportHash": "sha256:workspace-payment-flow-v0", "snapshotRoot": "workspace-payment-root-v0", "receiptId": null, "redactionSummary": "Upload policy accepted metadata; reviewer notes pending." },
+    { "evidenceId": "evidence-confidential-operator-manual-001", "caseId": "case-confidential-operator-launch-001", "sourceKind": "manual", "sourceUrl": null, "submittedAt": "2026-06-05T19:08:00.000Z", "submittedBy": "private-operator", "status": "verified", "reportHash": "sha256:confidential-operator-manual-001", "snapshotRoot": "confidential-operator-manual-root-001", "receiptId": null, "redactionSummary": "Private operator evidence retained off public routes." }
   ],
   "reports": [
     {
@@ -86,6 +104,25 @@
       "generatedAt": "2026-06-05T18:45:00.000Z",
       "reportHash": "sha256:launch-payment-flow-001",
       "snapshotRoot": "launch-payment-flow-root-001"
+    },
+    {
+      "reportSlug": "launch-confidential-operator-001",
+      "caseId": "case-confidential-operator-launch-001",
+      "summaryStatus": "verified",
+      "score": 88,
+      "requiredChecks": [
+        { "id": "operator-evidence-linked", "label": "Operator evidence linked", "status": "pass", "summary": "Private operator evidence is attached to the case." },
+        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Public verifier responses redact the private report." }
+      ],
+      "recommendedChecks": [
+        { "id": "public-badge", "label": "Public badge", "status": "warn", "summary": "Badge issuance is deferred while the case remains private." }
+      ],
+      "evidenceSummary": "Confidential operator launch evidence is retained for private review only.",
+      "reviewerNotes": "Fixture exercises private-case verifier redaction without publishing case details.",
+      "publicSummary": "Private launch evidence retained for operator review.",
+      "generatedAt": "2026-06-05T19:20:00.000Z",
+      "reportHash": "sha256:launch-confidential-operator-001",
+      "snapshotRoot": "launch-confidential-operator-root-001"
     }
   ]
 }

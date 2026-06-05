@@ -17,6 +17,7 @@ main().catch((error) => {
 async function main() {
   assertFileExists("schemas/nockapp-launch-evidence.schema.json");
   assertFileExists("src/data/launch-evidence.json");
+  assertLaunchEvidenceSchema();
 
   const launchEvidence = loadTypeScriptModule("src/lib/launch-evidence.ts");
   const index = launchEvidence.createLaunchEvidenceIndex();
@@ -34,6 +35,11 @@ async function main() {
   assertNonEmpty(firstCase.report.reportHash, "first case report hash");
   assertNonEmpty(firstCase.report.snapshotRoot, "first case snapshot root");
   assertEqual(firstCase.customerLane, "builder-auditor", "first case customer lane");
+
+  const privateCase = index.cases.find((candidate) => candidate.visibility === "private");
+  assertNonEmpty(privateCase?.caseId, "private launch evidence fixture id");
+  assertNonEmpty(privateCase?.report.reportHash, "private launch evidence fixture report hash");
+  assertNonEmpty(privateCase?.report.snapshotRoot, "private launch evidence fixture snapshot root");
 
   const foundCase = launchEvidence.launchEvidenceCaseForId(firstCase.caseId);
   assertEqual(foundCase?.caseId, firstCase.caseId, "case lookup by id");
@@ -61,12 +67,12 @@ async function main() {
   });
   assertEqual(badVerification.verified, false, "bad launch evidence verification");
 
-  await assertLaunchEvidenceRoutes(firstCase);
+  await assertLaunchEvidenceRoutes(firstCase, privateCase);
   await assertRegistrySurfaces(firstCase);
   assertPackageAndDocs();
 }
 
-async function assertLaunchEvidenceRoutes(firstCase) {
+async function assertLaunchEvidenceRoutes(firstCase, privateCase) {
   const { GET: getIndex } = loadTypeScriptModule("src/app/api/launch-evidence/route.ts");
   const indexResponse = await getIndex();
   const indexBody = await indexResponse.json();
@@ -97,7 +103,18 @@ async function assertLaunchEvidenceRoutes(firstCase) {
   assertEqual(missingResponse.status, 404, "missing launch evidence case status");
   assertEqual(missingBody.error, "Launch Evidence case not found.", "missing launch evidence case error");
 
-  const { POST: verifyReport } = loadTypeScriptModule("src/app/api/launch-evidence/verify/route.ts");
+  const privateDetailResponse = await getCase(
+    new Request(`https://nocksperimental.com/api/launch-evidence/${privateCase.caseId}`),
+    createContext({ caseId: privateCase.caseId })
+  );
+  const privateDetailBody = await privateDetailResponse.json();
+
+  assertEqual(privateDetailResponse.status, 404, "private launch evidence case status");
+  assertEqual(privateDetailBody.error, "Launch Evidence case not found.", "private launch evidence case error");
+
+  const { GET: verifyReportByQuery, POST: verifyReport } = loadTypeScriptModule(
+    "src/app/api/launch-evidence/verify/route.ts"
+  );
   const goodResponse = await verifyReport(
     new Request("https://nocksperimental.com/api/launch-evidence/verify", {
       method: "POST",
@@ -117,6 +134,19 @@ async function assertLaunchEvidenceRoutes(firstCase) {
   assertEqual(goodBody.version, "v0", "launch evidence verifier version");
   assertEqual(goodBody.verified, true, "launch evidence verifier good result");
 
+  const goodQuery = new URLSearchParams({
+    caseId: firstCase.caseId,
+    reportHash: firstCase.report.reportHash,
+    snapshotRoot: firstCase.report.snapshotRoot
+  });
+  const goodQueryResponse = await verifyReportByQuery(
+    new Request(`https://nocksperimental.com/api/launch-evidence/verify?${goodQuery}`)
+  );
+  const goodQueryBody = await goodQueryResponse.json();
+
+  assertEqual(goodQueryResponse.status, 200, "launch evidence GET verifier status");
+  assertEqual(goodQueryBody.verified, true, "launch evidence GET verifier good result");
+
   const badResponse = await verifyReport(
     new Request("https://nocksperimental.com/api/launch-evidence/verify", {
       method: "POST",
@@ -134,6 +164,50 @@ async function assertLaunchEvidenceRoutes(firstCase) {
 
   assertEqual(badResponse.status, 200, "launch evidence bad verifier status");
   assertEqual(badBody.verified, false, "launch evidence verifier bad result");
+
+  const privateCaseIdResponse = await verifyReport(
+    new Request("https://nocksperimental.com/api/launch-evidence/verify", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        caseId: privateCase.caseId
+      })
+    })
+  );
+  const privateCaseIdBody = await privateCaseIdResponse.json();
+
+  assertPrivateVerificationMiss(privateCaseIdResponse, privateCaseIdBody, "private caseId verification");
+  assertEqual(privateCaseIdBody.caseId, privateCase.caseId, "private caseId verification echoes supplied case id");
+
+  const privateReportHashResponse = await verifyReport(
+    new Request("https://nocksperimental.com/api/launch-evidence/verify", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        reportHash: privateCase.report.reportHash
+      })
+    })
+  );
+  const privateReportHashBody = await privateReportHashResponse.json();
+
+  assertPrivateVerificationMiss(privateReportHashResponse, privateReportHashBody, "private reportHash verification");
+  assertEqual(privateReportHashBody.caseId, null, "private reportHash verification hides case id");
+
+  const privateSnapshotRootResponse = await verifyReportByQuery(
+    new Request(
+      `https://nocksperimental.com/api/launch-evidence/verify?snapshotRoot=${encodeURIComponent(
+        privateCase.report.snapshotRoot
+      )}`
+    )
+  );
+  const privateSnapshotRootBody = await privateSnapshotRootResponse.json();
+
+  assertPrivateVerificationMiss(privateSnapshotRootResponse, privateSnapshotRootBody, "private snapshotRoot verification");
+  assertEqual(privateSnapshotRootBody.caseId, null, "private snapshotRoot verification hides case id");
 }
 
 async function assertRegistrySurfaces(firstCase) {
@@ -175,7 +249,12 @@ async function assertRegistrySurfaces(firstCase) {
   assertEqual(
     openApiBody.paths["/api/launch-evidence/verify"]?.post?.summary,
     "Verify Launch Evidence report",
-    "OpenAPI launch evidence verifier summary"
+    "OpenAPI launch evidence verifier POST summary"
+  );
+  assertEqual(
+    openApiBody.paths["/api/launch-evidence/verify"]?.get?.summary,
+    "Verify Launch Evidence report",
+    "OpenAPI launch evidence verifier GET summary"
   );
 
   const verificationIndex = await loadTypeScriptModule("src/app/api/verify/route.ts").GET();
@@ -203,6 +282,116 @@ function assertPackageAndDocs() {
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "## Launch Evidence", "README Launch Evidence section");
   assertIncludes(readme, "/api/launch-evidence/verify", "README Launch Evidence verifier endpoint");
+  assertIncludes(readme, "Private Launch Evidence cases", "README Launch Evidence private case note");
+}
+
+function assertLaunchEvidenceSchema() {
+  const schema = JSON.parse(readFileSync(path.join(process.cwd(), "schemas/nockapp-launch-evidence.schema.json"), "utf8"));
+  const data = JSON.parse(readFileSync(path.join(process.cwd(), "src/data/launch-evidence.json"), "utf8"));
+  const errors = validateSchemaNode(schema, data, schema, "$");
+
+  if (errors.length > 0) {
+    throw new Error(`Launch Evidence seed data failed schema validation:\n${errors.join("\n")}`);
+  }
+}
+
+function validateSchemaNode(schemaNode, value, rootSchema, location) {
+  const resolvedSchema = schemaNode.$ref ? resolveSchemaRef(schemaNode.$ref, rootSchema) : schemaNode;
+  const errors = [];
+
+  if (resolvedSchema.enum && !resolvedSchema.enum.includes(value)) {
+    errors.push(`${location}: expected one of ${resolvedSchema.enum.join(", ")}, got ${JSON.stringify(value)}`);
+    return errors;
+  }
+
+  if (resolvedSchema.type && !matchesSchemaType(value, resolvedSchema.type)) {
+    errors.push(`${location}: expected type ${JSON.stringify(resolvedSchema.type)}, got ${value === null ? "null" : typeof value}`);
+    return errors;
+  }
+
+  if (resolvedSchema.format === "date-time" && typeof value === "string" && Number.isNaN(Date.parse(value))) {
+    errors.push(`${location}: expected date-time string, got ${JSON.stringify(value)}`);
+  }
+
+  if (resolvedSchema.type === "object" && value && typeof value === "object" && !Array.isArray(value)) {
+    const properties = resolvedSchema.properties ?? {};
+
+    for (const requiredKey of resolvedSchema.required ?? []) {
+      if (!(requiredKey in value)) {
+        errors.push(`${location}: missing required property ${requiredKey}`);
+      }
+    }
+
+    if (resolvedSchema.additionalProperties === false) {
+      for (const key of Object.keys(value)) {
+        if (!(key in properties)) {
+          errors.push(`${location}: unexpected property ${key}`);
+        }
+      }
+    }
+
+    for (const [key, childSchema] of Object.entries(properties)) {
+      if (key in value) {
+        errors.push(...validateSchemaNode(childSchema, value[key], rootSchema, `${location}.${key}`));
+      }
+    }
+  }
+
+  if (resolvedSchema.type === "array" && Array.isArray(value)) {
+    value.forEach((entry, index) => {
+      errors.push(...validateSchemaNode(resolvedSchema.items, entry, rootSchema, `${location}[${index}]`));
+    });
+  }
+
+  return errors;
+}
+
+function resolveSchemaRef(ref, rootSchema) {
+  if (!ref.startsWith("#/$defs/")) {
+    throw new Error(`Unsupported schema ref: ${ref}`);
+  }
+
+  const key = ref.slice("#/$defs/".length);
+  const resolved = rootSchema.$defs?.[key];
+
+  if (!resolved) {
+    throw new Error(`Missing schema ref: ${ref}`);
+  }
+
+  return resolved;
+}
+
+function matchesSchemaType(value, type) {
+  const types = Array.isArray(type) ? type : [type];
+
+  return types.some((candidate) => {
+    if (candidate === "array") {
+      return Array.isArray(value);
+    }
+
+    if (candidate === "null") {
+      return value === null;
+    }
+
+    if (candidate === "object") {
+      return value !== null && typeof value === "object" && !Array.isArray(value);
+    }
+
+    return typeof value === candidate;
+  });
+}
+
+function assertPrivateVerificationMiss(response, body, label) {
+  assertEqual(response.status, 200, `${label} status`);
+  assertEqual(body.verified, false, `${label} verified result`);
+  assertEqual(body.reportSlug, null, `${label} report slug`);
+  assertEqual(body.report, null, `${label} report`);
+  assertEqual(body.links.case, null, `${label} case link`);
+  assertEqual(body.links.api, null, `${label} API link`);
+  assertEqual(body.checks.caseMatched, false, `${label} case match`);
+  assertEqual(body.checks.reportHashMatched, false, `${label} report hash match`);
+  assertEqual(body.checks.snapshotRootMatched, false, `${label} snapshot root match`);
+  assertEqual(body.checks.publicOrShared, false, `${label} public/shared check`);
 }
 
 function createContext(params) {
