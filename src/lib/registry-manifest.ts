@@ -1,6 +1,8 @@
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { trustUpdateChainSummary } from "@/lib/trust-update-log";
 import { trustSignals } from "@/lib/trust-signals";
+import { resolveX402Config } from "@/lib/x402/config";
+import { METERED_RESOURCES } from "@/lib/x402/pricing";
 
 export const registryServiceName = "nocksperimental";
 export const registrySubject = "nocksperimental.com";
@@ -191,6 +193,33 @@ export function createRegistryManifest() {
   };
 }
 
+function toDiscoveryPath(pattern: string) {
+  return pattern.replace(/\[([^\]]+)\]/g, "{$1}");
+}
+
+export function createX402Discovery() {
+  const config = resolveX402Config();
+
+  return {
+    enabled: config.enabled,
+    network: config.network,
+    asset: config.asset,
+    scheme: config.scheme,
+    payTo: config.payTo,
+    paymentRequestHeader: "PAYMENT-SIGNATURE",
+    paymentResponseHeader: "X-PAYMENT-RESPONSE",
+    facilitatorConfigured: Boolean(config.facilitatorUrl),
+    freeAllowancePerDay: config.freeAllowancePerDay,
+    resources: METERED_RESOURCES.map((resource) => ({
+      slug: resource.slug,
+      url: `${registryCanonicalBaseUrl}${toDiscoveryPath(resource.pathPattern)}`,
+      method: resource.method,
+      priceNicks: resource.priceNicks,
+      description: resource.description
+    }))
+  };
+}
+
 export function createWellKnownRegistryManifest() {
   const manifest = createRegistryManifest();
   const endpointUrl = (id: string) =>
@@ -199,6 +228,7 @@ export function createWellKnownRegistryManifest() {
   return {
     ...manifest,
     subject: registrySubject,
+    x402: createX402Discovery(),
     links: {
       registry: `${registryCanonicalBaseUrl}/api/registry`,
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
@@ -258,7 +288,8 @@ export function createWellKnownRegistryManifest() {
       "workspace-upload-token-verifier",
       "workspace-evidence-verifier",
       "generated-lab-reports",
-      "cloudflare-workers"
+      "cloudflare-workers",
+      "x402-metered-trust-api"
     ]
   };
 }

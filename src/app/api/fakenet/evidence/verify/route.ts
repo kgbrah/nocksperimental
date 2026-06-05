@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { verifyLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
+import { guard } from "@/lib/x402/meter";
 
 export const dynamic = "force-dynamic";
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
+  const gate = await guard(request, "fakenet-evidence-verify");
+  if (gate.blocked) {
+    return gate.response;
+  }
+
   const url = new URL(request.url);
   const generatedAt = url.searchParams.get("generatedAt")?.trim() ?? "";
   const reportIds = collectReportIds(url);
@@ -22,7 +28,8 @@ export function GET(request: Request) {
       grpcEndpoint: url.searchParams.get("grpcEndpoint"),
       walletAddress: url.searchParams.get("walletAddress"),
       blockCommitment: url.searchParams.get("blockCommitment")
-    })
+    }),
+    { headers: gate.headers }
   );
 }
 

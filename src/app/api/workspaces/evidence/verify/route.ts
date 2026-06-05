@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { verifyWorkspaceEvidenceCapsule } from "@/lib/workspace-evidence";
+import { guard } from "@/lib/x402/meter";
 
 export const dynamic = "force-dynamic";
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
+  const gate = await guard(request, "workspace-evidence-verify");
+  if (gate.blocked) {
+    return gate.response;
+  }
+
   const url = new URL(request.url);
   const workspaceSlug = url.searchParams.get("workspaceSlug")?.trim() ?? "";
   const reportIds = collectValues(url, "reportId", "reportIds");
@@ -21,7 +27,8 @@ export function GET(request: Request) {
       reportIds,
       badgeIds: collectValues(url, "badgeId", "badgeIds"),
       latestSnapshotRoot: url.searchParams.get("latestSnapshotRoot")
-    })
+    }),
+    { headers: gate.headers }
   );
 }
 

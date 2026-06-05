@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyTrustBadgeIssuance } from "@/lib/trust-badge-verifier";
+import { guard } from "@/lib/x402/meter";
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
+  const gate = await guard(request, "badge-verify");
+  if (gate.blocked) {
+    return gate.response;
+  }
+
   const url = new URL(request.url);
   const badgeId = url.searchParams.get("badgeId")?.trim() ?? "";
   const payloadDigest = url.searchParams.get("payloadDigest")?.trim() ?? "";
@@ -19,6 +25,7 @@ export function GET(request: Request) {
       payloadDigest,
       signature: url.searchParams.get("signature"),
       issuerKeyId: url.searchParams.get("issuerKeyId")
-    })
+    }),
+    { headers: gate.headers }
   );
 }

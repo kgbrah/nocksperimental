@@ -3,12 +3,20 @@ import {
   registryEndpoints,
   registryServiceName
 } from "@/lib/registry-manifest";
+import { METERED_RESOURCES } from "@/lib/x402/pricing";
+
+const meteredOpenApiPaths = new Set(
+  METERED_RESOURCES.map((resource) => resource.pathPattern.replace(/\[([^\]]+)\]/g, "{$1}"))
+);
 
 type OpenApiPath = {
   get: {
     summary: string;
     responses: {
       "200": {
+        description: string;
+      };
+      "402"?: {
         description: string;
       };
     };
@@ -202,6 +210,12 @@ export function createOpenApiSpec() {
           }
         }
       };
+
+      if (meteredOpenApiPaths.has(endpoint.path)) {
+        paths[endpoint.path].get.responses["402"] = {
+          description: "Payment required (x402): present a PAYMENT-SIGNATURE header to access this resource"
+        };
+      }
 
       if (
         endpoint.path === "/api/fakenet/connect" ||
