@@ -48,6 +48,11 @@ async function main() {
     await expectStatus(`${baseUrl}/api/health`, 200, "health API");
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
+    await expectStatus(
+      `${baseUrl}/api/fakenet/connect?endpoint=127.0.0.1%3A5555&walletAddress=532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ`,
+      200,
+      "bring your own fakenet connection profile"
+    );
     await expectStatus(`${baseUrl}/api/fakenet/commands`, 200, "local fakenet command kit API");
     await expectStatus(`${baseUrl}/api/fakenet/diagnostics`, 200, "local fakenet diagnostics API");
     await expectStatus(`${baseUrl}/api/fakenet/support-bundle`, 200, "local fakenet support bundle API");

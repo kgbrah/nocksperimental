@@ -11,6 +11,7 @@ import {
   WalletCards
 } from "lucide-react";
 import Link from "next/link";
+import { createFakenetConnectionProfile } from "@/lib/fakenet-connection-profile";
 import { createLocalFakenetCommandKit } from "@/lib/local-fakenet-commands";
 import { createLocalFakenetDiagnostics } from "@/lib/local-fakenet-diagnostics";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
@@ -29,6 +30,7 @@ export default function FakenetReadinessPage() {
   const evidenceCapsule = createLocalFakenetEvidenceCapsule();
   const supportBundle = createLocalFakenetSupportBundle();
   const supportBundleMarkdown = createLocalFakenetSupportBundleMarkdown();
+  const connectionTemplate = createFakenetConnectionProfile();
 
   return (
     <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
@@ -100,6 +102,73 @@ export default function FakenetReadinessPage() {
         <Metric label="Reports" value={readiness.reportCount.toString()} />
         <Metric label="Endpoint" value={readiness.endpoint ?? "none"} />
         <Metric label="Generated" value={readiness.generatedAt} />
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+          <div className="flex items-center gap-2">
+            <RadioTower size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Bring Your Own Fakenet</h2>
+          </div>
+          <form
+            action="/api/fakenet/connect"
+            className="mt-4 grid gap-3 lg:grid-cols-[1fr_1.3fr_1fr_auto]"
+            method="get"
+          >
+            <label className="grid gap-2">
+              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                Endpoint
+              </span>
+              <input
+                className="min-h-11 border border-[#8b8b7a] bg-white px-3 font-mono text-sm text-[#171717]"
+                defaultValue={connectionTemplate.connection.endpoint.testEndpoint}
+                name="endpoint"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                Wallet
+              </span>
+              <input
+                className="min-h-11 border border-[#8b8b7a] bg-white px-3 font-mono text-sm text-[#171717]"
+                defaultValue={connectionTemplate.connection.walletAddress}
+                name="walletAddress"
+              />
+            </label>
+            <label className="grid gap-2">
+              <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                Network
+              </span>
+              <input
+                className="min-h-11 border border-[#8b8b7a] bg-white px-3 font-mono text-sm text-[#171717]"
+                defaultValue={connectionTemplate.connection.networkId}
+                name="networkId"
+              />
+            </label>
+            <button
+              className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 border border-[#242424] bg-[#171717] px-4 text-sm font-medium text-white lg:mt-auto"
+              type="submit"
+            >
+              <Code2 size={16} aria-hidden="true" />
+              Profile JSON
+            </button>
+          </form>
+          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+            {connectionTemplate.testFunctions.map((testFunction) => (
+              <div className="border border-[#8b8b7a] bg-white p-3" key={testFunction.id}>
+                <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                  {testFunction.label}
+                </div>
+                <p className="mt-2 break-words font-mono text-sm text-[#171717]">
+                  {testFunction.command}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#44443d]">
+                  {testFunction.purpose}
+                </p>
+              </div>
+            ))}
+          </div>
+        </article>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">

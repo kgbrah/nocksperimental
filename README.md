@@ -59,6 +59,7 @@ The public fakenet surfaces are available at:
 
 - `/fakenet`
 - `/api/fakenet`
+- `/api/fakenet/connect`
 - `/api/fakenet/commands`
 - `/api/fakenet/diagnostics`
 - `/api/fakenet/evidence`
@@ -66,6 +67,15 @@ The public fakenet surfaces are available at:
 - `/api/fakenet/support-bundle`
 - `/api/fakenet/support-bundle.md`
 - `/api/fakenet/runbook.sh`
+
+Bring your own fakenet by creating a stateless connection profile:
+
+```bash
+curl -G https://nocksperimental.com/api/fakenet/connect \
+  --data-urlencode endpoint=127.0.0.1:5555 \
+  --data-urlencode walletAddress=532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ \
+  --data-urlencode networkId=local-fakenet
+```
 
 ## Lab Runner
 

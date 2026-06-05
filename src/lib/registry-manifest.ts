@@ -33,6 +33,11 @@ export const registryEndpoints = [
     description: "Local fakenet readiness summary"
   },
   {
+    id: "bring-your-own-fakenet",
+    path: "/api/fakenet/connect",
+    description: "Bring your own fakenet connection profile"
+  },
+  {
     id: "local-fakenet-evidence",
     path: "/api/fakenet/evidence",
     description: "Local fakenet evidence capsule"
@@ -161,6 +166,7 @@ export function createWellKnownRegistryManifest() {
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
+      fakenetConnect: endpointUrl("bring-your-own-fakenet"),
       fakenetEvidence: endpointUrl("local-fakenet-evidence"),
       fakenetEvidenceVerifier: endpointUrl("local-fakenet-evidence-verifier"),
       fakenetCommands: endpointUrl("local-fakenet-commands"),
@@ -182,6 +188,7 @@ export function createWellKnownRegistryManifest() {
       "append-only-trust-updates",
       "registry-checkpoints",
       "public-verification-index",
+      "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "local-fakenet-evidence-verifier",
       "local-fakenet-command-kit",

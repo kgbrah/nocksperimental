@@ -13,6 +13,17 @@ type OpenApiPath = {
       };
     };
   };
+  post?: {
+    summary: string;
+    responses: {
+      "200": {
+        description: string;
+      };
+      "400"?: {
+        description: string;
+      };
+    };
+  };
 };
 
 const wellKnownEndpoint = {
@@ -177,6 +188,20 @@ export function createOpenApiSpec() {
           }
         }
       };
+
+      if (endpoint.path === "/api/fakenet/connect") {
+        paths[endpoint.path].post = {
+          summary: endpoint.description,
+          responses: {
+            "200": {
+              description: `${registryServiceName} ${endpoint.description}`
+            },
+            "400": {
+              description: "Invalid fakenet connection profile"
+            }
+          }
+        };
+      }
 
       return paths;
     }, {})
