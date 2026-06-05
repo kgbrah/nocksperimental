@@ -1,6 +1,6 @@
-import { ArrowLeft, BadgeCheck, Code2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BadgeCheck, Code2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { verifiedBadges } from "@/lib/trust-signals";
+import { badgeEmbedForId, resolvedBadges } from "@/lib/trust-signals";
 
 export default function BadgesPage() {
   return (
@@ -22,50 +22,97 @@ export default function BadgesPage() {
                 signature into a shareable trust signal.
               </p>
             </div>
-            <a
+            <Link
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/badges"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:px-8">
-        {verifiedBadges.map((badge) => (
-          <article
-            className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
-            key={badge.id}
-          >
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="border border-[#242424] bg-[#e8ead7] px-2 py-1 font-mono text-xs uppercase">
-                    {badge.status}
-                  </span>
-                  <span className="border border-[#242424] bg-white px-2 py-1 font-mono text-xs uppercase">
-                    {badge.kind}
-                  </span>
-                </div>
-                <h2 className="mt-3 text-2xl font-semibold">{badge.label}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
-                  {badge.reportSlug} · {badge.fixtureId}
-                </p>
-              </div>
-              <div className="grid size-12 place-items-center bg-[#171717] text-white">
-                <BadgeCheck size={22} aria-hidden="true" />
-              </div>
-            </div>
+        {resolvedBadges.map((badge) => {
+          const embed = badgeEmbedForId(badge.id);
 
-            <div className="mt-5 grid gap-3 md:grid-cols-3">
-              <Callout label="Report hash" value={badge.evidence.reportHash} />
-              <Callout label="Snapshot root" value={badge.evidence.snapshotRoot} />
-              <Callout label="Signature" value={badge.evidence.signature} />
-            </div>
-          </article>
-        ))}
+          return (
+            <article
+              className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+              id={badge.id}
+              key={badge.id}
+            >
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="border border-[#242424] bg-[#e8ead7] px-2 py-1 font-mono text-xs uppercase">
+                      {badge.currentStatus}
+                    </span>
+                    <span className="border border-[#242424] bg-white px-2 py-1 font-mono text-xs uppercase">
+                      {badge.kind}
+                    </span>
+                  </div>
+                  <h2 className="mt-3 text-2xl font-semibold">{badge.label}</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
+                    {badge.reportSlug} / {badge.fixtureId}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-3">
+                  <div className="grid size-12 place-items-center bg-[#171717] text-white">
+                    <BadgeCheck size={22} aria-hidden="true" />
+                  </div>
+                  <Link
+                    className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-white px-3 py-2 text-sm font-medium text-[#171717]"
+                    href={`/trust/badges/${badge.id}`}
+                  >
+                    Open Detail
+                    <ArrowUpRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-3">
+                <Callout label="Report hash" value={badge.evidence.reportHash} />
+                <Callout label="Snapshot root" value={badge.evidence.snapshotRoot} />
+                <Callout label="Signature" value={badge.evidence.signature} />
+              </div>
+
+              {badge.issuance ? (
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <Callout label="Issuance digest" value={badge.issuance.payloadDigest} />
+                  <Callout label="Issuer key" value={badge.issuance.issuerKeyId} />
+                  <Callout
+                    label="Issuance verification"
+                    value={`${badge.issuance.verification.status} / ${badge.issuance.verification.algorithm}`}
+                  />
+                  <Callout label="Issuance signature" value={badge.issuance.signature} />
+                </div>
+              ) : null}
+
+              {badge.revocation ? (
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <Callout label="Revoked at" value={badge.revocation.revokedAt} />
+                  <Callout label="Revocation reason" value={badge.revocation.reason} />
+                  <Callout
+                    label="Replacement badge"
+                    value={badge.revocation.replacementBadgeId ?? "none"}
+                  />
+                  <Callout label="Revocation signature" value={badge.revocation.evidence.signature} />
+                </div>
+              ) : null}
+
+              {embed ? (
+                <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                  <Callout label="Verification URL" value={embed.verificationUrl} />
+                  <Callout label="Badge API" value={embed.apiUrl} />
+                  <Callout label="HTML Embed" value={embed.htmlSnippet} />
+                  <Callout label="Markdown Embed" value={embed.markdownSnippet} />
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
       </section>
     </main>
   );
@@ -78,7 +125,7 @@ function Callout({ label, value }: { label: string; value: string }) {
         <ShieldCheck size={14} aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-2 break-words font-mono text-xs leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all font-mono text-xs leading-6 text-[#3f3f38]">{value}</p>
     </div>
   );
 }

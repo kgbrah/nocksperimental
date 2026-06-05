@@ -1,0 +1,84 @@
+{
+  "$schema": "../../schemas/nockapp-trust-update-log.schema.json",
+  "version": "v0",
+  "chain": {
+    "algorithm": "sha256-dev-chain-v0",
+    "source": "src/data/trust-update-log.json",
+    "entryCount": 4,
+    "latestRoot": "root-score-history-v0"
+  },
+  "entries": [
+    {
+      "sequence": 1,
+      "id": "update-trust-registry-genesis-v0",
+      "action": "registry-snapshot",
+      "target": "trust-signals",
+      "targetPath": "src/data/trust-signals.json",
+      "recordedAt": "2026-05-30T02:00:00.000Z",
+      "previousRoot": "genesis",
+      "entryHash": "sha256:append-trust-registry-genesis-v0",
+      "rootHash": "root-trust-registry-genesis-v0",
+      "summary": "Initial trust signal registry snapshot with verified badges, scorecards, token reports, compute profiles, and adoption proof.",
+      "signature": {
+        "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+        "algorithm": "ed25519-devnet-v0",
+        "signature": "ed25519-dev-sig-append-trust-registry-genesis-v0",
+        "verificationStatus": "valid"
+      }
+    },
+    {
+      "sequence": 2,
+      "id": "update-badge-issuance-v0",
+      "action": "badge-issuance",
+      "target": "badge-issuance",
+      "targetPath": "src/data/trust-signals.json",
+      "recordedAt": "2026-05-30T02:10:00.000Z",
+      "previousRoot": "root-trust-registry-genesis-v0",
+      "entryHash": "sha256:append-badge-issuance-v0",
+      "rootHash": "root-badge-issuance-v0",
+      "summary": "Added signed badge issuance receipts for every badge record.",
+      "signature": {
+        "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+        "algorithm": "ed25519-devnet-v0",
+        "signature": "ed25519-dev-sig-append-badge-issuance-v0",
+        "verificationStatus": "valid"
+      }
+    },
+    {
+      "sequence": 3,
+      "id": "update-badge-revocation-v0",
+      "action": "badge-revocation",
+      "target": "badge-revocation",
+      "targetPath": "src/data/trust-signals.json",
+      "recordedAt": "2026-05-30T02:12:00.000Z",
+      "previousRoot": "root-badge-issuance-v0",
+      "entryHash": "sha256:append-badge-revocation-v0",
+      "rootHash": "root-badge-revocation-v0",
+      "summary": "Added a revocation ledger record for the superseded payment flow legacy badge.",
+      "signature": {
+        "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+        "algorithm": "ed25519-devnet-v0",
+        "signature": "ed25519-dev-sig-append-badge-revocation-v0",
+        "verificationStatus": "valid"
+      }
+    },
+    {
+      "sequence": 4,
+      "id": "update-score-history-v0",
+      "action": "score-history",
+      "target": "score-history",
+      "targetPath": "src/data/trust-score-history.json",
+      "recordedAt": "2026-05-30T02:15:00.000Z",
+      "previousRoot": "root-badge-revocation-v0",
+      "entryHash": "sha256:append-score-history-v0",
+      "rootHash": "root-score-history-v0",
+      "summary": "Added storage-backed score histories for solver quality, token compatibility, and compute benchmark profiles.",
+      "signature": {
+        "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+        "algorithm": "ed25519-devnet-v0",
+        "signature": "ed25519-dev-sig-append-score-history-v0",
+        "verificationStatus": "valid"
+      }
+    }
+  ]
+}

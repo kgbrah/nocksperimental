@@ -29,6 +29,10 @@
     {
       "path": "fixtures/token-issuance.lab.json",
       "slug": "token-issuance"
+    },
+    {
+      "path": "fixtures/compute-benchmark-alpha.lab.json",
+      "slug": "compute-benchmark-alpha"
     }
   ]
 }

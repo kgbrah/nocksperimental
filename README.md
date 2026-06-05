@@ -1,28 +1,23 @@
 # nocksperimental
 
-Nocksperimental is a Nockchain product lab focused on testing, simulation, and monitoring infrastructure for NockApps.
+Nocksperimental is a Nockchain product lab for testing, simulating, and publishing audit-ready evidence for NockApps.
 
-The current product thesis: serious NockApps will need deterministic local testing, state replay, invariant checks, and shareable audit-readiness reports before meaningful value can safely flow through them.
+Live deployment: https://nocksperimental.com
 
-## Product Direction
+The product thesis is simple: serious NockApps need deterministic local testing, state replay, invariant checks, fakenet diagnostics, and shareable verification surfaces before meaningful value can safely flow through them.
 
-The primary wedge is a NockApp testing lab:
+## What is here
 
-- fakenet/test-run profiles
-- scripted `peek` and `poke` fixtures
-- state snapshots and replay logs
-- invariant checks for app-specific safety rules
-- CI-friendly JSON and Markdown reports
-- hosted report history and verification badges later
+- Fixture-driven NockApp lab runner with strict JSON schemas.
+- Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
+- Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
+- Generated report history with provenance, evidence, and public verification endpoints.
+- Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
+- Public trust registry with verified badges, trust feed, registry checkpoint, signed trust updates, solver scorecards, token compatibility reports, and compute benchmark profiles.
+- OpenAPI and `.well-known` manifests for external consumers.
+- Cloudflare Workers deployment through OpenNext.
 
-Parallel tracks can reuse the same core engine:
-
-- bridge and settlement monitoring
-- native token test harnesses
-- intent simulation and solver scoring
-- compute benchmark reports
-
-## Local Development
+## Quick Start
 
 ```bash
 npm install
@@ -31,112 +26,180 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## Scripts
+Run the full local validation suite:
 
-- `npm run dev` starts the Next.js app.
-- `npm run build` checks a production build.
-- `npm run lint` runs ESLint.
-- `npm run lab:sample` generates the starter JSON and Markdown lab report in `.nocklab/`.
-- `npm run lab:bridge` generates a mock bridge settlement report in `.nocklab/`.
-- `npm run lab:bridge:delayed` generates a bridge report with a triggered warning alert.
-- `npm run lab:payment` generates a payment flow report with the payments invariant pack.
-- `npm run lab:intent` generates an intent settlement report with the intents invariant pack.
-- `npm run lab:token` generates a token issuance report with the token invariant pack.
-- `npm run lab:all` generates every bundled fixture report.
-- `npm run lab:ci` runs the config-driven CI workflow locally and writes a manifest plus summary.
-- `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
-- `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
-- `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
-- `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
+```bash
+npm test
+npm run lint
+npm run lab:ci
+npm run verify:6-18
+```
 
-## Initial MVP
+## Local Fakenet
 
-- NockApp Lab dashboard.
-- Filterable module plan.
-- Strategy roadmap in `docs/strategy.md`.
-- Invariant catalog in `docs/invariants.md`.
-- Lab API at `/api/lab`.
-- Invariant API at `/api/invariants`.
-- Sample report API at `/api/reports/sample`.
-- Hosted report viewer at `/reports/sample`.
-- Hosted report history at `/reports/history`.
-- Private team workspaces at `/workspaces`.
-- Trust signal registry at `/trust`.
-- Verified badges at `/trust/badges`.
-- Solver scorecards at `/trust/solver-scores`.
-- Token compatibility reports at `/trust/token-compatibility`.
-- Compute benchmark profiles at `/trust/compute-benchmarks`.
-- Fixture-driven runner in `scripts/run-lab.mjs`.
-- Config-driven CI run in `nocklab.config.json`.
-- GitHub Actions artifact workflow in `.github/workflows/nocklab.yml`.
-- Structured strategy data in `src/lib/strategy.ts`.
+The local fakenet slice is designed to run from WSL with the `fakenock` helper on `PATH`.
 
-## First Lab Runner
+Useful commands:
 
-The first runner is intentionally fixture-driven. It validates the shape of a run, applies mock `poke` state patches, evaluates `peek` expectations, checks invariant packs, and emits CI-friendly report artifacts.
+```bash
+npm run lab:local
+npm run lab:local:balance
+npm run lab:local:chain
+npm run lab:local:peek
+npm run lab:local:poke
+```
+
+The default wallet used by the bundled local fakenet fixtures is:
+
+```text
+532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ
+```
+
+The public fakenet surfaces are available at:
+
+- `/fakenet`
+- `/api/fakenet`
+- `/api/fakenet/commands`
+- `/api/fakenet/diagnostics`
+- `/api/fakenet/evidence`
+- `/api/fakenet/evidence/verify`
+- `/api/fakenet/support-bundle`
+- `/api/fakenet/support-bundle.md`
+- `/api/fakenet/runbook.sh`
+
+## Lab Runner
+
+Run a single fixture:
 
 ```bash
 npm run lab:sample
 ```
 
-Run every bundled fixture with:
-
-```bash
-npm run lab:all
-```
-
-Run the repo the way CI does with:
+Run every bundled fixture and produce a CI manifest:
 
 ```bash
 npm run lab:ci
 ```
 
-This creates:
+The runner writes report artifacts to `.nocklab/`, including JSON reports, Markdown reports, `manifest.json`, and `summary.md`. Generated artifacts are intentionally ignored by Git.
 
-- `.nocklab/hello-counter.report.json`
-- `.nocklab/hello-counter.report.md`
-- `.nocklab/bridge-settlement.report.json`
-- `.nocklab/bridge-settlement.report.md`
-- `.nocklab/bridge-delayed.report.json`
-- `.nocklab/bridge-delayed.report.md`
-- `.nocklab/payment-flow.report.json`
-- `.nocklab/payment-flow.report.md`
-- `.nocklab/intent-settlement.report.json`
-- `.nocklab/intent-settlement.report.md`
-- `.nocklab/token-issuance.report.json`
-- `.nocklab/token-issuance.report.md`
-- `.nocklab/manifest.json`
-- `.nocklab/summary.md`
+Bundled fixture tracks include:
 
-The current runner does not call a live Nockchain node yet. The next adapter milestone is replacing mock step execution with local fakenet gRPC calls.
+- hello counter
+- bridge settlement
+- delayed bridge settlement warning
+- payment flow invariants
+- intent settlement invariants
+- token issuance invariants
+- compute benchmark profile
+- local fakenet health, balance, chain, peek, and poke probes
 
-## 3-6 Month Slice
+## Trust and Verification
 
-The repo now includes the pre-audit layer primitives from the strategy:
+The public verification index is available at:
 
-- state snapshot timelines and per-step state diffs in generated reports
-- reusable invariant packs for payments, intents, and token issuance
-- hosted report history data, API, and page
-- private team workspace data, API, and page
+- `/verify`
+- `/api/verify`
 
-Run the verification gate with:
+Current verifier families:
+
+- badge issuance: `/api/trust/badges/verify`
+- generated reports: `/api/reports/generated/verify`
+- local fakenet evidence: `/api/fakenet/evidence/verify`
+- workspace evidence: `/api/workspaces/evidence/verify`
+- workspace upload tokens: `/api/workspaces/upload-token/verify`
+- trust updates: `/api/trust/updates/verify`
+- registry checkpoints: `/api/registry/checkpoint`
+
+Registry and discovery endpoints:
+
+- `/registry`
+- `/api/registry`
+- `/api/registry/checkpoint`
+- `/api/trust`
+- `/api/trust/feed`
+- `/api/trust/updates`
+- `/openapi.json`
+- `/.well-known/nocksperimental.json`
+
+## Workspaces
+
+Workspace surfaces model private team evidence without exposing sensitive upload credentials publicly.
+
+- `/workspaces`
+- `/workspaces/[workspaceSlug]`
+- `/api/workspaces`
+- `/api/workspaces/[workspaceSlug]`
+- `/api/workspaces/[workspaceSlug]/evidence`
+- `/api/workspaces/[workspaceSlug]/upload-policy`
+- `/api/workspaces/[workspaceSlug]/upload-token`
+- `/api/workspaces/evidence/verify`
+- `/api/workspaces/upload-token/verify`
+
+Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed token issuance additionally requires `NOCKS_WORKSPACE_UPLOAD_TOKEN_SIGNING_KEY`. Public verifier responses avoid echoing raw secrets or token material.
+
+## Scripts
+
+- `npm run dev` starts the Next.js app.
+- `npm run build` checks a production build.
+- `npm run lint` runs ESLint.
+- `npm test` runs all focused API, page, registry, fakenet, trust, verifier, and deployment contract tests.
+- `npm run lab:sample` generates the starter lab report.
+- `npm run lab:bridge` generates a mock bridge settlement report.
+- `npm run lab:bridge:delayed` generates a bridge report with a triggered warning alert.
+- `npm run lab:payment` generates a payment flow report with the payments invariant pack.
+- `npm run lab:intent` generates an intent settlement report with the intents invariant pack.
+- `npm run lab:token` generates a token issuance report with the token invariant pack.
+- `npm run lab:compute` generates a compute benchmark report.
+- `npm run lab:local` probes local fakenet health.
+- `npm run lab:local:balance` parses `fakenock --balance`.
+- `npm run lab:local:chain` parses chain metadata from `fakenock --balance`.
+- `npm run lab:local:peek` runs a command-backed local fakenet `peek`.
+- `npm run lab:local:poke` runs a command-backed local fakenet `poke`.
+- `npm run lab:all` runs the config-driven CI lab workflow.
+- `npm run lab:ci` runs the config-driven CI workflow and writes a manifest plus summary.
+- `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
+- `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
+- `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
+- `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
+- `npm run smoke:cloudflare` validates the OpenNext Cloudflare preview bundle.
+- `npm run deploy` builds and deploys to Cloudflare Workers through OpenNext.
+
+## Deployment
+
+The deployed app runs on Cloudflare Workers via OpenNext.
+
+From WSL:
 
 ```bash
-npm run verify:3-6
+npm run deploy
 ```
 
-## 6-18 Month Slice
+From Windows PowerShell, launch the WSL deploy pipeline so OpenNext bundles the app correctly:
 
-The repo now includes the ecosystem trust primitives from the strategy:
+```powershell
+wsl -d Ubuntu-22.04 --cd /home/kgbrah/nocklab/nocksperimental -- bash -lc 'env PATH=/home/kgbrah/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin npm run deploy'
+```
 
-- verified report badges with report hash, snapshot root, invariant packs, and signature fields
-- solver execution-quality scorecards
-- native token compatibility reports for wallet listing decisions
-- compute provider benchmark profiles
-- adoption proof for apps, wallets, funds, and providers
-
-Run the verification gate with:
+Post-deploy smoke checks:
 
 ```bash
-npm run verify:6-18
+curl -I https://nocksperimental.com/
+curl https://nocksperimental.com/api/health
+curl https://nocksperimental.com/api/verify
+curl https://nocksperimental.com/.well-known/nocksperimental.json
 ```
+
+## Documentation
+
+- `docs/strategy.md` describes the product roadmap.
+- `docs/invariants.md` documents invariant-pack behavior.
+- `docs/ci.md` covers CI artifact generation.
+- `docs/report-history.md` describes hosted report history.
+- `docs/trust-signals.md` documents trust registry primitives.
+- `docs/workspaces.md` covers private workspace evidence and upload-token flows.
+- `docs/deployment.md` covers Cloudflare deployment details.
+
+## Roadmap
+
+The next adapter milestone is replacing command-backed fakenet probes with stable gRPC-native fakenet `poke` and `peek` operations once the node surfaces are reliable enough to treat as the source of truth.

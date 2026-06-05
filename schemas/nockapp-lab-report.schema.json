@@ -14,6 +14,7 @@
     "steps",
     "invariants",
     "alerts",
+    "adapterObservations",
     "stateSnapshots",
     "stateDiffs",
     "nextActions"
@@ -47,6 +48,12 @@
         },
         "grpcEndpoint": { "type": "string" },
         "fakenetCommand": { "type": "string" },
+        "balanceCheck": {
+          "$ref": "#/$defs/balanceCheck"
+        },
+        "chainCheck": {
+          "$ref": "#/$defs/chainCheck"
+        },
         "notes": {
           "type": "array",
           "items": { "type": "string" }
@@ -120,6 +127,9 @@
           "target": { "type": "string" },
           "expectation": { "type": "string" },
           "observed": { "type": "string" },
+          "adapter": {
+            "$ref": "#/$defs/adapterObservation"
+          },
           "beforeHash": { "type": "string" },
           "afterHash": { "type": "string" },
           "stateDiffs": {
@@ -165,6 +175,12 @@
         }
       }
     },
+    "adapterObservations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/adapterObservationSummary"
+      }
+    },
     "stateDiffs": {
       "type": "array",
       "items": {
@@ -191,6 +207,157 @@
     }
   },
   "$defs": {
+    "adapterObservationSummary": {
+      "type": "object",
+      "required": ["stepId", "kind", "capability", "status", "summary", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "stepId": { "type": "string" },
+        "kind": { "enum": ["local-fakenet"] },
+        "capability": { "enum": ["health", "balance", "chain", "poke", "peek"] },
+        "status": { "enum": ["pass", "fail"] },
+        "target": { "type": "string" },
+        "summary": { "type": "string" },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "adapterObservation": {
+      "type": "object",
+      "required": ["kind", "grpcEndpoint", "reachable", "latencyMs", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["local-fakenet"] },
+        "grpcEndpoint": { "type": "string" },
+        "reachable": { "type": "boolean" },
+        "latencyMs": { "type": "integer", "minimum": 0 },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "balance": {
+          "$ref": "#/$defs/balanceObservation"
+        },
+        "chain": {
+          "$ref": "#/$defs/chainObservation"
+        },
+        "poke": {
+          "$ref": "#/$defs/pokeObservation"
+        },
+        "peek": {
+          "$ref": "#/$defs/peekObservation"
+        },
+        "error": { "type": "string" }
+      }
+    },
+    "balanceObservation": {
+      "type": "object",
+      "required": ["status", "address", "unit", "raw", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "address": { "type": "string" },
+        "amount": { "type": "number" },
+        "unit": { "const": "NOCK" },
+        "raw": { "type": "string" },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error": { "type": "string" }
+      }
+    },
+    "chainObservation": {
+      "type": "object",
+      "required": ["status", "raw", "checkedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "height": { "type": "integer", "minimum": 0 },
+        "peerCount": { "type": "integer", "minimum": 0 },
+        "blockId": { "type": "string" },
+        "blockCommitment": { "type": "string" },
+        "raw": { "type": "string" },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "error": { "type": "string" }
+      }
+    },
+    "peekObservation": {
+      "type": "object",
+      "required": ["status", "raw", "checkedAt", "expectation"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "raw": { "type": "string" },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exitCode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectation": { "type": "string" },
+        "error": { "type": "string" }
+      }
+    },
+    "pokeObservation": {
+      "type": "object",
+      "required": ["status", "raw", "checkedAt", "expectation"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["pass", "fail"] },
+        "raw": { "type": "string" },
+        "checkedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "exitCode": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expectation": { "type": "string" },
+        "error": { "type": "string" }
+      }
+    },
+    "balanceCheck": {
+      "type": "object",
+      "required": ["address", "command"],
+      "additionalProperties": false,
+      "properties": {
+        "address": { "type": "string" },
+        "command": {
+          "$ref": "#/$defs/command"
+        }
+      }
+    },
+    "chainCheck": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "$ref": "#/$defs/command"
+        }
+      }
+    },
+    "command": {
+      "type": "object",
+      "required": ["program"],
+      "additionalProperties": false,
+      "properties": {
+        "program": { "type": "string" },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "stateDiff": {
       "type": "object",
       "required": ["path", "before", "after"],

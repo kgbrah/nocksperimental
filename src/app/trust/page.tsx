@@ -3,49 +3,38 @@ import {
   ArrowUpRight,
   BadgeCheck,
   Cpu,
+  Database,
+  GitBranch,
   Gauge,
+  RadioTower,
   ShieldCheck,
   UsersRound,
   WalletCards
 } from "lucide-react";
 import Link from "next/link";
+import { createTrustEventFeed } from "@/lib/trust-event-feed";
+import { scoreHistorySummaries } from "@/lib/trust-score-history";
+import { trustUpdateChainSummary } from "@/lib/trust-update-log";
 import {
+  badgeIssuanceReceipts,
+  badgeRevocations,
   computeBenchmarkProfiles,
+  resolvedBadges,
+  resolvedTrustConsumersForCategory,
   solverScorecards,
   tokenCompatibilityReports,
   trustConsumerCategories,
-  trustConsumersForCategory,
-  verifiedBadges
 } from "@/lib/trust-signals";
+import { createVerificationIndex } from "@/lib/verification-index";
 
-const trustLinks = [
-  {
-    href: "/trust/badges",
-    label: "Verified badges",
-    value: verifiedBadges.length.toString(),
-    icon: BadgeCheck
-  },
-  {
-    href: "/trust/solver-scores",
-    label: "Solver scores",
-    value: solverScorecards.length.toString(),
-    icon: Gauge
-  },
-  {
-    href: "/trust/token-compatibility",
-    label: "Token reports",
-    value: tokenCompatibilityReports.length.toString(),
-    icon: WalletCards
-  },
-  {
-    href: "/trust/compute-benchmarks",
-    label: "Compute profiles",
-    value: computeBenchmarkProfiles.length.toString(),
-    icon: Cpu
-  }
-];
+export const dynamic = "force-dynamic";
+
+const verificationIndex = createVerificationIndex();
 
 export default function TrustPage() {
+  const trustFeed = createTrustEventFeed();
+  const trustLinks = createTrustLinks(trustFeed);
+
   return (
     <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
       <section className="border-b border-[#242424] bg-[#dce8ee]">
@@ -61,9 +50,17 @@ export default function TrustPage() {
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Trust Signals</h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
-                Verification badges, solver quality, token compatibility, and compute provider
-                benchmarks built from NockApp lab evidence.
+                Verification badges, signed issuance receipts, revocation records, solver quality,
+                token compatibility, and compute provider benchmarks built from NockApp lab
+                evidence.
               </p>
+              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                <span>{badgeIssuanceReceipts.length} signed issuance receipts</span>
+                <span>{badgeRevocations.length} badge revocation record</span>
+                <span>{scoreHistorySummaries.length} score histories</span>
+                <span>{trustUpdateChainSummary.entryCount} append-only updates</span>
+                <span>{trustFeed.eventCount} trust feed events</span>
+              </div>
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
@@ -76,7 +73,7 @@ export default function TrustPage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:grid-cols-4 lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-2 lg:grid-cols-3 lg:px-8">
         {trustLinks.map((item) => {
           const Icon = item.icon;
 
@@ -124,12 +121,41 @@ export default function TrustPage() {
                 {category}
               </p>
               <div className="mt-3 grid gap-3">
-                {trustConsumersForCategory(category).map((consumer) => (
+                {resolvedTrustConsumersForCategory(category).map((consumer) => (
                   <div className="border border-[#8b8b7a] bg-white p-3" key={consumer.id}>
                     <h3 className="font-semibold">{consumer.name}</h3>
                     <p className="mt-2 text-sm leading-6 text-[#44443d]">
                       {consumer.uses.map((use) => use.purpose).join(" ")}
                     </p>
+                    <div className="mt-3 grid gap-2 border-t border-[#d1cfbf] pt-3">
+                      {consumer.resolvedUses.map((use) => (
+                        <div className="grid gap-1" key={`${consumer.id}-${use.kind}-${use.purpose}`}>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+                              {use.evidenceLabel ?? "Unresolved evidence"}
+                            </span>
+                            <span className="border border-[#242424] bg-[#f7f3ea] px-2 py-1 font-mono text-xs uppercase">
+                              {use.evidenceStatus ?? "missing"}
+                            </span>
+                            {typeof use.score === "number" ? (
+                              <span className="font-mono text-xs text-[#3d3d35]">
+                                score {use.score}
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="break-all font-mono text-xs leading-5 text-[#4d4d43]">
+                            {use.snapshotRoot ?? use.reportSlug ?? use.badgeId ?? use.kind}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    <Link
+                      className="mt-3 inline-flex items-center gap-2 border border-[#242424] bg-[#171717] px-3 py-2 text-sm font-medium text-white"
+                      href={`/trust/consumers/${consumer.id}`}
+                    >
+                      Open Consumer
+                      <ArrowUpRight size={14} aria-hidden="true" />
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -139,4 +165,57 @@ export default function TrustPage() {
       </section>
     </main>
   );
+}
+
+function createTrustLinks(trustFeed: ReturnType<typeof createTrustEventFeed>) {
+  return [
+    {
+      href: "/verify",
+      label: "Verify evidence",
+      value: verificationIndex.verifierCount.toString(),
+      icon: ShieldCheck
+    },
+    {
+      href: "/trust/badges",
+      label: "Badge records",
+      value: resolvedBadges.length.toString(),
+      icon: BadgeCheck
+    },
+    {
+      href: "/trust/solver-scores",
+      label: "Solver scores",
+      value: solverScorecards.length.toString(),
+      icon: Gauge
+    },
+    {
+      href: "/trust/token-compatibility",
+      label: "Token reports",
+      value: tokenCompatibilityReports.length.toString(),
+      icon: WalletCards
+    },
+    {
+      href: "/trust/compute-benchmarks",
+      label: "Compute profiles",
+      value: computeBenchmarkProfiles.length.toString(),
+      icon: Cpu
+    },
+    {
+      href: "/trust/score-history",
+      label: "Score histories",
+      value: scoreHistorySummaries.length.toString(),
+      icon: Database
+    },
+    {
+      href: "/trust/updates",
+      label: "Update log",
+      value: trustUpdateChainSummary.entryCount.toString(),
+      icon: GitBranch
+    },
+    {
+      href: "/trust/feed",
+      label: "Event feed",
+      value: trustFeed.eventCount.toString(),
+      icon: RadioTower
+    }
+  ];
 }

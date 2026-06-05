@@ -1,0 +1,279 @@
+#!/usr/bin/env node
+
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
+import process from "node:process";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const ts = require("typescript");
+const moduleCache = new Map();
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+async function main() {
+  await assertTrustUpdateVerifier();
+  await assertVerificationIndexSample();
+  assertVerifyPageSample();
+  assertDetailPageVerifierLink();
+  await assertOpenApiPath();
+  assertSmokeAndDocs();
+  assertPackageScript();
+}
+
+async function assertTrustUpdateVerifier() {
+  const { GET } = loadTypeScriptModule("src/app/api/trust/updates/verify/route.ts");
+  const verified = await GET(createRequest({
+    updateId: "update-score-history-v0",
+    entryHash: "sha256:append-score-history-v0",
+    rootHash: "root-score-history-v0",
+    signature: "ed25519-dev-sig-append-score-history-v0",
+    issuerKeyId: "nocksperimental-registry-ed25519-dev-v0"
+  }));
+  const verifiedBody = await verified.json();
+
+  assertEqual(verified.status, 200, "verified status code");
+  assertEqual(verifiedBody.version, "v0", "verifier version");
+  assertEqual(verifiedBody.subject, "nocksperimental.com", "verifier subject");
+  assertEqual(verifiedBody.canonicalUrl, "https://nocksperimental.com/api/trust/updates/verify", "canonical URL");
+  assertEqual(verifiedBody.verified, true, "matching update verifies");
+  assertEqual(verifiedBody.query.updateId, "update-score-history-v0", "query update id");
+  assertEqual(verifiedBody.checks.updateFound, true, "update found check");
+  assertEqual(verifiedBody.checks.entryHashMatched, true, "entry hash match check");
+  assertEqual(verifiedBody.checks.rootHashMatched, true, "root hash match check");
+  assertEqual(verifiedBody.checks.signatureMatched, true, "signature match check");
+  assertEqual(verifiedBody.checks.issuerKeyMatched, true, "issuer key match check");
+  assertEqual(verifiedBody.checks.chainAppendOnly, true, "append-only chain check");
+  assertEqual(verifiedBody.checks.signatureValid, true, "signature validity check");
+  assertEqual(verifiedBody.checks.exactUpdateMatch, true, "exact update match check");
+  assertEqual(verifiedBody.match.id, "update-score-history-v0", "matched update id");
+  assertEqual(verifiedBody.match.sequence, 4, "matched sequence");
+  assertEqual(verifiedBody.match.links.detail, "https://nocksperimental.com/trust/updates/update-score-history-v0", "detail link");
+  assertEqual(verifiedBody.match.links.entryApi, "https://nocksperimental.com/api/trust/updates/update-score-history-v0", "entry API link");
+  assertEqual(verifiedBody.match.links.chainApi, "https://nocksperimental.com/api/trust/updates", "chain API link");
+  assertEqual(verifiedBody.match.links.targetApi, "https://nocksperimental.com/api/trust/score-history", "target API link");
+
+  const badRoot = await GET(createRequest({
+    updateId: "update-score-history-v0",
+    entryHash: "sha256:append-score-history-v0",
+    rootHash: "root:wrong"
+  }));
+  const badRootBody = await badRoot.json();
+
+  assertEqual(badRoot.status, 200, "bad root status code");
+  assertEqual(badRootBody.verified, false, "bad root does not verify");
+  assertEqual(badRootBody.checks.updateFound, true, "bad root update found");
+  assertEqual(badRootBody.checks.entryHashMatched, true, "bad root entry hash matched");
+  assertEqual(badRootBody.checks.rootHashMatched, false, "bad root hash check");
+  assertEqual(badRootBody.checks.exactUpdateMatch, false, "bad root exact match");
+  assertEqual(badRootBody.match, null, "bad root match");
+
+  const missingIdentifier = await GET(createRequest({ signature: "ed25519-dev-sig-append-score-history-v0" }));
+  const missingIdentifierBody = await missingIdentifier.json();
+
+  assertEqual(missingIdentifier.status, 400, "missing identifier status");
+  assertEqual(missingIdentifierBody.error, "Missing updateId or entryHash query parameter", "missing identifier error");
+}
+
+async function assertVerificationIndexSample() {
+  const { GET } = loadTypeScriptModule("src/app/api/verify/route.ts");
+  const response = await GET();
+  const body = await response.json();
+
+  assertVerifier(
+    body,
+    "trust-update-entry",
+    "/api/trust/updates/verify",
+    "Verify signed trust update entries by update id, entry hash, root, signature, or issuer key"
+  );
+  assertStartsWith(
+    body.samples.trustUpdate.url,
+    "https://nocksperimental.com/api/trust/updates/verify?",
+    "trust update sample URL"
+  );
+  assertIncludes(body.samples.trustUpdate.url, "updateId=update-score-history-v0", "trust update sample id");
+  assertIncludes(body.samples.trustUpdate.url, "entryHash=sha256%3Aappend-score-history-v0", "trust update sample entry hash");
+  assertEqual(body.samples.trustUpdate.updateId, "update-score-history-v0", "trust update sample update id");
+  assertEqual(body.samples.trustUpdate.rootHash, "root-score-history-v0", "trust update sample root");
+}
+
+function assertVerifyPageSample() {
+  const page = readText("src/app/verify/page.tsx");
+
+  assertIncludes(page, "const updateSample = verification.samples.trustUpdate", "verify page loads trust update sample");
+  assertIncludes(page, "Trust update", "verify page renders trust update sample label");
+  assertIncludes(page, "updateSample?.updateId", "verify page renders trust update sample id");
+}
+
+function assertDetailPageVerifierLink() {
+  const page = readText("src/app/trust/updates/[updateId]/page.tsx");
+
+  assertIncludes(page, "const verificationHref", "trust update detail page builds verifier URL");
+  assertIncludes(page, "encodeURIComponent(entry.id)", "trust update detail page encodes update id");
+  assertIncludes(page, "encodeURIComponent(entry.entryHash)", "trust update detail page encodes entry hash");
+  assertIncludes(page, "encodeURIComponent(entry.rootHash)", "trust update detail page encodes root hash");
+  assertIncludes(page, "encodeURIComponent(entry.signature.signature)", "trust update detail page encodes signature");
+  assertIncludes(page, "href={verificationHref}", "trust update detail page links verifier");
+  assertIncludes(page, "Verify Entry", "trust update detail page renders verifier action");
+}
+
+async function assertOpenApiPath() {
+  const { GET } = loadTypeScriptModule("src/app/openapi.json/route.ts");
+  const response = await GET();
+  const spec = await response.json();
+
+  assertEqual(
+    spec.paths["/api/trust/updates/verify"]?.get?.summary,
+    "Trust update entry verifier",
+    "OpenAPI trust update verifier path"
+  );
+}
+
+function assertSmokeAndDocs() {
+  const smokeScript = readText("scripts/smoke-cloudflare-preview.mjs");
+  const deploymentDocs = readText("docs/deployment.md");
+
+  assertIncludes(smokeScript, "expectTrustUpdateVerification", "Cloudflare smoke verifies trust update entry");
+  assertIncludes(smokeScript, "/api/trust/updates/verify", "Cloudflare smoke checks trust update verifier");
+  assertIncludes(deploymentDocs, "/api/trust/updates/verify", "deployment docs mention trust update verifier");
+}
+
+function assertPackageScript() {
+  const packageJson = JSON.parse(readText("package.json"));
+
+  assertIncludes(
+    packageJson.scripts.test,
+    "test:trust-update-verify-api",
+    "full test suite includes trust update verifier test"
+  );
+  assertEqual(
+    packageJson.scripts["test:trust-update-verify-api"],
+    "node scripts/test-trust-update-verify-api.mjs",
+    "trust update verifier script"
+  );
+}
+
+function createRequest(params) {
+  const url = new URL("https://nocksperimental.com/api/trust/updates/verify");
+
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  return new Request(url);
+}
+
+function loadTypeScriptModule(relativePath) {
+  const modulePath = path.join(process.cwd(), relativePath);
+
+  if (!existsSync(modulePath)) {
+    throw new Error(`Missing required file: ${relativePath}`);
+  }
+
+  if (moduleCache.has(modulePath)) {
+    return moduleCache.get(modulePath).exports;
+  }
+
+  const source = readFileSync(modulePath, "utf8");
+  const output = ts.transpileModule(source, {
+    compilerOptions: {
+      esModuleInterop: true,
+      module: ts.ModuleKind.CommonJS,
+      resolveJsonModule: true,
+      target: ts.ScriptTarget.ES2020
+    },
+    fileName: modulePath
+  }).outputText;
+
+  const compiled = { exports: {} };
+  moduleCache.set(modulePath, compiled);
+
+  const run = new Function("exports", "require", "module", "__filename", "__dirname", output);
+  run(compiled.exports, createModuleRequire(), compiled, modulePath, path.dirname(modulePath));
+
+  return compiled.exports;
+}
+
+function createModuleRequire() {
+  return (specifier) => {
+    if (specifier === "next/server") {
+      return {
+        NextResponse: {
+          json: (body, init = {}) => ({
+            headers: init.headers ?? {},
+            status: init.status ?? 200,
+            json: async () => body
+          })
+        }
+      };
+    }
+
+    if (specifier.startsWith("@/")) {
+      return loadAliasModule(specifier);
+    }
+
+    return require(specifier);
+  };
+}
+
+function loadAliasModule(specifier) {
+  const aliasPath = path.join(process.cwd(), "src", specifier.slice(2));
+  const jsonPath = `${aliasPath}.json`;
+  const tsPath = `${aliasPath}.ts`;
+
+  if (existsSync(aliasPath) && path.extname(aliasPath) === ".json") {
+    return require(aliasPath);
+  }
+
+  if (existsSync(aliasPath) && path.extname(aliasPath) === ".ts") {
+    return loadTypeScriptModule(path.relative(process.cwd(), aliasPath));
+  }
+
+  if (existsSync(jsonPath)) {
+    return require(jsonPath);
+  }
+
+  if (existsSync(tsPath)) {
+    return loadTypeScriptModule(path.relative(process.cwd(), tsPath));
+  }
+
+  throw new Error(`Unsupported module alias: ${specifier}`);
+}
+
+function readText(filePath) {
+  if (!existsSync(filePath)) {
+    throw new Error(`Missing required file: ${filePath}`);
+  }
+
+  return readFileSync(filePath, "utf8");
+}
+
+function assertVerifier(body, id, pathName, description) {
+  const verifier = body.verifiers.find((candidate) => candidate.id === id);
+
+  assertEqual(verifier?.path, pathName, `${id} verifier path`);
+  assertEqual(verifier?.url, `https://nocksperimental.com${pathName}`, `${id} verifier URL`);
+  assertEqual(verifier?.description, description, `${id} verifier description`);
+  assertEqual(Array.isArray(verifier?.queryParameters), true, `${id} verifier query parameters`);
+}
+
+function assertIncludes(actual, expected, label) {
+  if (!actual?.includes(expected)) {
+    throw new Error(`${label}: expected ${JSON.stringify(actual)} to include ${JSON.stringify(expected)}`);
+  }
+}
+
+function assertStartsWith(actual, expectedPrefix, label) {
+  if (!actual?.startsWith(expectedPrefix)) {
+    throw new Error(`${label}: expected ${JSON.stringify(actual)} to start with ${JSON.stringify(expectedPrefix)}`);
+  }
+}
+
+function assertEqual(actual, expected, label) {
+  if (actual !== expected) {
+    throw new Error(`${label}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+  }
+}

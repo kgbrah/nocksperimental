@@ -7,6 +7,8 @@
     "$schema",
     "version",
     "verifiedBadges",
+    "badgeIssuanceReceipts",
+    "badgeRevocations",
     "solverScorecards",
     "tokenCompatibilityReports",
     "computeBenchmarkProfiles",
@@ -25,6 +27,19 @@
       "minItems": 1,
       "items": {
         "$ref": "#/$defs/verifiedBadge"
+      }
+    },
+    "badgeIssuanceReceipts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/badgeIssuanceReceipt"
+      }
+    },
+    "badgeRevocations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/badgeRevocation"
       }
     },
     "solverScorecards": {
@@ -104,6 +119,113 @@
               "type": "array",
               "items": { "type": "string" }
             }
+          }
+        }
+      }
+    },
+    "badgeIssuanceReceipt": {
+      "type": "object",
+      "required": [
+        "id",
+        "badgeId",
+        "issuedAt",
+        "issuer",
+        "issuerKeyId",
+        "payloadDigest",
+        "signature",
+        "signedPayload",
+        "verification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "badgeId": { "type": "string" },
+        "issuedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "issuer": { "type": "string" },
+        "issuerKeyId": { "type": "string" },
+        "payloadDigest": { "type": "string" },
+        "signature": { "type": "string" },
+        "signedPayload": {
+          "type": "object",
+          "required": [
+            "badgeId",
+            "status",
+            "reportHash",
+            "snapshotRoot",
+            "issuedAt",
+            "expiresAt"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "badgeId": { "type": "string" },
+            "status": {
+              "enum": ["verified", "watch", "revoked", "expired"]
+            },
+            "reportHash": { "type": "string" },
+            "snapshotRoot": { "type": "string" },
+            "issuedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expiresAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "verification": {
+          "type": "object",
+          "required": ["status", "algorithm", "checkedAt"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": ["valid", "invalid", "unchecked"]
+            },
+            "algorithm": { "type": "string" },
+            "checkedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "badgeRevocation": {
+      "type": "object",
+      "required": [
+        "id",
+        "badgeId",
+        "statusBeforeRevocation",
+        "revokedAt",
+        "revokedBy",
+        "reason",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "badgeId": { "type": "string" },
+        "statusBeforeRevocation": {
+          "enum": ["verified", "watch", "expired"]
+        },
+        "revokedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "revokedBy": { "type": "string" },
+        "reason": { "type": "string" },
+        "replacementBadgeId": { "type": "string" },
+        "evidence": {
+          "type": "object",
+          "required": ["reportHash", "snapshotRoot", "signature"],
+          "additionalProperties": false,
+          "properties": {
+            "reportHash": { "type": "string" },
+            "snapshotRoot": { "type": "string" },
+            "signature": { "type": "string" }
           }
         }
       }

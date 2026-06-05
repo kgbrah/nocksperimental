@@ -1,4 +1,4 @@
-import { ArrowLeft, Code2, Gauge, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Code2, Gauge, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { percentage, scoreLabel, solverScorecards } from "@/lib/trust-signals";
 
@@ -21,13 +21,13 @@ export default function SolverScoresPage() {
                 Solver scorecards turn intent replay reports into routing-quality signals.
               </p>
             </div>
-            <a
+            <Link
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/solver-scores"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -49,8 +49,17 @@ export default function SolverScoresPage() {
                   runs against {scorecard.fixtureId}.
                 </p>
               </div>
-              <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
-                {scorecard.score}
+              <div className="flex shrink-0 flex-col items-end gap-3">
+                <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
+                  {scorecard.score}
+                </div>
+                <Link
+                  className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-white px-3 py-2 text-sm font-medium text-[#171717]"
+                  href={`/trust/solver-scores/${scorecard.id}`}
+                >
+                  Open Detail
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
               </div>
             </div>
 

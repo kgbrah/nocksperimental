@@ -1,8 +1,9 @@
-import { ArrowLeft, Code2, LockKeyhole, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Code2, LockKeyhole, UsersRound } from "lucide-react";
 import Link from "next/link";
 import {
   privateWorkspaces,
   reportsForWorkspace,
+  workspaceVerificationSummary,
   workspaceStageCoverage
 } from "@/lib/report-history";
 
@@ -26,18 +27,18 @@ export default function WorkspacesPage() {
                 workflows.
               </p>
             </div>
-            <a
+            <Link
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
               href="/api/workspaces"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:grid-cols-3 lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <Metric label="Private spaces" value={privateWorkspaces.length.toString()} />
         <Metric
           label="Total seats"
@@ -51,12 +52,23 @@ export default function WorkspacesPage() {
             .reduce((sum, workspace) => sum + reportsForWorkspace(workspace.slug).length, 0)
             .toString()}
         />
+        <Metric
+          label="Verified reports"
+          value={privateWorkspaces
+            .reduce(
+              (sum, workspace) =>
+                sum + workspaceVerificationSummary(workspace.slug).verifiedReportCount,
+              0
+            )
+            .toString()}
+        />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
         <div className="grid gap-4">
           {privateWorkspaces.map((workspace) => {
             const reports = reportsForWorkspace(workspace.slug);
+            const verification = workspaceVerificationSummary(workspace.slug);
 
             return (
               <article
@@ -83,10 +95,11 @@ export default function WorkspacesPage() {
                     <span>{workspace.slug}</span>
                     <span>{workspace.seats} seats</span>
                     <span>{reports.length} reports</span>
+                    <span>{verification.verifiedReportCount} verified</span>
                   </div>
                 </div>
 
-                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <Callout label="Environments" value={workspace.environments.join(", ")} />
                   <Callout
                     label="Members"
@@ -98,7 +111,26 @@ export default function WorkspacesPage() {
                     label="Latest reports"
                     value={reports.map((report) => report.fixtureId).join(", ") || "None"}
                   />
+                  <Callout
+                    label="Verification"
+                    value={`${verification.verifiedReportCount} verified / ${verification.unlinkedReportCount} unlinked`}
+                  />
+                  <Callout
+                    label="Latest badge"
+                    value={verification.latestBadgeId ?? "No linked badge"}
+                  />
+                  <Callout
+                    label="Snapshot root"
+                    value={verification.latestSnapshotRoot ?? "No linked root"}
+                  />
                 </div>
+                <Link
+                  className="mt-4 inline-flex items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+                  href={`/workspaces/${workspace.slug}`}
+                >
+                  Open Workspace
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
               </article>
             );
           })}
@@ -127,7 +159,7 @@ function Callout({ label, value }: { label: string; value: string }) {
         <UsersRound size={14} aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-2 text-sm leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all text-sm leading-6 text-[#3f3f38]">{value}</p>
     </div>
   );
 }

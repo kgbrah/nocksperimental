@@ -20,6 +20,23 @@
       }
     },
     {
+      "id": "badge-payment-flow-legacy",
+      "label": "Payment Flow Legacy",
+      "kind": "app-report",
+      "status": "revoked",
+      "reportSlug": "payment-flow",
+      "fixtureId": "payment-flow-alpha",
+      "issuedAt": "2026-05-20T02:00:00.000Z",
+      "expiresAt": "2027-05-20T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:legacy-payment-flow-alpha",
+        "snapshotRoot": "payment-flow-alpha-root",
+        "signature": "nocklab-sig-payment-flow-alpha",
+        "invariantPacks": ["payments-core-v0"]
+      }
+    },
+    {
       "id": "badge-solver-a-qualified",
       "label": "Solver A Qualified",
       "kind": "solver-score",
@@ -68,6 +85,134 @@
         "snapshotRoot": "compute-alpha-jobclass-root",
         "signature": "nocklab-sig-compute-alpha-v0",
         "invariantPacks": []
+      }
+    }
+  ],
+  "badgeIssuanceReceipts": [
+    {
+      "id": "issue-payment-flow-v0",
+      "badgeId": "badge-payment-flow-verified",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+      "payloadDigest": "sha256:issue-payment-flow-v0-3a6d6bff59cb624f",
+      "signature": "ed25519-dev-sig-issue-payment-flow-v0",
+      "signedPayload": {
+        "badgeId": "badge-payment-flow-verified",
+        "status": "verified",
+        "reportHash": "sha256:3a6d6bff59cb624f-payment-flow",
+        "snapshotRoot": "3a6d6bff59cb624f",
+        "issuedAt": "2026-05-30T02:00:00.000Z",
+        "expiresAt": "2027-05-30T02:00:00.000Z"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519-devnet-v0",
+        "checkedAt": "2026-05-30T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-payment-flow-alpha",
+      "badgeId": "badge-payment-flow-legacy",
+      "issuedAt": "2026-05-20T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+      "payloadDigest": "sha256:issue-payment-flow-alpha-payment-flow-alpha-root",
+      "signature": "ed25519-dev-sig-issue-payment-flow-alpha",
+      "signedPayload": {
+        "badgeId": "badge-payment-flow-legacy",
+        "status": "verified",
+        "reportHash": "sha256:legacy-payment-flow-alpha",
+        "snapshotRoot": "payment-flow-alpha-root",
+        "issuedAt": "2026-05-20T02:00:00.000Z",
+        "expiresAt": "2027-05-20T02:00:00.000Z"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519-devnet-v0",
+        "checkedAt": "2026-05-20T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-solver-a-v0",
+      "badgeId": "badge-solver-a-qualified",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+      "payloadDigest": "sha256:issue-intent-settlement-v0-b84c2c688d08c3c2",
+      "signature": "ed25519-dev-sig-issue-solver-a-v0",
+      "signedPayload": {
+        "badgeId": "badge-solver-a-qualified",
+        "status": "verified",
+        "reportHash": "sha256:b84c2c688d08c3c2-intent-settlement",
+        "snapshotRoot": "b84c2c688d08c3c2",
+        "issuedAt": "2026-05-30T02:00:00.000Z",
+        "expiresAt": "2027-05-30T02:00:00.000Z"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519-devnet-v0",
+        "checkedAt": "2026-05-30T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-token-compatible-v0",
+      "badgeId": "badge-mock-token-compatible",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+      "payloadDigest": "sha256:issue-token-issuance-v0-cd7cc46d9b8d0f59",
+      "signature": "ed25519-dev-sig-issue-token-compatible-v0",
+      "signedPayload": {
+        "badgeId": "badge-mock-token-compatible",
+        "status": "verified",
+        "reportHash": "sha256:cd7cc46d9b8d0f59-token-issuance",
+        "snapshotRoot": "cd7cc46d9b8d0f59",
+        "issuedAt": "2026-05-30T02:00:00.000Z",
+        "expiresAt": "2027-05-30T02:00:00.000Z"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519-devnet-v0",
+        "checkedAt": "2026-05-30T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-compute-alpha-v0",
+      "badgeId": "badge-compute-provider-alpha",
+      "issuedAt": "2026-05-30T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
+      "payloadDigest": "sha256:issue-compute-alpha-v0-compute-alpha-jobclass-root",
+      "signature": "ed25519-dev-sig-issue-compute-alpha-v0",
+      "signedPayload": {
+        "badgeId": "badge-compute-provider-alpha",
+        "status": "verified",
+        "reportHash": "sha256:benchmark-alpha-provider-profile",
+        "snapshotRoot": "compute-alpha-jobclass-root",
+        "issuedAt": "2026-05-30T02:00:00.000Z",
+        "expiresAt": "2027-05-30T02:00:00.000Z"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519-devnet-v0",
+        "checkedAt": "2026-05-30T02:10:00.000Z"
+      }
+    }
+  ],
+  "badgeRevocations": [
+    {
+      "id": "revocation-payment-flow-legacy-v0",
+      "badgeId": "badge-payment-flow-legacy",
+      "statusBeforeRevocation": "verified",
+      "revokedAt": "2026-05-30T02:05:00.000Z",
+      "revokedBy": "Nocksperimental Trust Registry",
+      "reason": "Superseded by payment-flow-v0 evidence bundle.",
+      "replacementBadgeId": "badge-payment-flow-verified",
+      "evidence": {
+        "reportHash": "sha256:3a6d6bff59cb624f-payment-flow",
+        "snapshotRoot": "3a6d6bff59cb624f",
+        "signature": "nocklab-sig-revoke-payment-flow-legacy-v0"
       }
     }
   ],

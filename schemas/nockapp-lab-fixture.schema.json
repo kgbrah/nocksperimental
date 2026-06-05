@@ -33,6 +33,12 @@
         },
         "grpcEndpoint": { "type": "string" },
         "fakenetCommand": { "type": "string" },
+        "balanceCheck": {
+          "$ref": "#/$defs/balanceCheck"
+        },
+        "chainCheck": {
+          "$ref": "#/$defs/chainCheck"
+        },
         "notes": {
           "type": "array",
           "items": { "type": "string" }
@@ -84,6 +90,9 @@
           },
           "statePatch": {
             "type": "object"
+          },
+          "adapter": {
+            "$ref": "#/$defs/stepAdapter"
           },
           "expectation": { "type": "string" },
           "expect": {
@@ -161,6 +170,56 @@
     }
   },
   "$defs": {
+    "balanceCheck": {
+      "type": "object",
+      "required": ["address", "command"],
+      "additionalProperties": false,
+      "properties": {
+        "address": { "type": "string" },
+        "command": {
+          "$ref": "#/$defs/command"
+        }
+      }
+    },
+    "chainCheck": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "$ref": "#/$defs/command"
+        }
+      }
+    },
+    "stepAdapter": {
+      "type": "object",
+      "required": ["command"],
+      "additionalProperties": false,
+      "properties": {
+        "command": {
+          "$ref": "#/$defs/command"
+        },
+        "expect": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stdoutIncludes": { "type": "string" }
+          }
+        }
+      }
+    },
+    "command": {
+      "type": "object",
+      "required": ["program"],
+      "additionalProperties": false,
+      "properties": {
+        "program": { "type": "string" },
+        "args": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "operation": {
       "oneOf": [
         {

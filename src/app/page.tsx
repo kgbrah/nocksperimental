@@ -15,6 +15,7 @@ import {
   Terminal,
   Workflow
 } from "lucide-react";
+import Link from "next/link";
 import { ModuleExplorer } from "@/components/module-explorer";
 import { sampleLabReport } from "@/lib/lab-report";
 import { privateWorkspaces, reportHistory } from "@/lib/report-history";
@@ -99,35 +100,63 @@ export default function Home() {
               <h2 className="mt-2 text-2xl font-semibold">Fixture-driven lab report</h2>
             </div>
             <div className="flex flex-wrap gap-2">
-              <a
+              <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
                 href="/reports/sample"
               >
                 <FileCheck2 size={16} aria-hidden="true" />
                 Open Report
                 <ArrowUpRight size={14} aria-hidden="true" />
-              </a>
-              <a
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/reports/generated"
+              >
+                <FileCheck2 size={16} aria-hidden="true" />
+                Generated
+              </Link>
+              <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
                 href="/reports/history"
               >
                 <History size={16} aria-hidden="true" />
                 History
-              </a>
-              <a
+              </Link>
+              <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
                 href="/workspaces"
               >
                 <LockKeyhole size={16} aria-hidden="true" />
                 Workspaces
-              </a>
-              <a
+              </Link>
+              <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
                 href="/trust"
               >
                 <BadgeCheck size={16} aria-hidden="true" />
                 Trust
-              </a>
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/registry"
+              >
+                <Blocks size={16} aria-hidden="true" />
+                Registry
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/verify"
+              >
+                <ShieldCheck size={16} aria-hidden="true" />
+                Verify
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
+                href="/fakenet"
+              >
+                <Terminal size={16} aria-hidden="true" />
+                Fakenet
+              </Link>
             </div>
           </div>
 

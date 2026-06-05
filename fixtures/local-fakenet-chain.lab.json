@@ -1,0 +1,41 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "local-fakenet-chain-v0",
+  "app": {
+    "name": "Local Fakenet Chain Metadata",
+    "slug": "local-fakenet-chain",
+    "version": "0.0.1",
+    "kernel": "nockchain-local-fakenet"
+  },
+  "environment": {
+    "mode": "local-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "fakenock --start",
+    "chainCheck": {
+      "command": {
+        "program": "fakenock",
+        "args": ["--balance"]
+      }
+    },
+    "notes": [
+      "Probes the live local Nockchain fakenet public gRPC listener.",
+      "Uses fakenock --balance as the current chain metadata source because it emits height and block id.",
+      "Run inside WSL or another shell where fakenock is on PATH."
+    ]
+  },
+  "initialState": {
+    "fakenet": {
+      "expectedEndpoint": "127.0.0.1:5555",
+      "metadataSource": "fakenock --balance"
+    }
+  },
+  "steps": [
+    {
+      "id": "probe-local-fakenet-chain",
+      "type": "fakenet",
+      "title": "Probe local fakenet chain metadata",
+      "expectation": "local fakenet endpoint is reachable and chain metadata can be parsed"
+    }
+  ],
+  "invariants": []
+}

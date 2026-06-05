@@ -1,4 +1,4 @@
-import { ArrowLeft, Code2, Cpu, Gauge } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Code2, Cpu, Gauge } from "lucide-react";
 import Link from "next/link";
 import {
   computeBenchmarkProfiles,
@@ -25,13 +25,13 @@ export default function ComputeBenchmarksPage() {
                 Provider profiles convert repeatable benchmark classes into reputation evidence.
               </p>
             </div>
-            <a
+            <Link
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/compute-benchmarks"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -52,8 +52,17 @@ export default function ComputeBenchmarksPage() {
                   {profile.benchmarkReportSlug} · {profile.sla.sampleSize} sampled jobs.
                 </p>
               </div>
-              <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
-                {profile.score}
+              <div className="flex flex-col items-start gap-3 md:items-end">
+                <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
+                  {profile.score}
+                </div>
+                <Link
+                  className="inline-flex items-center gap-2 border border-[#242424] bg-white px-3 py-2 text-sm font-medium"
+                  href={`/trust/compute-benchmarks/${profile.id}`}
+                >
+                  Open Detail
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
               </div>
             </div>
 

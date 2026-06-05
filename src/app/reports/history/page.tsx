@@ -72,7 +72,7 @@ export default function ReportHistoryPage() {
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 <Callout label="Report" value={report.reportSlug} />
                 <Callout label="Snapshots" value={report.snapshotsCaptured.toString()} />
                 <Callout
@@ -82,6 +82,15 @@ export default function ReportHistoryPage() {
                       ? report.invariantPacks.join(", ")
                       : "Fixture local"
                   }
+                />
+                <Callout label="Badge" value={report.verification?.badgeId ?? "Unlinked"} />
+                <Callout
+                  label="Signature"
+                  value={report.verification?.signature ?? "No registry signature"}
+                />
+                <Callout
+                  label="Snapshot Root"
+                  value={report.verification?.snapshotRoot ?? "No registry root"}
                 />
               </div>
             </article>
@@ -111,7 +120,7 @@ function Callout({ label, value }: { label: string; value: string }) {
         <ShieldCheck size={14} aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-2 text-sm leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all text-sm leading-6 text-[#3f3f38]">{value}</p>
     </div>
   );
 }

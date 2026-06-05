@@ -1,4 +1,4 @@
-import { ArrowLeft, Code2, FileCheck2, History, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Code2, FileCheck2, History, RadioTower, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { sampleLabReport } from "@/lib/lab-report";
 
@@ -96,6 +96,56 @@ export default function SampleReportPage() {
               </div>
             ))}
           </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+          <div className="flex items-center gap-2">
+            <RadioTower size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Adapter Observations</h2>
+          </div>
+          {sampleLabReport.adapterObservations.length === 0 ? (
+            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+              No adapter observations captured.
+            </p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+                <thead className="bg-[#171717] text-white">
+                  <tr>
+                    <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
+                      Step
+                    </th>
+                    <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
+                      Capability
+                    </th>
+                    <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
+                      Summary
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sampleLabReport.adapterObservations.map((observation) => (
+                    <tr
+                      className="border-t border-[#242424] bg-white"
+                      key={`${observation.stepId}-${observation.capability}`}
+                    >
+                      <td className="px-4 py-3 font-mono text-xs">{observation.stepId}</td>
+                      <td className="px-4 py-3">{observation.capability}</td>
+                      <td className="px-4 py-3 font-mono text-xs uppercase">
+                        {observation.status}
+                      </td>
+                      <td className="px-4 py-3">{observation.summary}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </article>
       </section>
 

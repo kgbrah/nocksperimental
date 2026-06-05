@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
+import net from "node:net";
 import path from "node:path";
 import process from "node:process";
 
@@ -32,7 +34,7 @@ if (configPath) {
   const outDir = readFlag("--out-dir");
   const startedAt = Date.now();
   const fixture = await loadFixture(fixturePath);
-  const report = buildReport(fixture, startedAt);
+  const report = await buildReport(fixture, startedAt);
 
   if (outDir) {
     await writeReportBundle(report, outDir);
@@ -68,7 +70,7 @@ async function runConfig(config, configPath) {
   for (const fixtureConfig of fixtures) {
     const fixturePath = resolveFrom(configDir, fixtureConfig.path);
     const fixture = await loadFixture(fixturePath);
-    const report = buildReport(fixture, Date.now());
+    const report = await buildReport(fixture, Date.now());
     const written = await writeReportBundle(report, reportDir, fixtureConfig.slug);
     results.push({ fixturePath, report, written });
   }
@@ -159,7 +161,7 @@ Examples:
 `);
 }
 
-function buildReport(fixture, startedAt) {
+async function buildReport(fixture, startedAt) {
   assertFixture(fixture);
 
   const initialState = structuredClone(fixture.initialState);
@@ -170,8 +172,8 @@ function buildReport(fixture, startedAt) {
   ];
   const stepReports = [];
 
-  fixture.steps.forEach((step, index) => {
-    const stepReport = runStep({ step, index, state, actors, environment: fixture.environment });
+  for (const [index, step] of fixture.steps.entries()) {
+    const stepReport = await runStep({ step, index, state, actors, environment: fixture.environment });
     stepReports.push(stepReport);
     stateSnapshots.push(
       snapshotState({
@@ -180,11 +182,12 @@ function buildReport(fixture, startedAt) {
         state
       })
     );
-  });
+  }
   const invariantReports = fixture.invariants.map((invariant) =>
     evaluateInvariant({ invariant, state, steps: fixture.steps, actors })
   );
   const alertReports = (fixture.alertPolicies ?? []).map((policy) => evaluateAlert(policy, state));
+  const adapterObservations = summarizeAdapterObservations(stepReports);
   const failedSteps = stepReports.filter((step) => step.status === "fail").length;
   const failedInvariants = invariantReports.filter((invariant) => invariant.status === "fail").length;
   const criticalAlerts = alertReports.filter(
@@ -221,10 +224,12 @@ function buildReport(fixture, startedAt) {
     steps: stepReports,
     invariants: invariantReports,
     alerts: alertReports,
+    adapterObservations,
     stateSnapshots,
     stateDiffs: diffState(initialState, state),
     nextActions: [
-      "Replace mock step execution with a local fakenet gRPC adapter.",
+      "Replace mock poke and peek execution with local fakenet adapter calls.",
+      "Replace command-backed fakenet metadata probes with stable gRPC-native probes once node surfaces are available.",
       "Persist generated reports under a project workspace.",
       "Add app-specific invariant packs as the NockApp interface stabilizes."
     ]
@@ -245,23 +250,77 @@ function assertFixture(fixture) {
   }
 }
 
-function runStep({ step, index, state, actors, environment }) {
+async function runStep({ step, index, state, actors, environment }) {
   const before = structuredClone(state);
   const beforeHash = hashState(before);
   const durationMs = 19 + index * 7;
   let status = "pass";
   let observed = "";
   let expectation = step.expectation ?? "step completes";
+  let adapter;
 
   if (step.type === "fakenet") {
     expectation = step.expectation ?? `gRPC endpoint configured at ${environment.grpcEndpoint}`;
-    observed = `${environment.mode} profile ready at ${environment.grpcEndpoint}`;
+    if (environment.mode === "local-fakenet") {
+      expectation = step.expectation ?? `gRPC endpoint reachable at ${environment.grpcEndpoint}`;
+      const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
+      const balance = probe.ok && environment.balanceCheck
+        ? await probeNockBalance(environment.balanceCheck)
+        : null;
+      const chain = probe.ok && environment.chainCheck
+        ? await probeChainMetadata(environment.chainCheck)
+        : null;
+      status = probe.ok ? "pass" : "fail";
+      if (balance?.status === "fail") {
+        status = "fail";
+      }
+      if (chain?.status === "fail") {
+        status = "fail";
+      }
+      adapter = {
+        kind: "local-fakenet",
+        grpcEndpoint: environment.grpcEndpoint,
+        reachable: probe.ok,
+        latencyMs: probe.latencyMs,
+        checkedAt: probe.checkedAt,
+        ...(balance ? { balance } : {}),
+        ...(chain ? { chain } : {}),
+        ...(probe.error ? { error: probe.error } : {})
+      };
+      observed = describeLocalFakenetObservation({
+        endpoint: environment.grpcEndpoint,
+        probe,
+        balance,
+        chain
+      });
+    } else {
+      observed = `${environment.mode} profile ready at ${environment.grpcEndpoint}`;
+    }
   }
 
   if (step.type === "poke") {
     if (!step.actor || !actors.has(step.actor)) {
       status = "fail";
       observed = `actor '${step.actor ?? "missing"}' is not declared`;
+    } else if (environment.mode === "local-fakenet" && step.adapter?.command) {
+      const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
+      const poke = probe.ok ? await probeAdapterPoke(step.adapter) : null;
+      status = probe.ok && poke?.status === "pass" ? "pass" : "fail";
+      expectation = step.expectation ?? poke?.expectation ?? `adapter command exits 0 for ${step.target ?? step.id}`;
+      adapter = {
+        kind: "local-fakenet",
+        grpcEndpoint: environment.grpcEndpoint,
+        reachable: probe.ok,
+        latencyMs: probe.latencyMs,
+        checkedAt: probe.checkedAt,
+        ...(poke ? { poke } : {}),
+        ...(probe.error ? { error: probe.error } : {})
+      };
+      observed = describeLocalPokeObservation({
+        endpoint: environment.grpcEndpoint,
+        probe,
+        poke
+      });
     } else {
       applyStepMutation(step, state);
       const result = evaluateExpectation(step.expect, state);
@@ -272,10 +331,31 @@ function runStep({ step, index, state, actors, environment }) {
   }
 
   if (step.type === "peek") {
-    const result = evaluateExpectation(step.expect, state);
-    status = result.status;
-    expectation = result.expectation;
-    observed = result.observed;
+    if (environment.mode === "local-fakenet" && step.adapter?.command) {
+      const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
+      const peek = probe.ok ? await probeAdapterPeek(step.adapter) : null;
+      status = probe.ok && peek?.status === "pass" ? "pass" : "fail";
+      expectation = step.expectation ?? peek?.expectation ?? `adapter command exits 0 for ${step.target ?? step.id}`;
+      adapter = {
+        kind: "local-fakenet",
+        grpcEndpoint: environment.grpcEndpoint,
+        reachable: probe.ok,
+        latencyMs: probe.latencyMs,
+        checkedAt: probe.checkedAt,
+        ...(peek ? { peek } : {}),
+        ...(probe.error ? { error: probe.error } : {})
+      };
+      observed = describeLocalPeekObservation({
+        endpoint: environment.grpcEndpoint,
+        probe,
+        peek
+      });
+    } else {
+      const result = evaluateExpectation(step.expect, state);
+      status = result.status;
+      expectation = result.expectation;
+      observed = result.observed;
+    }
   }
 
   if (step.type === "bridge" || step.type === "invariant") {
@@ -297,10 +377,583 @@ function runStep({ step, index, state, actors, environment }) {
     target: step.target,
     expectation,
     observed,
+    adapter,
     beforeHash,
     afterHash: hashState(after),
     stateDiffs: diffState(before, after),
     durationMs
+  };
+}
+
+function summarizeAdapterObservations(stepReports) {
+  return stepReports.flatMap((step) => {
+    const adapter = step.adapter;
+
+    if (!adapter) {
+      return [];
+    }
+
+    const base = {
+      stepId: step.id,
+      kind: adapter.kind
+    };
+    const observations = [];
+
+    if (typeof adapter.reachable === "boolean") {
+      observations.push({
+        ...base,
+        capability: "health",
+        status: adapter.reachable ? "pass" : "fail",
+        target: adapter.grpcEndpoint,
+        summary: adapter.reachable
+          ? `gRPC endpoint reachable at ${adapter.grpcEndpoint}`
+          : `gRPC endpoint not reachable at ${adapter.grpcEndpoint}: ${adapter.error ?? "unknown error"}`,
+        checkedAt: adapter.checkedAt
+      });
+    }
+
+    if (adapter.balance) {
+      observations.push({
+        ...base,
+        capability: "balance",
+        status: adapter.balance.status,
+        target: adapter.balance.address,
+        summary:
+          adapter.balance.status === "pass"
+            ? `Balance ${adapter.balance.amount} ${adapter.balance.unit} for ${adapter.balance.address}`
+            : `Balance check failed for ${adapter.balance.address}: ${adapter.balance.error ?? "unknown error"}`,
+        checkedAt: adapter.balance.checkedAt
+      });
+    }
+
+    if (adapter.chain) {
+      observations.push({
+        ...base,
+        capability: "chain",
+        status: adapter.chain.status,
+        target: adapter.grpcEndpoint,
+        summary:
+          adapter.chain.status === "pass"
+            ? `Chain ${formatChainMetadata(adapter.chain)}`
+            : `Chain metadata check failed: ${adapter.chain.error ?? "unknown error"}`,
+        checkedAt: adapter.chain.checkedAt
+      });
+    }
+
+    if (adapter.poke) {
+      observations.push({
+        ...base,
+        capability: "poke",
+        status: adapter.poke.status,
+        target: step.target,
+        summary:
+          adapter.poke.status === "pass"
+            ? singleLine(adapter.poke.raw)
+            : `Poke command failed: ${adapter.poke.error ?? "unknown error"}`,
+        checkedAt: adapter.poke.checkedAt
+      });
+    }
+
+    if (adapter.peek) {
+      observations.push({
+        ...base,
+        capability: "peek",
+        status: adapter.peek.status,
+        target: step.target,
+        summary:
+          adapter.peek.status === "pass"
+            ? singleLine(adapter.peek.raw)
+            : `Peek command failed: ${adapter.peek.error ?? "unknown error"}`,
+        checkedAt: adapter.peek.checkedAt
+      });
+    }
+
+    return observations;
+  });
+}
+
+async function probeAdapterPoke(adapterConfig) {
+  const checkedAt = new Date().toISOString();
+  let command;
+
+  try {
+    command = normalizeCommand(adapterConfig.command, "step.adapter.command");
+  } catch (error) {
+    return {
+      status: "fail",
+      raw: "",
+      checkedAt,
+      expectation: "adapter command is configured",
+      error: error.message
+    };
+  }
+
+  const result = await runCommand(command);
+  const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  const expectation = describeCommandExpectation(adapterConfig.expect);
+
+  if (result.error) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      expectation,
+      error: result.error
+    };
+  }
+
+  if (result.code !== 0) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      exitCode: result.code,
+      expectation,
+      error: `Poke command exited ${result.code}`
+    };
+  }
+
+  const expectationResult = evaluateCommandExpectation(adapterConfig.expect, raw);
+
+  if (!expectationResult.ok) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      exitCode: result.code,
+      expectation,
+      error: expectationResult.error
+    };
+  }
+
+  return {
+    status: "pass",
+    raw,
+    checkedAt,
+    exitCode: result.code,
+    expectation
+  };
+}
+
+async function probeAdapterPeek(adapterConfig) {
+  const checkedAt = new Date().toISOString();
+  let command;
+
+  try {
+    command = normalizeCommand(adapterConfig.command, "step.adapter.command");
+  } catch (error) {
+    return {
+      status: "fail",
+      raw: "",
+      checkedAt,
+      expectation: "adapter command is configured",
+      error: error.message
+    };
+  }
+
+  const result = await runCommand(command);
+  const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+  const expectation = describeCommandExpectation(adapterConfig.expect);
+
+  if (result.error) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      expectation,
+      error: result.error
+    };
+  }
+
+  if (result.code !== 0) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      exitCode: result.code,
+      expectation,
+      error: `Peek command exited ${result.code}`
+    };
+  }
+
+  const expectationResult = evaluateCommandExpectation(adapterConfig.expect, raw);
+
+  if (!expectationResult.ok) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      exitCode: result.code,
+      expectation,
+      error: expectationResult.error
+    };
+  }
+
+  return {
+    status: "pass",
+    raw,
+    checkedAt,
+    exitCode: result.code,
+    expectation
+  };
+}
+
+async function probeChainMetadata(chainCheck) {
+  const checkedAt = new Date().toISOString();
+  let command;
+
+  try {
+    command = normalizeCommand(chainCheck.command, "chainCheck.command");
+  } catch (error) {
+    return {
+      status: "fail",
+      raw: "",
+      checkedAt,
+      error: error.message
+    };
+  }
+
+  const result = await runCommand(command);
+  const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+
+  if (result.error) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      error: result.error
+    };
+  }
+
+  if (result.code !== 0) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      error: `Chain metadata command exited ${result.code}`
+    };
+  }
+
+  const metadata = parseChainMetadata(raw);
+
+  if (!metadata) {
+    return {
+      status: "fail",
+      raw,
+      checkedAt,
+      error: "Could not parse chain metadata from command output"
+    };
+  }
+
+  return {
+    status: "pass",
+    ...metadata,
+    raw,
+    checkedAt
+  };
+}
+
+async function probeNockBalance(balanceCheck) {
+  const checkedAt = new Date().toISOString();
+  let command;
+
+  try {
+    command = normalizeCommand(balanceCheck.command, "balanceCheck.command");
+  } catch (error) {
+    return {
+      status: "fail",
+      address: String(balanceCheck.address ?? ""),
+      unit: "NOCK",
+      raw: "",
+      checkedAt,
+      error: error.message
+    };
+  }
+
+  const result = await runCommand(command);
+  const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
+
+  if (result.error) {
+    return {
+      status: "fail",
+      address: String(balanceCheck.address ?? ""),
+      unit: "NOCK",
+      raw,
+      checkedAt,
+      error: result.error
+    };
+  }
+
+  if (result.code !== 0) {
+    return {
+      status: "fail",
+      address: String(balanceCheck.address ?? ""),
+      unit: "NOCK",
+      raw,
+      checkedAt,
+      error: `Balance command exited ${result.code}`
+    };
+  }
+
+  const amount = parseNockBalance(raw);
+
+  if (amount === null) {
+    return {
+      status: "fail",
+      address: String(balanceCheck.address ?? ""),
+      unit: "NOCK",
+      raw,
+      checkedAt,
+      error: "Could not parse NOCK balance from command output"
+    };
+  }
+
+  return {
+    status: "pass",
+    address: String(balanceCheck.address ?? ""),
+    amount,
+    unit: "NOCK",
+    raw,
+    checkedAt
+  };
+}
+
+function describeLocalFakenetObservation({ endpoint, probe, balance, chain }) {
+  if (!probe.ok) {
+    return `local-fakenet gRPC endpoint not reachable at ${endpoint}: ${probe.error}`;
+  }
+
+  const parts = [`local-fakenet gRPC endpoint reachable at ${endpoint}`];
+
+  if (balance?.status === "pass") {
+    parts.push(`balance ${balance.amount} ${balance.unit} for ${balance.address}`);
+  } else if (balance?.status === "fail") {
+    parts.push(`balance peek failed for ${balance.address}: ${balance.error}`);
+  }
+
+  if (chain?.status === "pass") {
+    parts.push(`chain ${formatChainMetadata(chain)}`);
+  } else if (chain?.status === "fail") {
+    parts.push(`chain metadata peek failed: ${chain.error}`);
+  }
+
+  return parts.join("; ");
+}
+
+function describeLocalPokeObservation({ endpoint, probe, poke }) {
+  if (!probe.ok) {
+    return `local-fakenet gRPC endpoint not reachable at ${endpoint}: ${probe.error}`;
+  }
+
+  if (poke?.status === "pass") {
+    return `local-fakenet adapter poke succeeded at ${endpoint}: ${poke.raw}`;
+  }
+
+  return `local-fakenet adapter poke command failed at ${endpoint}: ${poke?.error ?? "unknown error"}`;
+}
+
+function describeLocalPeekObservation({ endpoint, probe, peek }) {
+  if (!probe.ok) {
+    return `local-fakenet gRPC endpoint not reachable at ${endpoint}: ${probe.error}`;
+  }
+
+  if (peek?.status === "pass") {
+    return `local-fakenet adapter peek succeeded at ${endpoint}: ${peek.raw}`;
+  }
+
+  return `local-fakenet adapter peek command failed at ${endpoint}: ${peek?.error ?? "unknown error"}`;
+}
+
+async function probeGrpcEndpoint(endpoint) {
+  let target;
+  const checkedAt = new Date().toISOString();
+  const startedAt = Date.now();
+
+  try {
+    target = parseGrpcEndpoint(endpoint);
+  } catch (error) {
+    return {
+      ok: false,
+      error: error.message,
+      latencyMs: Date.now() - startedAt,
+      checkedAt
+    };
+  }
+
+  return new Promise((resolve) => {
+    const socket = net.createConnection({
+      host: target.host,
+      port: target.port
+    });
+    let settled = false;
+
+    const finish = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      socket.destroy();
+      resolve({
+        ...result,
+        latencyMs: Date.now() - startedAt,
+        checkedAt
+      });
+    };
+
+    socket.setTimeout(1_000);
+    socket.once("connect", () => finish({ ok: true }));
+    socket.once("timeout", () => finish({ ok: false, error: "connection timed out" }));
+    socket.once("error", (error) => finish({ ok: false, error: error.code ?? error.message }));
+  });
+}
+
+function describeCommandExpectation(expect) {
+  if (expect?.stdoutIncludes !== undefined) {
+    return `stdout includes ${JSON.stringify(String(expect.stdoutIncludes))}`;
+  }
+
+  return "adapter command exits 0";
+}
+
+function evaluateCommandExpectation(expect, raw) {
+  if (expect?.stdoutIncludes !== undefined) {
+    const expected = String(expect.stdoutIncludes);
+    return raw.includes(expected)
+      ? { ok: true }
+      : { ok: false, error: `Expected stdout to include ${JSON.stringify(expected)}` };
+  }
+
+  return { ok: true };
+}
+
+function normalizeCommand(command, label = "command") {
+  if (!command?.program) {
+    throw new Error(`${label}.program is required`);
+  }
+
+  return {
+    program: String(command.program),
+    args: Array.isArray(command.args) ? command.args.map(String) : []
+  };
+}
+
+function runCommand(command, timeoutMs = 5_000) {
+  return new Promise((resolve) => {
+    const child = spawn(command.program, command.args, {
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+
+    const finish = (result) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timeout);
+      resolve({
+        stdout,
+        stderr,
+        ...result
+      });
+    };
+
+    const timeout = setTimeout(() => {
+      child.kill();
+      finish({ code: null, error: `Command timed out after ${timeoutMs}ms` });
+    }, timeoutMs);
+
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    child.once("error", (error) => finish({ code: null, error: error.message }));
+    child.once("close", (code) => finish({ code }));
+  });
+}
+
+function parseChainMetadata(output) {
+  const raw = String(output);
+  const height = parseFirstInteger(raw, /\b(?:block\s+height|tip\s+height|height)\s*[:=]\s*([0-9][0-9,]*)/i);
+  const peerCount = parseFirstInteger(
+    raw,
+    /\b(?:connected\s+peers?|peer\s+count|peer_count|peers?)\s*[:=]\s*([0-9][0-9,]*)/i
+  );
+  const blockId = raw.match(/\b(?:block\s+id|block_id|tip\s+block)\s*[:=]\s*([^\s,;]+)/i);
+  const commitment = raw.match(/\b(?:block\s+commitment|tip\s+commitment|commitment)\s*[:=]\s*([^\s,;]+)/i);
+  const metadata = {};
+
+  if (height !== null) {
+    metadata.height = height;
+  }
+  if (peerCount !== null) {
+    metadata.peerCount = peerCount;
+  }
+  if (blockId?.[1]) {
+    metadata.blockId = blockId[1];
+  }
+  if (commitment?.[1]) {
+    metadata.blockCommitment = commitment[1];
+  }
+
+  return Object.keys(metadata).length > 0 ? metadata : null;
+}
+
+function parseFirstInteger(raw, pattern) {
+  const match = raw.match(pattern);
+  return match?.[1] ? Number(match[1].replaceAll(",", "")) : null;
+}
+
+function formatChainMetadata(chain) {
+  const parts = [];
+
+  if (typeof chain.height === "number") {
+    parts.push(`height ${chain.height}`);
+  }
+  if (typeof chain.peerCount === "number") {
+    parts.push(`${chain.peerCount} peer${chain.peerCount === 1 ? "" : "s"}`);
+  }
+  if (chain.blockId) {
+    parts.push(`block ${chain.blockId}`);
+  }
+  if (chain.blockCommitment) {
+    parts.push(`commitment ${chain.blockCommitment}`);
+  }
+
+  return parts.join(", ");
+}
+
+function parseNockBalance(output) {
+  const matches = [...String(output).matchAll(/([0-9][0-9,]*(?:\.[0-9]+)?)\s+NOCK\b/gi)];
+  const amount = matches.at(-1)?.[1];
+
+  if (!amount) {
+    return null;
+  }
+
+  return Number(amount.replaceAll(",", ""));
+}
+
+function parseGrpcEndpoint(endpoint) {
+  const rawEndpoint = String(endpoint ?? "").trim();
+
+  if (!rawEndpoint) {
+    throw new Error("missing grpcEndpoint");
+  }
+
+  const parsed = new URL(rawEndpoint.includes("://") ? rawEndpoint : `tcp://${rawEndpoint}`);
+  const port = Number(parsed.port || (parsed.protocol === "https:" ? 443 : 80));
+
+  if (!parsed.hostname || !Number.isInteger(port) || port <= 0) {
+    throw new Error(`invalid grpcEndpoint '${rawEndpoint}'`);
+  }
+
+  return {
+    host: parsed.hostname,
+    port
   };
 }
 
@@ -561,6 +1214,10 @@ function formatValue(value) {
   return typeof value === "string" ? value : JSON.stringify(value);
 }
 
+function singleLine(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
 function isPlainObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -614,6 +1271,15 @@ function toMarkdown(report) {
       : report.alerts.map(
           (alert) =>
             `- ${alert.state.toUpperCase()} ${alert.id}: ${alert.observed} (${alert.condition})`
+        )),
+    "",
+    "## Adapter Observations",
+    "",
+    ...(report.adapterObservations.length === 0
+      ? ["- No adapter observations captured."]
+      : report.adapterObservations.map(
+          (observation) =>
+            `- ${observation.status.toUpperCase()} ${observation.stepId} ${observation.capability}: ${observation.summary}`
         )),
     "",
     "## State Diffs",

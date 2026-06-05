@@ -1,0 +1,52 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "local-fakenet-poke-v0",
+  "app": {
+    "name": "Local Fakenet Poke",
+    "slug": "local-fakenet-poke",
+    "version": "0.0.1",
+    "kernel": "nockchain-local-fakenet"
+  },
+  "environment": {
+    "mode": "local-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "fakenock --start",
+    "notes": [
+      "Probes the live local Nockchain fakenet public gRPC listener.",
+      "Runs a command-backed poke through the local adapter.",
+      "Run inside WSL or another shell where fakenock is on PATH."
+    ]
+  },
+  "actors": [
+    {
+      "name": "local-wallet",
+      "pkh": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ"
+    }
+  ],
+  "initialState": {
+    "fakenet": {
+      "expectedEndpoint": "127.0.0.1:5555",
+      "pokeSource": "fakenock --balance"
+    }
+  },
+  "steps": [
+    {
+      "id": "poke-local-fakenet-command",
+      "type": "poke",
+      "title": "Run local fakenet poke command",
+      "actor": "local-wallet",
+      "target": "fakenock --balance",
+      "expectation": "command-backed local poke returns wallet-balance output",
+      "adapter": {
+        "command": {
+          "program": "fakenock",
+          "args": ["--balance"]
+        },
+        "expect": {
+          "stdoutIncludes": "Fakenet wallet balance"
+        }
+      }
+    }
+  ],
+  "invariants": []
+}

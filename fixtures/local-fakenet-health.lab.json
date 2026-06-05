@@ -1,0 +1,33 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "local-fakenet-health-v0",
+  "app": {
+    "name": "Local Fakenet Health",
+    "slug": "local-fakenet-health",
+    "version": "0.0.1",
+    "kernel": "nockchain-local-fakenet"
+  },
+  "environment": {
+    "mode": "local-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "fakenock --start",
+    "notes": [
+      "Probes the live local Nockchain fakenet public gRPC listener.",
+      "Run only on machines where the local fakenet node is expected to be online."
+    ]
+  },
+  "initialState": {
+    "fakenet": {
+      "expectedEndpoint": "127.0.0.1:5555"
+    }
+  },
+  "steps": [
+    {
+      "id": "probe-local-fakenet",
+      "type": "fakenet",
+      "title": "Probe local fakenet gRPC endpoint",
+      "expectation": "local fakenet public gRPC endpoint accepts TCP connections"
+    }
+  ],
+  "invariants": []
+}

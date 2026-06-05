@@ -1,0 +1,45 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "local-fakenet-peek-v0",
+  "app": {
+    "name": "Local Fakenet Peek",
+    "slug": "local-fakenet-peek",
+    "version": "0.0.1",
+    "kernel": "nockchain-local-fakenet"
+  },
+  "environment": {
+    "mode": "local-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "fakenock --start",
+    "notes": [
+      "Probes the live local Nockchain fakenet public gRPC listener.",
+      "Runs a command-backed peek through the local adapter.",
+      "Run inside WSL or another shell where fakenock is on PATH."
+    ]
+  },
+  "initialState": {
+    "fakenet": {
+      "expectedEndpoint": "127.0.0.1:5555",
+      "peekSource": "fakenock --balance"
+    }
+  },
+  "steps": [
+    {
+      "id": "peek-local-fakenet-balance",
+      "type": "peek",
+      "title": "Peek local fakenet wallet balance",
+      "target": "fakenock --balance",
+      "expectation": "fakenock balance command returns wallet-balance output",
+      "adapter": {
+        "command": {
+          "program": "fakenock",
+          "args": ["--balance"]
+        },
+        "expect": {
+          "stdoutIncludes": "Fakenet wallet balance"
+        }
+      }
+    }
+  ],
+  "invariants": []
+}

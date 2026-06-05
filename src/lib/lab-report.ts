@@ -3,6 +3,7 @@ export type LabStepType = "fakenet" | "poke" | "peek" | "invariant" | "bridge";
 export type InvariantSeverity = "critical" | "high" | "medium" | "low";
 export type AlertSeverity = "critical" | "warning" | "info";
 export type AlertState = "clear" | "triggered";
+export type AdapterObservationCapability = "health" | "balance" | "chain" | "poke" | "peek";
 export type InvariantKind =
   | "numeric-min"
   | "state-equals"
@@ -22,7 +23,23 @@ export type LabEnvironment = {
   mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet";
   grpcEndpoint: string;
   fakenetCommand: string;
+  balanceCheck?: LocalFakenetBalanceCheck;
+  chainCheck?: LocalFakenetChainCheck;
   notes: string[];
+};
+
+export type LocalFakenetBalanceCheck = {
+  address: string;
+  command: LocalCommand;
+};
+
+export type LocalFakenetChainCheck = {
+  command: LocalCommand;
+};
+
+export type LocalCommand = {
+  program: string;
+  args?: string[];
 };
 
 export type LabStepReport = {
@@ -34,10 +51,63 @@ export type LabStepReport = {
   target?: string;
   expectation: string;
   observed: string;
+  adapter?: StepAdapterObservation;
   beforeHash: string;
   afterHash: string;
   stateDiffs: StateDiff[];
   durationMs: number;
+};
+
+export type StepAdapterObservation = {
+  kind: "local-fakenet";
+  grpcEndpoint: string;
+  reachable: boolean;
+  latencyMs: number;
+  checkedAt: string;
+  balance?: BalanceObservation;
+  chain?: ChainObservation;
+  poke?: PokeObservation;
+  peek?: PeekObservation;
+  error?: string;
+};
+
+export type BalanceObservation = {
+  status: "pass" | "fail";
+  address: string;
+  amount?: number;
+  unit: "NOCK";
+  raw: string;
+  checkedAt: string;
+  error?: string;
+};
+
+export type PeekObservation = {
+  status: "pass" | "fail";
+  raw: string;
+  checkedAt: string;
+  exitCode?: number;
+  expectation: string;
+  error?: string;
+};
+
+export type PokeObservation = {
+  status: "pass" | "fail";
+  raw: string;
+  checkedAt: string;
+  exitCode?: number;
+  expectation: string;
+  error?: string;
+};
+
+export type ChainObservation = {
+  status: "pass" | "fail";
+  height?: number;
+  peerCount?: number;
+  blockId?: string;
+  blockCommitment?: string;
+  raw: string;
+  checkedAt: string;
+  error?: string;
 };
 
 export type InvariantReport = {
@@ -57,6 +127,16 @@ export type AlertReport = {
   observed: string;
   condition: string;
   message: string;
+};
+
+export type AdapterObservationSummary = {
+  stepId: string;
+  kind: "local-fakenet";
+  capability: AdapterObservationCapability;
+  status: "pass" | "fail";
+  target?: string;
+  summary: string;
+  checkedAt: string;
 };
 
 export type StateDiff = {
@@ -101,6 +181,7 @@ export type LabRunReport = {
   steps: LabStepReport[];
   invariants: InvariantReport[];
   alerts: AlertReport[];
+  adapterObservations: AdapterObservationSummary[];
   stateSnapshots: StateSnapshot[];
   stateDiffs: StateDiff[];
   nextActions: string[];
@@ -292,6 +373,7 @@ export const sampleLabReport: LabRunReport = {
     }
   ],
   alerts: [],
+  adapterObservations: [],
   stateSnapshots: [
     {
       label: "Initial state",

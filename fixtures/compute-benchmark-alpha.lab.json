@@ -1,0 +1,229 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "compute-benchmark-alpha-v0",
+  "app": {
+    "name": "Alpha Compute Benchmark",
+    "slug": "compute-benchmark-alpha",
+    "version": "0.1.0",
+    "kernel": "mock-compute-provider-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock compute provider benchmark for future solver and prover routing decisions.",
+      "Captures job-class latency, reproducibility, and SLA evidence for Alpha Compute."
+    ]
+  },
+  "actors": [
+    {
+      "name": "benchmark-coordinator",
+      "pkh": "compute-benchmark-coordinator-mock-pkh"
+    },
+    {
+      "name": "alpha-compute",
+      "pkh": "alpha-compute-provider-mock-pkh"
+    }
+  ],
+  "initialState": {
+    "provider": {
+      "slug": "alpha-compute",
+      "status": "pending",
+      "score": 0,
+      "sla": {
+        "uptime": 0,
+        "failureRate": 1,
+        "sampleSize": 0
+      },
+      "jobClasses": {
+        "nounEvalSmall": {
+          "score": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "reproducibility": 0
+        },
+        "proofBatchMedium": {
+          "score": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "reproducibility": 0
+        },
+        "stateReplayLarge": {
+          "score": 0,
+          "p50Ms": 0,
+          "p95Ms": 0,
+          "reproducibility": 0
+        }
+      },
+      "events": []
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock compute benchmark fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "sample-small-jobs",
+      "type": "poke",
+      "title": "Sample small noun evaluation jobs",
+      "actor": "benchmark-coordinator",
+      "target": "/compute/benchmark/noun-eval-small",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "provider.jobClasses.nounEvalSmall",
+          "value": {
+            "score": 94,
+            "p50Ms": 180,
+            "p95Ms": 420,
+            "reproducibility": 0.995
+          }
+        },
+        {
+          "kind": "append-event",
+          "path": "provider.events",
+          "value": {
+            "type": "job-class-sampled",
+            "class": "noun-eval-small"
+          }
+        }
+      ],
+      "expect": {
+        "path": "provider.jobClasses.nounEvalSmall.score",
+        "equals": 94
+      }
+    },
+    {
+      "id": "sample-proof-batches",
+      "type": "poke",
+      "title": "Sample medium proof batch jobs",
+      "actor": "benchmark-coordinator",
+      "target": "/compute/benchmark/proof-batch-medium",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "provider.jobClasses.proofBatchMedium",
+          "value": {
+            "score": 89,
+            "p50Ms": 1280,
+            "p95Ms": 2440,
+            "reproducibility": 0.982
+          }
+        },
+        {
+          "kind": "append-event",
+          "path": "provider.events",
+          "value": {
+            "type": "job-class-sampled",
+            "class": "proof-batch-medium"
+          }
+        }
+      ],
+      "expect": {
+        "path": "provider.jobClasses.proofBatchMedium.score",
+        "equals": 89
+      }
+    },
+    {
+      "id": "finalize-provider-sla",
+      "type": "poke",
+      "title": "Finalize provider SLA sample",
+      "actor": "alpha-compute",
+      "target": "/compute/provider/finalize-sla",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "provider.status",
+          "value": "qualified"
+        },
+        {
+          "kind": "set",
+          "path": "provider.score",
+          "value": 91
+        },
+        {
+          "kind": "set",
+          "path": "provider.sla",
+          "value": {
+            "uptime": 0.998,
+            "failureRate": 0.004,
+            "sampleSize": 512
+          }
+        },
+        {
+          "kind": "set",
+          "path": "provider.jobClasses.stateReplayLarge",
+          "value": {
+            "score": 90,
+            "p50Ms": 3120,
+            "p95Ms": 6100,
+            "reproducibility": 0.976
+          }
+        },
+        {
+          "kind": "append-event",
+          "path": "provider.events",
+          "value": {
+            "type": "sla-finalized",
+            "sampleSize": 512
+          }
+        }
+      ],
+      "expect": {
+        "path": "provider.status",
+        "equals": "qualified"
+      }
+    },
+    {
+      "id": "peek-provider-score",
+      "type": "peek",
+      "title": "Read provider benchmark score",
+      "target": "/compute/provider/alpha",
+      "expect": {
+        "path": "provider.score",
+        "equals": 91
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "compute-provider-qualified",
+      "title": "Provider is qualified after benchmark finalization",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "provider.status",
+      "equals": "qualified"
+    },
+    {
+      "id": "compute-provider-sample-size",
+      "title": "Provider benchmark has a meaningful sample size",
+      "severity": "medium",
+      "kind": "numeric-min",
+      "path": "provider.sla.sampleSize",
+      "min": 512
+    },
+    {
+      "id": "compute-provider-score-floor",
+      "title": "Provider benchmark score clears the routing threshold",
+      "severity": "high",
+      "kind": "numeric-min",
+      "path": "provider.score",
+      "min": 90
+    },
+    {
+      "id": "compute-provider-failure-alert-clear",
+      "title": "Provider failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}
