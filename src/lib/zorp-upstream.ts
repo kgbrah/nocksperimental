@@ -295,7 +295,7 @@ export function createZorpUpstreamMap() {
     monitor: {
       active: true,
       automationName: "Watch Zorp/Nockchain state jams and repos",
-      automationId: "watch-vesl-drive-folder",
+      automationId: "watch-zorp-nockchain-repos-and-state-jams",
       interval: "FREQ=HOURLY;INTERVAL=6",
       watchedSources: [
         zorpStateJamDriveFolderUrl,

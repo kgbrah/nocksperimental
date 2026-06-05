@@ -3,6 +3,7 @@ import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
+import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
@@ -31,6 +32,7 @@ export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
+  const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
@@ -62,6 +64,7 @@ export function createRegistryCheckpoint() {
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
+    nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
@@ -101,6 +104,15 @@ export function createRegistryCheckpoint() {
       legacyOrExperimental: nockchainDocsAtlas.legacyOrExperimental,
       protocolSpecs: nockchainDocsAtlas.protocolSpecs,
       consistencyChecks: nockchainDocsAtlas.consistencyChecks
+    }),
+    nockchainProtocolTrace: createSha256Root({
+      generatedAt: nockchainProtocolTrace.generatedAt,
+      upstream: nockchainProtocolTrace.upstream,
+      authoritySources: nockchainProtocolTrace.authoritySources,
+      lifecycleContract: nockchainProtocolTrace.lifecycleContract,
+      releaseTrack: nockchainProtocolTrace.releaseTrack,
+      consistencyAlerts: nockchainProtocolTrace.consistencyAlerts,
+      receiptFields: nockchainProtocolTrace.receiptFields
     }),
     stateJamRegistry: createSha256Root({
       generatedAt: stateJamRegistry.generatedAt,
@@ -170,6 +182,9 @@ export function createRegistryCheckpoint() {
       generatedReportsAvailable: generatedReports.totals.reportCount > 0,
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
+      nockchainProtocolTraceAvailable:
+        nockchainProtocolTrace.authoritySources.length > 0 &&
+        nockchainProtocolTrace.releaseTrack.latestConsensusCritical.statusDrift === true,
       nockchainRustAtlasAvailable: nockchainRustAtlas.crates.length > 0,
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
@@ -249,6 +264,15 @@ export function createRegistryCheckpoint() {
       protocolSpecCount: nockchainDocsAtlas.protocolSpecs.specs.length,
       consistencyAlerts: nockchainDocsAtlas.consistencyChecks.alerts.map((alert) => alert.id)
     },
+    nockchainProtocolTrace: {
+      sourceCount: nockchainProtocolTrace.authoritySources.length,
+      sourceIds: nockchainProtocolTrace.authoritySources.map((source) => source.id),
+      nextScheduled: nockchainProtocolTrace.releaseTrack.nextScheduled.codename,
+      latestConsensusCritical: nockchainProtocolTrace.releaseTrack.latestConsensusCritical.codename,
+      statusDrift:
+        nockchainProtocolTrace.releaseTrack.latestConsensusCritical.statusDrift,
+      receiptFields: nockchainProtocolTrace.receiptFields
+    },
     nockchainRustAtlas: {
       crateCount: nockchainRustAtlas.crates.length,
       groupCount: nockchainRustAtlas.groups.length,
@@ -301,6 +325,7 @@ export function createRegistryCheckpoint() {
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
+      nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,

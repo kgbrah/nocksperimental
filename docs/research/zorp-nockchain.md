@@ -59,7 +59,7 @@ This also argues for letting users connect their own fakenets. A useful test res
 
 ## Monitor Scope
 
-The active Codex automation `watch-vesl-drive-folder` has been updated and renamed in-app as "Watch Zorp/Nockchain state jams and repos". It runs every six hours and checks:
+The active Codex automation `watch-zorp-nockchain-repos-and-state-jams` is named "Watch Zorp/Nockchain state jams and repos". It runs every six hours and checks:
 
 - the Drive state-jam folder
 - https://github.com/zorp-corp
@@ -87,4 +87,3 @@ Medium term:
 - Add a state-jam registry view that records artifact metadata without hosting raw chain state.
 - Add a "connect your own fakenet" flow that verifies endpoints, wallet address, tip/sync status, and available peeks.
 - Track Nockchain canonical-doc changes in the app's trust/research surface so testers can see when assumptions changed.
-

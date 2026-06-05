@@ -53,6 +53,11 @@ async function main() {
   assertIncludes(body.operatorChecklist, "Treat zorp-corp/nockapp metadata changes as lineage review until a non-archived canonical repo changes.", "nockapp checklist");
   assertIncludes(body.operatorChecklist, "Inventory the Zorp state-jam Drive folder as metadata only before trusting bootstrap artifacts.", "state-jam checklist");
 
+  assertEqual(
+    body.monitor.automationId,
+    "watch-zorp-nockchain-repos-and-state-jams",
+    "monitor automation id"
+  );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor cadence");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/nockchain/nockchain", "Nockchain monitor source");

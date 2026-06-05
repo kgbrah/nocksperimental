@@ -69,6 +69,11 @@ async function main() {
   );
 
   assertEqual(body.monitor.active, true, "monitor active");
+  assertEqual(
+    body.monitor.automationId,
+    "watch-zorp-nockchain-repos-and-state-jams",
+    "monitor automation id"
+  );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor interval");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/nockchain/nockchain", "Nockchain monitor source");

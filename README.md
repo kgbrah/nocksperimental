@@ -12,6 +12,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
+- Nockchain protocol authority trace for protocol index/spec lifecycle, activation status, consensus-critical posture, and receipt fields.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
@@ -114,6 +115,15 @@ The docs atlas publishes the canonical Nockchain read order, Tier 0/Tier 1 autho
 Use it when a protocol-sensitive receipt needs to cite which Nockchain doc or spec supports an activation height, consensus-critical flag, or runtime assumption.
 
 Shared Nockchain receipt provenance now embeds the docs atlas URL, Tier 0/Tier 1 source lists, selected protocol specs, and active doc consistency alerts so fakenet, VESL, and Nockup receipts can preserve upstream ambiguity in machine-readable form.
+
+## Nockchain Protocol Authority Trace
+
+The protocol authority trace turns `PROTOCOL.md`, `changelog/protocol/SPECIFICATION.md`, and selected upgrade specs into a receipt-safe contract for activation state, consensus-critical posture, lifecycle status, required validation sections, and consistency alerts. It keeps 013 Nous rollout-gated networking context separate from 014 Aletheia consensus-critical activation, and it preserves the 014 status drift between the protocol index and spec frontmatter.
+
+- `/nockchain/protocol`
+- `/api/nockchain/protocol`
+
+Use it when a fakenet test, Nockup validation run, wallet/balance receipt, or state-jam provenance record depends on protocol activation height, consensus-critical status, network partition risk, or the exact Nockchain source that justified the assumption.
 
 ## Zorp/Nockchain Upstream Map
 
