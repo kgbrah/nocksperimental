@@ -20,6 +20,10 @@
     {
       "binding": "NOCKS_VESL_RECEIPTS",
       "id": "11a8ab977dd84b5fbee0bde2509ecc3c"
+    },
+    {
+      "binding": "NOCKS_NOCKUP_RECEIPTS",
+      "id": "b2466d985b9346e4ad569a7b134df7ce"
     }
   ],
   "rules": [

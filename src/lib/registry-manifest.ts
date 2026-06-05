@@ -50,6 +50,16 @@ export const registryEndpoints = [
     description: "Nockchain Rust workspace atlas"
   },
   {
+    id: "nockup-validation-submit",
+    path: "/api/nockchain/nockup/submit",
+    description: "Submit Nockup scaffold validation evidence"
+  },
+  {
+    id: "nockup-validation-receipts",
+    path: "/api/nockchain/nockup/receipts",
+    description: "List persisted Nockup validation receipts"
+  },
+  {
     id: "local-fakenet-readiness",
     path: "/api/fakenet",
     description: "Local fakenet readiness summary"
@@ -237,6 +247,8 @@ export function createWellKnownRegistryManifest() {
       zorpUpstream: endpointUrl("zorp-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
+      nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
+      nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
@@ -270,6 +282,8 @@ export function createWellKnownRegistryManifest() {
       "zorp-nockchain-upstream-map",
       "nockchain-state-jam-provenance",
       "nockchain-rust-workspace-atlas",
+      "nockup-validation-submit",
+      "nockup-validation-receipts",
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",

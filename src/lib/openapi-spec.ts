@@ -160,6 +160,12 @@ const veslEvidenceReceiptDetailEndpoint = {
   description: "Read persisted VESL evidence receipt"
 };
 
+const nockupValidationReceiptDetailEndpoint = {
+  id: "nockup-validation-receipt-detail",
+  path: "/api/nockchain/nockup/receipts/{receiptId}",
+  description: "Read persisted Nockup validation receipt"
+};
+
 export function createOpenApiSpec() {
   const endpoints = [
     wellKnownEndpoint,
@@ -183,7 +189,8 @@ export function createOpenApiSpec() {
     generatedReportProvenanceEndpoint,
     generatedReportEvidenceEndpoint,
     fakenetEvidenceReceiptDetailEndpoint,
-    veslEvidenceReceiptDetailEndpoint
+    veslEvidenceReceiptDetailEndpoint,
+    nockupValidationReceiptDetailEndpoint
   ];
 
   return {
@@ -220,7 +227,8 @@ export function createOpenApiSpec() {
       if (
         endpoint.path === "/api/fakenet/connect" ||
         endpoint.path === "/api/fakenet/evidence/submit" ||
-        endpoint.path === "/api/vesl/evidence/submit"
+        endpoint.path === "/api/vesl/evidence/submit" ||
+        endpoint.path === "/api/nockchain/nockup/submit"
       ) {
         paths[endpoint.path].post = {
           summary: endpoint.description,
@@ -229,11 +237,7 @@ export function createOpenApiSpec() {
               description: `${registryServiceName} ${endpoint.description}`
             },
             "400": {
-              description: endpoint.path === "/api/fakenet/connect"
-                ? "Invalid fakenet connection profile"
-                : endpoint.path === "/api/fakenet/evidence/submit"
-                  ? "Invalid fakenet evidence submission"
-                  : "Invalid VESL evidence submission"
+              description: createPostErrorDescription(endpoint.path)
             }
           }
         };
@@ -242,4 +246,20 @@ export function createOpenApiSpec() {
       return paths;
     }, {})
   };
+}
+
+function createPostErrorDescription(path: string) {
+  if (path === "/api/fakenet/connect") {
+    return "Invalid fakenet connection profile";
+  }
+
+  if (path === "/api/fakenet/evidence/submit") {
+    return "Invalid fakenet evidence submission";
+  }
+
+  if (path === "/api/nockchain/nockup/submit") {
+    return "Invalid Nockup validation submission";
+  }
+
+  return "Invalid VESL evidence submission";
 }
