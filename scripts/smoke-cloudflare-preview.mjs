@@ -64,6 +64,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/fakenet/evidence`, 200, "local fakenet evidence capsule");
     await expectFakenetEvidenceSubmission(baseUrl);
     await expectVeslEvidenceSubmission(baseUrl);
+    await expectNockupValidationSubmission(baseUrl);
     await expectLocalFakenetEvidenceVerification(baseUrl);
     await expectStatus(`${baseUrl}/api/fakenet/runbook.sh`, 200, "local fakenet shell runbook");
     await expectStatus(`${baseUrl}/registry`, 200, "registry page");
@@ -449,6 +450,96 @@ async function expectVeslEvidenceSubmission(baseUrl) {
   if (detailResponse.status !== 200 || detail.receiptId !== receipt.receiptId) {
     throw new Error(
       `VESL evidence receipt detail: expected submitted receipt; got ${detailResponse.status} ${JSON.stringify(detail).slice(0, 500)}`
+    );
+  }
+}
+
+async function expectNockupValidationSubmission(baseUrl) {
+  const response = await fetch(`${baseUrl}/api/nockchain/nockup/submit`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify({
+      project: {
+        name: "nockup-smoke",
+        repo: "kgbrah/nockup-smoke",
+        template: "basic",
+        installPath: "apps/nockup-smoke",
+        nockupVersion: "upstream-master",
+        commit: "5d022ced55040221e8b6fcfd78114189fbae91a0"
+      },
+      commands: [
+        {
+          id: "nockup-new",
+          command: "nockup new nockup-smoke --template basic --install-path apps/nockup-smoke",
+          status: "pass",
+          exitCode: 0,
+          completedAt: "2026-06-05T20:00:03.000Z",
+          outputHash: "sha256:nockup-smoke-new"
+        },
+        {
+          id: "nockup-build",
+          command: "nockup build nockup-smoke",
+          status: "pass",
+          exitCode: 0,
+          completedAt: "2026-06-05T20:00:10.000Z",
+          outputHash: "sha256:nockup-smoke-build"
+        },
+        {
+          id: "nockup-run",
+          command: "nockup run nockup-smoke",
+          status: "pass",
+          exitCode: 0,
+          completedAt: "2026-06-05T20:00:20.000Z",
+          outputHash: "sha256:nockup-smoke-run"
+        }
+      ],
+      artifacts: [
+        {
+          path: "apps/nockup-smoke/out.jam",
+          kind: "jam",
+          hash: "sha256:nockup-smoke-jam",
+          producedBy: "nockup-build"
+        }
+      ],
+      fakenet: {
+        endpoint: "http://127.0.0.1:5555",
+        networkId: "local-fakenet",
+        walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+        accepted: true
+      }
+    })
+  });
+  const receipt = await response.json();
+
+  if (
+    response.status !== 200 ||
+    receipt.verified !== true ||
+    receipt.storage?.persisted !== true ||
+    !receipt.receiptId?.startsWith("nockup_validation_")
+  ) {
+    throw new Error(
+      `Nockup validation submission: expected verified receipt HTTP 200; got ${response.status} ${JSON.stringify(receipt).slice(0, 500)}`
+    );
+  }
+
+  const listResponse = await fetch(`${baseUrl}/api/nockchain/nockup/receipts`);
+  const receiptList = await listResponse.json();
+  const indexedReceipt = receiptList.receipts?.find((candidate) => candidate.receiptId === receipt.receiptId);
+
+  if (listResponse.status !== 200 || !indexedReceipt) {
+    throw new Error(
+      `Nockup validation receipts: expected submitted receipt in index; got ${listResponse.status} ${JSON.stringify(receiptList).slice(0, 500)}`
+    );
+  }
+
+  const detailResponse = await fetch(`${baseUrl}/api/nockchain/nockup/receipts/${receipt.receiptId}`);
+  const detail = await detailResponse.json();
+
+  if (detailResponse.status !== 200 || detail.receiptId !== receipt.receiptId) {
+    throw new Error(
+      `Nockup validation receipt detail: expected submitted receipt; got ${detailResponse.status} ${JSON.stringify(detail).slice(0, 500)}`
     );
   }
 }
