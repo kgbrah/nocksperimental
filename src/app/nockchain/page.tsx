@@ -94,6 +94,13 @@ export default function NockchainEvidencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/rust"
+              >
+                <Layers3 size={16} aria-hidden="true" />
+                Rust Atlas
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/api/nockchain/state-jams"
               >
                 <Database size={16} aria-hidden="true" />
