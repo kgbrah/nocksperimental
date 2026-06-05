@@ -42,8 +42,8 @@ export default async function TrustUpdateDetailPage({
     `&issuerKeyId=${encodeURIComponent(entry.signature.issuerKeyId)}`;
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/trust/updates">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -51,20 +51,20 @@ export default async function TrustUpdateDetailPage({
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Update Detail
               </p>
               <h1 className="mt-2 text-4xl font-semibold">{entry.target}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 {entry.summary}
               </p>
-              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                 <span>#{entry.sequence}</span>
                 <span>{entry.action}</span>
                 <span>{entry.signature.verificationStatus}</span>
               </div>
             </div>
-            <div className="grid size-20 place-items-center bg-[#171717] text-white">
+            <div className="grid size-20 place-items-center bg-[#0B0B0B] text-white">
               <GitBranch size={28} aria-hidden="true" />
             </div>
           </div>
@@ -72,42 +72,42 @@ export default async function TrustUpdateDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Verification Actions</h2>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-[#171717] px-4 py-3 text-sm font-medium text-white"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
               href={verificationHref}
             >
               Verify Entry
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href={`/api/trust/updates/${entry.id}`}
             >
               Entry API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href="/api/trust/updates"
             >
               Chain API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href={trustUpdateTargetApiPath(entry)}
             >
               Target API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href="/openapi.json"
             >
               OpenAPI
@@ -124,7 +124,7 @@ export default async function TrustUpdateDetailPage({
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 pb-10 md:grid-cols-2 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">Chain Position</h2>
           <div className="mt-4 grid gap-3">
             <Callout label="Previous root" value={entry.previousRoot} />
@@ -133,7 +133,7 @@ export default async function TrustUpdateDetailPage({
             <Callout label="Next update" value={nextEntry?.id ?? "latest"} />
           </div>
         </article>
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">Validation</h2>
           <div className="mt-4 grid gap-3">
             <Callout label="Append-only" value={validation.isAppendOnly ? "valid" : "broken"} />
@@ -161,9 +161,9 @@ function trustUpdateTargetApiPath(entry: TrustUpdateEntry) {
 
 function Callout({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">{label}</div>
-      <p className="mt-2 break-all font-mono text-xs leading-6 text-[#3f3f38]">{value}</p>
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">{label}</div>
+      <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">{value}</p>
     </div>
   );
 }

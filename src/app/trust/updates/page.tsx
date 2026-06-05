@@ -4,8 +4,8 @@ import { trustUpdateChainSummary, trustUpdateEntries } from "@/lib/trust-update-
 
 export default function TrustUpdatesPage() {
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/trust">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -13,22 +13,22 @@ export default function TrustUpdatesPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Signed append-only registry updates
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Update Log</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 Chained update entries record how trust stores change from genesis registry
                 snapshot through badge, revocation, and score-history updates.
               </p>
-              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                 <span>{trustUpdateChainSummary.entryCount} entries</span>
                 <span>{trustUpdateChainSummary.algorithm}</span>
                 <span>{trustUpdateChainSummary.latestRoot}</span>
               </div>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/updates"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -39,7 +39,7 @@ export default function TrustUpdatesPage() {
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="grid gap-3 md:grid-cols-4">
             <Metric label="Append-only" value={trustUpdateChainSummary.isAppendOnly ? "valid" : "broken"} />
             <Metric label="Valid signatures" value={trustUpdateChainSummary.validSignatureCount.toString()} />
@@ -50,20 +50,20 @@ export default function TrustUpdatesPage() {
 
         {trustUpdateEntries.map((entry) => (
           <article
-            className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+            className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
             key={entry.id}
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#536023]">
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                   #{entry.sequence} / {entry.action}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">{entry.target}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
                   {entry.summary}
                 </p>
               </div>
-              <div className="grid size-12 place-items-center bg-[#171717] text-white">
+              <div className="grid size-12 place-items-center bg-[#0B0B0B] text-white">
                 <GitBranch size={22} aria-hidden="true" />
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function TrustUpdatesPage() {
 
             <div className="mt-4">
               <Link
-                className="inline-flex items-center gap-2 border border-[#242424] bg-white px-4 py-2 text-sm font-medium"
+                className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
                 href={`/trust/updates/${entry.id}`}
               >
                 Open Detail
@@ -95,12 +95,12 @@ export default function TrustUpdatesPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <ShieldCheck size={14} aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-2 break-all font-mono text-xs leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">{value}</p>
     </div>
   );
 }

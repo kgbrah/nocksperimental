@@ -30,6 +30,19 @@ Start with a NockApp testing lab:
 
 The first user-visible artifact is a run report, even before the test engine is fully connected to real Nockchain services.
 
+## Ecosystem Alignment
+
+Nocksperimental should supplement the official ecosystem rather than compete with it:
+
+- wallets get app interaction, token compatibility, and bridge-state evidence
+- explorers get report URLs, invariant summaries, and registry checkpoints they can link beside chain facts
+- infrastructure teams get fakenet fixtures, support bundles, diagnostics, and CI artifacts
+- mining pools and compute providers get neutral benchmark and reliability profiles
+- bridge operators, funds, and app teams get reconciliation timelines and alert-ready stuck-transfer states
+- SDK builders get repeatable `peek`/`poke` fixtures and pre-audit reports
+
+See `docs/ecosystem-alignment.md` for the named project map.
+
 ## Parallel Tracks
 
 Build these beside the core lab because they reuse the same primitives.

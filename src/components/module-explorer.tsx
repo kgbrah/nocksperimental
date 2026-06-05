@@ -36,13 +36,13 @@ export function ModuleExplorer({ modules }: { modules: LabModule[] }) {
   }, [activeFilter, modules, query]);
 
   return (
-    <div className="border border-[#242424] bg-[#f7f3ea]">
-      <div className="grid gap-3 border-b border-[#242424] p-4 lg:grid-cols-[1fr_auto]">
-        <label className="flex min-h-11 items-center gap-3 border border-[#242424] bg-white px-3">
+    <div className="border border-[#0B0B0B] bg-[#FFFFFF]">
+      <div className="grid gap-3 border-b border-[#0B0B0B] p-4 lg:grid-cols-[1fr_auto]">
+        <label className="flex min-h-11 items-center gap-3 border border-[#0B0B0B] bg-white px-3">
           <Search size={17} aria-hidden="true" />
           <span className="sr-only">Search lab modules</span>
           <input
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#777]"
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#737373]"
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search modules, deliverables, revenue..."
             value={query}
@@ -55,8 +55,8 @@ export function ModuleExplorer({ modules }: { modules: LabModule[] }) {
             <button
               className={
                 activeFilter === filter
-                  ? "border border-[#242424] bg-[#171717] px-3 py-2 text-sm font-medium text-white"
-                  : "border border-[#242424] bg-white px-3 py-2 text-sm font-medium text-[#171717]"
+                  ? "border border-[#0B0B0B] bg-[#0B0B0B] px-3 py-2 text-sm font-medium text-white"
+                  : "border border-[#0B0B0B] bg-white px-3 py-2 text-sm font-medium text-[#0B0B0B]"
               }
               key={filter}
               onClick={() => setActiveFilter(filter)}
@@ -70,7 +70,7 @@ export function ModuleExplorer({ modules }: { modules: LabModule[] }) {
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[920px] border-collapse text-left text-sm">
-          <thead className="bg-[#171717] text-white">
+          <thead className="bg-[#0B0B0B] text-white">
             <tr>
               <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">Rank</th>
               <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">Module</th>
@@ -85,26 +85,26 @@ export function ModuleExplorer({ modules }: { modules: LabModule[] }) {
           </thead>
           <tbody>
             {visibleModules.map((module) => (
-              <tr className="border-t border-[#242424] bg-[#fdfbf4]" key={module.name}>
+              <tr className="border-t border-[#0B0B0B] bg-[#FFFFFF]" key={module.name}>
                 <td className="px-4 py-4 align-top font-mono text-lg font-semibold">
                   {module.rank}
                 </td>
                 <td className="px-4 py-4 align-top">
                   <div className="font-semibold">{module.name}</div>
-                  <div className="mt-1 font-mono text-xs uppercase tracking-[0.1em] text-[#6c3324]">
+                  <div className="mt-1 font-mono text-xs uppercase tracking-[0.1em] text-[#0B0B0B]">
                     {module.category} · {module.horizon}
                   </div>
                 </td>
-                <td className="max-w-[300px] px-4 py-4 align-top leading-6 text-[#3f3f38]">
+                <td className="max-w-[300px] px-4 py-4 align-top leading-6 text-[#4A4A4A]">
                   {module.thesis}
                 </td>
-                <td className="max-w-[260px] px-4 py-4 align-top leading-6 text-[#3f3f38]">
+                <td className="max-w-[260px] px-4 py-4 align-top leading-6 text-[#4A4A4A]">
                   {module.firstMilestone}
                 </td>
                 <td className="px-4 py-4 align-top">
                   <div className="flex flex-wrap gap-2">
                     {module.revenue.map((item) => (
-                      <span className="border border-[#8b8b7a] bg-white px-2 py-1 text-xs" key={item}>
+                      <span className="border border-[#0B0B0B] bg-white px-2 py-1 text-xs" key={item}>
                         {item}
                       </span>
                     ))}

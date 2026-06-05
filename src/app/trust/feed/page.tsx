@@ -17,8 +17,8 @@ export default function TrustFeedPage() {
   const feed = createTrustEventFeed();
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/trust">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -26,23 +26,23 @@ export default function TrustFeedPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Chronological public evidence
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Trust Feed</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 {feed.eventCount} registry, badge, revocation, and local fakenet evidence events
                 from {feed.source}. The feed keeps current local fakenet evidence alongside the
                 signed trust registry history.
               </p>
-              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                 <span>{feed.counts.registryUpdates} registry updates</span>
                 <span>{feed.counts.badgeIssuances} badge issuances</span>
                 <span>{feed.counts.localFakenetEvidence} Local fakenet evidence</span>
               </div>
             </div>
             <a
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/feed"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -62,23 +62,23 @@ export default function TrustFeedPage() {
       <section className="mx-auto grid max-w-6xl gap-4 px-5 pb-10 lg:px-8">
         {feed.events.map((event) => (
           <article
-            className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+            className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
             key={event.id}
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#536023]">
+                  <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                     {formatEventType(event.type)}
                   </span>
-                  <span className="border border-[#242424] bg-white px-2 py-1 font-mono text-xs uppercase">
+                  <span className="border border-[#0B0B0B] bg-white px-2 py-1 font-mono text-xs uppercase">
                     {event.recordedAt}
                   </span>
                 </div>
                 <h2 className="mt-2 break-all text-2xl font-semibold">{event.subjectId}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">{event.summary}</p>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">{event.summary}</p>
               </div>
-              <div className="grid size-12 shrink-0 place-items-center bg-[#171717] text-white">
+              <div className="grid size-12 shrink-0 place-items-center bg-[#0B0B0B] text-white">
                 <EventIcon type={event.type} />
               </div>
             </div>
@@ -113,8 +113,8 @@ export default function TrustFeedPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#242424] bg-[#fdfbf4] p-5">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <Fingerprint size={14} aria-hidden="true" />
         {label}
       </div>
@@ -129,21 +129,21 @@ function EvidenceMetric({ label, value, href }: { label: string; value?: string;
   }
 
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <ShieldCheck size={14} aria-hidden="true" />
         {label}
       </div>
       {href ? (
         <a
-          className="mt-2 inline-flex max-w-full items-center gap-2 break-all font-mono text-xs leading-6 text-[#3f3f38] underline decoration-[#8b8b7a] underline-offset-4"
+          className="mt-2 inline-flex max-w-full items-center gap-2 break-all font-mono text-xs leading-6 text-[#4A4A4A] underline decoration-[#0B0B0B] underline-offset-4"
           href={href}
         >
           {value}
           <ArrowUpRight className="size-3 shrink-0" aria-hidden="true" />
         </a>
       ) : (
-        <p className="mt-2 break-all font-mono text-xs leading-6 text-[#3f3f38]">{value}</p>
+        <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">{value}</p>
       )}
     </div>
   );

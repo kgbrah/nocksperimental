@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f7f3ea;
-  --foreground: #171717;
+  --background: #FFFFFF;
+  --foreground: #0B0B0B;
 }
 
 * {
@@ -32,8 +32,63 @@ button {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible {
-  outline: 3px solid #b84b2a;
+  outline: 3px solid #0B0B0B;
   outline-offset: 2px;
+}
+
+[class~="bg-[#f7f3ea]"],
+[class~="bg-[#dce8ee]"],
+[class~="bg-[#fdfbf4]"] {
+  background-color: #FFFFFF !important;
+}
+
+[class~="bg-[#e8ead7]"] {
+  background-color: #F5F5F5 !important;
+}
+
+[class~="bg-[#171717]"] {
+  background-color: #0B0B0B !important;
+}
+
+[class~="text-[#171717]"],
+[class~="text-[#25465d]"],
+[class~="text-[#536023]"],
+[class~="text-[#6c3324]"] {
+  color: #0B0B0B !important;
+}
+
+[class~="text-[#3d3d35]"],
+[class~="text-[#3f3f38]"],
+[class~="text-[#44443d]"],
+[class~="text-[#4a4a42]"],
+[class~="text-[#4d4d43]"] {
+  color: #4A4A4A !important;
+}
+
+[class~="text-[#fdfbf4]"] {
+  color: #FFFFFF !important;
+}
+
+[class~="border-[#242424]"],
+[class~="border-[#8b8b7a]"],
+[class~="border-[#d1cfbf]"] {
+  border-color: #0B0B0B !important;
+}
+
+[class~="decoration-[#8b8b7a]"] {
+  text-decoration-color: #0B0B0B !important;
+}
+
+[class~="placeholder:text-[#777]"]::placeholder {
+  color: #737373 !important;
+}
+
+[class~="shadow-[4px_4px_0_#242424]"] {
+  box-shadow: 4px 4px 0 #0B0B0B !important;
+}
+
+[class~="shadow-[5px_5px_0_#242424]"] {
+  box-shadow: 5px 5px 0 #0B0B0B !important;
 }
 
 .sr-only {

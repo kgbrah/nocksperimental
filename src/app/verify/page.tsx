@@ -26,8 +26,8 @@ export default function VerifyPage() {
   const checkpointSample = verification.samples.registryCheckpoint;
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -35,18 +35,18 @@ export default function VerifyPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Public evidence checks
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Verification</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 {verification.verifierCount} verifier endpoints for badge issuance, generated
                 report evidence, local fakenet evidence, workspace evidence, signed workspace
                 upload tokens, signed trust updates, and registry checkpoint roots.
               </p>
             </div>
             <a
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/verify"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -66,32 +66,32 @@ export default function VerifyPage() {
       <section className="mx-auto grid max-w-6xl gap-4 px-5 pb-8 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         {verification.verifiers.map((verifier) => (
           <a
-            className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+            className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
             href={verifier.path}
             key={verifier.id}
           >
             <div className="flex items-center justify-between gap-3">
-              <div className="grid size-9 place-items-center bg-[#171717] text-white">
+              <div className="grid size-9 place-items-center bg-[#0B0B0B] text-white">
                 <ShieldCheck size={17} aria-hidden="true" />
               </div>
               <ArrowUpRight size={16} aria-hidden="true" />
             </div>
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
               {verifier.id}
             </p>
             <h2 className="mt-2 text-xl font-semibold">{verifier.description}</h2>
-            <p className="mt-3 break-all font-mono text-xs leading-5 text-[#4d4d43]">
+            <p className="mt-3 break-all font-mono text-xs leading-5 text-[#4A4A4A]">
               {verifier.path}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {verifier.queryParameters.length === 0 ? (
-                <span className="border border-[#242424] bg-[#e8ead7] px-2 py-1 font-mono text-xs uppercase">
+                <span className="border border-[#0B0B0B] bg-[#F5F5F5] px-2 py-1 font-mono text-xs uppercase">
                   no query
                 </span>
               ) : (
                 verifier.queryParameters.map((parameter) => (
                   <span
-                    className="border border-[#242424] bg-white px-2 py-1 font-mono text-xs"
+                    className="border border-[#0B0B0B] bg-white px-2 py-1 font-mono text-xs"
                     key={`${verifier.id}-${parameter}`}
                   >
                     {parameter}
@@ -155,8 +155,8 @@ export default function VerifyPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#242424] bg-[#fdfbf4] p-5">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <Fingerprint size={14} aria-hidden="true" />
         {label}
       </div>
@@ -192,19 +192,19 @@ function SamplePanel({
               : ShieldCheck;
 
   return (
-    <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+    <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
       <div className="flex items-center gap-2">
         <Icon size={18} aria-hidden="true" />
-        <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+        <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
           {label}
         </p>
       </div>
       <h2 className="mt-3 text-xl font-semibold">{title}</h2>
-      <p className="mt-3 break-all border border-[#8b8b7a] bg-white p-3 font-mono text-xs leading-5 text-[#3f3f38]">
+      <p className="mt-3 break-all border border-[#0B0B0B] bg-white p-3 font-mono text-xs leading-5 text-[#4A4A4A]">
         {url}
       </p>
       <a
-        className="mt-4 inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+        className="mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
         href={toSameOriginHref(url)}
       >
         Open

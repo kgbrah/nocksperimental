@@ -9,8 +9,8 @@ import {
 
 export default function ScoreHistoryPage() {
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/trust">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -18,21 +18,21 @@ export default function ScoreHistoryPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Storage-backed score histories
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Score History</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 Persisted score windows track solver quality, token compatibility, and compute
                 reputation over time.
               </p>
-              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+              <div className="mt-3 flex flex-wrap gap-3 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                 <span>{scoreHistoryRegistry.storage.backend}</span>
                 <span>{scoreHistoryRegistry.storage.source}</span>
               </div>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/score-history"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -48,21 +48,21 @@ export default function ScoreHistoryPage() {
 
           return (
             <article
-              className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+              className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
               key={summary.id}
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#536023]">
+                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                     {summary.signalKind} / {summary.trend}
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">{summary.label}</h2>
-                  <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
                     {summary.pointCount} points across {summary.sampleWindowDays} days from{" "}
                     {summary.storageSource}.
                   </p>
                 </div>
-                <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
+                <div className="grid size-16 place-items-center bg-[#0B0B0B] text-2xl font-semibold text-white">
                   {summary.latestScore}
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function ScoreHistoryPage() {
               {history ? (
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-                    <thead className="bg-[#171717] text-white">
+                    <thead className="bg-[#0B0B0B] text-white">
                       <tr>
                         <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
                           Recorded
@@ -95,7 +95,7 @@ export default function ScoreHistoryPage() {
                     </thead>
                     <tbody>
                       {history.points.map((point) => (
-                        <tr className="border-t border-[#242424] bg-white" key={point.recordedAt}>
+                        <tr className="border-t border-[#0B0B0B] bg-white" key={point.recordedAt}>
                           <td className="px-4 py-3 font-mono text-xs">{point.recordedAt}</td>
                           <td className="px-4 py-3 font-semibold">{point.score}</td>
                           <td className="px-4 py-3">{point.status}</td>
@@ -118,8 +118,8 @@ export default function ScoreHistoryPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <Gauge size={14} aria-hidden="true" />
         {label}
       </div>

@@ -4,8 +4,8 @@ import { percentage, scoreLabel, solverScorecards } from "@/lib/trust-signals";
 
 export default function SolverScoresPage() {
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/trust">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -13,16 +13,16 @@ export default function SolverScoresPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Solver execution-quality scoring
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Solver Scores</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 Solver scorecards turn intent replay reports into routing-quality signals.
               </p>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/trust/solver-scores"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -35,26 +35,26 @@ export default function SolverScoresPage() {
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 lg:px-8">
         {solverScorecards.map((scorecard) => (
           <article
-            className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+            className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
             key={scorecard.id}
           >
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#536023]">
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                   {scorecard.status} · grade {scorecard.grade}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">{scorecard.solverName}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
                   {scoreLabel(scorecard.score)} score from {scorecard.metrics.replayCount} replay
                   runs against {scorecard.fixtureId}.
                 </p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-3">
-                <div className="grid size-16 place-items-center bg-[#171717] text-2xl font-semibold text-white">
+                <div className="grid size-16 place-items-center bg-[#0B0B0B] text-2xl font-semibold text-white">
                   {scorecard.score}
                 </div>
                 <Link
-                  className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-white px-3 py-2 text-sm font-medium text-[#171717]"
+                  className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-3 py-2 text-sm font-medium text-[#0B0B0B]"
                   href={`/trust/solver-scores/${scorecard.id}`}
                 >
                   Open Detail
@@ -72,7 +72,7 @@ export default function SolverScoresPage() {
 
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               {scorecard.signals.map((signal) => (
-                <div className="border border-[#8b8b7a] bg-white p-3" key={signal}>
+                <div className="border border-[#0B0B0B] bg-white p-3" key={signal}>
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <ShieldCheck size={15} aria-hidden="true" />
                     {signal}
@@ -89,8 +89,8 @@ export default function SolverScoresPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <Gauge size={14} aria-hidden="true" />
         {label}
       </div>

@@ -35,8 +35,8 @@ export default async function GeneratedReportDetailPage({
   const verificationHref = `/api/reports/generated/verify?reportHash=${encodeURIComponent(entry.reportHash)}&snapshotRoot=${encodeURIComponent(entry.snapshotRoot)}&appSlug=${encodeURIComponent(entry.appSlug)}`;
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/reports/generated">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -44,17 +44,17 @@ export default async function GeneratedReportDetailPage({
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Generated report detail
               </p>
               <h1 className="mt-2 text-4xl font-semibold">{report.app.name}</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 Fixture {report.fixtureId} generated {report.summary.status} at{" "}
                 {report.generatedAt}.
               </p>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href={`/api/reports/generated/${entry.appSlug}`}
             >
               <Code2 size={16} aria-hidden="true" />
@@ -75,28 +75,28 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Verification Actions</h2>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href={`/api/reports/generated/${entry.appSlug}/evidence`}
             >
               Evidence Bundle
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-white px-4 py-3 text-sm font-medium"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href={`/api/reports/generated/${entry.appSlug}/provenance`}
             >
               Provenance
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
-              className="inline-flex items-center justify-between gap-3 border border-[#242424] bg-[#171717] px-4 py-3 text-sm font-medium text-white"
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
               href={verificationHref}
             >
               Verify Hash
@@ -111,7 +111,7 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <Terminal size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Environment</h2>
@@ -125,7 +125,7 @@ export default async function GeneratedReportDetailPage({
             <div className="mt-4 grid gap-2">
               {report.environment.notes.map((note) => (
                 <p
-                  className="border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]"
+                  className="border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]"
                   key={note}
                 >
                   {note}
@@ -135,20 +135,20 @@ export default async function GeneratedReportDetailPage({
           ) : null}
         </article>
 
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <ListChecks size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Next Actions</h2>
           </div>
           {report.nextActions.length === 0 ? (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No next actions recorded.
             </p>
           ) : (
             <ol className="mt-4 grid list-decimal gap-3 pl-5">
               {report.nextActions.map((action) => (
                 <li
-                  className="border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]"
+                  className="border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]"
                   key={action}
                 >
                   {action}
@@ -160,35 +160,35 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Invariant Packs</h2>
           </div>
           {report.invariantPacks.length === 0 ? (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No invariant packs referenced.
             </p>
           ) : (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {report.invariantPacks.map((pack) => (
-                <div className="border border-[#8b8b7a] bg-white p-3" key={`${pack.id}-${pack.path}`}>
+                <div className="border border-[#0B0B0B] bg-white p-3" key={`${pack.id}-${pack.path}`}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium">{pack.name}</p>
-                      <p className="mt-1 font-mono text-xs text-[#6c3324]">{pack.id}</p>
+                      <p className="mt-1 font-mono text-xs text-[#0B0B0B]">{pack.id}</p>
                     </div>
-                    <span className="font-mono text-xs uppercase text-[#536023]">
+                    <span className="font-mono text-xs uppercase text-[#0B0B0B]">
                       {pack.version ?? "unversioned"}
                     </span>
                   </div>
-                  <div className="mt-3 grid gap-2 text-sm leading-6 text-[#44443d] sm:grid-cols-2">
+                  <div className="mt-3 grid gap-2 text-sm leading-6 text-[#4A4A4A] sm:grid-cols-2">
                     <p>
-                      <span className="font-mono text-xs uppercase text-[#25465d]">Domain</span>
+                      <span className="font-mono text-xs uppercase text-[#0B0B0B]">Domain</span>
                       <span className="block break-words">{pack.domain ?? "unspecified"}</span>
                     </p>
                     <p>
-                      <span className="font-mono text-xs uppercase text-[#25465d]">Path</span>
+                      <span className="font-mono text-xs uppercase text-[#0B0B0B]">Path</span>
                       <span className="block break-words">{pack.path}</span>
                     </p>
                   </div>
@@ -200,52 +200,52 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
             <FileCheck2 size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Run Steps</h2>
           </div>
           <div className="mt-4 grid gap-3">
             {report.steps.map((step) => (
-              <div className="border border-[#8b8b7a] bg-white p-3" key={step.id}>
+              <div className="border border-[#0B0B0B] bg-white p-3" key={step.id}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="font-medium">{step.title}</p>
-                    <p className="mt-1 font-mono text-xs text-[#6c3324]">{step.type}</p>
+                    <p className="mt-1 font-mono text-xs text-[#0B0B0B]">{step.type}</p>
                   </div>
-                  <span className="font-mono text-xs uppercase text-[#536023]">{step.status}</span>
+                  <span className="font-mono text-xs uppercase text-[#0B0B0B]">{step.status}</span>
                 </div>
-                <p className="mt-2 text-sm leading-6 text-[#44443d]">{step.observed}</p>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{step.observed}</p>
               </div>
             ))}
           </div>
         </article>
 
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Invariant Results</h2>
           </div>
           <div className="mt-4 grid gap-3">
             {report.invariants.length === 0 ? (
-              <p className="border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+              <p className="border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
                 No invariants configured.
               </p>
             ) : (
               report.invariants.map((invariant) => (
-                <div className="border border-[#8b8b7a] bg-white p-3" key={invariant.id}>
+                <div className="border border-[#0B0B0B] bg-white p-3" key={invariant.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium">{invariant.title}</p>
-                      <p className="mt-1 font-mono text-xs text-[#6c3324]">
+                      <p className="mt-1 font-mono text-xs text-[#0B0B0B]">
                         {invariant.severity}
                       </p>
                     </div>
-                    <span className="font-mono text-xs uppercase text-[#536023]">
+                    <span className="font-mono text-xs uppercase text-[#0B0B0B]">
                       {invariant.status}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[#44443d]">
+                  <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">
                     Observed {invariant.observed}; expected {invariant.expected}.
                   </p>
                 </div>
@@ -256,32 +256,32 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <TriangleAlert size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Alerts</h2>
           </div>
           {report.alerts.length === 0 ? (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No alert policies configured.
             </p>
           ) : (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {report.alerts.map((alert) => (
-                <div className="border border-[#8b8b7a] bg-white p-3" key={alert.id}>
+                <div className="border border-[#0B0B0B] bg-white p-3" key={alert.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium">{alert.title}</p>
-                      <p className="mt-1 font-mono text-xs text-[#6c3324]">
+                      <p className="mt-1 font-mono text-xs text-[#0B0B0B]">
                         {alert.severity}
                       </p>
                     </div>
-                    <span className="font-mono text-xs uppercase text-[#536023]">
+                    <span className="font-mono text-xs uppercase text-[#0B0B0B]">
                       {alert.state}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm leading-6 text-[#44443d]">{alert.message}</p>
-                  <p className="mt-2 font-mono text-xs text-[#6c3324]">
+                  <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{alert.message}</p>
+                  <p className="mt-2 font-mono text-xs text-[#0B0B0B]">
                     {alert.observed} / {alert.condition}
                   </p>
                 </div>
@@ -292,19 +292,19 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <RadioTower size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Adapter Observations</h2>
           </div>
           {report.adapterObservations.length === 0 ? (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No adapter observations captured.
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-                <thead className="bg-[#171717] text-white">
+                <thead className="bg-[#0B0B0B] text-white">
                   <tr>
                     <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
                       Step
@@ -323,7 +323,7 @@ export default async function GeneratedReportDetailPage({
                 <tbody>
                   {report.adapterObservations.map((observation) => (
                     <tr
-                      className="border-t border-[#242424] bg-white"
+                      className="border-t border-[#0B0B0B] bg-white"
                       key={`${observation.stepId}-${observation.capability}`}
                     >
                       <td className="px-4 py-3 font-mono text-xs">{observation.stepId}</td>
@@ -342,16 +342,16 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">State Diffs</h2>
           {report.stateDiffs.length === 0 ? (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No state diffs captured.
             </p>
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[640px] border-collapse text-left text-sm">
-                <thead className="bg-[#171717] text-white">
+                <thead className="bg-[#0B0B0B] text-white">
                   <tr>
                     <th className="px-4 py-3 font-mono text-xs uppercase tracking-[0.12em]">
                       Path
@@ -366,7 +366,7 @@ export default async function GeneratedReportDetailPage({
                 </thead>
                 <tbody>
                   {report.stateDiffs.map((diff) => (
-                    <tr className="border-t border-[#242424] bg-white" key={diff.path}>
+                    <tr className="border-t border-[#0B0B0B] bg-white" key={diff.path}>
                       <td className="px-4 py-3 font-mono text-xs">{diff.path}</td>
                       <td className="px-4 py-3">{diff.before}</td>
                       <td className="px-4 py-3">{diff.after}</td>
@@ -380,18 +380,18 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">Snapshot Timeline</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {report.stateSnapshots.map((snapshot) => (
-              <div className="border border-[#8b8b7a] bg-white p-3" key={snapshot.label}>
+              <div className="border border-[#0B0B0B] bg-white p-3" key={snapshot.label}>
                 <div className="flex items-start justify-between gap-3">
                   <p className="font-medium">{snapshot.label}</p>
-                  <span className="font-mono text-xs uppercase text-[#536023]">
+                  <span className="font-mono text-xs uppercase text-[#0B0B0B]">
                     {snapshot.stepId ?? "initial"}
                   </span>
                 </div>
-                <p className="mt-2 font-mono text-xs text-[#6c3324]">{snapshot.stateHash}</p>
+                <p className="mt-2 font-mono text-xs text-[#0B0B0B]">{snapshot.stateHash}</p>
               </div>
             ))}
           </div>
@@ -399,7 +399,7 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">Artifacts</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <Callout label="Report ID" value={report.reportId} />
@@ -419,7 +419,7 @@ export default async function GeneratedReportDetailPage({
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <h2 className="text-xl font-semibold">Verification Candidate</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <Callout label="Candidate" value={entry.badgeCandidate.label} />
@@ -444,8 +444,8 @@ export default async function GeneratedReportDetailPage({
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#242424] bg-[#fdfbf4] p-5">
-      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         {label}
       </div>
       <div className="mt-2 text-2xl font-semibold capitalize">{value}</div>
@@ -455,11 +455,11 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function Callout({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         {label}
       </div>
-      <p className="mt-2 break-all text-sm leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all text-sm leading-6 text-[#4A4A4A]">{value}</p>
     </div>
   );
 }

@@ -8,8 +8,8 @@ export default function GeneratedReportsPage() {
   const generatedReports = loadGeneratedLabReports();
 
   return (
-    <main className="min-h-screen bg-[#f7f3ea] text-[#171717]">
-      <section className="border-b border-[#242424] bg-[#dce8ee]">
+    <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
           <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/">
             <ArrowLeft size={16} aria-hidden="true" />
@@ -17,17 +17,17 @@ export default function GeneratedReportsPage() {
           </Link>
           <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#25465d]">
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">
                 Generated lab artifacts
               </p>
               <h1 className="mt-2 text-4xl font-semibold">Generated Reports</h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#3d3d35]">
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-[#4A4A4A]">
                 {generatedReports.reports.length} report artifacts from{" "}
                 {generatedReports.reportDir ?? ".nocklab"}.
               </p>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
               href="/api/reports/generated"
             >
               <Code2 size={16} aria-hidden="true" />
@@ -48,7 +48,7 @@ export default function GeneratedReportsPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <FileClock size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">Run Totals</h2>
@@ -83,7 +83,7 @@ export default function GeneratedReportsPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
-        <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <FileClock size={18} aria-hidden="true" />
             <h2 className="text-xl font-semibold">CI Summary</h2>
@@ -98,12 +98,12 @@ export default function GeneratedReportsPage() {
                 />
                 <Callout label="Preview" value={generatedReports.summary.markdownPreview} />
               </div>
-              <pre className="mt-4 max-h-[360px] overflow-auto whitespace-pre-wrap border border-[#8b8b7a] bg-white p-4 font-mono text-xs leading-6 text-[#3f3f38]">
+              <pre className="mt-4 max-h-[360px] overflow-auto whitespace-pre-wrap border border-[#0B0B0B] bg-white p-4 font-mono text-xs leading-6 text-[#4A4A4A]">
                 {generatedReports.summary.markdown}
               </pre>
             </>
           ) : (
-            <p className="mt-4 border border-[#8b8b7a] bg-white p-3 text-sm leading-6 text-[#44443d]">
+            <p className="mt-4 border border-[#0B0B0B] bg-white p-3 text-sm leading-6 text-[#4A4A4A]">
               No CI summary markdown found next to the generated manifest.
             </p>
           )}
@@ -112,12 +112,12 @@ export default function GeneratedReportsPage() {
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
         {generatedReports.reports.length === 0 ? (
-          <article className="border border-[#242424] bg-[#fdfbf4] p-5">
+          <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
             <div className="flex items-center gap-2">
               <FileClock size={18} aria-hidden="true" />
               <h2 className="text-xl font-semibold">No Generated Reports</h2>
             </div>
-            <p className="mt-4 font-mono text-xs text-[#6c3324]">
+            <p className="mt-4 font-mono text-xs text-[#0B0B0B]">
               {generatedReports.manifestPath}
             </p>
           </article>
@@ -125,27 +125,27 @@ export default function GeneratedReportsPage() {
           <div className="grid gap-4">
             {generatedReports.reports.map((report) => (
               <article
-                className="border border-[#242424] bg-[#fdfbf4] p-5 shadow-[4px_4px_0_#242424]"
+                className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
                 key={report.reportId}
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="border border-[#242424] bg-[#e8ead7] px-2 py-1 font-mono text-xs uppercase">
+                      <span className="border border-[#0B0B0B] bg-[#F5F5F5] px-2 py-1 font-mono text-xs uppercase">
                         {report.status}
                       </span>
-                      <span className="border border-[#242424] bg-white px-2 py-1 font-mono text-xs uppercase">
+                      <span className="border border-[#0B0B0B] bg-white px-2 py-1 font-mono text-xs uppercase">
                         {report.fixtureId}
                       </span>
                     </div>
                     <h2 className="mt-3 text-2xl font-semibold">{report.appName}</h2>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-[#44443d]">
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
                       {report.stepsPassed}/{report.stepsTotal} steps, {report.invariantsPassed}/
                       {report.invariantsTotal} invariants, {report.alertsTriggered} triggered
                       alerts, {report.snapshotsCaptured} snapshots.
                     </p>
                   </div>
-                  <div className="grid gap-2 font-mono text-xs text-[#3d3d35] md:text-right">
+                  <div className="grid gap-2 font-mono text-xs text-[#4A4A4A] md:text-right">
                     <span>{report.generatedAt}</span>
                     <span>{report.reportId}</span>
                     <span>{report.appSlug}</span>
@@ -162,7 +162,7 @@ export default function GeneratedReportsPage() {
                   <Callout label="JSON Path" value={report.jsonPath} />
                 </div>
                 <Link
-                  className="mt-5 inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
+                  className="mt-5 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
                   href={`/reports/generated/${report.appSlug}`}
                 >
                   Open Detail
@@ -179,8 +179,8 @@ export default function GeneratedReportsPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#242424] bg-[#fdfbf4] p-5">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <FileClock size={14} aria-hidden="true" />
         {label}
       </div>
@@ -191,12 +191,12 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function Callout({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[#8b8b7a] bg-white p-3">
-      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#25465d]">
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
         <RadioTower size={14} aria-hidden="true" />
         {label}
       </div>
-      <p className="mt-2 break-all text-sm leading-6 text-[#3f3f38]">{value}</p>
+      <p className="mt-2 break-all text-sm leading-6 text-[#4A4A4A]">{value}</p>
     </div>
   );
 }
