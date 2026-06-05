@@ -86,7 +86,7 @@ export function createLocalFakenetEvidenceCapsule(
         reportId: report.reportId,
         generatedAt: report.generatedAt,
         status: report.status,
-        sourcePath: displayPath(report.path)
+        sourcePath: displayPath(report.path, options.rootDir)
       }))
     },
     links: {
@@ -167,12 +167,16 @@ export function verifyLocalFakenetEvidenceCapsule(
   };
 }
 
-function displayPath(filePath: string) {
-  const relativePath = path.relative(process.cwd(), filePath);
+function displayPath(filePath: string, rootDir = process.cwd()) {
+  const relativePath = path.relative(rootDir, filePath);
 
   if (!relativePath.startsWith("..") && !path.isAbsolute(relativePath)) {
-    return relativePath;
+    return normalizePathSeparators(relativePath);
   }
 
-  return filePath;
+  return normalizePathSeparators(filePath);
+}
+
+function normalizePathSeparators(filePath: string) {
+  return filePath.replace(/\\/g, "/");
 }
