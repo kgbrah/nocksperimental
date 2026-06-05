@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { verifyLaunchEvidenceReport } from "@/lib/launch-evidence";
+import { launchEvidenceCaseForId, verifyLaunchEvidenceReport } from "@/lib/launch-evidence";
+
+type VerificationRequestBody = {
+  caseId?: unknown;
+  reportHash?: unknown;
+  snapshotRoot?: unknown;
+};
 
 export function GET(request: Request) {
   const url = new URL(request.url);
@@ -9,18 +15,68 @@ export function GET(request: Request) {
     snapshotRoot: url.searchParams.get("snapshotRoot")
   });
 
-  return NextResponse.json(verification, {
-    status: verification.verified ? 200 : 404
-  });
+  return NextResponse.json(redactPrivateVerification(verification));
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  const body = await parseVerificationRequestBody(request);
+
+  if (!body.ok) {
+    return NextResponse.json(
+      {
+        version: "v0",
+        error: body.error
+      },
+      { status: 400 }
+    );
+  }
+
   const verification = verifyLaunchEvidenceReport({
-    caseId: body.caseId,
-    reportHash: body.reportHash,
-    snapshotRoot: body.snapshotRoot
+    caseId: asOptionalString(body.value.caseId),
+    reportHash: asOptionalString(body.value.reportHash),
+    snapshotRoot: asOptionalString(body.value.snapshotRoot)
   });
 
-  return NextResponse.json(verification);
+  return NextResponse.json(redactPrivateVerification(verification));
+}
+
+async function parseVerificationRequestBody(
+  request: Request
+): Promise<{ ok: true; value: VerificationRequestBody } | { ok: false; error: string }> {
+  let body: unknown;
+
+  try {
+    body = await request.json();
+  } catch {
+    return { ok: false, error: "Malformed Launch Evidence verification request." };
+  }
+
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return { ok: false, error: "Launch Evidence verification request body must be an object." };
+  }
+
+  return { ok: true, value: body };
+}
+
+function redactPrivateVerification<T extends { caseId?: string | null; verified: boolean }>(verification: T): T {
+  const launchCase = verification.caseId ? launchEvidenceCaseForId(verification.caseId) : null;
+
+  if (launchCase?.visibility !== "private") {
+    return verification;
+  }
+
+  return {
+    ...verification,
+    verified: false,
+    reportSlug: null,
+    report: null,
+    links: {
+      case: null,
+      api: null
+    }
+  };
+}
+
+function asOptionalString(value: unknown) {
+  return typeof value === "string" ? value : null;
 }

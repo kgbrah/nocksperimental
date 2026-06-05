@@ -15,7 +15,7 @@ export async function GET(_request: Request, { params }: LaunchEvidenceDetailRou
   const { caseId } = await params;
   const launchCase = launchEvidenceCaseForId(caseId);
 
-  if (!launchCase) {
+  if (!launchCase || launchCase.visibility === "private") {
     return NextResponse.json(
       {
         version: "v0",
