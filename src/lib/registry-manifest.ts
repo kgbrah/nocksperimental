@@ -70,6 +70,11 @@ export const registryEndpoints = [
     description: "Nockchain upstream watch board"
   },
   {
+    id: "nockchain-sync-gossip-trace",
+    path: "/api/nockchain/sync-gossip",
+    description: "Nockchain sync/gossip source trace"
+  },
+  {
     id: "nockup-validation-submit",
     path: "/api/nockchain/nockup/submit",
     description: "Submit Nockup scaffold validation evidence"
@@ -276,6 +281,7 @@ export function createWellKnownRegistryManifest() {
       nockchainOperationsAtlas: endpointUrl("nockchain-operations-atlas"),
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
       nockchainWatch: endpointUrl("nockchain-watch"),
+      nockchainSyncGossipTrace: endpointUrl("nockchain-sync-gossip-trace"),
       nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
       nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
       checkpoint: endpointUrl("registry-checkpoint"),
@@ -316,6 +322,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-operations-atlas",
       "nockchain-wallet-api-atlas",
       "nockchain-upstream-watch",
+      "nockchain-sync-gossip-trace",
       "nockup-validation-submit",
       "nockup-validation-receipts",
       "bring-your-own-fakenet",

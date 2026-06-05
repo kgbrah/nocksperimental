@@ -15,6 +15,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
+- Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
@@ -168,6 +169,15 @@ The upstream watch board records the live GitHub API sources and the current obs
 - `/api/nockchain/watch`
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
+
+## Nockchain Sync/Gossip Source Trace
+
+The sync/gossip trace turns the latest Nockchain `nockchain-libp2p-io` source change into a receipt-safe diagnostic contract. It anchors `CatchUpSignal::is_catching_up`, `P2PState::should_suppress_outgoing_gossip`, driver `%gossip` fan-out, the `gossip_suppressed_behind_tip_total` metric, and upstream suppression tests so wrong block commitments, empty route tables, quiet mining output, and tx gossip silence can be interpreted with sync mode and Zorp/state-jam provenance attached.
+
+- `/nockchain/sync-gossip`
+- `/api/nockchain/sync-gossip`
+
+Use it when a local fakenet, user-connected fakenet, or state-jam-backed test needs to decide whether a symptom is connectivity failure, stale state, or intentional behind-tip gossip suppression before publishing Nocksperimental evidence.
 
 ## Nockup Validation Receipts
 

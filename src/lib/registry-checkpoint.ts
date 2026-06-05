@@ -5,6 +5,7 @@ import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
+import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -34,6 +35,7 @@ export function createRegistryCheckpoint() {
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
+  const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
@@ -64,6 +66,7 @@ export function createRegistryCheckpoint() {
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
+    nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
@@ -142,6 +145,15 @@ export function createRegistryCheckpoint() {
       watchQueue: nockchainWatch.watchQueue,
       monitor: nockchainWatch.monitor
     }),
+    nockchainSyncGossipTrace: createSha256Root({
+      generatedAt: nockchainSyncGossipTrace.generatedAt,
+      upstream: nockchainSyncGossipTrace.upstream,
+      sourceAnchors: nockchainSyncGossipTrace.sourceAnchors,
+      behaviorInvariants: nockchainSyncGossipTrace.behaviorInvariants,
+      triageScenarios: nockchainSyncGossipTrace.triageScenarios,
+      receiptFields: nockchainSyncGossipTrace.receiptFields,
+      localVerification: nockchainSyncGossipTrace.localVerification
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -169,6 +181,10 @@ export function createRegistryCheckpoint() {
         nockchainWatch.status === "in-sync" &&
         nockchainWatch.drift.commitMatchesPinned &&
         nockchainWatch.drift.releaseMatchesPinned,
+      nockchainSyncGossipTraceAvailable:
+        nockchainSyncGossipTrace.sourceAnchors.length > 0 &&
+        nockchainSyncGossipTrace.triageScenarios.length > 0 &&
+        Boolean(nockchainSyncGossipTrace.localVerification.status),
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -264,6 +280,14 @@ export function createRegistryCheckpoint() {
       commitMatchesPinned: nockchainWatch.drift.commitMatchesPinned,
       releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned
     },
+    nockchainSyncGossipTrace: {
+      anchorCount: nockchainSyncGossipTrace.sourceAnchors.length,
+      invariantCount: nockchainSyncGossipTrace.behaviorInvariants.length,
+      scenarioCount: nockchainSyncGossipTrace.triageScenarios.length,
+      receiptFields: nockchainSyncGossipTrace.receiptFields,
+      sourceAnchorIds: nockchainSyncGossipTrace.sourceAnchors.map((anchor) => anchor.id),
+      localVerificationStatus: nockchainSyncGossipTrace.localVerification.status
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -281,6 +305,7 @@ export function createRegistryCheckpoint() {
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
+      nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`
