@@ -245,3 +245,63 @@ export function createNockchainUpstreamIntelligence() {
   return nockchainUpstreamIntelligence;
 }
 
+export type NockchainReceiptContext = {
+  network?: string | null;
+  endpoint?: string | null;
+  walletAddress?: string | null;
+  project?: string | null;
+  settlementMode?: string | null;
+  stateJamFingerprint?: string | null;
+};
+
+export function createNockchainReceiptProvenance(context: NockchainReceiptContext) {
+  return {
+    source: "nockchain-upstream-intelligence",
+    scannedAt: nockchainUpstreamIntelligence.scannedAt,
+    repository: {
+      fullName: nockchainUpstreamIntelligence.repository.fullName,
+      defaultBranch: nockchainUpstreamIntelligence.repository.defaultBranch,
+      url: nockchainUpstreamIntelligence.repository.url
+    },
+    commit: {
+      shortSha: nockchainUpstreamIntelligence.latestCommit.shortSha,
+      sha: nockchainUpstreamIntelligence.latestCommit.sha,
+      committedAt: nockchainUpstreamIntelligence.latestCommit.committedAt,
+      message: nockchainUpstreamIntelligence.latestCommit.message
+    },
+    release: {
+      tag: nockchainUpstreamIntelligence.latestRelease.tag,
+      publishedAt: nockchainUpstreamIntelligence.latestRelease.publishedAt,
+      url: nockchainUpstreamIntelligence.latestRelease.url
+    },
+    protocol: {
+      authority: nockchainUpstreamIntelligence.protocol.authority,
+      draft: nockchainUpstreamIntelligence.protocol.currentTrack.draft,
+      next: nockchainUpstreamIntelligence.protocol.currentTrack.next,
+      previous: nockchainUpstreamIntelligence.protocol.currentTrack.previous
+    },
+    docs: {
+      policy: nockchainUpstreamIntelligence.docs.policy,
+      canonicalSources: nockchainUpstreamIntelligence.docs.canonicalSpine.map((source) => source.path)
+    },
+    context: normalizeReceiptContext(context),
+    watchItems: nockchainUpstreamIntelligence.watchItems,
+    links: {
+      upstream: nockchainUpstreamIntelligence.canonicalUrl,
+      repository: nockchainUpstreamIntelligence.links.repository,
+      release: nockchainUpstreamIntelligence.links.release,
+      research: nockchainUpstreamIntelligence.links.research
+    }
+  };
+}
+
+function normalizeReceiptContext(context: NockchainReceiptContext) {
+  return {
+    network: context.network ?? null,
+    endpoint: context.endpoint ?? null,
+    walletAddress: context.walletAddress ?? null,
+    project: context.project ?? null,
+    settlementMode: context.settlementMode ?? null,
+    stateJamFingerprint: context.stateJamFingerprint ?? null
+  };
+}

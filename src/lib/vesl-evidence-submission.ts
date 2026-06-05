@@ -1,4 +1,5 @@
 import type { LabRunReport, LabStatus, LabStepReport } from "@/lib/lab-report";
+import { createNockchainReceiptProvenance } from "@/lib/nockchain-upstream";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -143,6 +144,14 @@ export function verifyVeslEvidenceSubmission(input: VeslEvidenceSubmissionInput)
       hullHealth: input.hull?.health ? cleanInput(input.hull.health.status).toLowerCase() || "unknown" : "not-provided",
       fakenetAccepted
     },
+    nockchain: createNockchainReceiptProvenance({
+      network: connection.settlementMode === "fakenet" ? "vesl-fakenet" : "vesl-local",
+      endpoint: input.fakenet?.endpoint ?? connection.chainEndpoint,
+      walletAddress: input.fakenet?.walletAddress,
+      project: connection.project,
+      settlementMode: connection.settlementMode,
+      stateJamFingerprint: input.verifyJam?.fingerprint
+    }),
     checks,
     errors,
     effects,

@@ -39,6 +39,23 @@ async function main() {
   assertStartsWith(receipt.receiptId, "vesl_submission_", "receipt id prefix");
   assertEqual(receipt.summary.project, "vesl-demo", "project summary");
   assertEqual(receipt.summary.requiredEffectsPresent, true, "required effects present");
+  assertEqual(receipt.nockchain.repository.fullName, "nockchain/nockchain", "receipt Nockchain repository");
+  assertEqual(receipt.nockchain.commit.shortSha, "5d022ced5504", "receipt Nockchain commit");
+  assertEqual(
+    receipt.nockchain.release.tag,
+    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "receipt Nockchain release"
+  );
+  assertEqual(receipt.nockchain.protocol.next.codename, "Nous", "receipt Nockchain protocol track");
+  assertEqual(receipt.nockchain.context.network, "vesl-local", "receipt Nockchain network context");
+  assertEqual(receipt.nockchain.context.endpoint, "http://127.0.0.1:5555", "receipt Nockchain endpoint context");
+  assertEqual(receipt.nockchain.context.project, "vesl-demo", "receipt Nockchain project context");
+  assertIncludes(receipt.nockchain.docs.canonicalSources, "PROTOCOL.md", "receipt Nockchain protocol source");
+  assertEqual(
+    receipt.nockchain.links.upstream,
+    "https://nocksperimental.com/api/nockchain/upstream",
+    "receipt Nockchain upstream link"
+  );
   assertEqual(receipt.checks.verifyJamFresh, true, "verify-jam fresh check");
   assertEqual(receipt.checks.settleRegisteredEffectPresent, true, "settle registered check");
   assertEqual(receipt.checks.settleNotedEffectPresent, true, "settle noted check");
@@ -77,6 +94,7 @@ async function main() {
   assertEqual(detailResponse.status, 200, "receipt detail status");
   assertEqual(detail.receiptId, receipt.receiptId, "receipt detail id");
   assertEqual(detail.report.reportId, receipt.report.reportId, "receipt detail report id");
+  assertEqual(detail.nockchain.commit.shortSha, "5d022ced5504", "receipt detail Nockchain commit");
 
   const badResponse = await POST(
     new Request("https://nocksperimental.com/api/vesl/evidence/submit", {

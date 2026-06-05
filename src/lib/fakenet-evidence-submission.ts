@@ -1,5 +1,6 @@
 import { createFakenetConnectionProfile } from "@/lib/fakenet-connection-profile";
 import type { LabRunReport, LabStatus } from "@/lib/lab-report";
+import { createNockchainReceiptProvenance } from "@/lib/nockchain-upstream";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -88,6 +89,12 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
       endpoint,
       walletAddress
     },
+    nockchain: createNockchainReceiptProvenance({
+      network: profile.connection.networkId,
+      endpoint,
+      walletAddress,
+      settlementMode: "local-fakenet"
+    }),
     checks,
     errors,
     reports: summaries,
