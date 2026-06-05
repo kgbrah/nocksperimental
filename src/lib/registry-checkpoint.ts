@@ -5,6 +5,7 @@ import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
+import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 import {
   registryCanonicalBaseUrl,
@@ -30,6 +31,7 @@ export function createRegistryCheckpoint() {
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
+  const nockchainWalletAtlas = createNockchainWalletAtlas();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
@@ -58,6 +60,7 @@ export function createRegistryCheckpoint() {
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
+    nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
@@ -116,6 +119,16 @@ export function createRegistryCheckpoint() {
       operatorChecklist: nockchainOperationsAtlas.operatorChecklist,
       stateArtifactSafety: nockchainOperationsAtlas.stateArtifactSafety
     }),
+    nockchainWalletAtlas: createSha256Root({
+      generatedAt: nockchainWalletAtlas.generatedAt,
+      upstream: nockchainWalletAtlas.upstream,
+      walletCommands: nockchainWalletAtlas.walletCommands,
+      endpointModes: nockchainWalletAtlas.endpointModes,
+      localFakenetProfile: nockchainWalletAtlas.localFakenetProfile,
+      balanceEvidenceContract: nockchainWalletAtlas.balanceEvidenceContract,
+      safety: nockchainWalletAtlas.safety,
+      triageScenarios: nockchainWalletAtlas.triageScenarios
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -136,6 +149,9 @@ export function createRegistryCheckpoint() {
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
         nockchainOperationsAtlas.scriptSources.length > 0,
+      nockchainWalletAtlasAvailable:
+        nockchainWalletAtlas.walletCommands.length > 0 &&
+        nockchainWalletAtlas.endpointModes.length > 0,
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -212,6 +228,14 @@ export function createRegistryCheckpoint() {
       scenarioIds: nockchainOperationsAtlas.triageScenarios.map((scenario) => scenario.id),
       scriptSourceIds: nockchainOperationsAtlas.scriptSources.map((script) => script.id)
     },
+    nockchainWalletAtlas: {
+      commandCount: nockchainWalletAtlas.walletCommands.length,
+      endpointModeCount: nockchainWalletAtlas.endpointModes.length,
+      scenarioCount: nockchainWalletAtlas.triageScenarios.length,
+      commandIds: nockchainWalletAtlas.walletCommands.map((command) => command.id),
+      endpointModeIds: nockchainWalletAtlas.endpointModes.map((mode) => mode.id),
+      localWalletAddress: nockchainWalletAtlas.localFakenetProfile.walletAddress
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -227,6 +251,7 @@ export function createRegistryCheckpoint() {
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
+      nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`

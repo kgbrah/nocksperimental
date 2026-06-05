@@ -150,6 +150,15 @@ The operations atlas turns current upstream scripts and local diagnostics into a
 
 Use it when deciding whether a fakenet symptom is a sync, peer, state-artifact, wallet, or command-source problem before treating a test failure as meaningful.
 
+## Nockchain Wallet/API Atlas
+
+The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats local `fakenock --balance` as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context.
+
+- `/nockchain/wallet`
+- `/api/nockchain/wallet`
+
+Use it when a balance, reward, or transaction test needs to say which wallet command was run, which endpoint mode was used, and which wallet secrets must stay out of receipts and support bundles.
+
 ## Nockup Validation Receipts
 
 The Nockup validation API accepts scaffold/build/run evidence for NockApp projects created with upstream `nockup`. It records project and template identity, install path, command transcript hashes, hashed artifacts, optional fakenet context, Nockchain commit/release provenance, and active Nockup watch themes without storing raw chain state or secrets.
