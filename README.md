@@ -12,6 +12,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
+- Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Generated report history with provenance, evidence, and public verification endpoints.
 - Private workspace surfaces with workspace evidence, upload policy, and signed upload-token verifier.
@@ -99,6 +100,14 @@ The upstream intelligence endpoint publishes the current Nockchain source-of-tru
 - `/api/nockchain/upstream`
 
 Use it when a receipt, fakenet test, or integration needs to explain which Nockchain build, protocol track, script family, or canonical doc supports an assumption.
+
+## Nockchain State-Jam Provenance
+
+The state-jam provenance endpoint tracks metadata requirements and watched sources for Nockchain state-jam/checkpoint artifacts, including the Zorp state-jam Drive folder. It is intentionally metadata-only: Nocksperimental records source identity, required hashes, network/height/build context, and safety policy, but does not store or redistribute raw PMA slabs, event logs, checkpoints, state jams, wallet exports, seed phrases, or private keys.
+
+- `/api/nockchain/state-jams`
+
+Use it when a fakenet receipt or bootstrap workflow needs to explain which state-jam source was considered, what provenance is still missing, and which Nockchain build/protocol context should be attached before trusting the artifact.
 
 ## VESL Evidence Bridge
 

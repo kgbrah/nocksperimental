@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
+import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -22,6 +23,7 @@ import {
 export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
+  const stateJamRegistry = createNockchainStateJamRegistry();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
     appSlug: report.appSlug,
     fixtureId: report.fixtureId,
@@ -43,7 +45,8 @@ export function createRegistryCheckpoint() {
     tokenCompatibilityReports: tokenCompatibilityReports.length,
     computeBenchmarkProfiles: computeBenchmarkProfiles.length,
     scoreHistories: scoreHistorySummaries.length,
-    trustConsumers: trustSignals.trustConsumers.length
+    trustConsumers: trustSignals.trustConsumers.length,
+    stateJamSources: stateJamRegistry.sources.length
   };
   const roots = {
     trustSignals: createSha256Root(trustSignals),
@@ -58,6 +61,13 @@ export function createRegistryCheckpoint() {
       status: localFakenetEvidence.status,
       summary: localFakenetEvidence.summary,
       verifier: localFakenetEvidence.verifier
+    }),
+    stateJamRegistry: createSha256Root({
+      generatedAt: stateJamRegistry.generatedAt,
+      policy: stateJamRegistry.policy,
+      requiredMetadata: stateJamRegistry.requiredMetadata,
+      sources: stateJamRegistry.sources,
+      upstream: stateJamRegistry.upstream
     }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
@@ -74,6 +84,9 @@ export function createRegistryCheckpoint() {
         trustUpdateChainSummary.signedEntryCount === trustUpdateChainSummary.validSignatureCount,
       generatedReportsAvailable: generatedReports.totals.reportCount > 0,
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
+      noRawStateJamArtifactsStored:
+        stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
+        stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
     chain: {
@@ -101,6 +114,19 @@ export function createRegistryCheckpoint() {
       endpoint: localFakenetEvidence.summary.endpoint,
       walletAddress: localFakenetEvidence.summary.walletAddress
     },
+    stateJams: {
+      sourceCount: stateJamRegistry.sources.length,
+      policy: stateJamRegistry.policy.mode,
+      rawArtifactStorage: stateJamRegistry.policy.rawArtifactStorage,
+      requiredMetadata: stateJamRegistry.requiredMetadata,
+      sources: stateJamRegistry.sources.map((source) => ({
+        id: source.id,
+        kind: source.kind,
+        custodian: source.custodian,
+        status: source.status,
+        artifactPolicy: source.artifactPolicy
+      }))
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -112,6 +138,7 @@ export function createRegistryCheckpoint() {
       trustFeed: `${registryCanonicalBaseUrl}/api/trust/feed`,
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
+      stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`
     }

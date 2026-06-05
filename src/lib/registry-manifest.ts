@@ -33,6 +33,11 @@ export const registryEndpoints = [
     description: "Nockchain upstream intelligence"
   },
   {
+    id: "nockchain-state-jams",
+    path: "/api/nockchain/state-jams",
+    description: "Nockchain state-jam provenance registry"
+  },
+  {
     id: "local-fakenet-readiness",
     path: "/api/fakenet",
     description: "Local fakenet readiness summary"
@@ -189,6 +194,7 @@ export function createWellKnownRegistryManifest() {
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
       health: endpointUrl("health"),
       nockchainUpstream: endpointUrl("nockchain-upstream"),
+      nockchainStateJams: endpointUrl("nockchain-state-jams"),
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
@@ -219,6 +225,7 @@ export function createWellKnownRegistryManifest() {
       "registry-checkpoints",
       "public-verification-index",
       "nockchain-upstream-intelligence",
+      "nockchain-state-jam-provenance",
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",
