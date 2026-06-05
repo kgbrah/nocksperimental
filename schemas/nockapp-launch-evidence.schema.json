@@ -13,7 +13,7 @@
   "$defs": {
     "case": {
       "type": "object",
-      "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId"],
+      "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectName", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId"],
       "properties": {
         "caseId": { "type": "string" },
         "workspaceSlug": { "type": "string" },
@@ -28,7 +28,7 @@
         "requestedBy": { "type": "string" },
         "payment": {
           "type": "object",
-          "required": ["status", "rail", "amount", "currency"],
+          "required": ["status", "rail", "amount", "currency", "reference"],
           "properties": {
             "status": { "enum": ["prospective", "quoted", "invoiced", "paid", "waived"] },
             "rail": { "enum": ["manual", "usd", "nock", "x402", "none"] },
@@ -44,7 +44,7 @@
     },
     "submission": {
       "type": "object",
-      "required": ["evidenceId", "caseId", "sourceKind", "submittedAt", "submittedBy", "status", "reportHash", "snapshotRoot", "receiptId", "redactionSummary"],
+      "required": ["evidenceId", "caseId", "sourceKind", "sourceUrl", "submittedAt", "submittedBy", "status", "reportHash", "snapshotRoot", "receiptId", "redactionSummary"],
       "properties": {
         "evidenceId": { "type": "string" },
         "caseId": { "type": "string" },

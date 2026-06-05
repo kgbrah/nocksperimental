@@ -182,7 +182,8 @@ export function verifyLaunchEvidenceReport(input: LaunchEvidenceVerificationInpu
     snapshotRootMatched: Boolean(report && snapshotRoot && report.snapshotRoot === snapshotRoot),
     publicOrShared: Boolean(resolvedCase && resolvedCase.visibility !== "private")
   };
-  const verified = checks.caseMatched && checks.reportHashMatched && checks.snapshotRootMatched;
+  const verified =
+    checks.caseMatched && checks.reportHashMatched && checks.snapshotRootMatched && checks.publicOrShared;
 
   return {
     version: registry.version,
@@ -221,10 +222,24 @@ function resolveLaunchEvidenceCase(entry: LaunchEvidenceCase): ResolvedLaunchEvi
     throw new Error(`Launch Evidence case ${entry.caseId} references missing report ${entry.reportSlug}`);
   }
 
+  if (report.caseId !== entry.caseId) {
+    throw new Error(
+      `Launch Evidence case ${entry.caseId} references report ${entry.reportSlug} for case ${report.caseId}`
+    );
+  }
+
   const workspace = privateWorkspaces.find((candidate) => candidate.slug === entry.workspaceSlug);
   const submissions = registry.submissions.filter((submission) =>
-    entry.evidenceIds.includes(submission.evidenceId)
+    submission.caseId === entry.caseId && entry.evidenceIds.includes(submission.evidenceId)
   );
+  const submittedEvidenceIds = new Set(submissions.map((submission) => submission.evidenceId));
+  const missingEvidenceIds = entry.evidenceIds.filter((evidenceId) => !submittedEvidenceIds.has(evidenceId));
+
+  if (missingEvidenceIds.length > 0) {
+    throw new Error(
+      `Launch Evidence case ${entry.caseId} references missing same-case submissions: ${missingEvidenceIds.join(", ")}`
+    );
+  }
 
   return {
     ...entry,

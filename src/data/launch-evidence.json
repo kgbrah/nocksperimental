@@ -16,7 +16,7 @@
       "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "founder-demo" },
       "evidenceIds": ["evidence-vesl-demo-lab-001", "evidence-vesl-demo-fakenet-001", "evidence-vesl-demo-vesl-001"],
       "reportSlug": "launch-vesl-demo-001",
-      "badgeId": "badge-payment-flow-verified"
+      "badgeId": null
     },
     {
       "caseId": "case-payment-flow-prelaunch-001",
