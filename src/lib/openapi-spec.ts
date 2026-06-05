@@ -160,6 +160,12 @@ const veslEvidenceReceiptDetailEndpoint = {
   description: "Read persisted VESL evidence receipt"
 };
 
+const bazaarListingDetailEndpoint = {
+  id: "bazaar-listing-detail",
+  path: "/api/bazaar/{listingId}",
+  description: "Verified Bazaar listing detail"
+};
+
 export function createOpenApiSpec() {
   const endpoints = [
     wellKnownEndpoint,
@@ -183,7 +189,8 @@ export function createOpenApiSpec() {
     generatedReportProvenanceEndpoint,
     generatedReportEvidenceEndpoint,
     fakenetEvidenceReceiptDetailEndpoint,
-    veslEvidenceReceiptDetailEndpoint
+    veslEvidenceReceiptDetailEndpoint,
+    bazaarListingDetailEndpoint
   ];
 
   return {
