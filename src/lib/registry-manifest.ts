@@ -1,3 +1,4 @@
+import launchEvidenceData from "@/data/launch-evidence.json";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { trustUpdateChainSummary } from "@/lib/trust-update-log";
 import { trustSignals } from "@/lib/trust-signals";
@@ -135,6 +136,16 @@ export const registryEndpoints = [
     description: "List persisted VESL evidence receipts"
   },
   {
+    id: "launch-evidence",
+    path: "/api/launch-evidence",
+    description: "Launch Evidence report index"
+  },
+  {
+    id: "launch-evidence-verifier",
+    path: "/api/launch-evidence/verify",
+    description: "Verify Launch Evidence report"
+  },
+  {
     id: "local-fakenet-evidence-verifier",
     path: "/api/fakenet/evidence/verify",
     description: "Local fakenet evidence verifier"
@@ -237,7 +248,8 @@ export function createRegistryManifest() {
       badges: trustSignals.verifiedBadges.length,
       trustConsumers: trustSignals.trustConsumers.length,
       generatedReports: generatedReports.totals.reportCount,
-      trustUpdates: trustUpdateChainSummary.entryCount
+      trustUpdates: trustUpdateChainSummary.entryCount,
+      launchEvidenceCases: launchEvidenceData.cases.filter((entry) => entry.visibility !== "private").length
     },
     latestTrustUpdate: {
       status: trustUpdateChainSummary.isAppendOnly ? "verified" : "attention",
@@ -311,6 +323,8 @@ export function createWellKnownRegistryManifest() {
       fakenetEvidenceReceipts: endpointUrl("fakenet-evidence-receipts"),
       veslEvidenceSubmit: endpointUrl("vesl-evidence-submit"),
       veslEvidenceReceipts: endpointUrl("vesl-evidence-receipts"),
+      launchEvidence: endpointUrl("launch-evidence"),
+      launchEvidenceVerifier: endpointUrl("launch-evidence-verifier"),
       fakenetEvidenceVerifier: endpointUrl("local-fakenet-evidence-verifier"),
       fakenetCommands: endpointUrl("local-fakenet-commands"),
       fakenetDiagnostics: endpointUrl("local-fakenet-diagnostics"),
@@ -352,6 +366,8 @@ export function createWellKnownRegistryManifest() {
       "fakenet-evidence-receipts",
       "vesl-evidence-bridge",
       "vesl-evidence-receipts",
+      "launch-evidence-reports",
+      "launch-evidence-verifier",
       "local-fakenet-evidence-verifier",
       "local-fakenet-command-kit",
       "local-fakenet-diagnostics",
