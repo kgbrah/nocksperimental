@@ -5,7 +5,7 @@ import {
 } from "@/lib/registry-manifest";
 import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 
-const zorpStateJamDriveFolderUrl =
+export const zorpStateJamDriveFolderUrl =
   "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw";
 
 export function createNockchainStateJamRegistry() {

@@ -102,6 +102,14 @@ The upstream intelligence endpoint publishes the current Nockchain source-of-tru
 
 Use it when a receipt, fakenet test, or integration needs to explain which Nockchain build, protocol track, script family, or canonical doc supports an assumption.
 
+## Zorp/Nockchain Upstream Map
+
+The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos.
+
+- `/api/nockchain/zorp`
+
+Use it when interpreting whether a source is current protocol authority, historical lineage, state-jam provenance, or future product signal for Nocksperimental receipts.
+
 ## Nockchain State-Jam Provenance
 
 The state-jam provenance endpoint tracks metadata requirements and watched sources for Nockchain state-jam/checkpoint artifacts, including the Zorp state-jam Drive folder. It is intentionally metadata-only: Nocksperimental records source identity, required hashes, network/height/build context, and safety policy, but does not store or redistribute raw PMA slabs, event logs, checkpoints, state jams, wallet exports, seed phrases, or private keys.

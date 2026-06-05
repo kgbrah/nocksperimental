@@ -3,6 +3,7 @@ import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
+import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -26,6 +27,7 @@ export function createRegistryCheckpoint() {
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const stateJamRegistry = createNockchainStateJamRegistry();
+  const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
     appSlug: report.appSlug,
     fixtureId: report.fixtureId,
@@ -48,6 +50,7 @@ export function createRegistryCheckpoint() {
     computeBenchmarkProfiles: computeBenchmarkProfiles.length,
     scoreHistories: scoreHistorySummaries.length,
     trustConsumers: trustSignals.trustConsumers.length,
+    zorpRepositories: zorpUpstream.repositories.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     stateJamSources: stateJamRegistry.sources.length
   };
@@ -64,6 +67,15 @@ export function createRegistryCheckpoint() {
       status: localFakenetEvidence.status,
       summary: localFakenetEvidence.summary,
       verifier: localFakenetEvidence.verifier
+    }),
+    zorpUpstream: createSha256Root({
+      scannedAt: zorpUpstream.scannedAt,
+      organization: zorpUpstream.organization,
+      nockchain: zorpUpstream.nockchain,
+      stateJamDrive: zorpUpstream.stateJamDrive,
+      repositories: zorpUpstream.repositories,
+      layers: zorpUpstream.layers,
+      monitor: zorpUpstream.monitor
     }),
     stateJamRegistry: createSha256Root({
       generatedAt: stateJamRegistry.generatedAt,
@@ -99,6 +111,7 @@ export function createRegistryCheckpoint() {
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
+      zorpUpstreamAvailable: zorpUpstream.repositories.length > 0,
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
     chain: {
@@ -139,6 +152,20 @@ export function createRegistryCheckpoint() {
         artifactPolicy: source.artifactPolicy
       }))
     },
+    zorpUpstream: {
+      repositoryCount: zorpUpstream.repositories.length,
+      activeHighSignalRepos: zorpUpstream.repositories
+        .filter((repo) => !repo.archived && ["jock-lang", "sppark"].includes(repo.name))
+        .map((repo) => repo.fullName),
+      stateJamDrive: {
+        sourceType: zorpUpstream.stateJamDrive.sourceType,
+        artifactPolicy: zorpUpstream.stateJamDrive.artifactPolicy
+      },
+      monitor: {
+        active: zorpUpstream.monitor.active,
+        interval: zorpUpstream.monitor.interval
+      }
+    },
     nockchainRustAtlas: {
       crateCount: nockchainRustAtlas.crates.length,
       groupCount: nockchainRustAtlas.groups.length,
@@ -156,6 +183,7 @@ export function createRegistryCheckpoint() {
       trustFeed: `${registryCanonicalBaseUrl}/api/trust/feed`,
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
+      zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
