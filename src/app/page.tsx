@@ -145,6 +145,13 @@ export default function Home() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
+                href="/nockchain"
+              >
+                <GitBranch size={16} aria-hidden="true" />
+                Nockchain
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
                 href="/verify"
               >
                 <ShieldCheck size={16} aria-hidden="true" />

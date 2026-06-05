@@ -106,6 +106,7 @@ Use it when a receipt, fakenet test, or integration needs to explain which Nockc
 
 The docs atlas publishes the canonical Nockchain read order, Tier 0/Tier 1 authority boundaries, protocol spec lifecycle, and consistency alerts. It currently surfaces the 014 Aletheia status drift between `PROTOCOL.md` and `changelog/protocol/014-aletheia.md` so receipts can carry the ambiguity instead of silently flattening it.
 
+- `/nockchain`
 - `/api/nockchain/docs-atlas`
 
 Use it when a protocol-sensitive receipt needs to cite which Nockchain doc or spec supports an activation height, consensus-critical flag, or runtime assumption.

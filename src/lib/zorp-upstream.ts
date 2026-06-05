@@ -258,7 +258,7 @@ export function createZorpUpstreamMap() {
     layers: zorpLayers,
     monitor: {
       active: true,
-      automationName: "Watch Zorp/Nockchain upstream",
+      automationName: "Watch Zorp/Nockchain state jams and repos",
       automationId: "watch-vesl-drive-folder",
       interval: "FREQ=HOURLY;INTERVAL=6",
       watchedSources: [
