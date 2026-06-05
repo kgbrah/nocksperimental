@@ -67,17 +67,29 @@ function redactPrivateVerification(verification: LaunchEvidenceVerification) {
     return verification;
   }
 
+  return createUnverifiedPublicMiss(verification);
+}
+
+function createUnverifiedPublicMiss(verification: LaunchEvidenceVerification): LaunchEvidenceVerification {
   return {
     version: verification.version,
     service: verification.service,
     subject: verification.subject,
     canonicalUrl: verification.canonicalUrl,
     verified: false,
+    caseId: verification.query.caseId,
+    reportSlug: null,
+    query: verification.query,
     checks: {
       caseMatched: false,
       reportHashMatched: false,
       snapshotRootMatched: false,
       publicOrShared: false
+    },
+    report: null,
+    links: {
+      case: null,
+      api: null
     }
   };
 }
