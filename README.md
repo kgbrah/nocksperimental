@@ -271,6 +271,19 @@ verification at scale is paid in micro-`$NOCK`.
 - Advertised at `/.well-known/nocksperimental.json` (`x402` block) and `/openapi.json` (402 responses).
 - Tests: `npm run test:x402`. Full guide: [docs/x402.md](docs/x402.md).
 
+## Verified Bazaar
+
+A trust-filtered directory of *payable* NockApp services for agents — the
+intersection of x402 payability and registry trust. It lists nocksperimental's
+metered endpoints, registry-backed solvers / compute providers / token issuers
+(verified by badge), and facilitator discoveries when one is online.
+
+- `GET /api/bazaar` (filters: `verifiedOnly`, `payableOnly`, `kind`, `network`, `minScore`) + `GET /api/bazaar/{listingId}`; browsable at `/bazaar`.
+- A listing is **verified** iff it has a verified registry badge.
+- Advertised in `/.well-known/nocksperimental.json` (`verified-bazaar`) and `/openapi.json`.
+- Auto-merges a facilitator's `/discovery/resources` when `NOCKS_X402_FACILITATOR_URL` is set + reachable.
+- Tests: `npm run test:bazaar`. Full guide: [docs/bazaar.md](docs/bazaar.md).
+
 ## Deployment
 
 The deployed app runs on Cloudflare Workers via OpenNext.

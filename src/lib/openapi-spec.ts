@@ -160,6 +160,12 @@ const veslEvidenceReceiptDetailEndpoint = {
   description: "Read persisted VESL evidence receipt"
 };
 
+const bazaarListingDetailEndpoint = {
+  id: "bazaar-listing-detail",
+  path: "/api/bazaar/{listingId}",
+  description: "Verified Bazaar listing detail"
+};
+
 const nockupValidationReceiptDetailEndpoint = {
   id: "nockup-validation-receipt-detail",
   path: "/api/nockchain/nockup/receipts/{receiptId}",
@@ -190,6 +196,7 @@ export function createOpenApiSpec() {
     generatedReportEvidenceEndpoint,
     fakenetEvidenceReceiptDetailEndpoint,
     veslEvidenceReceiptDetailEndpoint,
+    bazaarListingDetailEndpoint,
     nockupValidationReceiptDetailEndpoint
   ];
 

@@ -173,6 +173,11 @@ export const registryEndpoints = [
     id: "registry-updates",
     path: "/api/trust/updates",
     description: "Signed trust registry update log"
+  },
+  {
+    id: "bazaar-directory",
+    path: "/api/bazaar",
+    description: "Verified Bazaar directory"
   }
 ];
 
@@ -271,7 +276,8 @@ export function createWellKnownRegistryManifest() {
       workspaceEvidenceVerifier: endpointUrl("workspace-evidence-verifier"),
       verifiedBadges: endpointUrl("verified-badges"),
       trustFeed: endpointUrl("trust-feed"),
-      trustUpdates: endpointUrl("registry-updates")
+      trustUpdates: endpointUrl("registry-updates"),
+      bazaar: endpointUrl("bazaar-directory")
     },
     capabilities: [
       "verified-badges",
@@ -303,7 +309,8 @@ export function createWellKnownRegistryManifest() {
       "workspace-evidence-verifier",
       "generated-lab-reports",
       "cloudflare-workers",
-      "x402-metered-trust-api"
+      "x402-metered-trust-api",
+      "verified-bazaar"
     ]
   };
 }
