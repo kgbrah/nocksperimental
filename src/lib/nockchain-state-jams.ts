@@ -8,6 +8,65 @@ import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 export const zorpStateJamDriveFolderUrl =
   "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw";
 
+const pmaSafety = {
+  sourceDocs: [
+    {
+      path: "PMA-FAQ.md",
+      role: "operator-facing public PMA guidance"
+    },
+    {
+      path: "docs/pma/DESIGN.md",
+      role: "current PMA design reference"
+    },
+    {
+      path: "docs/pma/DURABILITY-OPERATIONS.md",
+      role: "durability and recovery operation reference"
+    },
+    {
+      path: "docs/pma/NOUN-PROVENANCE-AND-BRANDED-HANDLES.md",
+      role: "noun provenance and handle-safety reference"
+    }
+  ],
+  bootSources: [
+    "checkpoint-bootstrap",
+    "pma-fast-path",
+    "verified-snapshot-recovery",
+    "event-log-replay"
+  ],
+  forbiddenRawArtifacts: [
+    "pma/*.pma",
+    "pma/*.meta",
+    "event-log.sqlite3",
+    "event-log.sqlite3-wal",
+    "event-log.sqlite3-shm",
+    "checkpoints/*.jam",
+    "snapshot PMA files and manifests",
+    "wallet exports, seed phrases, or private keys"
+  ],
+  durableCommitOrder: [
+    "accepted event committed to SQLite",
+    "new kernel-state frontier copied into PMA",
+    "PMA file synced",
+    "PMA .meta sidecar written last"
+  ],
+  recoverySignals: [
+    "PMA missing or invalid",
+    "PMA behind SQLite",
+    "PMA ahead of SQLite",
+    "empty event log plus PMA metadata at checkpoint boundary during first bootstrap",
+    "verified snapshot, checkpoint, or event-log replay required"
+  ],
+  operatorChecklist: [
+    "Stop the node before preserving or inspecting PMA, event-log, checkpoint, or snapshot artifacts.",
+    "Record the Nockchain commit/build, data-dir, network, checkpoint height or event boundary, and source URL before trusting state artifacts.",
+    "Prefer trusted state jams, verified snapshots, manifests, or supported bootstrap artifacts over raw third-party PMA directories.",
+    "Treat empty post-checkpoint SQLite logs as expected only during first checkpoint bootstrap.",
+    "Do not reduce memory limits until the first PMA migration has booted successfully and subsequent boots use the PMA fast path."
+  ],
+  interpretation:
+    "PMA is durable local kernel-state storage. It is not a protocol feature, not a git artifact, not a cache to delete casually, and not a community bootstrap artifact to copy raw."
+} as const;
+
 export function createNockchainStateJamRegistry() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -26,6 +85,7 @@ export function createNockchainStateJamRegistry() {
         "State jams and PMA data are durable chain/runtime state. Nocksperimental tracks identity and provenance so test operators can reason about trust without redistributing raw state."
     },
     requiredMetadata: upstream.safety.stateArtifacts.metadataToTrack,
+    pmaSafety,
     sources: [
       {
         id: "zorp-state-jam-drive",

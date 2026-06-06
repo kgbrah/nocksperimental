@@ -78,7 +78,8 @@ export function createRegistryCheckpoint() {
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
-    stateJamSources: stateJamRegistry.sources.length
+    stateJamSources: stateJamRegistry.sources.length,
+    pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
   };
   const roots = {
     trustSignals: createSha256Root(trustSignals),
@@ -145,6 +146,7 @@ export function createRegistryCheckpoint() {
       generatedAt: stateJamRegistry.generatedAt,
       policy: stateJamRegistry.policy,
       requiredMetadata: stateJamRegistry.requiredMetadata,
+      pmaSafety: stateJamRegistry.pmaSafety,
       sources: stateJamRegistry.sources,
       upstream: stateJamRegistry.upstream
     }),
@@ -249,6 +251,11 @@ export function createRegistryCheckpoint() {
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
+      pmaSafetyGuidanceAvailable:
+        stateJamRegistry.pmaSafety.sourceDocs.length >= 4 &&
+        stateJamRegistry.pmaSafety.bootSources.includes("checkpoint-bootstrap") &&
+        stateJamRegistry.pmaSafety.bootSources.includes("pma-fast-path") &&
+        stateJamRegistry.pmaSafety.forbiddenRawArtifacts.includes("pma/*.pma"),
       zorpUpstreamAvailable: zorpUpstream.repositories.length > 0,
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
@@ -282,6 +289,12 @@ export function createRegistryCheckpoint() {
       policy: stateJamRegistry.policy.mode,
       rawArtifactStorage: stateJamRegistry.policy.rawArtifactStorage,
       requiredMetadata: stateJamRegistry.requiredMetadata,
+      pmaSafety: {
+        sourceDocs: stateJamRegistry.pmaSafety.sourceDocs.map((source) => source.path),
+        bootSources: stateJamRegistry.pmaSafety.bootSources,
+        forbiddenRawArtifacts: stateJamRegistry.pmaSafety.forbiddenRawArtifacts,
+        recoverySignals: stateJamRegistry.pmaSafety.recoverySignals
+      },
       sources: stateJamRegistry.sources.map((source) => ({
         id: source.id,
         kind: source.kind,

@@ -32,6 +32,45 @@ async function main() {
   assertIncludes(body.requiredMetadata, "hash", "hash metadata requirement");
   assertIncludes(body.requiredMetadata, "checkpoint height or event boundary", "height metadata requirement");
   assertIncludes(body.requiredMetadata, "Nockchain build or commit", "build metadata requirement");
+  assertEqual(body.pmaSafety.sourceDocs.length, 4, "PMA source doc count");
+  assertIncludes(body.pmaSafety.sourceDocs.map((source) => source.path), "PMA-FAQ.md", "PMA FAQ source");
+  assertIncludes(
+    body.pmaSafety.sourceDocs.map((source) => source.path),
+    "docs/pma/DURABILITY-OPERATIONS.md",
+    "PMA durability source"
+  );
+  assertIncludes(body.pmaSafety.bootSources, "checkpoint-bootstrap", "checkpoint bootstrap boot source");
+  assertIncludes(body.pmaSafety.bootSources, "pma-fast-path", "PMA fast-path boot source");
+  assertIncludes(
+    body.pmaSafety.forbiddenRawArtifacts,
+    "pma/*.pma",
+    "PMA raw slabs forbidden"
+  );
+  assertIncludes(
+    body.pmaSafety.forbiddenRawArtifacts,
+    "event-log.sqlite3",
+    "event log raw storage forbidden"
+  );
+  assertIncludes(
+    body.pmaSafety.durableCommitOrder,
+    "accepted event committed to SQLite",
+    "PMA durable commit starts with SQLite"
+  );
+  assertIncludes(
+    body.pmaSafety.durableCommitOrder,
+    "PMA .meta sidecar written last",
+    "PMA durable commit writes metadata last"
+  );
+  assertIncludes(
+    body.pmaSafety.recoverySignals,
+    "PMA ahead of SQLite",
+    "PMA recovery signal"
+  );
+  assertIncludes(
+    body.pmaSafety.operatorChecklist,
+    "Stop the node before preserving or inspecting PMA, event-log, checkpoint, or snapshot artifacts.",
+    "PMA stop-node checklist"
+  );
 
   const zorpSource = body.sources.find((source) => source.id === "zorp-state-jam-drive");
   assertEqual(zorpSource?.kind, "google-drive-folder", "Zorp state-jam source kind");
@@ -80,8 +119,20 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertGreaterThan(checkpointBody.counts.stateJamSources, 0, "checkpoint state-jam source count");
+  assertEqual(checkpointBody.counts.pmaSafetySourceDocs, 4, "checkpoint PMA source doc count");
   assertStartsWith(checkpointBody.roots.stateJamRegistry, "sha256:", "checkpoint state-jam root");
   assertEqual(checkpointBody.checks.noRawStateJamArtifactsStored, true, "checkpoint raw artifact guard");
+  assertEqual(checkpointBody.checks.pmaSafetyGuidanceAvailable, true, "checkpoint PMA safety guard");
+  assertIncludes(
+    checkpointBody.stateJams.pmaSafety.sourceDocs,
+    "PMA-FAQ.md",
+    "checkpoint PMA source docs"
+  );
+  assertIncludes(
+    checkpointBody.stateJams.pmaSafety.bootSources,
+    "pma-fast-path",
+    "checkpoint PMA boot sources"
+  );
   assertEqual(
     checkpointBody.links.stateJams,
     "https://nocksperimental.com/api/nockchain/state-jams",
@@ -101,6 +152,7 @@ async function main() {
 
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "Nockchain State-Jam Provenance", "README documents state-jam provenance");
+  assertIncludes(readme, "PMA boot and recovery safety", "README documents PMA safety");
   assertIncludes(readme, "/api/nockchain/state-jams", "README documents state-jams endpoint");
 }
 

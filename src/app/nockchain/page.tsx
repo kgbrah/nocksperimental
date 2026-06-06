@@ -27,6 +27,7 @@ export const dynamic = "force-dynamic";
 const expectedProtocolAlertId = "protocol-014-status-drift";
 const expectedZorpOrgSlug = "zorp-corp";
 const expectedStateJamClassification = "Zorp/Nockchain state-jam folder, not a VESL folder.";
+const highlightedPmaBootSources = ["checkpoint-bootstrap", "pma-fast-path"] as const;
 
 export default function NockchainEvidencePage() {
   const docsAtlas = createNockchainDocsAtlas();
@@ -228,6 +229,21 @@ export default function NockchainEvidencePage() {
             <Callout label="classification" value={stateJamClassification} />
             <Callout label="driveFolder" value={stateJamRegistry.links.driveFolder} />
             <Callout label="artifactPolicy" value={stateJamRegistry.policy.mode} />
+          </div>
+          <div className="mt-5 border border-[#0B0B0B] bg-[#FFF7D6] p-3">
+            <h3 className="font-semibold">PMA Safety</h3>
+            <p className="mt-2 text-sm leading-6 text-[#2F2A14]">
+              {stateJamRegistry.pmaSafety.interpretation}
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {highlightedPmaBootSources
+                .filter((source) => stateJamRegistry.pmaSafety.bootSources.includes(source))
+                .map((source) => (
+                <span className="border border-[#0B0B0B] bg-white px-2 py-1 font-mono text-xs" key={source}>
+                  {source}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {primaryStateJamSource.verificationQuestions.slice(0, 4).map((question) => (

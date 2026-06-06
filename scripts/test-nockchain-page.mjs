@@ -36,6 +36,9 @@ function main() {
   assertIncludes(page, "Tier 1", "Nockchain page explains Tier 1 docs");
   assertIncludes(page, "docConsistencyAlerts", "Nockchain page renders receipt fields");
   assertIncludes(page, "stateJamRegistry", "Nockchain page renders state-jam registry provenance");
+  assertIncludes(page, "PMA Safety", "Nockchain page renders PMA safety");
+  assertIncludes(page, "checkpoint-bootstrap", "Nockchain page renders PMA checkpoint bootstrap");
+  assertIncludes(page, "pma-fast-path", "Nockchain page renders PMA fast path");
   assertIncludes(page, "zorpMap", "Nockchain page renders Zorp map provenance");
   assertIncludes(page, "zorp-corp", "Nockchain page renders Zorp org source");
   assertIncludes(page, "not a VESL folder", "Nockchain page preserves Drive folder correction");
