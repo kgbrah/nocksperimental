@@ -285,6 +285,15 @@ The PR radar tracks currently open upstream Nockchain pull requests and open iss
 
 Use it when deciding whether a pending upstream PR or open issue should refresh a Nockup, wallet, NockApp, PMA/state-jam, operations, Rust atlas, compute benchmark, protocol trace, x402, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
 
+## Nockchain Impact Queue
+
+The impact queue turns current Nockchain releases, open PRs, Zorp lineage, and state-jam provenance into concrete Nocksperimental work items. It groups bridge withdrawal execution, Nockup template manifests, wallet blob/memo metadata, NockApp state export, PMA/state-jam provenance, fakenet sync/gossip diagnostics, Zorp/Jock authoring lineage, and benchmark/AI PoW puzzle signals by action lane, target surface, receipt fields, forbidden fields, and verification gates.
+
+- `/nockchain/impact`
+- `/api/nockchain/impact`
+
+Use it when deciding what to build or refresh next after upstream movement. Released commits can update receipt expectations only when the build tag is recorded; open PRs are early-warning signals; Zorp repos are lineage and authoring signals; state-jam and PMA sources stay metadata-only unless a local operator handles raw artifacts outside public registries.
+
 ## Nockchain Sync/Gossip Source Trace
 
 The sync/gossip trace turns the latest Nockchain `nockchain-libp2p-io` source change into a receipt-safe diagnostic contract. It anchors `CatchUpSignal::is_catching_up`, `P2PState::should_suppress_outgoing_gossip`, driver `%gossip` fan-out, the `gossip_suppressed_behind_tip_total` metric, and upstream suppression tests so wrong block commitments, empty route tables, quiet mining output, and tx gossip silence can be interpreted with sync mode and Zorp/state-jam provenance attached.

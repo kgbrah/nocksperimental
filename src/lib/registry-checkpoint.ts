@@ -10,6 +10,7 @@ import { createNockchainKnowledgeSpine } from "@/lib/nockchain-knowledge-spine";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
+import { createNockchainImpactQueue } from "@/lib/nockchain-impact-queue";
 import { createNockchainPrRadar } from "@/lib/nockchain-pr-radar";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
@@ -57,6 +58,7 @@ export function createRegistryCheckpoint() {
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
   const nockchainPrRadar = createNockchainPrRadar();
+  const nockchainImpactQueue = createNockchainImpactQueue();
   const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
@@ -117,6 +119,8 @@ export function createRegistryCheckpoint() {
     nockchainOpenPullRequests: nockchainPrRadar.pullRequests.length,
     nockchainOpenIssues: nockchainPrRadar.openIssues.length,
     nockchainPrRiskClasses: nockchainPrRadar.riskClasses.length,
+    nockchainImpactItems: nockchainImpactQueue.impactItems.length,
+    nockchainImpactActionLanes: nockchainImpactQueue.actionLanes.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
     pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
@@ -306,6 +310,14 @@ export function createRegistryCheckpoint() {
       riskClasses: nockchainPrRadar.riskClasses,
       reviewContract: nockchainPrRadar.reviewContract,
       operatorQueue: nockchainPrRadar.operatorQueue
+    }),
+    nockchainImpactQueue: createSha256Root({
+      generatedAt: nockchainImpactQueue.generatedAt,
+      upstream: nockchainImpactQueue.upstream,
+      snapshot: nockchainImpactQueue.snapshot,
+      impactItems: nockchainImpactQueue.impactItems,
+      actionLanes: nockchainImpactQueue.actionLanes,
+      queueContract: nockchainImpactQueue.queueContract
     }),
     nockchainSyncGossipTrace: createSha256Root({
       generatedAt: nockchainSyncGossipTrace.generatedAt,
@@ -501,6 +513,28 @@ export function createRegistryCheckpoint() {
             (issue.targetSurfaces as readonly string[]).includes("nockvmRuntimeSafety")
         ) &&
         nockchainPrRadar.reviewContract.forbiddenFields.includes("walletSeedPhrase"),
+      nockchainImpactQueueAvailable:
+        nockchainImpactQueue.impactItems.length >= 8 &&
+        nockchainImpactQueue.actionLanes.length >= 5 &&
+        nockchainImpactQueue.impactItems.some(
+          (item) =>
+            item.id === "bridge-withdrawal-release" &&
+            item.priority === "immediate" &&
+            item.targetSurfaces.includes("bridgeReceipts")
+        ) &&
+        nockchainImpactQueue.impactItems.some(
+          (item) =>
+            item.id === "pma-state-jam-provenance" &&
+            item.priority === "immediate" &&
+            item.forbiddenFields.includes("rawPmaSlab")
+        ) &&
+        nockchainImpactQueue.impactItems.some(
+          (item) =>
+            item.id === "wallet-blob-memo" &&
+            item.receiptFields.includes("transactionBlobHash")
+        ) &&
+        nockchainImpactQueue.queueContract.requiredFields.includes("verificationGates") &&
+        nockchainImpactQueue.queueContract.forbiddenFields.includes("walletSeedPhrase"),
       nockchainSyncGossipTraceAvailable:
         nockchainSyncGossipTrace.sourceAnchors.length > 0 &&
         nockchainSyncGossipTrace.triageScenarios.length > 0 &&
@@ -729,6 +763,22 @@ export function createRegistryCheckpoint() {
       ),
       forbiddenFields: nockchainPrRadar.reviewContract.forbiddenFields
     },
+    nockchainImpactQueue: {
+      generatedAt: nockchainImpactQueue.generatedAt,
+      impactItemCount: nockchainImpactQueue.impactItems.length,
+      actionLaneCount: nockchainImpactQueue.actionLanes.length,
+      immediateItems: nockchainImpactQueue.impactItems
+        .filter((item) => item.priority === "immediate")
+        .map((item) => item.id),
+      highPriorityItems: nockchainImpactQueue.impactItems
+        .filter((item) => item.priority === "high")
+        .map((item) => item.id),
+      sourceTypes: nockchainImpactQueue.snapshot.sourceTypes,
+      targetSurfaces: Array.from(
+        new Set(nockchainImpactQueue.impactItems.flatMap((item) => item.targetSurfaces))
+      ),
+      forbiddenFields: nockchainImpactQueue.queueContract.forbiddenFields
+    },
     nockchainBridgeTrace: {
       sourceCount: nockchainBridgeTrace.sourceAnchors.length,
       sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
@@ -817,6 +867,7 @@ export function createRegistryCheckpoint() {
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
       nockchainPrRadar: `${registryCanonicalBaseUrl}/api/nockchain/pr-radar`,
+      nockchainImpactQueue: `${registryCanonicalBaseUrl}/api/nockchain/impact`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,

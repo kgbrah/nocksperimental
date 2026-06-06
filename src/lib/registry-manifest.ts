@@ -126,6 +126,11 @@ export const registryEndpoints = [
     description: "Nockchain open PR radar"
   },
   {
+    id: "nockchain-impact-queue",
+    path: "/api/nockchain/impact",
+    description: "Nockchain upstream impact queue"
+  },
+  {
     id: "nockchain-sync-gossip-trace",
     path: "/api/nockchain/sync-gossip",
     description: "Nockchain sync/gossip source trace"
@@ -359,6 +364,7 @@ export function createWellKnownRegistryManifest() {
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
       nockchainWatch: endpointUrl("nockchain-watch"),
       nockchainPrRadar: endpointUrl("nockchain-pr-radar"),
+      nockchainImpactQueue: endpointUrl("nockchain-impact-queue"),
       nockchainSyncGossipTrace: endpointUrl("nockchain-sync-gossip-trace"),
       nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
       nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
@@ -413,6 +419,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-wallet-api-atlas",
       "nockchain-upstream-watch",
       "nockchain-pr-radar",
+      "nockchain-impact-queue",
       "nockchain-sync-gossip-trace",
       "nockup-validation-submit",
       "nockup-validation-receipts",
