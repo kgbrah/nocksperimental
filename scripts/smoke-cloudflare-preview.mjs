@@ -58,6 +58,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/zorp`, 200, "Zorp/Nockchain upstream map API");
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
+    await expectStatus(`${baseUrl}/api/nockchain/rust-source`, 200, "Nockchain Rust source guide API");
     await expectStatus(`${baseUrl}/api/nockchain/nockapp-atlas`, 200, "Nockchain NockApp runtime atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/nockapp-source`, 200, "Nockchain NockApp source trace API");
     await expectStatus(`${baseUrl}/api/nockchain/operations`, 200, "Nockchain operations atlas API");
@@ -96,6 +97,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
     await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
+    await expectStatus(`${baseUrl}/nockchain/rust/source`, 200, "Nockchain Rust source guide page");
     await expectStatus(`${baseUrl}/nockchain/nockapp`, 200, "Nockchain NockApp atlas page");
     await expectStatus(`${baseUrl}/nockchain/nockapp/source`, 200, "Nockchain NockApp source trace page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");

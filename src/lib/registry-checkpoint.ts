@@ -14,6 +14,7 @@ import { createNockchainPrRadar } from "@/lib/nockchain-pr-radar";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
+import { createNockchainRustSourceGuide } from "@/lib/nockchain-rust-source-guide";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
@@ -49,6 +50,7 @@ export function createRegistryCheckpoint() {
   const nockchainKnowledgeSpine = createNockchainKnowledgeSpine();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
+  const nockchainRustSourceGuide = createNockchainRustSourceGuide();
   const nockchainNockAppAtlas = createNockchainNockAppAtlas();
   const nockchainNockAppSourceTrace = createNockchainNockAppSourceTrace();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
@@ -100,6 +102,8 @@ export function createRegistryCheckpoint() {
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
+    nockchainRustSourceDomains: nockchainRustSourceGuide.sourceDomains.length,
+    nockchainRustSourceAnchors: nockchainRustSourceGuide.sourceAnchors.length,
     nockchainNockAppRuntimeBoundaries: nockchainNockAppAtlas.runtimeBoundaries.length,
     nockchainNockAppProbeTemplates: nockchainNockAppAtlas.probeTemplates.length,
     nockchainNockAppSourceAnchors: nockchainNockAppSourceTrace.sourceAnchors.length,
@@ -234,6 +238,14 @@ export function createRegistryCheckpoint() {
       groups: nockchainRustAtlas.groups,
       crates: nockchainRustAtlas.crates,
       watchThemes: nockchainRustAtlas.watchThemes
+    }),
+    nockchainRustSourceGuide: createSha256Root({
+      generatedAt: nockchainRustSourceGuide.generatedAt,
+      upstream: nockchainRustSourceGuide.upstream,
+      sourceDomains: nockchainRustSourceGuide.sourceDomains,
+      sourceAnchors: nockchainRustSourceGuide.sourceAnchors,
+      sourceTraceContract: nockchainRustSourceGuide.sourceTraceContract,
+      learningPath: nockchainRustSourceGuide.learningPath
     }),
     nockchainNockAppAtlas: createSha256Root({
       scannedAt: nockchainNockAppAtlas.scannedAt,
@@ -403,6 +415,14 @@ export function createRegistryCheckpoint() {
         nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount ===
           nockchainRustAtlas.workspace.memberCount &&
         nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers.length === 0,
+      nockchainRustSourceGuideAvailable:
+        nockchainRustSourceGuide.sourceDomains.length >= 10 &&
+        nockchainRustSourceGuide.sourceAnchors.length >= 15 &&
+        nockchainRustSourceGuide.sourceTraceContract.requiredFields.includes("sourceAnchorId") &&
+        nockchainRustSourceGuide.sourceTraceContract.forbiddenFields.includes("rawPmaSlab") &&
+        nockchainRustSourceGuide.sourceTraceContract.forbiddenFields.includes(
+          "walletSeedPhrase"
+        ),
       nockchainNockAppAtlasAvailable:
         nockchainNockAppAtlas.runtimeBoundaries.length >= 5 &&
         nockchainNockAppAtlas.probeTemplates.length >= 4 &&
@@ -626,6 +646,15 @@ export function createRegistryCheckpoint() {
       missingWorkspaceMembers: nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers,
       nonWorkspaceTrackedCrates: nockchainRustAtlas.workspace.coverage.nonWorkspaceTrackedCrates
     },
+    nockchainRustSourceGuide: {
+      domainCount: nockchainRustSourceGuide.sourceDomains.length,
+      anchorCount: nockchainRustSourceGuide.sourceAnchors.length,
+      domainIds: nockchainRustSourceGuide.sourceDomains.map((domain) => domain.id),
+      anchorIds: nockchainRustSourceGuide.sourceAnchors.map((anchor) => anchor.id),
+      requiredFields: nockchainRustSourceGuide.sourceTraceContract.requiredFields,
+      forbiddenFields: nockchainRustSourceGuide.sourceTraceContract.forbiddenFields,
+      learningPathDomains: nockchainRustSourceGuide.learningPath.map((step) => step.domainId)
+    },
     nockchainNockAppAtlas: {
       boundaryCount: nockchainNockAppAtlas.runtimeBoundaries.length,
       probeTemplateCount: nockchainNockAppAtlas.probeTemplates.length,
@@ -781,6 +810,7 @@ export function createRegistryCheckpoint() {
       nockchainKnowledgeSpine: `${registryCanonicalBaseUrl}/api/nockchain/knowledge-spine`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
+      nockchainRustSourceGuide: `${registryCanonicalBaseUrl}/api/nockchain/rust-source`,
       nockchainNockAppAtlas: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-atlas`,
       nockchainNockAppSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-source`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,

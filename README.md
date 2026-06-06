@@ -19,6 +19,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
+- Nockchain Rust source guide for exact source files, symbols, line ranges, cargo gates, and receipt-safe anchors.
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
@@ -202,6 +203,15 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 - `/api/nockchain/rust-atlas`
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
+
+## Nockchain Rust Source Guide
+
+The Rust source guide anchors the crate atlas to exact current upstream files, symbols, line ranges, cargo gates, receipt fields, and forbidden fields. It covers node startup, mining key configuration, libp2p catch-up and gossip suppression, NockApp poke/peek, PMA and snapshot safety, NockStack frame checks, wallet commands and transaction planning, public API/gRPC wire conversion, bridge withdrawal runtime, sequencer journal construction, and nockup scaffolding.
+
+- `/nockchain/rust/source`
+- `/api/nockchain/rust-source`
+
+Use it when a fakenet, NockApp, wallet, bridge, VESL, or nockup receipt needs exact Rust implementation evidence without storing raw PMA slabs, state jams, event logs, raw transactions, gRPC payloads, wallet seed phrases, private spend keys, object-store secrets, or sequencer signing keys.
 
 ## Nockchain Cargo Surface
 
