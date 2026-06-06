@@ -69,6 +69,8 @@ export function createRegistryCheckpoint() {
     zorpRepositories: zorpUpstream.repositories.length,
     zorpWatchMatrixEntries: zorpUpstream.repositoryWatchMatrix.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
+    nockchainBridgeSequencerLifecycleStates:
+      nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.length,
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
@@ -106,7 +108,8 @@ export function createRegistryCheckpoint() {
       sourceAnchors: nockchainBridgeTrace.sourceAnchors,
       withdrawalFlow: nockchainBridgeTrace.withdrawalFlow,
       safetyInvariants: nockchainBridgeTrace.safetyInvariants,
-      receiptFields: nockchainBridgeTrace.receiptFields
+      receiptFields: nockchainBridgeTrace.receiptFields,
+      sequencerOperationalContract: nockchainBridgeTrace.sequencerOperationalContract
     }),
     nockchainReleaseAssets: createSha256Root({
       generatedAt: nockchainReleaseAssets.generatedAt,
@@ -221,6 +224,18 @@ export function createRegistryCheckpoint() {
         nockchainBridgeTrace.sourceAnchors.length > 0 &&
         nockchainBridgeTrace.withdrawalFlow.length > 0 &&
         nockchainBridgeTrace.releaseDrift.releaseCommitSha.length > 0,
+      nockchainBridgeSequencerContractAvailable:
+        nockchainBridgeTrace.sequencerOperationalContract.serviceName ===
+          "nockchain-bridge-sequencer" &&
+        nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.some(
+          (state) => state.id === "mempoolAccepted"
+        ) &&
+        nockchainBridgeTrace.sequencerOperationalContract.receiptFields.includes(
+          "sequencerJournalId"
+        ) &&
+        nockchainBridgeTrace.sequencerOperationalContract.journal.envVars.includes(
+          "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY"
+        ),
       nockchainReleaseAssetsAvailable:
         nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
         nockchainReleaseAssets.release.manifestPresent &&
@@ -426,6 +441,10 @@ export function createRegistryCheckpoint() {
       sourceCount: nockchainBridgeTrace.sourceAnchors.length,
       sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
       flowStepIds: nockchainBridgeTrace.withdrawalFlow.map((step) => step.id),
+      sequencerLifecycleStateIds:
+        nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.map(
+          (state) => state.id
+        ),
       latestCommitReleased: nockchainBridgeTrace.releaseDrift.latestCommitReleased,
       defaultBranchAheadOfRelease: nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease,
       receiptFields: nockchainBridgeTrace.receiptFields

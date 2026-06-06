@@ -131,7 +131,7 @@ Use it when a fakenet test, Nockup validation run, wallet/balance receipt, or st
 
 ## Nockchain Bridge Withdrawal Trace
 
-The bridge withdrawal trace follows the latest released bridge work from Base burn through Hoon kernel pending/commit effects, Rust withdrawal proposal assembly, sequencer authorization, journal persistence, submission, confirmation polling, and kernel reconciliation. It explicitly records whether the latest commit is represented by the latest public build release, so settlement and bridge receipts do not flatten commit/build provenance.
+The bridge withdrawal trace follows the latest released bridge work from Base burn through Hoon kernel pending/commit effects, Rust withdrawal proposal assembly, sequencer authorization, journal persistence, submission, confirmation polling, and kernel reconciliation. It explicitly records whether the latest commit is represented by the latest public build release, so settlement and bridge receipts do not flatten commit/build provenance. Its sequencer operational contract separates registered, peer-canonical, authorized, submitted, mempool-accepted, confirmed, and kernel-reconciled states so evidence can cite the right owner without leaking journal secrets.
 
 - `/nockchain/bridge`
 - `/api/nockchain/bridge`

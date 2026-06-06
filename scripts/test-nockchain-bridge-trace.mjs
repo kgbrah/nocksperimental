@@ -70,6 +70,67 @@ async function main() {
     "sequencer checklist"
   );
 
+  assertEqual(
+    body.sequencerOperationalContract.serviceName,
+    "nockchain-bridge-sequencer",
+    "sequencer service name"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.sourceDocs,
+    "crates/nockchain-bridge-sequencer/src/main.rs",
+    "sequencer contract source"
+  );
+  assertEqual(
+    body.sequencerOperationalContract.deployment.mustRunOn,
+    "designated Nockchain API node",
+    "sequencer placement"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.deployment.bindings,
+    "withdrawal sequencer listens on private gRPC port + 100",
+    "sequencer listen binding"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.cliFlags,
+    "--base-ws-url",
+    "sequencer base ws flag"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.cliFlags,
+    "--sequencer-config-path",
+    "sequencer config flag"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.journal.envVars,
+    "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY",
+    "sequencer journal signing env"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.journal.safetyRules,
+    "Do not put sequencer journal access keys or signing key material into receipts, support bundles, or public APIs.",
+    "sequencer secret safety"
+  );
+  assertSequencerState(body, "registered");
+  assertSequencerState(body, "peerCanonical");
+  assertSequencerState(body, "authorized");
+  assertSequencerState(body, "mempoolAccepted");
+  assertSequencerState(body, "confirmed");
+  assertIncludes(
+    body.sequencerOperationalContract.confirmationEvidence,
+    "tx-accepted is diagnostic; confirmed inclusion requires get_transaction_block plus confirmation depth.",
+    "sequencer confirmation evidence"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.receiptFields,
+    "sequencerJournalId",
+    "sequencer journal receipt field"
+  );
+  assertIncludes(
+    body.sequencerOperationalContract.receiptFields,
+    "inclusionConfirmationDepth",
+    "sequencer confirmation depth receipt field"
+  );
+
   const watch = await loadTypeScriptModule("src/app/api/nockchain/watch/route.ts").GET();
   const watchBody = await watch.json();
   assertEqual(watchBody.status, "in-sync", "watch status reflects release catch-up");
@@ -111,9 +172,24 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainBridgeSources, body.sourceAnchors.length, "checkpoint source count");
+  assertEqual(
+    checkpointBody.counts.nockchainBridgeSequencerLifecycleStates,
+    body.sequencerOperationalContract.lifecycleStates.length,
+    "checkpoint sequencer lifecycle count"
+  );
   assertStartsWith(checkpointBody.roots.nockchainBridgeTrace, "sha256:", "checkpoint bridge root");
   assertEqual(checkpointBody.checks.nockchainBridgeTraceAvailable, true, "checkpoint bridge guard");
+  assertEqual(
+    checkpointBody.checks.nockchainBridgeSequencerContractAvailable,
+    true,
+    "checkpoint bridge sequencer contract guard"
+  );
   assertEqual(checkpointBody.checks.nockchainWatchInSync, true, "checkpoint watch catch-up guard");
+  assertIncludes(
+    checkpointBody.nockchainBridgeTrace.sequencerLifecycleStateIds,
+    "mempoolAccepted",
+    "checkpoint sequencer lifecycle ids"
+  );
   assertEqual(
     checkpointBody.links.nockchainBridgeTrace,
     "https://nocksperimental.com/api/nockchain/bridge",
@@ -126,6 +202,11 @@ async function main() {
   assertIncludes(page, "Nockchain Bridge", "bridge page title");
   assertIncludes(page, "bridge-withdrawals-spec", "page renders bridge spec source");
   assertIncludes(page, "sequencer-authorized", "page renders sequencer step");
+  assertIncludes(page, "Sequencer Operational Contract", "page renders sequencer contract");
+  assertIncludes(page, "nockchain-bridge-sequencer", "page renders sequencer binary");
+  assertIncludes(page, "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY", "page renders sequencer journal env");
+  assertIncludes(page, "mempoolAccepted", "page renders mempool accepted state");
+  assertIncludes(page, "sequencerJournalId", "page renders sequencer receipt field");
   assertIncludes(page, 'href="/api/nockchain/bridge"', "page links API");
   assertIncludes(page, 'href="/nockchain"', "page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/bridge"', "Nockchain page links bridge page");
@@ -144,6 +225,7 @@ async function main() {
 
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Bridge Withdrawal Trace", "README documents bridge trace");
+  assertIncludes(readme, "sequencer operational contract", "README documents sequencer contract");
   assertIncludes(readme, "/api/nockchain/bridge", "README documents bridge endpoint");
   assertIncludes(readme, "/nockchain/bridge", "README documents bridge page");
 }
@@ -163,6 +245,16 @@ function assertFlowStep(body, id) {
 
   if (!step) {
     throw new Error(`Missing withdrawal flow step: ${id}`);
+  }
+}
+
+function assertSequencerState(body, id) {
+  const state = body.sequencerOperationalContract.lifecycleStates.find(
+    (candidate) => candidate.id === id
+  );
+
+  if (!state) {
+    throw new Error(`Missing sequencer lifecycle state: ${id}`);
   }
 }
 

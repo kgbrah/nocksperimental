@@ -21,6 +21,10 @@ const prioritySourceIds = [
 ] as const;
 
 const highlightedFlowStepIds = ["sequencer-authorized"] as const;
+const prioritySequencerStateIds = ["authorized", "mempoolAccepted", "confirmed"] as const;
+const sequencerServiceName = "nockchain-bridge-sequencer";
+const sequencerJournalSigningKeyEnv = "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY";
+const sequencerJournalReceiptField = "sequencerJournalId";
 
 export default function NockchainBridgePage() {
   const trace = createNockchainBridgeTrace();
@@ -29,6 +33,18 @@ export default function NockchainBridgePage() {
   );
   const remainingSources = trace.sourceAnchors.filter(
     (source) => !prioritySourceIds.includes(source.id as (typeof prioritySourceIds)[number])
+  );
+  const prioritySequencerStates = prioritySequencerStateIds
+    .map((id) =>
+      trace.sequencerOperationalContract.lifecycleStates.find((state) => state.id === id)
+    )
+    .filter((state): state is NonNullable<typeof state> => Boolean(state));
+  const remainingSequencerStates = trace.sequencerOperationalContract.lifecycleStates.filter(
+    (state) =>
+      !prioritySequencerStateIds.includes(state.id as (typeof prioritySequencerStateIds)[number])
+  );
+  const sequencerReceiptFields = trace.sequencerOperationalContract.receiptFields.filter(
+    (field) => field !== sequencerJournalReceiptField
   );
 
   return (
@@ -180,7 +196,115 @@ export default function NockchainBridgePage() {
           </div>
         </article>
       </section>
+
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-10 lg:grid-cols-[1fr_1fr] lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <RadioTower size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Sequencer Operational Contract</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            <Callout
+              label="service"
+              value={
+                trace.sequencerOperationalContract.serviceName === sequencerServiceName
+                  ? sequencerServiceName
+                  : trace.sequencerOperationalContract.serviceName
+              }
+            />
+            <Callout
+              label="mustRunOn"
+              value={trace.sequencerOperationalContract.deployment.mustRunOn}
+            />
+            <Callout
+              label="bindings"
+              value={trace.sequencerOperationalContract.deployment.bindings.join(", ")}
+            />
+            <Callout
+              label="cliFlags"
+              value={trace.sequencerOperationalContract.cliFlags.join(", ")}
+            />
+            <Callout
+              label="journalEnv"
+              value={[
+                sequencerJournalSigningKeyEnv,
+                ...trace.sequencerOperationalContract.journal.envVars.filter(
+                  (envVar) => envVar !== sequencerJournalSigningKeyEnv
+                )
+              ].join(", ")}
+            />
+            <Callout
+              label="confirmationEvidence"
+              value={trace.sequencerOperationalContract.confirmationEvidence.join(" ")}
+            />
+          </div>
+        </article>
+
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Sequencer Lifecycle</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {prioritySequencerStates.map((state) => (
+              <SequencerStateCard state={state} key={state.id} />
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-10 lg:grid-cols-[1fr_1fr] lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Additional Sequencer States</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {remainingSequencerStates.map((state) => (
+              <SequencerStateCard state={state} key={state.id} />
+            ))}
+          </div>
+        </article>
+
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Sequencer Receipt Fields</h2>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {[sequencerJournalReceiptField, ...sequencerReceiptFields].map((field) => (
+              <div className="border border-[#0B0B0B] bg-white p-3 font-mono text-sm" key={field}>
+                {field}
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3">
+            {trace.sequencerOperationalContract.journal.safetyRules.map((rule) => (
+              <div className="border border-[#0B0B0B] bg-[#FFF7D6] p-3 text-sm leading-6" key={rule}>
+                {rule}
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
     </main>
+  );
+}
+
+function SequencerStateCard({
+  state
+}: {
+  state: ReturnType<
+    typeof createNockchainBridgeTrace
+  >["sequencerOperationalContract"]["lifecycleStates"][number];
+}) {
+  return (
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">{state.id}</p>
+      <h3 className="mt-1 font-semibold">{state.owner}</h3>
+      <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{state.meaning}</p>
+      <Callout label="receiptEvidence" value={state.receiptEvidence} />
+    </div>
   );
 }
 

@@ -131,12 +131,144 @@ const receiptFields = [
   "snapshotBlockId",
   "sequencerAuthorizationState",
   "sequencerJournalObject",
+  "sequencerJournalId",
   "withdrawalJournalMirror",
   "blockchainConstantsSource",
+  "colocatedPublicApiEndpoint",
   "confirmedHeight",
   "confirmedBlockId",
+  "inclusionConfirmationDepth",
   "kernelReconciliationStatus"
 ] as const;
+
+const sequencerOperationalContract = {
+  serviceName: "nockchain-bridge-sequencer",
+  sourceDocs: [
+    "crates/bridge/docs/bridge-withdrawals.md",
+    "crates/bridge/src/withdrawal/submission.rs",
+    "crates/nockchain-bridge-sequencer/src/main.rs"
+  ],
+  deployment: {
+    mustRunOn: "designated Nockchain API node",
+    bindings: [
+      "requires --bind-public-grpc-addr for the colocated public Nockchain API",
+      "withdrawal sequencer listens on private gRPC port + 100",
+      "public Nockchain client endpoint is derived from the public gRPC bind address",
+      "Base confirmed-height watcher must initialize before sequencer RPC serves"
+    ],
+    nonGoals: [
+      "no automatic submission failover when the sequencer is unavailable",
+      "no receipt should treat local submission as consensus finality",
+      "no raw journal credentials or signing keys should appear in evidence"
+    ]
+  },
+  cliFlags: [
+    "--base-ws-url",
+    "--base-confirmation-depth",
+    "--withdrawal-handoff-window-blocks",
+    "--withdrawal-retry-after-base-blocks",
+    "--authorized-submit-retry-after-base-blocks",
+    "--sequencer-config-path",
+    "--sequencer-journal-object-store-endpoint",
+    "--sequencer-journal-object-store-bucket",
+    "--sequencer-journal-object-store-region",
+    "--sequencer-journal-object-store-prefix",
+    "--sequencer-journal-id",
+    "--sequencer-journal-object-store-access-key-id",
+    "--sequencer-journal-object-store-secret-access-key"
+  ],
+  journal: {
+    mode: "append-only durable lifecycle mirror",
+    objectStore: "R2/S3-compatible object store",
+    envVars: [
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_ENDPOINT",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_BUCKET",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_REGION",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_PREFIX",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_ID",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_ACCESS_KEY_ID",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_OBJECT_STORE_SECRET_ACCESS_KEY",
+      "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY"
+    ],
+    safetyRules: [
+      "Do not put sequencer journal access keys or signing key material into receipts, support bundles, or public APIs.",
+      "If the durable mirror is enabled and a lifecycle event cannot be written remotely, the local sequencer state transition must abort.",
+      "Do not configure journal object expiration until checkpoint recovery exists.",
+      "Receipts may cite journal id, object prefix, verifier address, event id, and event hash, but not secrets."
+    ]
+  },
+  lifecycleStates: [
+    {
+      id: "registered",
+      owner: "sequencer",
+      meaning: "Withdrawal nonce and identity are known to the sequencer ordering frontier.",
+      receiptEvidence: "withdrawal id, withdrawal_nonce, registered-at source, sequencer endpoint."
+    },
+    {
+      id: "prepared",
+      owner: "bridge node",
+      meaning: "A local proposal was built but has not become peer-canonical.",
+      receiptEvidence: "epoch, proposal hash, transaction name, snapshot height, selected input notes."
+    },
+    {
+      id: "peerCanonical",
+      owner: "bridge peers plus sequencer",
+      meaning: "A threshold commit certificate fixes the proposal hash for the withdrawal epoch.",
+      receiptEvidence: "commit certificate, signer set, proposal hash, epoch, withdrawal id."
+    },
+    {
+      id: "authorized",
+      owner: "sequencer",
+      meaning: "The sequencer accepted a fully signed submit-ready proposal, not merely a peer-chosen candidate.",
+      receiptEvidence: "authorized transaction name, proposal hash, witness/signature completeness, journal event id."
+    },
+    {
+      id: "submitted",
+      owner: "sequencer",
+      meaning: "A local submit RPC was attempted after authorization; this is advisory until mempool or block evidence is observed.",
+      receiptEvidence: "submitted raw tx id, submit attempt time, public API endpoint, journal event id."
+    },
+    {
+      id: "mempoolAccepted",
+      owner: "public Nockchain API",
+      meaning: "The public API reports transaction acceptance, which is diagnostic but not block inclusion.",
+      receiptEvidence: "tx-accepted result, raw tx id, observed-at, API endpoint."
+    },
+    {
+      id: "confirmed",
+      owner: "public Nockchain API plus sequencer",
+      meaning: "The authorized raw transaction was observed in a block with configured confirmation depth.",
+      receiptEvidence: "confirmed height, block id, tip height, confirmation depth, journal event id."
+    },
+    {
+      id: "kernelReconciled",
+      owner: "Hoon bridge kernel",
+      meaning: "Kernel settlement reconciliation matched counterpart identity, destination, and amount bounds.",
+      receiptEvidence: "kernel reconciliation status, counterpart identity, destination equality, amount bound check."
+    }
+  ],
+  confirmationEvidence: [
+    "tx-accepted is diagnostic; confirmed inclusion requires get_transaction_block plus confirmation depth.",
+    "The sequencer confirmation loop reads the colocated public Nockchain API and records confirmation before clearing in-flight state.",
+    "Kernel reconciliation is a second check after confirmed Nockchain settlement, not the first owner of block inclusion."
+  ],
+  receiptFields: [
+    "sequencerServiceName",
+    "sequencerEndpoint",
+    "sequencerConfigPath",
+    "sequencerJournalId",
+    "sequencerJournalVerifierAddress",
+    "sequencerJournalEventId",
+    "sequencerJournalEventHash",
+    "baseConfirmationDepth",
+    "withdrawalHandoffWindowBlocks",
+    "sequencerFrontierWithdrawalNonce",
+    "mempoolAcceptedAt",
+    "submittedRawTxId",
+    "colocatedPublicApiEndpoint",
+    "inclusionConfirmationDepth"
+  ]
+} as const;
 
 function releaseCommitSha() {
   return nockchainUpstreamIntelligence.latestRelease.tag.replace(/^build-/, "");
@@ -202,6 +334,7 @@ export function createNockchainBridgeTrace() {
     withdrawalFlow,
     safetyInvariants,
     receiptFields,
+    sequencerOperationalContract,
     operatorChecklist: [
       "Do not treat peer-canonical as submit-ready; sequencer authorization requires full witness signatures.",
       "Record whether evidence was produced from the default-branch commit or the latest public build release.",
