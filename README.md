@@ -12,6 +12,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Scripted `poke` and `peek` steps with state snapshots, replay logs, and invariant checks.
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
+- Nockchain knowledge spine for exact upstream doc fingerprints, Rust workspace-member identity, coverage mapping, and monitoring rules.
 - Nockchain protocol authority trace for protocol index/spec lifecycle, activation status, consensus-critical posture, and receipt fields.
 - Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
@@ -120,6 +121,15 @@ The docs atlas publishes the canonical Nockchain read order, Tier 0/Tier 1 autho
 Use it when a protocol-sensitive receipt needs to cite which Nockchain doc or spec supports an activation height, consensus-critical flag, or runtime assumption.
 
 Shared Nockchain receipt provenance now embeds the docs atlas URL, Tier 0/Tier 1 source lists, selected protocol specs, and active doc consistency alerts so fakenet, VESL, and Nockup receipts can preserve upstream ambiguity in machine-readable form.
+
+## Nockchain Knowledge Spine
+
+The knowledge spine binds the current upstream Nockchain commit to exact SHA-256 fingerprints for the Tier 0 docs and promoted Tier 1 crate docs, the Rust workspace member list, and the Nocksperimental pages/APIs that cover each authority domain.
+
+- `/nockchain/knowledge-spine`
+- `/api/nockchain/knowledge-spine`
+
+Use it when deciding whether Nocksperimental still understands the upstream source it is testing against. It records `documentFingerprints`, `workspaceMemberHash`, coverage domains, update triggers, and forbidden fields such as `rawPmaSlab`, `rawStateJam`, and `walletSeedPhrase`.
 
 ## Nockchain Protocol Authority Trace
 

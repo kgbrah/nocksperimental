@@ -4,6 +4,7 @@ import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence"
 import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainBridgeSourceTrace } from "@/lib/nockchain-bridge-source-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
+import { createNockchainKnowledgeSpine } from "@/lib/nockchain-knowledge-spine";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
@@ -41,6 +42,7 @@ export function createRegistryCheckpoint() {
   const nockchainBridgeSourceTrace = createNockchainBridgeSourceTrace();
   const nockchainReleaseAssets = createNockchainReleaseAssets();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
+  const nockchainKnowledgeSpine = createNockchainKnowledgeSpine();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const nockchainNockAppAtlas = createNockchainNockAppAtlas();
@@ -84,6 +86,8 @@ export function createRegistryCheckpoint() {
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
+    nockchainKnowledgeDocuments: nockchainKnowledgeSpine.documentFingerprints.length,
+    nockchainKnowledgeCoverageDomains: nockchainKnowledgeSpine.coverageMatrix.length,
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
@@ -166,6 +170,15 @@ export function createRegistryCheckpoint() {
       legacyOrExperimental: nockchainDocsAtlas.legacyOrExperimental,
       protocolSpecs: nockchainDocsAtlas.protocolSpecs,
       consistencyChecks: nockchainDocsAtlas.consistencyChecks
+    }),
+    nockchainKnowledgeSpine: createSha256Root({
+      generatedAt: nockchainKnowledgeSpine.generatedAt,
+      upstream: nockchainKnowledgeSpine.upstream,
+      authorityReadOrder: nockchainKnowledgeSpine.authorityReadOrder,
+      documentFingerprints: nockchainKnowledgeSpine.documentFingerprints,
+      workspaceManifest: nockchainKnowledgeSpine.workspaceManifest,
+      coverageMatrix: nockchainKnowledgeSpine.coverageMatrix,
+      monitoringContract: nockchainKnowledgeSpine.monitoringContract
     }),
     nockchainProtocolTrace: createSha256Root({
       generatedAt: nockchainProtocolTrace.generatedAt,
@@ -312,6 +325,20 @@ export function createRegistryCheckpoint() {
         nockchainReleaseAssets.manifest.hashes.hashSha1Count ===
           nockchainReleaseAssets.manifest.targets.length,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
+      nockchainKnowledgeSpineAvailable:
+        nockchainKnowledgeSpine.documentFingerprints.length === 8 &&
+        nockchainKnowledgeSpine.workspaceManifest.memberCount === 36 &&
+        nockchainKnowledgeSpine.coverageMatrix.length === 8 &&
+        nockchainKnowledgeSpine.coverageMatrix.every((entry) => entry.status === "covered") &&
+        nockchainKnowledgeSpine.monitoringContract.requiredEvidence.includes(
+          "documentFingerprints"
+        ) &&
+        nockchainKnowledgeSpine.monitoringContract.requiredEvidence.includes(
+          "workspaceMemberHash"
+        ) &&
+        nockchainKnowledgeSpine.monitoringContract.forbiddenFields.includes(
+          "walletSeedPhrase"
+        ),
       nockchainProtocolTraceAvailable:
         nockchainProtocolTrace.authoritySources.length > 0 &&
         nockchainProtocolTrace.releaseTrack.latestConsensusCritical.statusDrift === true,
@@ -471,6 +498,15 @@ export function createRegistryCheckpoint() {
       protocolSpecCount: nockchainDocsAtlas.protocolSpecs.specs.length,
       consistencyAlerts: nockchainDocsAtlas.consistencyChecks.alerts.map((alert) => alert.id)
     },
+    nockchainKnowledgeSpine: {
+      generatedAt: nockchainKnowledgeSpine.generatedAt,
+      documentFingerprintCount: nockchainKnowledgeSpine.documentFingerprints.length,
+      workspaceMemberCount: nockchainKnowledgeSpine.workspaceManifest.memberCount,
+      workspaceMemberHash: nockchainKnowledgeSpine.workspaceManifest.workspaceMemberHash,
+      coverageDomainIds: nockchainKnowledgeSpine.coverageMatrix.map((entry) => entry.id),
+      requiredEvidence: nockchainKnowledgeSpine.monitoringContract.requiredEvidence,
+      forbiddenFields: nockchainKnowledgeSpine.monitoringContract.forbiddenFields
+    },
     nockchainProtocolTrace: {
       sourceCount: nockchainProtocolTrace.authoritySources.length,
       sourceIds: nockchainProtocolTrace.authoritySources.map((source) => source.id),
@@ -616,6 +652,7 @@ export function createRegistryCheckpoint() {
       nockchainBridgeSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge-source`,
       nockchainReleaseAssets: `${registryCanonicalBaseUrl}/api/nockchain/release-assets`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
+      nockchainKnowledgeSpine: `${registryCanonicalBaseUrl}/api/nockchain/knowledge-spine`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       nockchainNockAppAtlas: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-atlas`,
