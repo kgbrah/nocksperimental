@@ -15,6 +15,7 @@ import { createNockchainPmaSourceTrace } from "@/lib/nockchain-pma-source-trace"
 import { createNockchainPrRadar } from "@/lib/nockchain-pr-radar";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
+import { createNockchainRuntimeSafetyTrace } from "@/lib/nockchain-runtime-safety";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainRustSourceGuide } from "@/lib/nockchain-rust-source-guide";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
@@ -61,6 +62,7 @@ export function createRegistryCheckpoint() {
   const nockchainPrRadar = createNockchainPrRadar();
   const nockchainImpactQueue = createNockchainImpactQueue();
   const nockchainPmaSourceTrace = createNockchainPmaSourceTrace();
+  const nockchainRuntimeSafety = createNockchainRuntimeSafetyTrace();
   const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
@@ -125,6 +127,8 @@ export function createRegistryCheckpoint() {
     nockchainImpactActionLanes: nockchainImpactQueue.actionLanes.length,
     nockchainPmaSourceAnchors: nockchainPmaSourceTrace.sourceAnchors.length,
     nockchainPmaDurabilitySteps: nockchainPmaSourceTrace.durabilityFlow.length,
+    nockchainRuntimeSafetyAnchors: nockchainRuntimeSafety.sourceAnchors.length,
+    nockchainRuntimeSafetyClasses: nockchainRuntimeSafety.runtimeSafetyClasses.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
     pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
@@ -332,6 +336,15 @@ export function createRegistryCheckpoint() {
       eventLogContract: nockchainPmaSourceTrace.eventLogContract,
       receiptContract: nockchainPmaSourceTrace.receiptContract,
       operatorGuards: nockchainPmaSourceTrace.operatorGuards
+    }),
+    nockchainRuntimeSafety: createSha256Root({
+      generatedAt: nockchainRuntimeSafety.generatedAt,
+      upstream: nockchainRuntimeSafety.upstream,
+      sourceAnchors: nockchainRuntimeSafety.sourceAnchors,
+      runtimeSafetyClasses: nockchainRuntimeSafety.runtimeSafetyClasses,
+      receiptContract: nockchainRuntimeSafety.receiptContract,
+      operatorTriage: nockchainRuntimeSafety.operatorTriage,
+      localVerification: nockchainRuntimeSafety.localVerification
     }),
     nockchainSyncGossipTrace: createSha256Root({
       generatedAt: nockchainSyncGossipTrace.generatedAt,
@@ -558,6 +571,14 @@ export function createRegistryCheckpoint() {
         nockchainPmaSourceTrace.durabilityFlow.length >= 5 &&
         nockchainPmaSourceTrace.receiptContract.requiredFields.includes("pmaMetadataVersion") &&
         nockchainPmaSourceTrace.receiptContract.forbiddenFields.includes("rawEventLogSqlite"),
+      nockchainRuntimeSafetyAvailable:
+        nockchainRuntimeSafety.sourceAnchors.length >= 9 &&
+        nockchainRuntimeSafety.runtimeSafetyClasses.length >= 5 &&
+        nockchainRuntimeSafety.receiptContract.requiredFields.includes("runtimeSafetyIssue") &&
+        nockchainRuntimeSafety.receiptContract.forbiddenFields.includes("rawStackMemory") &&
+        nockchainRuntimeSafety.localVerification.recommendedCommands.includes(
+          "cargo check -p nockvm"
+        ),
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
         stateJamRegistry.sources.every((source) => source.artifactPolicy === "metadata-only"),
@@ -810,6 +831,19 @@ export function createRegistryCheckpoint() {
       forbiddenFields: nockchainPmaSourceTrace.receiptContract.forbiddenFields,
       operatorGuards: nockchainPmaSourceTrace.operatorGuards
     },
+    nockchainRuntimeSafety: {
+      generatedAt: nockchainRuntimeSafety.generatedAt,
+      anchorCount: nockchainRuntimeSafety.sourceAnchors.length,
+      runtimeSafetyClassCount: nockchainRuntimeSafety.runtimeSafetyClasses.length,
+      sourceAnchors: nockchainRuntimeSafety.sourceAnchors.map((anchor) => anchor.id),
+      runtimeSafetyClassIds: nockchainRuntimeSafety.runtimeSafetyClasses.map(
+        (safetyClass) => safetyClass.id
+      ),
+      receiptFields: nockchainRuntimeSafety.receiptContract.requiredFields,
+      forbiddenFields: nockchainRuntimeSafety.receiptContract.forbiddenFields,
+      operatorTriageIds: nockchainRuntimeSafety.operatorTriage.map((item) => item.id),
+      localVerificationStatus: nockchainRuntimeSafety.localVerification.status
+    },
     nockchainBridgeTrace: {
       sourceCount: nockchainBridgeTrace.sourceAnchors.length,
       sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
@@ -900,6 +934,7 @@ export function createRegistryCheckpoint() {
       nockchainPrRadar: `${registryCanonicalBaseUrl}/api/nockchain/pr-radar`,
       nockchainImpactQueue: `${registryCanonicalBaseUrl}/api/nockchain/impact`,
       nockchainPmaSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/pma`,
+      nockchainRuntimeSafety: `${registryCanonicalBaseUrl}/api/nockchain/runtime-safety`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,

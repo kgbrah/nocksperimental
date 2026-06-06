@@ -24,6 +24,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
+- Nockchain Runtime Safety Trace for NockStack frame checks, jam/cue bounds, noun-space provenance, HAMT traversal, PMA offset bounds, and support-bundle fields.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
@@ -204,6 +205,15 @@ The PMA source trace pins Nockchain's persistent memory arena and NockApp state-
 - `/nockchain/pma`
 
 Use it when a fakenet, state-jam, support-bundle, VESL, Launch Evidence, or future NockApp export-state receipt needs to explain how durable kernel state was produced, verified, or replayed without redistributing chain/runtime state.
+
+## Nockchain Runtime Safety Trace
+
+The runtime safety trace pins NockVM failure triage to exact upstream source anchors for NockStack frame bounds, frame push/pop lifecycle, interpreter frame preservation, jam/cue decode checks, noun-space epoch and allocation provenance, fixed-depth HAMT preservation, and PMA direct-reader offset bounds. It is built for support bundles and bring-your-own fakenets: publish `nockvmCommit`, `nockchainBuild`, `runtimeSafetyIssue`, `stackFrameCheck`, `cueValidationError`, `pmaOffsetBoundsCheck`, `nounSpaceEpoch`, and `supportBundleTraceId`, while keeping raw jam payloads, PMA slabs, core dumps, stack memory, event logs, and wallet seed phrases out of public evidence.
+
+- `/api/nockchain/runtime-safety`
+- `/nockchain/runtime-safety`
+
+Use it when a fakenet run, state-jam restore, malformed cue payload, PMA offset read, or NockVM panic needs a receipt-safe explanation before it becomes a test assumption or operator runbook change.
 
 ## Nockchain Rust Workspace Atlas
 
