@@ -564,6 +564,8 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run lab:intent` generates an intent settlement report with the intents invariant pack.
 - `npm run lab:token` generates a token issuance report with the token invariant pack.
 - `npm run lab:compute` generates a compute benchmark report.
+- `npm run lab:bridge:pack` generates a bridge settlement report with the bridge-settlement invariant pack.
+- `npm run lab:pma` generates a PMA state-safety report with the pma-safety invariant pack.
 - `npm run lab:local` probes local fakenet health.
 - `npm run lab:local:balance` parses `fakenock --balance`.
 - `npm run lab:local:chain` parses chain metadata from `fakenock --balance`.
@@ -574,6 +576,7 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run verify:30-day` checks the 30-day plan artifacts and report generation.
 - `npm run verify:90-day` checks the 30-90 day workflow, CI artifacts, and bridge alert states.
 - `npm run verify:3-6` checks snapshot diffing, invariant packs, hosted report history, and private workspaces.
+- `npm run verify:invariant-packs` regenerates the bridge-settlement and pma-safety pack reports, asserts they pass with per-step state diffs, and verifies each pack's pinned `upstreamBasis` against the research doc. Packs are surfaced with their basis at `/api/invariants`.
 - `npm run verify:6-18` checks verified badges, solver scores, token compatibility, compute benchmarks, and trust-signal consumers.
 - `npm run verify:launch-evidence` checks Launch Evidence routes, registry discovery, manifests, and verifier behavior.
 - `npm run test:launch-evidence-api` and `npm run test:launch-evidence-pages` run the focused Launch Evidence API and page suites.

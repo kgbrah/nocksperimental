@@ -118,18 +118,22 @@ async function loadFixture(fixturePath) {
       domain: pack.domain,
       version: pack.version,
       path: packPath,
+      upstreamBasis: pack.upstreamBasis ?? null,
+      sourceAnchors: pack.sourceAnchors ?? [],
       invariants: pack.invariants ?? []
     });
   }
 
   return {
     ...fixture,
-    invariantPackRefs: packs.map(({ id, name, domain, version, path }) => ({
+    invariantPackRefs: packs.map(({ id, name, domain, version, path, upstreamBasis, sourceAnchors }) => ({
       id,
       name,
       domain,
       version,
-      path
+      path,
+      upstreamBasis,
+      sourceAnchors
     })),
     invariants: [
       ...packs.flatMap((pack) =>
@@ -1252,10 +1256,10 @@ function toMarkdown(report) {
     "",
     "## Steps",
     "",
-    ...report.steps.map(
-      (step) =>
-        `- ${step.status.toUpperCase()} ${step.id}: ${step.observed} (${step.expectation}); ${step.beforeHash} -> ${step.afterHash}`
-    ),
+    ...report.steps.flatMap((step) => [
+      `- ${step.status.toUpperCase()} ${step.id}: ${step.observed} (${step.expectation}); ${step.beforeHash} -> ${step.afterHash}`,
+      ...(step.stateDiffs ?? []).map((diff) => `  - ${diff.path}: ${diff.before} -> ${diff.after}`)
+    ]),
     "",
     "## Invariants",
     "",

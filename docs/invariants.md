@@ -31,3 +31,11 @@ Reusable invariant packs live under `packs/` and can be imported by fixtures thr
 - `packs/payments.invariants.json`: escrowed payment settlement, authorized payment actors, and payment ledger supply conservation.
 - `packs/intents.invariants.json`: intent terminal state, solver recording, authorized intent actors, and clear failure state.
 - `packs/tokens.invariants.json`: token issuance finalization, metadata stability, issuance authority, and token supply conservation.
+- `packs/bridge.invariants.json`: bridge withdrawal settlement — finalized terminal state, proof and Base observation, failure-free runs, and authorized relayer/sequencer pokes (exercised by `fixtures/bridge-pack.lab.json`).
+- `packs/pma-safety.invariants.json`: PMA/state-jam durability — monotonic checkpoint-height and event-log boundary floors, kernel-state continuity, network context, and authorized writers (exercised by `fixtures/pma-safety.lab.json`).
+
+No new evaluator kinds were added: the bridge and PMA packs are expressed entirely with the existing catalog (`numeric-min`, `state-equals`, `timeline-state`, `authorized-actor`, `supply-conservation`, `poke-actors-declared`).
+
+## Pack source anchoring
+
+Each pack records an `upstreamBasis` (`repo`, `commit`, `build`, `protocolTrack`) pinning the Nockchain version whose protocol/runtime behavior it encodes, and may list `sourceAnchors` (upstream files) that justify its checks. The basis is surfaced at `/api/invariants` (alongside the invariant catalog) and verified offline by `npm run test:invariant-pack-basis`, which asserts every pack's pinned commit matches the canonical commit in `docs/research/nockchain-rust-architecture.md`. Pack logic does not drift with upstream source the way Rust files do, so pinning + surfacing the basis preserves authority without a networked drift check. Run `npm run verify:invariant-packs` to regenerate the pack reports and confirm they pass with rendered per-step state diffs.

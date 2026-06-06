@@ -19,10 +19,37 @@
       "type": "string"
     },
     "domain": {
-      "enum": ["payments", "intents", "token-issuance"]
+      "enum": ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety"]
     },
     "description": {
       "type": "string"
+    },
+    "upstreamBasis": {
+      "type": "object",
+      "required": ["repo", "commit"],
+      "additionalProperties": false,
+      "properties": {
+        "repo": { "type": "string" },
+        "commit": { "type": "string" },
+        "build": { "type": "string" },
+        "protocolTrack": { "type": "string" }
+      }
+    },
+    "sourceAnchors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "upstreamFile"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "upstreamRepo": { "type": "string" },
+          "upstreamFile": { "type": "string" },
+          "upstreamUrl": { "type": "string" },
+          "docTier": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
     },
     "invariants": {
       "type": "array",

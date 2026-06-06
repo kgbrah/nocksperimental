@@ -1,0 +1,74 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "bridge-settlement-core-v0",
+  "name": "Bridge Settlement Core",
+  "version": "0.1.0",
+  "domain": "bridge-settlement",
+  "description": "Safety checks for bridge withdrawal settlement: terminal finalization, proof and Base observation, authorized relayer/sequencer pokes, and failure-free runs.",
+  "upstreamBasis": {
+    "repo": "nockchain/nockchain",
+    "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "protocolTrack": "bridge-withdrawal-execution"
+  },
+  "sourceAnchors": [
+    {
+      "id": "bridge-withdrawal-submission",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/bridge/src/withdrawal/submission.rs",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/bridge/src/withdrawal/submission.rs",
+      "docTier": "tier-1-scoped",
+      "note": "Sequencer authorization, submission, and confirmation depth gate the finalized terminal state this pack asserts."
+    },
+    {
+      "id": "bridge-withdrawals-spec",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/bridge/docs/bridge-withdrawals.md",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/bridge/docs/bridge-withdrawals.md",
+      "docTier": "tier-1-scoped",
+      "note": "Canonical bridge withdrawal lifecycle: peer-canonical is not submit-ready; confirmed requires observed inclusion plus depth."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "bridge-terminal-finalized",
+      "title": "Bridge withdrawal reaches finalized terminal state",
+      "severity": "critical",
+      "kind": "timeline-state",
+      "path": "settlement.status",
+      "equals": "finalized"
+    },
+    {
+      "id": "bridge-proof-seen",
+      "title": "Settlement proof was observed before finalization",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "settlement.proofSeen",
+      "equals": true
+    },
+    {
+      "id": "bridge-observed-on-base",
+      "title": "Withdrawal was observed on Base",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "settlement.observedOnBase",
+      "equals": true
+    },
+    {
+      "id": "bridge-no-failure-alert",
+      "title": "Bridge failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    },
+    {
+      "id": "bridge-authorized-relayer",
+      "title": "Bridge pokes are performed by authorized relayer/sequencer actors",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["relayer", "sequencer"],
+      "stepType": "poke"
+    }
+  ]
+}

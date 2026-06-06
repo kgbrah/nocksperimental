@@ -1,0 +1,74 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "pma-safety-core-v0",
+  "name": "PMA State Safety Core",
+  "version": "0.1.0",
+  "domain": "pma-safety",
+  "description": "Safety checks for Nockchain PMA/state-jam durability: monotonic checkpoint height and event-log boundary, kernel-state continuity, network context, and authorized writers.",
+  "upstreamBasis": {
+    "repo": "nockchain/nockchain",
+    "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "protocolTrack": "pma-snapshot-event-log"
+  },
+  "sourceAnchors": [
+    {
+      "id": "pma-source",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/nockvm/rust/nockvm/src/pma.rs",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/nockvm/rust/nockvm/src/pma.rs",
+      "docTier": "tier-1-scoped",
+      "note": "PMA trailer metadata and growth/migration journal recovery underpin the checkpoint-height floor and kernel-state continuity asserted here."
+    },
+    {
+      "id": "event-log-replay",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/nockapp/src/event_log.rs",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/nockapp/src/event_log.rs",
+      "docTier": "tier-1-scoped",
+      "note": "Event-log replay boundary must not regress; this pack asserts a monotonic event-log boundary floor."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "pma-checkpoint-height-floor",
+      "title": "PMA checkpoint height does not regress below its floor",
+      "severity": "critical",
+      "kind": "numeric-min",
+      "path": "pma.checkpointHeight",
+      "min": 100
+    },
+    {
+      "id": "pma-event-boundary-floor",
+      "title": "Event-log replay boundary does not regress below its floor",
+      "severity": "high",
+      "kind": "numeric-min",
+      "path": "pma.eventLogBoundary",
+      "min": 4200
+    },
+    {
+      "id": "pma-kernel-state-continuous",
+      "title": "Kernel state remains continuous across the snapshot boundary",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "pma.kernelStateContinuous",
+      "equals": true
+    },
+    {
+      "id": "pma-network-context",
+      "title": "PMA evidence records the fakenet network context",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "pma.network",
+      "equals": "fakenet"
+    },
+    {
+      "id": "pma-authorized-writer",
+      "title": "PMA-advancing pokes are performed by authorized writers",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["node", "migration"],
+      "stepType": "poke"
+    }
+  ]
+}

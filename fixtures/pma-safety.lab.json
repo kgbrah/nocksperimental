@@ -1,0 +1,84 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "pma-safety-v0",
+  "app": {
+    "name": "PMA State Safety Pack",
+    "slug": "pma-safety",
+    "version": "0.1.0",
+    "kernel": "mock-pma-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock PMA/state-jam durability run exercising the pma-safety invariant pack.",
+      "A node poke advances the checkpoint height and event-log boundary; a migration poke preserves kernel-state continuity.",
+      "Metadata-only: no raw PMA slabs, event-log SQLite, or state jams are represented."
+    ]
+  },
+  "actors": [
+    { "name": "node", "pkh": "pma-node-mock-pkh" },
+    { "name": "migration", "pkh": "pma-migration-mock-pkh" }
+  ],
+  "invariantPacks": ["../packs/pma-safety.invariants.json"],
+  "initialState": {
+    "pma": {
+      "checkpointHeight": 100,
+      "eventLogBoundary": 4200,
+      "kernelStateContinuous": true,
+      "network": "fakenet"
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock PMA fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "node-advances-checkpoint",
+      "type": "poke",
+      "title": "Node advances the checkpoint and event-log boundary",
+      "actor": "node",
+      "target": "/pma/checkpoint",
+      "operations": [
+        { "kind": "increment", "path": "pma.checkpointHeight", "by": 5 },
+        { "kind": "increment", "path": "pma.eventLogBoundary", "by": 30 }
+      ],
+      "expect": { "path": "pma.checkpointHeight", "equals": 105 }
+    },
+    {
+      "id": "migration-preserves-continuity",
+      "type": "poke",
+      "title": "Migration preserves kernel-state continuity",
+      "actor": "migration",
+      "target": "/pma/migrate",
+      "operations": [
+        { "kind": "set", "path": "pma.kernelStateContinuous", "value": true }
+      ],
+      "expect": { "path": "pma.kernelStateContinuous", "equals": true }
+    },
+    {
+      "id": "peek-pma-continuity",
+      "type": "peek",
+      "title": "Read kernel-state continuity",
+      "target": "/pma",
+      "expect": { "path": "pma.kernelStateContinuous", "equals": true }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "pma-no-failure-alert",
+      "title": "PMA failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}

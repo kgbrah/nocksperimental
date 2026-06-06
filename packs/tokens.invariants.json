@@ -5,6 +5,12 @@
   "version": "0.1.0",
   "domain": "token-issuance",
   "description": "Safety checks for issuer authority, token metadata, terminal issuance state, and supply conservation.",
+  "upstreamBasis": {
+    "repo": "nockchain/nockchain",
+    "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "protocolTrack": "014-aletheia"
+  },
   "invariants": [
     {
       "id": "token-supply-conserved",

@@ -1,0 +1,97 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "bridge-pack-v0",
+  "app": {
+    "name": "Bridge Settlement Pack",
+    "slug": "bridge-pack",
+    "version": "0.1.0",
+    "kernel": "mock-bridge-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock bridge withdrawal settlement run exercising the bridge-settlement invariant pack.",
+      "Relayer and sequencer pokes advance settlement through observed, proven, and finalized states.",
+      "Pack authority is pinned to the bridge withdrawal execution commit; see upstreamBasis."
+    ]
+  },
+  "actors": [
+    { "name": "relayer", "pkh": "bridge-relayer-mock-pkh" },
+    { "name": "sequencer", "pkh": "bridge-sequencer-mock-pkh" }
+  ],
+  "invariantPacks": ["../packs/bridge.invariants.json"],
+  "initialState": {
+    "settlement": {
+      "status": "initiated",
+      "proofSeen": false,
+      "observedOnBase": false,
+      "confirmedHeight": 0
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock bridge fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "relayer-observes-base",
+      "type": "poke",
+      "title": "Relayer observes the withdrawal on Base",
+      "actor": "relayer",
+      "target": "/bridge/observe",
+      "operations": [
+        { "kind": "set", "path": "settlement.observedOnBase", "value": true },
+        { "kind": "set", "path": "settlement.status", "value": "observed" }
+      ],
+      "expect": { "path": "settlement.observedOnBase", "equals": true }
+    },
+    {
+      "id": "sequencer-records-proof",
+      "type": "poke",
+      "title": "Sequencer records the settlement proof",
+      "actor": "sequencer",
+      "target": "/bridge/proof",
+      "operations": [
+        { "kind": "set", "path": "settlement.proofSeen", "value": true },
+        { "kind": "set", "path": "settlement.status", "value": "proven" }
+      ],
+      "expect": { "path": "settlement.proofSeen", "equals": true }
+    },
+    {
+      "id": "sequencer-finalizes",
+      "type": "poke",
+      "title": "Sequencer finalizes the withdrawal at confirmation depth",
+      "actor": "sequencer",
+      "target": "/bridge/finalize",
+      "operations": [
+        { "kind": "increment", "path": "settlement.confirmedHeight", "by": 6 },
+        { "kind": "set", "path": "settlement.status", "value": "finalized" }
+      ],
+      "expect": { "path": "settlement.status", "equals": "finalized" }
+    },
+    {
+      "id": "peek-settlement",
+      "type": "peek",
+      "title": "Read finalized settlement status",
+      "target": "/bridge",
+      "expect": { "path": "settlement.status", "equals": "finalized" }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "bridge-confirmed-depth",
+      "title": "Withdrawal reaches a positive confirmation depth",
+      "severity": "high",
+      "kind": "numeric-min",
+      "path": "settlement.confirmedHeight",
+      "min": 6
+    }
+  ]
+}

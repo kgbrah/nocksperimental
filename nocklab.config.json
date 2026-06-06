@@ -33,6 +33,14 @@
     {
       "path": "fixtures/compute-benchmark-alpha.lab.json",
       "slug": "compute-benchmark-alpha"
+    },
+    {
+      "path": "fixtures/bridge-pack.lab.json",
+      "slug": "bridge-pack"
+    },
+    {
+      "path": "fixtures/pma-safety.lab.json",
+      "slug": "pma-safety"
     }
   ]
 }
