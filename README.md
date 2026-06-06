@@ -135,6 +135,15 @@ The bridge withdrawal trace follows the latest released bridge work from Base bu
 
 Use it when a VESL, x402, fakenet, or bridge-settlement receipt depends on withdrawal proposal hashes, sequencer authorization state, blockchain constants, journal mirroring, or confirmed inclusion.
 
+## Nockchain Release Asset Manifest
+
+The release asset manifest records metadata for the current Nockchain build release: binary tarballs for `nockchain`, `nockchain-wallet`, `nockup`, `hoon`, `hoonc`, plus `nockchain-manifest.toml`. It groups assets by tool and platform so local fakenet, wallet, and Nockup receipts can cite the exact upstream binary source without storing downloaded artifacts.
+
+- `/nockchain/releases`
+- `/api/nockchain/release-assets`
+
+Use it when a test run depends on a downloaded Nockchain binary, wallet build, Nockup build, Hoon toolchain, or release manifest.
+
 ## Zorp/Nockchain Upstream Map
 
 The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos.

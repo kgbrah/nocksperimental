@@ -9,6 +9,7 @@ import {
   GitBranch,
   Layers3,
   Database,
+  PackageCheck,
   RadioTower,
   ShieldAlert,
   ShieldCheck,
@@ -96,6 +97,13 @@ export default function NockchainEvidencePage() {
               >
                 <Cable size={16} aria-hidden="true" />
                 Bridge
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/releases"
+              >
+                <PackageCheck size={16} aria-hidden="true" />
+                Releases
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"

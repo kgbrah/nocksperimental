@@ -5,6 +5,7 @@ import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
+import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
@@ -33,6 +34,7 @@ export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
   const nockchainBridgeTrace = createNockchainBridgeTrace();
+  const nockchainReleaseAssets = createNockchainReleaseAssets();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
@@ -66,6 +68,7 @@ export function createRegistryCheckpoint() {
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
+    nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
@@ -97,6 +100,14 @@ export function createRegistryCheckpoint() {
       withdrawalFlow: nockchainBridgeTrace.withdrawalFlow,
       safetyInvariants: nockchainBridgeTrace.safetyInvariants,
       receiptFields: nockchainBridgeTrace.receiptFields
+    }),
+    nockchainReleaseAssets: createSha256Root({
+      generatedAt: nockchainReleaseAssets.generatedAt,
+      upstream: nockchainReleaseAssets.upstream,
+      release: nockchainReleaseAssets.release,
+      assets: nockchainReleaseAssets.assets,
+      assetGroups: nockchainReleaseAssets.assetGroups,
+      provenance: nockchainReleaseAssets.provenance
     }),
     zorpUpstream: createSha256Root({
       scannedAt: zorpUpstream.scannedAt,
@@ -197,6 +208,10 @@ export function createRegistryCheckpoint() {
         nockchainBridgeTrace.sourceAnchors.length > 0 &&
         nockchainBridgeTrace.withdrawalFlow.length > 0 &&
         nockchainBridgeTrace.releaseDrift.releaseCommitSha.length > 0,
+      nockchainReleaseAssetsAvailable:
+        nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
+        nockchainReleaseAssets.release.manifestPresent &&
+        nockchainReleaseAssets.release.commitMatchesTag,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainProtocolTraceAvailable:
         nockchainProtocolTrace.authoritySources.length > 0 &&
@@ -330,6 +345,13 @@ export function createRegistryCheckpoint() {
       defaultBranchAheadOfRelease: nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease,
       receiptFields: nockchainBridgeTrace.receiptFields
     },
+    nockchainReleaseAssets: {
+      assetCount: nockchainReleaseAssets.assets.length,
+      groupCount: nockchainReleaseAssets.assetGroups.length,
+      platformTriples: nockchainReleaseAssets.release.platformTriples,
+      manifestPresent: nockchainReleaseAssets.release.manifestPresent,
+      receiptFields: nockchainReleaseAssets.provenance.requiredReceiptFields
+    },
     nockchainSyncGossipTrace: {
       anchorCount: nockchainSyncGossipTrace.sourceAnchors.length,
       invariantCount: nockchainSyncGossipTrace.behaviorInvariants.length,
@@ -351,6 +373,7 @@ export function createRegistryCheckpoint() {
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       nockchainBridgeTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge`,
+      nockchainReleaseAssets: `${registryCanonicalBaseUrl}/api/nockchain/release-assets`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,

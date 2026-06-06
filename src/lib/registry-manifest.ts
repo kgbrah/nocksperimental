@@ -50,6 +50,11 @@ export const registryEndpoints = [
     description: "Nockchain bridge withdrawal trace"
   },
   {
+    id: "nockchain-release-assets",
+    path: "/api/nockchain/release-assets",
+    description: "Nockchain release asset manifest"
+  },
+  {
     id: "zorp-upstream",
     path: "/api/nockchain/zorp",
     description: "Zorp/Nockchain upstream map"
@@ -287,6 +292,7 @@ export function createWellKnownRegistryManifest() {
       nockchainDocsAtlas: endpointUrl("nockchain-docs-atlas"),
       nockchainProtocolTrace: endpointUrl("nockchain-protocol-trace"),
       nockchainBridgeTrace: endpointUrl("nockchain-bridge-trace"),
+      nockchainReleaseAssets: endpointUrl("nockchain-release-assets"),
       zorpUpstream: endpointUrl("zorp-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
@@ -330,6 +336,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-docs-protocol-atlas",
       "nockchain-protocol-trace",
       "nockchain-bridge-withdrawal-trace",
+      "nockchain-release-asset-manifest",
       "zorp-nockchain-upstream-map",
       "nockchain-state-jam-provenance",
       "nockchain-rust-workspace-atlas",
