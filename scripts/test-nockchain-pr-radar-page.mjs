@@ -31,13 +31,18 @@ async function main() {
   assertIncludes(page, "PR #116", "PR radar page renders wallet PR");
   assertIncludes(page, "PR #119", "PR radar page renders NockApp export PR");
   assertIncludes(page, "PR #103", "PR radar page renders offline wallet PR");
-  assertIncludes(page, "Issue #121", "PR radar page renders runtime stack issue");
+  assertIncludes(page, "PR #100", "PR radar page renders PMA backlog PR");
+  assertIncludes(page, "PR #94", "PR radar page renders JAM hardening PR");
+  assertIncludes(page, "PR #83", "PR radar page renders gRPC PR");
+  assertIncludes(page, "PR #79", "PR radar page renders peek v1 PR");
+  assertIncludes(page, "No open non-PR issues", "PR radar page renders empty issue state");
   assertIncludes(page, "nockup-fixture-manifest", "PR radar page renders Nockup risk class");
   assertIncludes(page, "pma-runtime-persistence", "PR radar page renders PMA risk class");
   assertIncludes(page, "wallet-transaction-metadata", "PR radar page renders wallet risk class");
   assertIncludes(page, "offline-wallet-signing", "PR radar page renders offline wallet risk class");
   assertIncludes(page, "nockapp-state-export", "PR radar page renders export state risk class");
-  assertIncludes(page, "runtime-stack-frame-safety", "PR radar page renders issue risk class");
+  assertIncludes(page, "jam-cue-hardening", "PR radar page renders JAM hardening risk class");
+  assertIncludes(page, "grpc-message-size", "PR radar page renders gRPC risk class");
   assertIncludes(page, "rawStateJam", "PR radar page shows forbidden raw state");
   assertIncludes(page, "rawPmaSlab", "PR radar page shows forbidden raw PMA");
   assertIncludes(page, "walletSeedPhrase", "PR radar page shows forbidden wallet seed");
@@ -50,7 +55,7 @@ async function main() {
   assertIncludes(smokeScript, "/nockchain/pr-radar", "Cloudflare smoke includes PR radar page");
   assertIncludes(readme, "/nockchain/pr-radar", "README documents PR radar page");
   assertIncludes(readme, "PMA snapshot/event-log work", "README documents PMA radar coverage");
-  assertIncludes(readme, "open issue", "README documents open issue coverage");
+  assertIncludes(readme, "0 open non-PR issues", "README documents current issue count");
   assertEqual(
     packageJson.scripts["test:nockchain-pr-radar-page"],
     "node scripts/test-nockchain-pr-radar-page.mjs",

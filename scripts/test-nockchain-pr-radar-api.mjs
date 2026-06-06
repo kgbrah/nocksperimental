@@ -35,13 +35,13 @@ async function main() {
     "upstream release"
   );
 
-  assertEqual(body.snapshot.openPullRequestCount, 20, "open PR count");
-  assertEqual(body.snapshot.openIssueCount, 1, "open issue count");
-  assertEqual(body.snapshot.draftCount, 6, "draft PR count");
-  assertEqual(body.snapshot.highPriorityCount, 11, "high priority PR count");
+  assertEqual(body.snapshot.openPullRequestCount, 35, "open PR count");
+  assertEqual(body.snapshot.openIssueCount, 0, "open issue count");
+  assertEqual(body.snapshot.draftCount, 11, "draft PR count");
+  assertEqual(body.snapshot.highPriorityCount, 20, "high priority PR count");
   assertEqual(body.snapshot.latestUpdatedAt, "2026-06-06T00:07:44Z", "latest PR update");
-  assertEqual(body.pullRequests.length, 20, "tracked PR count");
-  assertEqual(body.openIssues.length, 1, "tracked issue count");
+  assertEqual(body.pullRequests.length, 35, "tracked PR count");
+  assertEqual(body.openIssues.length, 0, "tracked issue count");
 
   assertPr(body, 125, "nockup-fixture-manifest", "high", true, "nockupValidation");
   assertPr(body, 113, "pma-runtime-persistence", "high", true, "stateJamRegistry");
@@ -57,8 +57,14 @@ async function main() {
   assertPr(body, 122, "nockup-install-path", "medium", false, "nockupValidation");
   assertPr(body, 120, "nockup-extension-hooks", "medium", false, "fixtureDocs");
   assertPr(body, 102, "x402-agentic-payments", "medium", false, "x402MeteredTrustApi");
+  assertPr(body, 100, "pma-runtime-persistence", "high", true, "stateJamRegistry");
   assertPr(body, 101, "parser-arm-comparison", "watch", true, "nockchainHoonKernelAtlas");
+  assertPr(body, 98, "hoon-parser-runtime", "watch", true, "nockchainHoonKernelAtlas");
   assertPr(body, 95, "jojo-repl-surface", "watch", false, "nockchainNockAppAtlas");
+  assertPr(body, 94, "jam-cue-hardening", "high", false, "nockvmRuntimeSafety");
+  assertPr(body, 93, "p2p-jam-cue-hardening", "high", false, "nockchainSyncGossipTrace");
+  assertPr(body, 83, "grpc-message-size", "medium", false, "nockchainWalletAtlas");
+  assertPr(body, 79, "peek-v1-transactions", "medium", false, "nockchainHoonKernelAtlas");
   assertPr(body, 88, "consensus-height-bounds", "medium", false, "nockchainProtocolTrace");
 
   const pr125 = findPr(body, 125);
@@ -85,10 +91,14 @@ async function main() {
   assertIncludes(pr103.receiptFields, "signingMode", "PR 103 signing mode field");
   assertIncludes(pr103.forbiddenFields, "coldWalletPrivateKey", "PR 103 forbids cold wallet key");
 
-  const issue121 = findIssue(body, 121);
-  assertEqual(issue121.riskClass, "runtime-stack-frame-safety", "issue 121 risk class");
-  assertIncludes(issue121.targetSurfaces, "nockvmRuntimeSafety", "issue 121 target surface");
-  assertIncludes(issue121.receiptFields, "stackFramePointerRange", "issue 121 receipt field");
+  const pr94 = findPr(body, 94);
+  assertIncludes(pr94.title, "integer overflow", "PR 94 title");
+  assertIncludes(pr94.receiptFields, "jamCueInputLength", "PR 94 jam cue input field");
+  assertIncludes(pr94.forbiddenFields, "rawJamPayload", "PR 94 forbids raw jam payload");
+
+  const pr83 = findPr(body, 83);
+  assertIncludes(pr83.title, "grpc", "PR 83 title");
+  assertIncludes(pr83.receiptFields, "grpcMaxMessageBytes", "PR 83 gRPC limit field");
 
   const riskClassIds = body.riskClasses.map((riskClass) => riskClass.id);
   assertIncludes(riskClassIds, "nockup-fixture-manifest", "nockup risk class");
@@ -100,7 +110,10 @@ async function main() {
   assertIncludes(riskClassIds, "pma-runtime-persistence", "PMA risk class");
   assertIncludes(riskClassIds, "offline-wallet-signing", "offline wallet risk class");
   assertIncludes(riskClassIds, "x402-agentic-payments", "x402 risk class");
-  assertIncludes(riskClassIds, "runtime-stack-frame-safety", "runtime stack frame risk class");
+  assertIncludes(riskClassIds, "jam-cue-hardening", "jam cue risk class");
+  assertIncludes(riskClassIds, "p2p-jam-cue-hardening", "p2p jam cue risk class");
+  assertIncludes(riskClassIds, "grpc-message-size", "gRPC risk class");
+  assertIncludes(riskClassIds, "peek-v1-transactions", "peek v1 risk class");
 
   const walletClass = findRiskClass(body, "wallet-transaction-metadata");
   assertEqual(walletClass.escalation, "high", "wallet class escalation");
@@ -174,18 +187,23 @@ async function main() {
 
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
-  assertEqual(checkpointBody.counts.nockchainOpenPullRequests, 20, "checkpoint PR count");
-  assertEqual(checkpointBody.counts.nockchainOpenIssues, 1, "checkpoint issue count");
+  assertEqual(checkpointBody.counts.nockchainOpenPullRequests, 35, "checkpoint PR count");
+  assertEqual(checkpointBody.counts.nockchainOpenIssues, 0, "checkpoint issue count");
   assertGreaterThan(checkpointBody.counts.nockchainPrRiskClasses, 5, "checkpoint risk class count");
   assertStartsWith(checkpointBody.roots.nockchainPrRadar, "sha256:", "checkpoint PR radar root");
   assertEqual(checkpointBody.checks.nockchainPrRadarAvailable, true, "checkpoint PR radar check");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 116, "checkpoint high priority wallet PR");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 113, "checkpoint high priority PMA PR");
-  assertIncludes(checkpointBody.nockchainPrRadar.openIssueNumbers, 121, "checkpoint open runtime issue");
+  assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 94, "checkpoint high priority jam PR");
   assertIncludes(
     checkpointBody.nockchainPrRadar.targetSurfaces,
     "nockchainWalletAtlas",
     "checkpoint wallet target"
+  );
+  assertIncludes(
+    checkpointBody.nockchainPrRadar.targetSurfaces,
+    "nockchainSyncGossipTrace",
+    "checkpoint P2P target"
   );
   assertIncludes(
     checkpointBody.nockchainPrRadar.targetSurfaces,
@@ -241,16 +259,6 @@ function findRiskClass(body, id) {
   }
 
   return riskClass;
-}
-
-function findIssue(body, number) {
-  const issue = body.openIssues.find((candidate) => candidate.number === number);
-
-  if (!issue) {
-    throw new Error(`Missing issue: ${number}`);
-  }
-
-  return issue;
 }
 
 function loadTypeScriptModule(relativePath) {

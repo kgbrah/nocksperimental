@@ -447,8 +447,8 @@ export function createRegistryCheckpoint() {
           "recommendedNocksperimentalUpdates"
         ),
       nockchainPrRadarAvailable:
-        nockchainPrRadar.pullRequests.length === 20 &&
-        nockchainPrRadar.openIssues.length === 1 &&
+        nockchainPrRadar.pullRequests.length === 35 &&
+        nockchainPrRadar.openIssues.length === 0 &&
         nockchainPrRadar.riskClasses.length >= 6 &&
         nockchainPrRadar.pullRequests.some(
           (pullRequest) =>
@@ -462,11 +462,17 @@ export function createRegistryCheckpoint() {
             pullRequest.riskClass === "pma-runtime-persistence" &&
             (pullRequest.targetSurfaces as readonly string[]).includes("stateJamRegistry")
         ) &&
-        nockchainPrRadar.openIssues.some(
-          (issue) =>
-            issue.number === 121 &&
-            issue.riskClass === "runtime-stack-frame-safety" &&
-            (issue.targetSurfaces as readonly string[]).includes("nockvmRuntimeSafety")
+        nockchainPrRadar.pullRequests.some(
+          (pullRequest) =>
+            pullRequest.number === 94 &&
+            pullRequest.riskClass === "jam-cue-hardening" &&
+            (pullRequest.targetSurfaces as readonly string[]).includes("nockvmRuntimeSafety")
+        ) &&
+        nockchainPrRadar.pullRequests.some(
+          (pullRequest) =>
+            pullRequest.number === 93 &&
+            pullRequest.riskClass === "p2p-jam-cue-hardening" &&
+            (pullRequest.targetSurfaces as readonly string[]).includes("nockchainSyncGossipTrace")
         ) &&
         nockchainPrRadar.reviewContract.forbiddenFields.includes("walletSeedPhrase"),
       nockchainSyncGossipTraceAvailable:

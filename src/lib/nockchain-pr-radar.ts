@@ -121,6 +121,111 @@ const riskClasses = [
     verificationCommand: "npm run test:nockchain-hoon-kernels-api && npm run test:nockchain-docs-atlas-api"
   },
   {
+    id: "hoon-parser-runtime",
+    label: "Hoon parser runtime",
+    escalation: "watch",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainHoonKernelAtlas", "nockchainDocsAtlas", "fixtureDocs"],
+    receiptImpact:
+      "Native Hoon parser work can change how Hoon fixtures and kernel source anchors should be interpreted.",
+    verificationCommand: "npm run test:nockchain-hoon-kernels-api && npm run test:nockchain-docs-atlas-api"
+  },
+  {
+    id: "jam-cue-hardening",
+    label: "JAM cue hardening",
+    escalation: "high",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockvmRuntimeSafety", "nockchainOperationsAtlas", "localFakenetDiagnostics"],
+    receiptImpact:
+      "JAM cue bounds and overflow fixes affect runtime safety receipts and support-bundle triage for malformed state or network data.",
+    verificationCommand:
+      "npm run test:nockchain-operations-atlas && npm run test:local-fakenet-diagnostics-api"
+  },
+  {
+    id: "p2p-jam-cue-hardening",
+    label: "P2P JAM cue hardening",
+    escalation: "high",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainSyncGossipTrace", "nockchainOperationsAtlas", "localFakenetEvidence"],
+    receiptImpact:
+      "P2P decode panic fixes change how fakenet peer, route-table, and malformed gossip evidence should be interpreted.",
+    verificationCommand:
+      "npm run test:nockchain-sync-gossip-trace && npm run test:nockchain-operations-atlas"
+  },
+  {
+    id: "p2p-gossip-bounds",
+    label: "P2P gossip bounds",
+    escalation: "high",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainSyncGossipTrace", "localFakenetDiagnostics", "localFakenetEvidence"],
+    receiptImpact:
+      "Gossip bounds and WireTag validation affect DoS posture, peer diagnostics, and route-table evidence.",
+    verificationCommand:
+      "npm run test:nockchain-sync-gossip-trace && npm run test:local-fakenet-diagnostics-api"
+  },
+  {
+    id: "version-provenance",
+    label: "Version provenance",
+    escalation: "medium",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainReleaseAssets", "nockchainWatch", "generatedReportProvenance"],
+    receiptImpact:
+      "Including git SHA in CLI versions improves binary provenance and generated report source identity.",
+    verificationCommand:
+      "npm run test:nockchain-release-assets && npm run test:generated-report-provenance-api"
+  },
+  {
+    id: "grpc-message-size",
+    label: "gRPC message size",
+    escalation: "medium",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainWalletAtlas", "localFakenetCommands", "nockchainOperationsAtlas"],
+    receiptImpact:
+      "gRPC max-message-size flags affect wallet, API, and local fakenet command safety for large state or transaction responses.",
+    verificationCommand: "npm run test:nockchain-wallet-atlas && npm run test:local-fakenet-commands-api"
+  },
+  {
+    id: "runtime-memory-profile",
+    label: "Runtime memory profile",
+    escalation: "high",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainOperationsAtlas", "localFakenetReadiness", "localFakenetDiagnostics"],
+    receiptImpact:
+      "Memory sizing changes affect operator runbooks, readiness checks, and heavy NockApp failure triage.",
+    verificationCommand:
+      "npm run test:nockchain-operations-atlas && npm run test:local-fakenet-readiness-api"
+  },
+  {
+    id: "candidate-block-message",
+    label: "Candidate block message",
+    escalation: "medium",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainHoonKernelAtlas", "localFakenetEvidence", "generatedReports"],
+    receiptImpact:
+      "Candidate-block message flags can change miner/fakenet evidence fields and block-commitment provenance.",
+    verificationCommand: "npm run test:nockchain-hoon-kernels-api && npm run test:local-fakenet-evidence-api"
+  },
+  {
+    id: "zkvm-melt-type",
+    label: "zkVM Melt type",
+    escalation: "watch",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["computeBenchmarkProfiles", "trustSignals", "fixtureDocs"],
+    receiptImpact:
+      "Melt type work is proof/compute-adjacent context until canonical Nockchain surfaces promote it.",
+    verificationCommand: "npm run test:compute-benchmark-detail-page && npm run test:trust-signals"
+  },
+  {
+    id: "peek-v1-transactions",
+    label: "Peek v1 transactions",
+    escalation: "medium",
+    sourceAuthority: "canonical-nockchain-open-pr",
+    targetSurfaces: ["nockchainHoonKernelAtlas", "nockchainWalletAtlas", "localFakenetCommands"],
+    receiptImpact:
+      "v1 transaction support in nockchain-peek changes what transaction evidence can be inspected without running wallet commands.",
+    verificationCommand: "npm run test:nockchain-hoon-kernels-api && npm run test:nockchain-wallet-atlas"
+  },
+  {
     id: "runtime-stack-frame-safety",
     label: "Runtime stack frame safety",
     escalation: "high",
@@ -420,6 +525,71 @@ const pullRequests = [
       "Watch PR #101 for parser and Hoon-source interpretation changes that could affect kernel fixture docs."
   }),
   createPullRequest({
+    number: 100,
+    title: "ag2 opt persistence madvise checkpoint stream from pma slab but btree",
+    draft: true,
+    updatedAt: "2026-01-21T06:58:06Z",
+    author: "bitemyapp",
+    riskClass: "pma-runtime-persistence",
+    priority: "high",
+    receiptFields: ["pmaSnapshotRoot", "checkpointStreamHash", "btreePersistenceMode"],
+    forbiddenFields: ["rawPmaSlab", "rawCheckpointStream"],
+    nocksperimentalAction:
+      "Review PR #100 as PMA checkpoint-stream persistence work before changing state-artifact provenance language."
+  }),
+  createPullRequest({
+    number: 98,
+    title: "Native Rust Hoon parser",
+    draft: true,
+    updatedAt: "2026-01-19T23:40:44Z",
+    author: "bitemyapp",
+    riskClass: "hoon-parser-runtime",
+    priority: "watch",
+    receiptFields: ["hoonParserMode", "sourceAnchor", "parserFixtureHash"],
+    forbiddenFields: ["rawKernelState"],
+    nocksperimentalAction:
+      "Watch PR #98 for Hoon parser changes that could affect kernel fixture source anchors."
+  }),
+  createPullRequest({
+    number: 99,
+    title: "Bitemyapp/ag2 opt persistence madvise checkpoint",
+    draft: true,
+    updatedAt: "2026-01-19T19:52:29Z",
+    author: "bitemyapp",
+    riskClass: "pma-runtime-persistence",
+    priority: "high",
+    receiptFields: ["pmaSnapshotRoot", "madviseMode", "checkpointHash"],
+    forbiddenFields: ["rawPmaSlab", "rawCheckpoint"],
+    nocksperimentalAction:
+      "Review PR #99 as PMA checkpoint optimization context before trusting bootstrap or replay assumptions."
+  }),
+  createPullRequest({
+    number: 97,
+    title: "Chris persistent PMA trailhead",
+    draft: true,
+    updatedAt: "2026-01-15T06:23:22Z",
+    author: "bitemyapp",
+    riskClass: "pma-runtime-persistence",
+    priority: "high",
+    receiptFields: ["pmaSnapshotRoot", "persistenceMode", "trailheadSource"],
+    forbiddenFields: ["rawPmaSlab", "rawEventLog"],
+    nocksperimentalAction:
+      "Review PR #97 as persistent PMA trailhead context before changing PMA boot-source guidance."
+  }),
+  createPullRequest({
+    number: 96,
+    title: "Chris PMA trailhead",
+    draft: true,
+    updatedAt: "2026-01-13T04:44:15Z",
+    author: "bitemyapp",
+    riskClass: "pma-runtime-persistence",
+    priority: "high",
+    receiptFields: ["pmaSnapshotRoot", "trailheadSource", "runtimeMode"],
+    forbiddenFields: ["rawPmaSlab"],
+    nocksperimentalAction:
+      "Review PR #96 as older PMA trailhead context before updating state-jam and support-bundle assumptions."
+  }),
+  createPullRequest({
     number: 95,
     title: "Add jojo repl",
     draft: false,
@@ -431,6 +601,136 @@ const pullRequests = [
     forbiddenFields: ["rawReplTranscriptWithSecrets"],
     nocksperimentalAction:
       "Watch PR #95 as possible interactive NockApp fixture or diagnostics surface."
+  }),
+  createPullRequest({
+    number: 94,
+    title: "fix: prevent integer overflow in JAM cue deserialization",
+    draft: false,
+    updatedAt: "2026-01-02T19:39:19Z",
+    author: "gitwormq",
+    riskClass: "jam-cue-hardening",
+    priority: "high",
+    receiptFields: ["jamCueInputLength", "cueValidationError", "runtimeSafetyCheck"],
+    forbiddenFields: ["rawJamPayload", "rawPmaSlab"],
+    nocksperimentalAction:
+      "Review PR #94 before changing malformed JAM/runtime safety diagnostics or support-bundle guidance."
+  }),
+  createPullRequest({
+    number: 93,
+    title: "Fix panic in JAM cue when deserializing empty buffer via P2P",
+    draft: false,
+    updatedAt: "2026-01-01T18:21:01Z",
+    author: "gitwormq",
+    riskClass: "p2p-jam-cue-hardening",
+    priority: "high",
+    receiptFields: ["p2pPayloadLength", "cueValidationError", "peerSource"],
+    forbiddenFields: ["rawP2pPayload", "rawJamPayload"],
+    nocksperimentalAction:
+      "Review PR #93 before interpreting empty-buffer P2P failures in fakenet diagnostics."
+  }),
+  createPullRequest({
+    number: 92,
+    title: "fix: add bounds check for heard-elders via Gossip",
+    draft: false,
+    updatedAt: "2026-01-01T17:24:44Z",
+    author: "gitwormq",
+    riskClass: "p2p-gossip-bounds",
+    priority: "high",
+    receiptFields: ["heardEldersCount", "gossipBoundsCheck", "peerSource"],
+    forbiddenFields: ["rawGossipPayload"],
+    nocksperimentalAction:
+      "Review PR #92 before updating gossip/peer DoS triage or route-table evidence guidance."
+  }),
+  createPullRequest({
+    number: 89,
+    title: "fix: validate WireTag number to prevent serf thread panic",
+    draft: false,
+    updatedAt: "2025-12-31T20:34:49Z",
+    author: "gitwormq",
+    riskClass: "p2p-gossip-bounds",
+    priority: "high",
+    receiptFields: ["wireTagNumber", "serfThreadFailureMode", "validationError"],
+    forbiddenFields: ["rawGossipPayload"],
+    nocksperimentalAction:
+      "Review PR #89 before treating WireTag panic prevention as current P2P runtime behavior."
+  }),
+  createPullRequest({
+    number: 87,
+    title: "Extending cli --version to include git sha.",
+    draft: false,
+    updatedAt: "2025-12-30T17:42:36Z",
+    author: "kempy007",
+    riskClass: "version-provenance",
+    priority: "medium",
+    receiptFields: ["cliVersion", "gitSha", "binaryProvenance"],
+    forbiddenFields: ["localBuildSecret"],
+    nocksperimentalAction:
+      "Review PR #87 before changing release/binary provenance fields in generated reports."
+  }),
+  createPullRequest({
+    number: 83,
+    title: "Add max message size in bytes for grpc servers and clients",
+    draft: false,
+    updatedAt: "2025-12-07T16:15:04Z",
+    author: "nallux-dozryl",
+    riskClass: "grpc-message-size",
+    priority: "medium",
+    receiptFields: ["grpcMaxMessageBytes", "endpointMode", "commandSurface"],
+    forbiddenFields: ["rawGrpcPayload"],
+    nocksperimentalAction:
+      "Review PR #83 before changing wallet/API command limits or fakenet support-bundle guidance."
+  }),
+  createPullRequest({
+    number: 82,
+    title: "Bumped the t-shirt size for nockchain app",
+    draft: false,
+    updatedAt: "2025-12-06T01:26:18Z",
+    author: "mopfel-winrux",
+    riskClass: "runtime-memory-profile",
+    priority: "high",
+    receiptFields: ["runtimeMemoryProfile", "operatorSizingHint", "failureMode"],
+    forbiddenFields: ["rawCoreDump"],
+    nocksperimentalAction:
+      "Review PR #82 before changing local fakenet readiness sizing or memory-failure triage."
+  }),
+  createPullRequest({
+    number: 61,
+    title: "feat: --page-message flag for setting candidate-block's msg",
+    draft: false,
+    updatedAt: "2025-12-04T16:15:08Z",
+    author: "nallux-dozryl",
+    riskClass: "candidate-block-message",
+    priority: "medium",
+    receiptFields: ["candidateBlockMessage", "minerCommand", "blockCommitment"],
+    forbiddenFields: ["rawCandidateBlock"],
+    nocksperimentalAction:
+      "Review PR #61 before adding candidate-block message fields to miner or fakenet receipts."
+  }),
+  createPullRequest({
+    number: 46,
+    title: "zkvm-jetpack: Add Melt type",
+    draft: false,
+    updatedAt: "2025-12-04T16:15:08Z",
+    author: "h33p",
+    riskClass: "zkvm-melt-type",
+    priority: "watch",
+    receiptFields: ["meltType", "proofContext", "computeFixture"],
+    forbiddenFields: ["privateProofWitness"],
+    nocksperimentalAction:
+      "Watch PR #46 as proof/compute context before promoting Melt into benchmark evidence."
+  }),
+  createPullRequest({
+    number: 79,
+    title: "Added support for v1 transactions in nockchain-peek",
+    draft: false,
+    updatedAt: "2025-12-04T16:15:07Z",
+    author: "mopfel-winrux",
+    riskClass: "peek-v1-transactions",
+    priority: "medium",
+    receiptFields: ["peekTransactionVersion", "peekCommand", "transactionSource"],
+    forbiddenFields: ["walletSeedPhrase", "rawPrivateTransaction"],
+    nocksperimentalAction:
+      "Review PR #79 before changing peek-based transaction inspection or wallet-adjacent receipts."
   }),
   createPullRequest({
     number: 88,
@@ -447,20 +747,25 @@ const pullRequests = [
   })
 ] as const;
 
-const openIssues = [
-  createOpenIssue({
-    number: 121,
-    title: "NockStack::is_in_frame panics in debug on pointers outside the stack arena",
-    updatedAt: "2026-05-18T19:33:14Z",
-    author: "nocktoshi",
-    riskClass: "runtime-stack-frame-safety",
-    priority: "high",
-    receiptFields: ["stackFramePointerRange", "debugPanicMode", "runtimeSafetyCheck"],
-    forbiddenFields: ["rawCoreDump", "rawPmaSlab"],
-    nocksperimentalAction:
-      "Track issue #121 before changing runtime stack-frame safety diagnostics or local fakenet panic triage."
-  })
-] as const;
+type OpenIssue = {
+  number: number;
+  title: string;
+  url: string;
+  status: "open";
+  updatedAt: string;
+  author: string;
+  riskClass: (typeof riskClasses)[number]["id"];
+  priority: "high" | "medium" | "watch";
+  sourceAuthority: (typeof riskClasses)[number]["sourceAuthority"];
+  targetSurfaces: readonly string[];
+  receiptImpact: string;
+  verificationCommand: string;
+  receiptFields: string[];
+  forbiddenFields: string[];
+  nocksperimentalAction: string;
+};
+
+const openIssues: OpenIssue[] = [];
 
 const reviewContract = {
   requiredFields: [
@@ -533,7 +838,6 @@ export function createNockchainPrRadar() {
       "Review PR #113/#112/#107/#104 before trusting PMA snapshot, event-log, or state-jam assumptions.",
       "Review PR #116 before publishing wallet transaction metadata receipts.",
       "Review PR #103 before changing offline/cold wallet signing receipts.",
-      "Track issue #121 before changing runtime stack-frame safety diagnostics.",
       "Review PR #119 before trusting live NockApp state export snapshots.",
       "Review PR #126 before claiming Rust benchmarking coverage.",
       "Review PR #124 as compute/proof benchmark material, not current Nockchain runtime authority.",
@@ -596,52 +900,6 @@ function createPullRequest({
     url: `${repositoryUrl}/pull/${number}`,
     status: "open",
     draft,
-    updatedAt,
-    author,
-    riskClass,
-    priority,
-    sourceAuthority: risk.sourceAuthority,
-    targetSurfaces: risk.targetSurfaces,
-    receiptImpact: risk.receiptImpact,
-    verificationCommand: risk.verificationCommand,
-    receiptFields,
-    forbiddenFields,
-    nocksperimentalAction
-  };
-}
-
-function createOpenIssue({
-  number,
-  title,
-  updatedAt,
-  author,
-  riskClass,
-  priority,
-  receiptFields,
-  forbiddenFields,
-  nocksperimentalAction
-}: {
-  number: number;
-  title: string;
-  updatedAt: string;
-  author: string;
-  riskClass: (typeof riskClasses)[number]["id"];
-  priority: "high" | "medium" | "watch";
-  receiptFields: string[];
-  forbiddenFields: string[];
-  nocksperimentalAction: string;
-}) {
-  const risk = riskClasses.find((candidate) => candidate.id === riskClass);
-
-  if (!risk) {
-    throw new Error(`Unknown Nockchain issue risk class: ${riskClass}`);
-  }
-
-  return {
-    number,
-    title,
-    url: `${repositoryUrl}/issues/${number}`,
-    status: "open",
     updatedAt,
     author,
     riskClass,
