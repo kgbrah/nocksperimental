@@ -47,6 +47,11 @@ async function main() {
     true,
     "Nockchain watch aggregate drift check available"
   );
+  assertEqual(
+    body.checks.nockchainCargoDependencyRiskMatrixAvailable,
+    true,
+    "Nockchain Cargo dependency risk matrix available"
+  );
   assertStartsWith(body.roots.trustSignals, "sha256:", "trust signal root");
   assertStartsWith(body.roots.generatedReports, "sha256:", "generated reports root");
   assertStartsWith(body.roots.localFakenetEvidence, "sha256:", "local fakenet evidence root");

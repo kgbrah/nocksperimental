@@ -278,12 +278,12 @@ Use it when a fakenet, NockApp, wallet, bridge, VESL, or nockup receipt needs ex
 
 ## Nockchain Cargo Surface
 
-The Cargo surface turns upstream manifests and source entrypoints into a Rust target map for Nocksperimental. It tracks high-signal crates such as `nockchain`, `nockchain-wallet`, `nockchain-api`, `nockapp`, `nockup`, `nockchain-libp2p-io`, `wallet-tx-builder`, `nockchain-bridge-sequencer`, and `nockvm`; all 36 pinned crate `Cargo.toml` SHA-256 and byte-count snapshots; their binary/library/bench targets; dependency pins; source focus paths; and crate-scoped cargo checks.
+The Cargo surface turns upstream manifests and source entrypoints into a Rust target map for Nocksperimental. It tracks high-signal crates such as `nockchain`, `nockchain-wallet`, `nockchain-api`, `nockapp`, `nockup`, `nockchain-libp2p-io`, `wallet-tx-builder`, `nockchain-bridge-sequencer`, and `nockvm`; all 36 pinned crate `Cargo.toml` SHA-256 and byte-count snapshots; their binary/library/bench targets; dependency pins; dependency-risk families; source focus paths; and crate-scoped cargo checks.
 
 - `/api/nockchain/cargo-surface`
 - `/nockchain/cargo-surface`
 
-Use it when translating an upstream Rust change into the exact binary, library, benchmark, or source file that needs verification. The current surface records that `cargo 1.96.0` and `cargo metadata --no-deps --format-version 1` are available when `$HOME/.cargo/bin` is on `PATH`, while full crate checks may still fetch or build upstream dependencies.
+Use it when translating an upstream Rust change into the exact binary, library, benchmark, dependency family, or source file that needs verification. The dependency risk matrix maps libp2p sync, wallet transaction construction, NockApp/PMA, bridge settlement, proof/compute, and noun serialization changes to the receipt fields, target surfaces, and crate-scoped cargo checks that should be reviewed before evidence is trusted. The current surface records that `cargo 1.96.0` and `cargo metadata --no-deps --format-version 1` are available when `$HOME/.cargo/bin` is on `PATH`, while full crate checks may still fetch or build upstream dependencies.
 
 Run `npm run check:nockchain-cargo-manifests-drift -- --json` to compare every pinned crate manifest path, SHA-256 hash, byte count, and aggregate manifest catalog hash against upstream `nockchain/nockchain` master before treating crate targets, dependency surfaces, or feature flags as current evidence.
 

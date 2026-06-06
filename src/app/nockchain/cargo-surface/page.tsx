@@ -27,6 +27,14 @@ const highlightedAvailableTooling = "cargo 1.96.0";
 const highlightedLocalLimitation = "$HOME/.cargo/bin must be present on PATH";
 const highlightedForbiddenFields = ["rawPmaSlab", "walletSeedPhrase"];
 const highlightedManifestDriftCommand = "npm run check:nockchain-cargo-manifests-drift -- --json";
+const highlightedDependencyRiskFamilies = [
+  "libp2p-sync",
+  "wallet-transaction",
+  "nockapp-pma",
+  "bridge-settlement",
+  "zk-proof-compute",
+  "noun-serialization"
+];
 
 export default function NockchainCargoSurfacePage() {
   const surface = createNockchainCargoSurface();
@@ -58,6 +66,12 @@ export default function NockchainCargoSurfacePage() {
   );
   const manifestDriftCommand =
     surface.workspace.manifestDriftCheck.command || highlightedManifestDriftCommand;
+  const primaryDependencyFamilies = highlightedDependencyRiskFamilies
+    .map((familyId) => surface.dependencyRiskMatrix.families.find((family) => family.id === familyId))
+    .filter((family): family is NonNullable<typeof family> => Boolean(family));
+  const remainingDependencyFamilies = surface.dependencyRiskMatrix.families.filter(
+    (family) => !(highlightedDependencyRiskFamilies as readonly string[]).includes(family.id)
+  );
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -177,6 +191,29 @@ export default function NockchainCargoSurfacePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="mb-5 border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Dependency Risk Matrix</h2>
+          </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            {primaryDependencyFamilies.concat(remainingDependencyFamilies).map((family) => (
+              <div className="border border-[#0B0B0B] bg-white p-4" key={family.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {family.id}
+                </p>
+                <h3 className="mt-1 text-lg font-semibold">{family.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{family.reviewRule}</p>
+                <Callout label="dependencies" value={family.dependencyNames.join(", ")} />
+                <Callout label="impactedCrates" value={family.impactedCrates.join(", ")} />
+                <Callout label="targetSurfaces" value={family.targetSurfaces.join(", ")} />
+                <Callout label="receiptFields" value={family.receiptFields.join(", ")} />
+                <Callout label="verification" value={family.verificationCommands.join(" | ")} />
+              </div>
+            ))}
+          </div>
+        </article>
+
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <Boxes size={18} aria-hidden="true" />

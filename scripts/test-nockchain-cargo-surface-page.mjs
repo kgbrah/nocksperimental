@@ -27,6 +27,13 @@ async function main() {
   assertIncludes(page, "High-Signal Cargo Crates", "cargo surface page renders crates");
   assertIncludes(page, "Verification Matrix", "cargo surface page renders verification matrix");
   assertIncludes(page, "Evidence Contract", "cargo surface page renders evidence contract");
+  assertIncludes(page, "Dependency Risk Matrix", "cargo surface page renders dependency risk matrix");
+  assertIncludes(page, "libp2p-sync", "cargo surface page renders libp2p risk");
+  assertIncludes(page, "wallet-transaction", "cargo surface page renders wallet risk");
+  assertIncludes(page, "nockapp-pma", "cargo surface page renders PMA risk");
+  assertIncludes(page, "bridge-settlement", "cargo surface page renders bridge risk");
+  assertIncludes(page, "zk-proof-compute", "cargo surface page renders proof risk");
+  assertIncludes(page, "noun-serialization", "cargo surface page renders serialization risk");
   assertIncludes(page, "nockchain-wallet", "cargo surface page renders wallet crate");
   assertIncludes(page, "wallet-tx-builder", "cargo surface page renders tx builder");
   assertIncludes(page, "nockchain-libp2p-io", "cargo surface page renders libp2p crate");

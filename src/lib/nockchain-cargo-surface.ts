@@ -573,6 +573,75 @@ const cargoCrates = [
   }
 ] as const;
 
+const dependencyRiskFamilies = [
+  {
+    id: "libp2p-sync",
+    label: "libp2p sync and routing",
+    severity: "high",
+    dependencyNames: ["libp2p", "nockchain-libp2p-io"],
+    targetSurfaces: ["fakenetEvidence", "nockchainSyncGossipTrace", "nockchainOperationsAtlas"],
+    receiptFields: ["peerCount", "routeTableSize", "tipHeight", "blockCommitment"],
+    verificationCommands: ["cargo check -p nockchain-libp2p-io", "cargo check -p nockchain"],
+    reviewRule:
+      "Review peer, route-table, gossip, catch-up, and wrong-commitment diagnostics before trusting fakenet mining evidence."
+  },
+  {
+    id: "wallet-transaction",
+    label: "Wallet transaction construction",
+    severity: "high",
+    dependencyNames: ["nockchain-wallet", "wallet-tx-builder", "nockchain-types", "nockchain-math"],
+    targetSurfaces: ["balanceEvidence", "nockchainWalletAtlas", "localFakenetCommands"],
+    receiptFields: ["walletAddress", "noteCount", "transactionHash", "memoHash"],
+    verificationCommands: ["cargo check -p wallet-tx-builder", "cargo check -p nockchain-wallet"],
+    reviewRule:
+      "Review wallet planner, fee, lock resolution, memo/blob, and endpoint-mode assumptions before publishing wallet receipts."
+  },
+  {
+    id: "nockapp-pma",
+    label: "NockApp runtime and PMA",
+    severity: "immediate",
+    dependencyNames: ["nockapp", "nockvm", "noun-serde"],
+    targetSurfaces: ["nockappEvidence", "stateJamRegistry", "localFakenetEvidence"],
+    receiptFields: ["stateJamFingerprint", "pmaPolicy", "eventLogPolicy", "runtimeCommit"],
+    verificationCommands: ["cargo check -p nockapp", "cargo check -p nockvm"],
+    reviewRule:
+      "Review poke/peek, event log, state export, memory mapping, and PMA/state-jam safety before reusing runtime evidence."
+  },
+  {
+    id: "bridge-settlement",
+    label: "Bridge settlement and sequencer",
+    severity: "immediate",
+    dependencyNames: ["bridge", "nockchain-bridge-sequencer", "wallet-tx-builder"],
+    targetSurfaces: ["nockchainBridgeTrace", "veslEvidenceBridge", "launchEvidenceReports"],
+    receiptFields: ["settlementMode", "proposalHash", "sequencerJournalId", "withdrawalTransactionHash"],
+    verificationCommands: ["cargo check -p bridge", "cargo check -p nockchain-bridge-sequencer"],
+    reviewRule:
+      "Review authorization, proposal, journal, submission, and confirmation semantics before treating bridge receipts as settled."
+  },
+  {
+    id: "zk-proof-compute",
+    label: "ZK proof and compute",
+    severity: "high",
+    dependencyNames: ["zkvm-jetpack", "equix", "equix-latency"],
+    targetSurfaces: ["computeBenchmarks", "solverScores", "proofEvidence"],
+    receiptFields: ["verificationStatus", "hardwareProfile", "benchmarkDurationMs", "proofArtifactHash"],
+    verificationCommands: ["cargo check -p zkvm-jetpack", "cargo check -p equix-latency"],
+    reviewRule:
+      "Review proof-adjacent and latency crates before converting benchmark or solver output into evidence."
+  },
+  {
+    id: "noun-serialization",
+    label: "Noun serialization and verifier payloads",
+    severity: "high",
+    dependencyNames: ["noun-serde", "noun-serde-derive", "nockchain-types"],
+    targetSurfaces: ["receiptVerifiers", "generatedReports", "verificationIndex"],
+    receiptFields: ["manifestSha256", "payloadHash", "nounEncoding", "verifierInputHash"],
+    verificationCommands: ["cargo check -p noun-serde", "cargo check -p noun-serde-derive"],
+    reviewRule:
+      "Review noun encoding and derived serialization before changing receipt hashes or verifier payloads."
+  }
+] as const;
+
 export function createNockchainCargoSurface() {
   const upstream = nockchainUpstreamIntelligence;
   const binaryCrates = cargoCrates
@@ -636,6 +705,7 @@ export function createNockchainCargoSurface() {
         features: ["build_cc", "usewait-on-address"]
       }
     },
+    dependencyRiskMatrix: createDependencyRiskMatrix(),
     crates: cargoCrates,
     targetSummary: {
       crateCount: cargoCrates.length,
@@ -697,6 +767,60 @@ export function createNockchainCargoSurface() {
       checkpoint: `${registryCanonicalBaseUrl}/api/registry/checkpoint`
     }
   };
+}
+
+function createDependencyRiskMatrix() {
+  const families = dependencyRiskFamilies.map((family) => {
+    const impactedCrates = collectFamilyCrates(family.dependencyNames);
+
+    return {
+      ...family,
+      impactedCrates,
+      manifestPaths: impactedCrates.flatMap((crateName) => {
+        const crateDetail = cargoCrates.find((candidate) => candidate.name === crateName);
+
+        return crateDetail ? [crateDetail.manifestPath] : [];
+      })
+    };
+  });
+
+  return {
+    version: "v0",
+    source: "nockchain-cargo-surface",
+    families,
+    highestRiskFamilyIds: families
+      .filter((family) => family.severity === "immediate" || family.id === "libp2p-sync")
+      .map((family) => family.id),
+    reviewTriggers: [
+      "Any crate manifest drift in npm run check:nockchain-cargo-manifests-drift -- --json",
+      "Any dependency, feature, target, or source-focus change in a high-signal crate",
+      "Any receipt, verifier, fakenet, wallet, bridge, PMA, or compute surface that cites an affected crate"
+    ],
+    forbiddenFields: [
+      "rawPmaSlab",
+      "rawStateJam",
+      "rawEventLog",
+      "walletSeedPhrase",
+      "privateSpendKey",
+      "sequencerJournalSigningKey",
+      "rawProofArtifact"
+    ],
+    interpretationRules: [
+      "Dependency presence identifies a review lane, not proof that runtime behavior is correct.",
+      "A changed dependency family must be paired with crate-scoped cargo checks and source provenance before evidence claims change.",
+      "Manifest drift is the stale-data trigger; receipt fields and forbidden fields define what can be carried forward safely."
+    ]
+  };
+}
+
+function collectFamilyCrates(dependencyNames: readonly string[]) {
+  return cargoCrates
+    .filter(
+      (crateDetail) =>
+        dependencyNames.includes(crateDetail.name) ||
+        crateDetail.dependencies.some((dependency) => dependencyNames.includes(dependency))
+    )
+    .map((crateDetail) => crateDetail.name);
 }
 
 function createManifestCatalogHash(

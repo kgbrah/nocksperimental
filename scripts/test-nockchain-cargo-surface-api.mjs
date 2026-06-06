@@ -118,6 +118,76 @@ async function main() {
   assertIncludes(nockvm.features, "pma-assert", "NockVM pma assert feature");
   assertIncludes(nockvm.targets.map((target) => target.name), "pma_growth", "NockVM PMA growth bench");
 
+  assertEqual(body.dependencyRiskMatrix.families.length, 6, "dependency risk family count");
+  assertDependencyFamily(
+    body,
+    "libp2p-sync",
+    "libp2p",
+    "fakenetEvidence",
+    "peerCount",
+    "cargo check -p nockchain-libp2p-io"
+  );
+  assertDependencyFamily(
+    body,
+    "wallet-transaction",
+    "wallet-tx-builder",
+    "balanceEvidence",
+    "walletAddress",
+    "cargo check -p wallet-tx-builder"
+  );
+  assertDependencyFamily(
+    body,
+    "nockapp-pma",
+    "nockapp",
+    "nockappEvidence",
+    "stateJamFingerprint",
+    "cargo check -p nockapp"
+  );
+  assertDependencyFamily(
+    body,
+    "bridge-settlement",
+    "bridge",
+    "nockchainBridgeTrace",
+    "settlementMode",
+    "cargo check -p bridge"
+  );
+  assertDependencyFamily(
+    body,
+    "zk-proof-compute",
+    "zkvm-jetpack",
+    "computeBenchmarks",
+    "verificationStatus",
+    "cargo check -p zkvm-jetpack"
+  );
+  assertDependencyFamily(
+    body,
+    "noun-serialization",
+    "noun-serde",
+    "receiptVerifiers",
+    "manifestSha256",
+    "cargo check -p noun-serde"
+  );
+  assertIncludes(
+    body.dependencyRiskMatrix.highestRiskFamilyIds,
+    "libp2p-sync",
+    "dependency matrix highlights sync risk"
+  );
+  assertIncludes(
+    body.dependencyRiskMatrix.highestRiskFamilyIds,
+    "nockapp-pma",
+    "dependency matrix highlights PMA risk"
+  );
+  assertIncludes(
+    body.dependencyRiskMatrix.forbiddenFields,
+    "rawEventLog",
+    "dependency matrix forbids raw event logs"
+  );
+  assertIncludes(
+    body.dependencyRiskMatrix.reviewTriggers,
+    "Any crate manifest drift in npm run check:nockchain-cargo-manifests-drift -- --json",
+    "dependency matrix ties to manifest drift check"
+  );
+
   assertIncludes(body.targetSummary.binaryCrates, "nockchain", "binary summary includes nockchain");
   assertIncludes(body.targetSummary.binaryCrates, "nockchain-wallet", "binary summary includes wallet");
   assertIncludes(body.targetSummary.libraryCrates, "wallet-tx-builder", "library summary includes tx builder");
@@ -175,6 +245,21 @@ async function main() {
   assertGreaterThan(checkpointBody.counts.nockchainCargoSurfaceTargets, 10, "checkpoint cargo target count");
   assertStartsWith(checkpointBody.roots.nockchainCargoSurface, "sha256:", "checkpoint cargo root");
   assertEqual(checkpointBody.checks.nockchainCargoSurfaceAvailable, true, "checkpoint cargo check");
+  assertEqual(
+    checkpointBody.checks.nockchainCargoDependencyRiskMatrixAvailable,
+    true,
+    "checkpoint dependency risk matrix check"
+  );
+  assertEqual(
+    checkpointBody.nockchainCargoSurface.dependencyRiskFamilyCount,
+    6,
+    "checkpoint dependency risk count"
+  );
+  assertIncludes(
+    checkpointBody.nockchainCargoSurface.dependencyRiskFamilyIds,
+    "wallet-transaction",
+    "checkpoint dependency risk family IDs"
+  );
   assertIncludes(checkpointBody.nockchainCargoSurface.binaryCrates, "nockchain-wallet", "checkpoint wallet binary");
   assertIncludes(checkpointBody.nockchainCargoSurface.forbiddenFields, "walletSeedPhrase", "checkpoint forbidden seed");
   assertEqual(
@@ -216,6 +301,19 @@ function findCrate(body, name) {
   }
 
   return crate;
+}
+
+function assertDependencyFamily(body, id, dependency, targetSurface, receiptField, command) {
+  const family = body.dependencyRiskMatrix.families.find((candidate) => candidate.id === id);
+
+  if (!family) {
+    throw new Error(`Missing dependency risk family: ${id}`);
+  }
+
+  assertIncludes(family.dependencyNames, dependency, `${id} dependency`);
+  assertIncludes(family.targetSurfaces, targetSurface, `${id} target surface`);
+  assertIncludes(family.receiptFields, receiptField, `${id} receipt field`);
+  assertIncludes(family.verificationCommands, command, `${id} verification command`);
 }
 
 function loadTypeScriptModule(relativePath) {

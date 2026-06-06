@@ -194,6 +194,7 @@ export function createRegistryCheckpoint() {
       upstream: nockchainCargoSurface.upstream,
       workspace: nockchainCargoSurface.workspace,
       workspaceDependencyHighlights: nockchainCargoSurface.workspaceDependencyHighlights,
+      dependencyRiskMatrix: nockchainCargoSurface.dependencyRiskMatrix,
       crates: nockchainCargoSurface.crates,
       targetSummary: nockchainCargoSurface.targetSummary,
       verificationMatrix: nockchainCargoSurface.verificationMatrix,
@@ -481,6 +482,17 @@ export function createRegistryCheckpoint() {
             crateDetail.sourceFocus.includes("crates/nockchain-libp2p-io/src/catch_up.rs")
         ) &&
         nockchainCargoSurface.evidenceContract.forbiddenFields.includes("walletSeedPhrase"),
+      nockchainCargoDependencyRiskMatrixAvailable:
+        nockchainCargoSurface.dependencyRiskMatrix.families.length === 6 &&
+        nockchainCargoSurface.dependencyRiskMatrix.highestRiskFamilyIds.includes(
+          "nockapp-pma"
+        ) &&
+        nockchainCargoSurface.dependencyRiskMatrix.families.some(
+          (family) =>
+            family.id === "wallet-transaction" &&
+            family.receiptFields.includes("walletAddress")
+        ) &&
+        nockchainCargoSurface.dependencyRiskMatrix.forbiddenFields.includes("rawEventLog"),
       nockchainHoonKernelsAvailable:
         nockchainHoonKernels.kernels.length === 5 &&
         nockchainHoonKernels.buildPipeline.assetTargets.length === 5 &&
@@ -1120,6 +1132,11 @@ export function createRegistryCheckpoint() {
       manifestCount: nockchainCargoSurface.workspace.manifestSnapshots.length,
       manifestCatalogHash: nockchainCargoSurface.workspace.manifestCatalogHash,
       manifestDriftCommand: nockchainCargoSurface.workspace.manifestDriftCheck.command,
+      dependencyRiskFamilyCount: nockchainCargoSurface.dependencyRiskMatrix.families.length,
+      dependencyRiskFamilyIds: nockchainCargoSurface.dependencyRiskMatrix.families.map(
+        (family) => family.id
+      ),
+      highestRiskFamilyIds: nockchainCargoSurface.dependencyRiskMatrix.highestRiskFamilyIds,
       binaryCrates: nockchainCargoSurface.targetSummary.binaryCrates,
       libraryCrates: nockchainCargoSurface.targetSummary.libraryCrates,
       benchmarkTargets: nockchainCargoSurface.targetSummary.benchmarkTargets,
