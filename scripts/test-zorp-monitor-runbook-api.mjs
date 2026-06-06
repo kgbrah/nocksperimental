@@ -122,6 +122,61 @@ async function main() {
     "drive-state-jam-artifact",
     "Drive state-jam monitor template"
   );
+  assertEqual(
+    body.stateJamInventoryContract.sourceId,
+    "zorp-state-jam-drive",
+    "state-jam inventory contract source"
+  );
+  assertEqual(
+    body.stateJamInventoryContract.classification,
+    "Zorp/Nockchain state-jam folder, not a VESL folder.",
+    "state-jam inventory classification"
+  );
+  assertEqual(
+    body.stateJamInventoryContract.nonVeslEvidenceBoundary,
+    "Do not route Drive changes as VESL evidence; route them as Nockchain state-artifact provenance.",
+    "state-jam non-VESL boundary"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.requiredMetadata,
+    "artifactSha256",
+    "state-jam inventory requires artifact hash"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.requiredMetadata,
+    "producingNockchainBuild",
+    "state-jam inventory requires producing build"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.requiredMetadata,
+    "heightOrEventBoundary",
+    "state-jam inventory requires height or event boundary"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.operatorActions,
+    "Inventory Drive contents manually or through an authenticated connector without downloading raw state artifacts into the repo.",
+    "state-jam inventory connector action"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.targetSurfaces,
+    "stateJamRegistry",
+    "state-jam inventory routes registry"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.targetSurfaces,
+    "localFakenetEvidence",
+    "state-jam inventory routes fakenet evidence"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.verificationCommands,
+    "npm run test:nockchain-state-jams-page",
+    "state-jam inventory verifies page"
+  );
+  assertIncludes(
+    body.stateJamInventoryContract.verificationCommands,
+    "npm run test:registry-checkpoint-api",
+    "state-jam inventory verifies registry checkpoint"
+  );
   assertIncludes(
     body.localVerification.recommendedCommands,
     "node scripts/run-zorp-monitor-snapshot.mjs --json",

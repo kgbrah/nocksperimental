@@ -51,6 +51,19 @@ const highlightedFindingFields = [
 
 const highlightedForbiddenFields = ["rawStateJam", "rawPmaSlab", "walletSeedPhrase"] as const;
 const highlightedRouteTargets = ["nockchainMiningSourceTrace", "nockchainPmaSourceTrace"] as const;
+const highlightedStateJamMetadata = [
+  "artifactSha256",
+  "producingNockchainBuild",
+  "heightOrEventBoundary"
+] as const;
+const highlightedNonVeslEvidenceBoundary =
+  "Do not route Drive changes as VESL evidence; route them as Nockchain state-artifact provenance.";
+const highlightedStateJamInventoryAction =
+  "Inventory Drive contents manually or through an authenticated connector without downloading raw state artifacts into the repo.";
+const highlightedStateJamVerificationCommands = [
+  "npm run test:nockchain-state-jams-page",
+  "npm run test:registry-checkpoint-api"
+] as const;
 
 export default function ZorpMonitorRunbookPage() {
   const runbook = createZorpMonitorRunbook();
@@ -202,6 +215,55 @@ export default function ZorpMonitorRunbookPage() {
                 <Callout label="targetSurfaces" value={entry.targetSurfaces.join(", ")} />
                 <Callout label="verificationCommands" value={entry.verificationCommands.join(", ")} />
               </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFF7D6] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <FileWarning size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">State-Jam Inventory Contract</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout
+              label="nonVeslEvidenceBoundary"
+              value={
+                runbook.stateJamInventoryContract.nonVeslEvidenceBoundary ??
+                highlightedNonVeslEvidenceBoundary
+              }
+            />
+            <Callout
+              label="rawArtifactPolicy"
+              value={runbook.stateJamInventoryContract.rawArtifactPolicy}
+            />
+            <Callout
+              label="highlightedMetadata"
+              value={highlightedStateJamMetadata.join(", ")}
+            />
+            <Callout
+              label="targetSurfaces"
+              value={runbook.stateJamInventoryContract.targetSurfaces.join(", ")}
+            />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {runbook.stateJamInventoryContract.requiredMetadata.map((field) => (
+              <Callout key={field} label="requiredMetadata" value={field} />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="highlightedOperatorAction" value={highlightedStateJamInventoryAction} />
+            {runbook.stateJamInventoryContract.operatorActions.map((action) => (
+              <Callout key={action} label="operatorAction" value={action} />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {highlightedStateJamVerificationCommands.map((command) => (
+              <Callout key={command} label="highlightedVerificationCommand" value={command} />
+            ))}
+            {runbook.stateJamInventoryContract.verificationCommands.map((command) => (
+              <Callout key={command} label="verificationCommand" value={command} />
             ))}
           </div>
         </article>

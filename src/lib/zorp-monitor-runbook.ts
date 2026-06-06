@@ -206,6 +206,56 @@ const monitorRunTemplates = [
   }
 ] as const;
 
+const stateJamInventoryContract = {
+  sourceId: "zorp-state-jam-drive",
+  sourceUrl: "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw",
+  classification: "Zorp/Nockchain state-jam folder, not a VESL folder.",
+  nonVeslEvidenceBoundary:
+    "Do not route Drive changes as VESL evidence; route them as Nockchain state-artifact provenance.",
+  rawArtifactPolicy: "never-store-raw-artifact",
+  inventoryMode: "metadata-only",
+  requiredMetadata: [
+    "driveFolderId",
+    "sourceUrl",
+    "artifactName",
+    "artifactBytes",
+    "artifactSha256",
+    "network",
+    "heightOrEventBoundary",
+    "producer",
+    "producingNockchainBuild",
+    "consumerNockchainBuild",
+    "custodyNotes"
+  ],
+  operatorActions: [
+    "Inventory Drive contents manually or through an authenticated connector without downloading raw state artifacts into the repo.",
+    "Record filename, size, hash, network, height or event boundary, producer, and producing Nockchain build before trusting a bootstrap artifact.",
+    "Route any changed artifact inventory to state-jam, PMA, local fakenet evidence, and registry checkpoint surfaces before using it in tests."
+  ],
+  targetSurfaces: [
+    "stateJamRegistry",
+    "nockchainPmaSourceTrace",
+    "localFakenetEvidence",
+    "nockchainOperationsAtlas",
+    "registryCheckpoint"
+  ],
+  verificationCommands: [
+    "npm run test:nockchain-state-jams-api",
+    "npm run test:nockchain-state-jams-page",
+    "npm run test:nockchain-pma-source-api",
+    "npm run test:local-fakenet-evidence-api",
+    "npm run test:registry-checkpoint-api"
+  ],
+  forbiddenFields: [
+    "rawStateJam",
+    "rawPmaSlab",
+    "rawEventLog",
+    "rawCheckpoint",
+    "walletSeedPhrase",
+    "walletPrivateKey"
+  ]
+} as const;
+
 const localVerification = {
   status: "monitor-runbook-defined",
   recommendedCommands: [
@@ -268,6 +318,7 @@ export function createZorpMonitorRunbook() {
     monitorClasses: zorp.monitorReviewContract.classes,
     routeMatrix,
     monitorRunTemplates,
+    stateJamInventoryContract,
     localVerification,
     nocksperimentalImplications: [
       "Monitor reports can now be converted into receipt-safe findings with explicit source authority and verification commands.",

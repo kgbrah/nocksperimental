@@ -211,6 +211,8 @@ The Zorp monitor runbook turns recurring checks of `zorp-corp`, the legacy `zorp
 
 Use it when a monitor run reports a repository, release, protocol-doc, fakenet/mining, wallet/API, PMA/state-jam, Jock authoring, NockApp lineage, or Drive artifact metadata change. Findings must record source URL, source authority, target Nocksperimental surface, raw artifact policy, and verification command before changing receipt assumptions.
 
+The runbook now includes a State-Jam Inventory Contract for the Drive folder. Drive changes must stay classified as Nockchain state-artifact provenance, not VESL evidence, and any accepted finding must inventory metadata such as artifact name, bytes, SHA-256, network, height or event boundary, producer, producing Nockchain build, consumer build, and custody notes without downloading raw state artifacts into the repo. Routed changes must refresh the state-jam registry, PMA source trace, local fakenet evidence, operations atlas, and registry checkpoint gates before tests trust the artifact.
+
 ## Nockchain State-Jam Provenance
 
 The state-jam provenance endpoint tracks metadata requirements and watched sources for Nockchain state-jam/checkpoint artifacts, including the Zorp state-jam Drive folder. It is intentionally metadata-only: Nocksperimental records source identity, required hashes, network/height/build context, PMA boot and recovery safety, and safety policy, but does not store or redistribute raw PMA slabs, event logs, checkpoints, state jams, wallet exports, seed phrases, or private keys.

@@ -28,6 +28,7 @@ function main() {
   assertIncludes(page, "Finding Schema", "monitor page shows finding schema");
   assertIncludes(page, "Classification Flow", "monitor page shows classification flow");
   assertIncludes(page, "Route Matrix", "monitor page shows route matrix");
+  assertIncludes(page, "State-Jam Inventory Contract", "monitor page shows state-jam inventory contract");
   assertIncludes(page, "Freshness Probes", "monitor page shows freshness probes");
   assertIncludes(page, "monitor-zorp-and-nockchain-sources", "monitor page shows automation id");
   assertIncludes(page, "watch-vesl-drive-folder", "monitor page shows superseded VESL-named automation");
@@ -49,6 +50,22 @@ function main() {
   assertIncludes(page, "rawArtifactPolicy", "monitor page shows raw artifact policy");
   assertIncludes(page, "rawStateJam", "monitor page shows forbidden state jam");
   assertIncludes(page, "rawPmaSlab", "monitor page shows forbidden PMA slab");
+  assertIncludes(page, "nonVeslEvidenceBoundary", "monitor page labels non-VESL boundary");
+  assertIncludes(
+    page,
+    "Do not route Drive changes as VESL evidence",
+    "monitor page renders non-VESL boundary"
+  );
+  assertIncludes(page, "artifactSha256", "monitor page renders state-jam artifact hash metadata");
+  assertIncludes(page, "producingNockchainBuild", "monitor page renders producing build metadata");
+  assertIncludes(page, "heightOrEventBoundary", "monitor page renders boundary metadata");
+  assertIncludes(
+    page,
+    "Inventory Drive contents manually or through an authenticated connector without downloading raw state artifacts into the repo.",
+    "monitor page renders Drive inventory action"
+  );
+  assertIncludes(page, "npm run test:nockchain-state-jams-page", "monitor page renders state-jams page gate");
+  assertIncludes(page, "npm run test:registry-checkpoint-api", "monitor page renders checkpoint gate");
   assertIncludes(page, "node scripts/run-zorp-monitor-snapshot.mjs --json", "monitor page shows snapshot command");
   assertIncludes(page, 'href="/api/nockchain/zorp/monitor"', "monitor page links API");
   assertIncludes(page, 'href="/nockchain/zorp"', "monitor page links Zorp page");
