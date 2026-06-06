@@ -70,7 +70,7 @@ gh issue list -R kgbrah/nocksperimental --state all --limit 30
 
 Expected: no PR or issue already implementing Launch Evidence Slice 1.
 
-- [ ] **Step 4: Confirm CodeGraph is current**
+- [x] **Step 4: Confirm CodeGraph is current**
 
 Run:
 
@@ -1847,7 +1847,7 @@ npm run build
 
 Expected: PASS. If `next-env.d.ts` changes due Next build output, inspect it and restore unrelated generated path churn before committing.
 
-- [ ] **Step 5: Sync CodeGraph**
+- [x] **Step 5: Sync CodeGraph**
 
 Run:
 
