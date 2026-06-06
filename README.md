@@ -194,7 +194,7 @@ Use it when interpreting whether a source is current protocol authority, histori
 
 The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, a monitor review contract, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
-Run `npm run check:zorp-org-drift -- --json` to compare the pinned Zorp org repository inventory against the live GitHub org API; the check treats Zorp repos as lineage/authoring signals and keeps the State Jam Drive folder metadata-only.
+Run `npm run check:zorp-org-drift -- --json` to compare the pinned Zorp org repository inventory against the live GitHub org API; the check treats Zorp repos as lineage/authoring signals, keeps the State Jam Drive folder metadata-only, and reports the impacted review class, source route, target surface, receipt field, and verification command for any repo drift.
 
 It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, and archived `zorp-corp/sword` so Jock authoring, NockApp poke/peek lineage, and Sword persistence history can inform fixtures without outranking current Nockchain protocol authority.
 

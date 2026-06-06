@@ -64,6 +64,7 @@ async function main() {
     true,
     "matching fixture preserves state-jam classification"
   );
+  assertEqual(passingBody.impact.impactedRepos.length, 0, "matching fixture has no impacted repos");
   assertIncludes(
     passingBody.sourceUrls,
     "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public",
@@ -87,6 +88,42 @@ async function main() {
     "zorp-corp/jock-lang:updatedAt",
     "drift detects jock-lang updatedAt change"
   );
+  assertIncludes(
+    driftingBody.impact.impactedRepos,
+    "zorp-corp/jock-lang",
+    "drift impact includes jock-lang"
+  );
+  assertIncludes(
+    driftingBody.impact.impactedReviewClassIds,
+    "zorp-authoring",
+    "jock-lang drift routes to authoring review class"
+  );
+  assertIncludes(
+    driftingBody.impact.impactedRouteIds,
+    "authoring-fixture-review",
+    "jock-lang drift routes to fixture review"
+  );
+  assertIncludes(
+    driftingBody.impact.impactedWatchMatrixIds,
+    "authoring-fixtures",
+    "jock-lang drift routes to authoring watch matrix"
+  );
+  assertIncludes(
+    driftingBody.impact.impactedTargetSurfaces,
+    "nockupValidation",
+    "jock-lang drift names nockup validation surface"
+  );
+  assertIncludes(
+    driftingBody.impact.impactedVerificationCommands,
+    "npm run test:nockup-validation",
+    "jock-lang drift names nockup verification command"
+  );
+  const jockImpact = findRepoImpact(driftingBody, "zorp-corp/jock-lang");
+  assertEqual(
+    jockImpact.sourceAuthority,
+    "lineage-and-authoring-signal",
+    "jock-lang drift source authority"
+  );
 
   const missingFixturePath = writeFixture(zorp, { omitRepo: "zorp-corp/sword" });
   const missing = spawnSync(process.execPath, [scriptPath, "--fixture", missingFixturePath, "--json"], {
@@ -98,6 +135,26 @@ async function main() {
   const missingBody = JSON.parse(missing.stdout);
   assertEqual(missingBody.status, "drift", "missing fixture status");
   assertIncludes(missingBody.drift.extraLocalRepos, "zorp-corp/sword", "drift detects extra local repo");
+  assertIncludes(
+    missingBody.impact.impactedReviewClassIds,
+    "zorp-lineage",
+    "sword drift routes to lineage review class"
+  );
+  assertIncludes(
+    missingBody.impact.impactedRouteIds,
+    "pma-runtime-vocabulary-review",
+    "sword drift routes to PMA vocabulary review"
+  );
+  assertIncludes(
+    missingBody.impact.impactedTargetSurfaces,
+    "stateJamRegistry",
+    "sword drift names state-jam registry surface"
+  );
+  assertIncludes(
+    missingBody.impact.impactedVerificationCommands,
+    "npm run test:nockchain-pma-source-api",
+    "sword drift names PMA verification command"
+  );
 
   assertEqual(zorp.driftCheck.command, "npm run check:zorp-org-drift -- --json", "Zorp drift command");
   assertIncludes(zorp.driftCheck.compareFields, "updatedAt", "Zorp drift compare fields");
@@ -251,4 +308,14 @@ function assertIncludes(collection, expected, label) {
   if (!collection?.includes?.(expected)) {
     throw new Error(`${label}: expected ${JSON.stringify(collection)} to include ${JSON.stringify(expected)}`);
   }
+}
+
+function findRepoImpact(report, repoFullName) {
+  const repoImpact = report.impact.repoImpacts.find((entry) => entry.repoFullName === repoFullName);
+
+  if (!repoImpact) {
+    throw new Error(`Missing repo impact for ${repoFullName}`);
+  }
+
+  return repoImpact;
 }

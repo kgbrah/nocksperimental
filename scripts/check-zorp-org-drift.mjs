@@ -36,10 +36,12 @@ main().catch((error) => {
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   const zorp = loadTypeScriptModule("src/lib/zorp-upstream.ts").createZorpUpstreamMap();
+  const runbook =
+    loadTypeScriptModule("src/lib/zorp-monitor-runbook.ts").createZorpMonitorRunbook();
   const github = options.fixturePath
     ? loadFixture(options.fixturePath)
     : await fetchGithubSnapshot();
-  const report = createDriftReport(zorp, github);
+  const report = createDriftReport(zorp, github, runbook);
 
   if (options.json) {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
@@ -109,10 +111,11 @@ function loadFixture(fixturePath) {
   return fixture;
 }
 
-function createDriftReport(zorp, github) {
+function createDriftReport(zorp, github, runbook) {
   const localRepos = zorp.repositories.map(normalizeLocalRepo).sort(compareRepoNames);
   const githubRepos = github.repos.map(normalizeGithubRepo).sort(compareRepoNames);
   const repoDrift = compareRepos(localRepos, githubRepos);
+  const impact = createImpactReport(zorp, runbook, repoDrift);
   const stateJamDriveClassified =
     zorp.stateJamDrive.sourceType === "zorp-nockchain-state-jam-folder" &&
     zorp.stateJamDrive.artifactPolicy === "metadata-only" &&
@@ -144,11 +147,15 @@ function createDriftReport(zorp, github) {
     },
     checks,
     drift: repoDrift,
+    impact,
     nextActions: [
       "Classify drift as authoring, lineage, state-artifact provenance, or low-signal tooling before changing product behavior.",
       "Promote only the affected Nocksperimental surface and run the verification command named by the Zorp monitor runbook.",
-      "Keep raw State Jam, PMA, checkpoint, wallet, and key material out of git and public APIs."
-    ]
+      "Keep raw State Jam, PMA, checkpoint, wallet, and key material out of git and public APIs.",
+      ...impact.impactedVerificationCommands.map(
+        (command) => `Run impacted verification command: ${command}`
+      )
+    ].filter(Boolean)
   };
 }
 
@@ -185,6 +192,124 @@ function compareRepos(localRepos, githubRepos) {
   }
 
   return { missingLocalRepos, extraLocalRepos, metadataDrift };
+}
+
+function createImpactReport(zorp, runbook, repoDrift) {
+  const impactedRepos = uniqueSorted([
+    ...repoDrift.missingLocalRepos,
+    ...repoDrift.extraLocalRepos,
+    ...repoDrift.metadataDrift.map((entry) => entry.repo)
+  ]);
+  const repoImpacts = impactedRepos.map((repoFullName) =>
+    createRepoImpact(zorp, runbook, repoFullName)
+  );
+
+  return {
+    impactedRepos,
+    impactedSourceAuthorities: uniqueSorted(repoImpacts.map((entry) => entry.sourceAuthority)),
+    impactedReviewClassIds: uniqueSorted(repoImpacts.flatMap((entry) => entry.reviewClassIds)),
+    impactedRouteIds: uniqueSorted(repoImpacts.flatMap((entry) => entry.sourceRouteIds)),
+    impactedWatchMatrixIds: uniqueSorted(repoImpacts.flatMap((entry) => entry.watchMatrixIds)),
+    impactedRunbookRouteIds: uniqueSorted(repoImpacts.flatMap((entry) => entry.runbookRouteIds)),
+    impactedTargetSurfaces: uniqueSorted(repoImpacts.flatMap((entry) => entry.targetSurfaces)),
+    impactedReceiptFields: uniqueSorted(repoImpacts.flatMap((entry) => entry.receiptFields)),
+    impactedVerificationCommands: uniqueSorted(
+      repoImpacts.flatMap((entry) => entry.verificationCommands)
+    ),
+    repoImpacts
+  };
+}
+
+function createRepoImpact(zorp, runbook, repoFullName) {
+  const repo = zorp.repositories.find((entry) => entry.fullName === repoFullName);
+  const sourceAuthority = sourceAuthorityForRepo(zorp, repoFullName);
+  const reviewClasses = reviewClassesForRepo(zorp, repo);
+  const sourceRoutes = zorp.collaborationFlywheel.sourceRoutes.filter(
+    (route) => route.source === repoFullName
+  );
+  const watchMatrixEntries = zorp.repositoryWatchMatrix.filter((entry) =>
+    entry.sources.includes(repoFullName)
+  );
+  const initialTargetSurfaces = uniqueSorted([
+    ...reviewClasses.flatMap((entry) => entry.targetSurfaces ?? []),
+    ...sourceRoutes.flatMap((entry) => entry.targetSurfaces ?? [])
+  ]);
+  const runbookRoutes = (runbook.routeMatrix ?? []).filter(
+    (route) =>
+      (route.triggers ?? []).some((trigger) => trigger.includes(repoFullName)) ||
+      hasIntersection(route.targetSurfaces ?? [], initialTargetSurfaces)
+  );
+  const targetSurfaces = uniqueSorted([
+    ...initialTargetSurfaces,
+    ...runbookRoutes.flatMap((entry) => entry.targetSurfaces ?? [])
+  ]);
+
+  return {
+    repoFullName,
+    primarySignal: repo?.primarySignal ?? "unknown",
+    sourceAuthority,
+    reviewClassIds: uniqueSorted(reviewClasses.map((entry) => entry.id)),
+    sourceRouteIds: uniqueSorted(sourceRoutes.map((entry) => entry.routeId)),
+    watchMatrixIds: uniqueSorted(watchMatrixEntries.map((entry) => entry.id)),
+    runbookRouteIds: uniqueSorted(runbookRoutes.map((entry) => entry.id)),
+    targetSurfaces,
+    receiptFields: uniqueSorted(watchMatrixEntries.flatMap((entry) => entry.receiptFields ?? [])),
+    verificationCommands: uniqueSorted(
+      runbookRoutes.flatMap((entry) => entry.verificationCommands ?? [])
+    ),
+    interpretation:
+      sourceRoutes.map((entry) => entry.collaborationUse).find(Boolean) ??
+      repo?.nocksperimentalUse ??
+      "Review this Zorp source before changing Nocksperimental receipt assumptions."
+  };
+}
+
+function sourceAuthorityForRepo(zorp, repoFullName) {
+  if (repoFullName === zorp.nockchain.repository.fullName) {
+    return zorp.sourceAuthority.protocol.sourceRole;
+  }
+
+  return zorp.sourceAuthority.zorpOrg.sourceRole;
+}
+
+function reviewClassesForRepo(zorp, repo) {
+  if (!repo) {
+    return [];
+  }
+
+  const explicitMatches = zorp.monitorReviewContract.classes.filter((entry) =>
+    (entry.sourceSignals ?? []).includes(repo.fullName)
+  );
+
+  if (explicitMatches.length > 0) {
+    return explicitMatches;
+  }
+
+  const fallbackIdsBySignal = {
+    "language-authoring": ["zorp-authoring"],
+    "nockapp-lineage": ["zorp-lineage"],
+    "runtime-lineage": ["zorp-lineage"],
+    "formal-semantics": ["zorp-lineage"],
+    "proof-tooling": ["low-signal-tooling"],
+    "build-tooling": ["low-signal-tooling"],
+    "automation-tooling": ["low-signal-tooling"],
+    "hoon-examples": ["low-signal-tooling"],
+    "ci-tooling": ["low-signal-tooling"],
+    "benchmark-tooling": ["low-signal-tooling"]
+  };
+  const fallbackIds = fallbackIdsBySignal[repo.primarySignal] ?? ["low-signal-tooling"];
+
+  return zorp.monitorReviewContract.classes.filter((entry) => fallbackIds.includes(entry.id));
+}
+
+function hasIntersection(left, right) {
+  const rightSet = new Set(right);
+
+  return left.some((value) => rightSet.has(value));
+}
+
+function uniqueSorted(values) {
+  return Array.from(new Set(values.filter((value) => value !== undefined && value !== null))).sort();
 }
 
 function normalizeLocalRepo(repo) {

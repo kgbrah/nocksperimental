@@ -136,6 +136,7 @@ function runLiveChecks() {
         sourceUrls: [],
         snapshot: null,
         checks: {},
+        impact: null,
         drift: {
           stderr: result.stderr.trim(),
           stdout: result.stdout.trim()
@@ -173,6 +174,7 @@ function normalizeCheckResult(check, report, exitCode, stderr) {
     sourceUrls: Array.isArray(report.sourceUrls) ? report.sourceUrls : [],
     snapshot: report.snapshot ?? null,
     checks: report.checks ?? {},
+    impact: report.impact ?? null,
     drift: report.drift ?? {},
     stderr: stderr.trim()
   };

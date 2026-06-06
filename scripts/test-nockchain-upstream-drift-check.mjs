@@ -129,6 +129,31 @@ async function main() {
     "aggregate review next action"
   );
 
+  const zorpDriftFixtureDir = writeFixtureDirectory({ driftCheckId: "zorp-org" });
+  const zorpDrift = spawnSync(process.execPath, [scriptPath, "--fixture-dir", zorpDriftFixtureDir, "--json"], {
+    cwd: process.cwd(),
+    encoding: "utf8"
+  });
+
+  assertEqual(zorpDrift.status, 1, "Zorp drift fixture exit status");
+  const zorpDriftBody = JSON.parse(zorpDrift.stdout);
+  const zorpCheck = findCheck(zorpDriftBody, "zorp-org");
+  assertIncludes(
+    zorpCheck.impact.impactedRepos,
+    "zorp-corp/jock-lang",
+    "aggregate preserves Zorp impacted repo"
+  );
+  assertIncludes(
+    zorpCheck.impact.impactedRouteIds,
+    "authoring-fixture-review",
+    "aggregate preserves Zorp source route"
+  );
+  assertIncludes(
+    zorpCheck.impact.impactedVerificationCommands,
+    "npm run test:nockup-validation",
+    "aggregate preserves Zorp verification command"
+  );
+
   const { GET } = loadTypeScriptModule("src/app/api/nockchain/watch/route.ts");
   const response = await GET();
   const board = await response.json();
@@ -219,13 +244,30 @@ function writeFixtureDirectory(options = {}) {
       sourceUrls: check.sourceUrls,
       snapshot: check.snapshot,
       checks: status === "in-sync" ? { ok: true } : { ok: false },
-      drift: status === "in-sync" ? {} : { reason: `${check.id} changed` }
+      drift: status === "in-sync" ? {} : { reason: `${check.id} changed` },
+      impact: createFixtureImpact(check.id, status)
     };
 
     writeFileSync(path.join(dir, `${check.id}.json`), JSON.stringify(report, null, 2));
   }
 
   return dir;
+}
+
+function createFixtureImpact(checkId, status) {
+  if (checkId !== "zorp-org" || status === "in-sync") {
+    return {
+      impactedRepos: [],
+      impactedRouteIds: [],
+      impactedVerificationCommands: []
+    };
+  }
+
+  return {
+    impactedRepos: ["zorp-corp/jock-lang"],
+    impactedRouteIds: ["authoring-fixture-review"],
+    impactedVerificationCommands: ["npm run test:nockup-validation"]
+  };
 }
 
 function fixtureChecks() {
@@ -358,4 +400,14 @@ function assertIncludes(collection, expected, label) {
   if (!collection?.includes?.(expected)) {
     throw new Error(`${label}: expected ${JSON.stringify(collection)} to include ${JSON.stringify(expected)}`);
   }
+}
+
+function findCheck(report, checkId) {
+  const check = report.checks.find((entry) => entry.id === checkId);
+
+  if (!check) {
+    throw new Error(`Missing aggregate check ${checkId}`);
+  }
+
+  return check;
 }

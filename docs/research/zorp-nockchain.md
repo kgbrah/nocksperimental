@@ -87,6 +87,8 @@ High-signal changes to watch:
 - `jock-lang` compiler/runtime changes that affect NockApp or `hoonc`
 - new or renamed state-jam artifacts in Drive
 
+The local Zorp org drift check now emits an `impact` block for repo drift. It maps changed repos to source authority, monitor review class, source route, watch matrix entry, target Nocksperimental surfaces, receipt fields, and verification commands before any finding can update a receipt, runbook, or product assumption.
+
 ## Collaboration Flywheel
 
 Nocksperimental should treat Zorp monitoring as a collaboration flywheel, not just a passive watch list:
