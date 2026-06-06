@@ -281,6 +281,50 @@ export function createZorpUpstreamMap() {
       docsPolicy: nockchain.docs.policy,
       watchItems: nockchain.watchItems
     },
+    sourceAuthority: {
+      protocol: {
+        sourceRole: "canonical-protocol-authority",
+        repository: nockchain.repository.fullName,
+        url: nockchain.repository.url,
+        authorityDocs: [
+          "START_HERE.md",
+          "PROTOCOL.md",
+          "ARCHITECTURE.md",
+          "WORKFLOWS.md",
+          "DECISIONS/README.md"
+        ],
+        interpretation:
+          "Use the canonical Nockchain monorepo and Tier 0 docs for protocol, runtime, wallet, fakenet, PMA, and release claims."
+      },
+      zorpOrg: {
+        sourceRole: "lineage-and-authoring-signal",
+        organization: "zorp-corp",
+        url: "https://github.com/zorp-corp",
+        primaryRepos: [
+          "zorp-corp/jock-lang",
+          "zorp-corp/nockapp",
+          "zorp-corp/sword",
+          "zorp-corp/knock",
+          "zorp-corp/sppark"
+        ],
+        interpretation:
+          "Use Zorp repos to understand Nockchain lineage, Jock/Nock authoring, NockApp history, runtime persistence history, and proof-adjacent signals."
+      },
+      stateJams: {
+        sourceRole: "state-artifact-provenance",
+        sourceType: "zorp-nockchain-state-jam-folder",
+        url: zorpStateJamDriveFolderUrl,
+        artifactPolicy: "metadata-only",
+        interpretation:
+          "Use the Drive folder as external state-jam/checkpoint provenance only; never treat it as VESL collaboration material or store raw state artifacts."
+      },
+      decisionRules: [
+        "Use nockchain/nockchain Tier 0 docs for protocol claims.",
+        "Use Zorp repos for lineage, authoring, fixture, and ecosystem-direction signals.",
+        "Use the Drive folder only as metadata-backed state-jam provenance, not as VESL evidence.",
+        "Promote a source into receipts only after recording repo, commit/build, artifact identity, and network context."
+      ]
+    },
     stateJamDrive: {
       sourceType: "zorp-nockchain-state-jam-folder",
       url: zorpStateJamDriveFolderUrl,

@@ -115,6 +115,7 @@ export function createRegistryCheckpoint() {
       scannedAt: zorpUpstream.scannedAt,
       organization: zorpUpstream.organization,
       nockchain: zorpUpstream.nockchain,
+      sourceAuthority: zorpUpstream.sourceAuthority,
       stateJamDrive: zorpUpstream.stateJamDrive,
       repositories: zorpUpstream.repositories,
       layers: zorpUpstream.layers,
@@ -293,6 +294,11 @@ export function createRegistryCheckpoint() {
         sourceType: zorpUpstream.stateJamDrive.sourceType,
         artifactPolicy: zorpUpstream.stateJamDrive.artifactPolicy
       },
+      sourceAuthorityRoles: [
+        zorpUpstream.sourceAuthority.protocol.sourceRole,
+        zorpUpstream.sourceAuthority.zorpOrg.sourceRole,
+        zorpUpstream.sourceAuthority.stateJams.sourceRole
+      ],
       monitor: {
         active: zorpUpstream.monitor.active,
         interval: zorpUpstream.monitor.interval

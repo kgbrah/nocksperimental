@@ -23,12 +23,40 @@ const riskFlagOrder: readonly string[] = [
   "legacy-repos-are-lineage-not-authority",
   "state-jam-folder-is-metadata-only"
 ];
+const sourceAuthorityRoleOrder: readonly string[] = [
+  "canonical-protocol-authority",
+  "lineage-and-authoring-signal",
+  "state-artifact-provenance"
+];
 
 export default function ZorpIntelligencePage() {
   const zorp = createZorpUpstreamMap();
   const monitorBrief = zorp.monitorBrief;
   const priorityRepos: readonly string[] = monitorBrief.priorityRepos;
   const riskFlags: readonly string[] = monitorBrief.riskFlags;
+  const sourceAuthority = [
+    {
+      label: "protocol",
+      role: zorp.sourceAuthority.protocol.sourceRole,
+      source: zorp.sourceAuthority.protocol.repository,
+      interpretation: zorp.sourceAuthority.protocol.interpretation
+    },
+    {
+      label: "lineage",
+      role: zorp.sourceAuthority.zorpOrg.sourceRole,
+      source: zorp.sourceAuthority.zorpOrg.organization,
+      interpretation: zorp.sourceAuthority.zorpOrg.interpretation
+    },
+    {
+      label: "state",
+      role: zorp.sourceAuthority.stateJams.sourceRole,
+      source: zorp.sourceAuthority.stateJams.url,
+      interpretation: zorp.sourceAuthority.stateJams.interpretation
+    }
+  ].sort(
+    (left, right) =>
+      sourceAuthorityRoleOrder.indexOf(left.role) - sourceAuthorityRoleOrder.indexOf(right.role)
+  );
   const orderedPrioritySources = prioritySourceOrder
     .filter((source) => priorityRepos.includes(source))
     .concat(priorityRepos.filter((source) => !prioritySourceOrder.includes(source)));
@@ -81,6 +109,34 @@ export default function ZorpIntelligencePage() {
         <Metric label="Core Active" value={monitorBrief.snapshot.activeCoreRepos.toString()} />
         <Metric label="Lineage Archived" value={monitorBrief.snapshot.archivedLineageRepos.toString()} />
         <Metric label="Nockchain" value={zorp.nockchain.latestCommit.shortSha} />
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Source Authority</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {sourceAuthority.map((source) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={source.role}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {source.label}
+                </p>
+                <h3 className="mt-1 break-all font-mono text-sm font-semibold">{source.role}</h3>
+                <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">
+                  {source.source}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{source.interpretation}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {zorp.sourceAuthority.decisionRules.map((rule) => (
+              <Callout key={rule} label="decisionRule" value={rule} />
+            ))}
+          </div>
+        </article>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">

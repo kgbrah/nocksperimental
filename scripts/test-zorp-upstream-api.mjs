@@ -39,6 +39,52 @@ async function main() {
     "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "Nockchain latest release"
   );
+  assertEqual(
+    body.sourceAuthority.protocol.sourceRole,
+    "canonical-protocol-authority",
+    "protocol authority role"
+  );
+  assertEqual(
+    body.sourceAuthority.protocol.repository,
+    "nockchain/nockchain",
+    "protocol authority repository"
+  );
+  assertIncludes(
+    body.sourceAuthority.protocol.authorityDocs,
+    "PROTOCOL.md",
+    "protocol authority includes PROTOCOL.md"
+  );
+  assertEqual(
+    body.sourceAuthority.zorpOrg.sourceRole,
+    "lineage-and-authoring-signal",
+    "Zorp source authority role"
+  );
+  assertEqual(body.sourceAuthority.zorpOrg.organization, "zorp-corp", "Zorp source authority org");
+  assertIncludes(
+    body.sourceAuthority.zorpOrg.primaryRepos,
+    "zorp-corp/jock-lang",
+    "Zorp authority tracks jock-lang"
+  );
+  assertEqual(
+    body.sourceAuthority.stateJams.sourceRole,
+    "state-artifact-provenance",
+    "state-jam source authority role"
+  );
+  assertEqual(
+    body.sourceAuthority.stateJams.url,
+    "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw",
+    "state-jam source authority URL"
+  );
+  assertIncludes(
+    body.sourceAuthority.decisionRules,
+    "Use nockchain/nockchain Tier 0 docs for protocol claims.",
+    "source authority protocol rule"
+  );
+  assertIncludes(
+    body.sourceAuthority.decisionRules,
+    "Use the Drive folder only as metadata-backed state-jam provenance, not as VESL evidence.",
+    "source authority Drive rule"
+  );
 
   const jock = findRepo(body, "jock-lang");
   assertEqual(jock.archived, false, "jock-lang active status");
@@ -116,6 +162,16 @@ async function main() {
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.zorpRepositories, 10, "checkpoint Zorp repo count");
   assertStartsWith(checkpointBody.roots.zorpUpstream, "sha256:", "checkpoint Zorp root");
+  assertIncludes(
+    checkpointBody.zorpUpstream.sourceAuthorityRoles,
+    "canonical-protocol-authority",
+    "checkpoint source authority protocol role"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.sourceAuthorityRoles,
+    "state-artifact-provenance",
+    "checkpoint source authority state role"
+  );
   assertEqual(
     checkpointBody.links.zorpUpstream,
     "https://nocksperimental.com/api/nockchain/zorp",
@@ -140,6 +196,7 @@ async function main() {
   const research = readFileSync(path.join(process.cwd(), "docs/research/zorp-nockchain.md"), "utf8");
   assertIncludes(research, "state-jam folder, not a VESL folder", "research doc corrects Drive folder");
   assertIncludes(research, "zorp-corp/jock-lang", "research doc tracks jock-lang");
+  assertIncludes(research, "Source Authority Matrix", "research doc explains source authority matrix");
 }
 
 function findRepo(body, name) {

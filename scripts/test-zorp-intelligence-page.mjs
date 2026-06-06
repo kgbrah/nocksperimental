@@ -52,6 +52,10 @@ async function main() {
 
   assertIncludes(page, "createZorpUpstreamMap", "Zorp page uses upstream map");
   assertIncludes(page, "Zorp Intelligence", "Zorp page title");
+  assertIncludes(page, "Source Authority", "Zorp page renders source authority");
+  assertIncludes(page, "canonical-protocol-authority", "Zorp page renders protocol authority role");
+  assertIncludes(page, "lineage-and-authoring-signal", "Zorp page renders Zorp authority role");
+  assertIncludes(page, "state-artifact-provenance", "Zorp page renders state artifact authority role");
   assertIncludes(page, "Monitor Brief", "Zorp page renders monitor brief");
   assertIncludes(page, "zorp-corp/jock-lang", "Zorp page renders Jock priority");
   assertIncludes(page, "zorp-corp/nockapp", "Zorp page renders NockApp lineage priority");
@@ -64,6 +68,7 @@ async function main() {
   assertIncludes(page, 'href="/nockchain"', "Zorp page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/zorp"', "Nockchain page links Zorp page");
   assertIncludes(readme, "/nockchain/zorp", "README documents Zorp page");
+  assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
   assertEqual(
     packageJson.scripts["test:zorp-intelligence-page"],
     "node scripts/test-zorp-intelligence-page.mjs",

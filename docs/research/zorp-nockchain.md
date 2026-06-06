@@ -8,6 +8,14 @@ The Google Drive folder at https://drive.google.com/drive/folders/1aEYZwmg4isTuY
 
 Zorp is the developer lineage behind the current Nockchain stack. The public Zorp organization is at https://github.com/zorp-corp. The Nockchain repository now resolves canonically to https://github.com/nockchain/nockchain.
 
+## Source Authority Matrix
+
+| Source | Role | How Nocksperimental should use it |
+| --- | --- | --- |
+| `nockchain/nockchain` | canonical-protocol-authority | Source of truth for protocol, runtime, wallet, fakenet, PMA, releases, and Tier 0 docs. |
+| `zorp-corp` public repos | lineage-and-authoring-signal | Lineage and ecosystem signal for Jock authoring, NockApp history, Sword persistence history, formal semantics, and proof-adjacent work. |
+| Zorp State Jam Drive folder | state-artifact-provenance | Metadata-only provenance source for state-jam/checkpoint artifacts; not VESL evidence and not raw data to commit or redistribute. |
+
 ## Current Repo Map
 
 | Repo | Status | Why it matters |

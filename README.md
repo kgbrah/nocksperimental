@@ -146,7 +146,7 @@ Use it when a test run depends on a downloaded Nockchain binary, wallet build, N
 
 ## Zorp/Nockchain Upstream Map
 
-The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos.
+The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos. It also exposes a source-authority matrix so receipts can distinguish canonical protocol authority, Zorp lineage/authoring signals, and metadata-only state-jam provenance.
 
 - `/api/nockchain/zorp`
 - `/nockchain/zorp`
