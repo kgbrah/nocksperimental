@@ -2,11 +2,13 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Code2,
+  FileCheck2,
   LockKeyhole,
   UsersRound
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { launchEvidenceCasesForWorkspace } from "@/lib/launch-evidence";
 import {
   privateWorkspaces,
   reportsForWorkspace,
@@ -36,6 +38,9 @@ export default async function WorkspaceDetailPage({
   const reports = reportsForWorkspace(workspace.slug);
   const verification = workspaceVerificationSummary(workspace.slug);
   const evidence = createWorkspaceEvidenceCapsule(workspace.slug);
+  const launchEvidenceCases = launchEvidenceCasesForWorkspace(workspace.slug).filter(
+    (launchCase) => launchCase.visibility !== "private"
+  );
 
   if (!evidence) {
     notFound();
@@ -124,6 +129,13 @@ export default async function WorkspaceDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
+              href="/launch-evidence"
+            >
+              Launch Evidence
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </Link>
+            <Link
+              className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
               href="/api/workspaces"
             >
               Workspace Index
@@ -139,6 +151,61 @@ export default async function WorkspaceDetailPage({
           </div>
         </article>
       </section>
+
+      {launchEvidenceCases.length > 0 ? (
+        <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+          <div className="mb-4 flex items-center gap-2">
+            <FileCheck2 size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Launch Evidence</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {launchEvidenceCases.map((launchCase) => (
+              <article
+                className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
+                key={launchCase.caseId}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="break-all font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                      {launchCase.caseId}
+                    </p>
+                    <h3 className="mt-2 text-xl font-semibold">{launchCase.subjectName}</h3>
+                    <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">
+                      {launchCase.report.publicSummary}
+                    </p>
+                  </div>
+                  <span className="w-fit border border-[#0B0B0B] bg-white px-2 py-1 font-mono text-xs uppercase">
+                    {launchCase.report.summaryStatus}
+                  </span>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <Callout label="Score" value={launchCase.report.score.toString()} />
+                  <Callout label="Status" value={launchCase.status} />
+                  <Callout label="Evidence" value={launchCase.submissions.length.toString()} />
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link
+                    className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
+                    href={toSameOriginHref(launchCase.links.page)}
+                  >
+                    Open Case
+                    <ArrowUpRight size={14} aria-hidden="true" />
+                  </Link>
+                  <Link
+                    className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
+                    href={toSameOriginHref(launchCase.links.verifier)}
+                  >
+                    Verifier
+                    <ArrowUpRight size={14} aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto max-w-6xl px-5 pb-10 lg:px-8">
         <div className="grid gap-4">

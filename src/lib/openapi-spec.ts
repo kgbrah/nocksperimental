@@ -148,6 +148,12 @@ const generatedReportVerifierEndpoint = {
   description: "Generated report evidence verifier"
 };
 
+const launchEvidenceCaseDetailEndpoint = {
+  id: "launch-evidence-case-detail",
+  path: "/api/launch-evidence/{caseId}",
+  description: "Launch Evidence case detail"
+};
+
 const fakenetEvidenceReceiptDetailEndpoint = {
   id: "fakenet-evidence-receipt-detail",
   path: "/api/fakenet/evidence/receipts/{receiptId}",
@@ -194,6 +200,7 @@ export function createOpenApiSpec() {
     generatedReportVerifierEndpoint,
     generatedReportProvenanceEndpoint,
     generatedReportEvidenceEndpoint,
+    launchEvidenceCaseDetailEndpoint,
     fakenetEvidenceReceiptDetailEndpoint,
     veslEvidenceReceiptDetailEndpoint,
     bazaarListingDetailEndpoint,
@@ -235,7 +242,8 @@ export function createOpenApiSpec() {
         endpoint.path === "/api/fakenet/connect" ||
         endpoint.path === "/api/fakenet/evidence/submit" ||
         endpoint.path === "/api/vesl/evidence/submit" ||
-        endpoint.path === "/api/nockchain/nockup/submit"
+        endpoint.path === "/api/nockchain/nockup/submit" ||
+        endpoint.path === "/api/launch-evidence/verify"
       ) {
         paths[endpoint.path].post = {
           summary: endpoint.description,
@@ -266,6 +274,10 @@ function createPostErrorDescription(path: string) {
 
   if (path === "/api/nockchain/nockup/submit") {
     return "Invalid Nockup validation submission";
+  }
+
+  if (path === "/api/launch-evidence/verify") {
+    return "Invalid Launch Evidence verification input";
   }
 
   return "Invalid VESL evidence submission";

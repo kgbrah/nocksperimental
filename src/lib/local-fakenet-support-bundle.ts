@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import { createLocalFakenetCommandKit } from "@/lib/local-fakenet-commands";
 import { createLocalFakenetDiagnostics } from "@/lib/local-fakenet-diagnostics";
 import { createLocalFakenetReadiness } from "@/lib/local-fakenet-readiness";
@@ -78,7 +80,7 @@ export function createLocalFakenetSupportBundleMarkdown(
   const artifacts = bundle.artifacts.reports.length === 0
     ? "- No generated local fakenet reports were found."
     : bundle.artifacts.reports
-        .map((report) => `- \`${report.appSlug}\` ${report.status}: \`${report.path}\``)
+        .map((report) => `- \`${report.appSlug}\` ${report.status}: \`${formatArtifactPath(report.path, options.rootDir)}\``)
         .join("\n");
 
   return [
@@ -117,4 +119,12 @@ export function createLocalFakenetSupportBundleMarkdown(
 
 function uniqueCommands(commands: string[]) {
   return Array.from(new Set(commands));
+}
+
+function formatArtifactPath(reportPath: string, rootDir = process.cwd()) {
+  const displayPath = path.isAbsolute(reportPath)
+    ? path.relative(rootDir, reportPath)
+    : reportPath;
+
+  return displayPath.replace(/\\/g, "/");
 }

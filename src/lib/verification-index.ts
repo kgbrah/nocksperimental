@@ -1,4 +1,5 @@
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
+import { createLaunchEvidenceIndex } from "@/lib/launch-evidence";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import {
   registryCanonicalBaseUrl,
@@ -46,6 +47,12 @@ const verificationEndpoints = [
     queryParameters: ["token"]
   },
   {
+    id: "launch-evidence",
+    path: "/api/launch-evidence/verify",
+    description: "Verify Launch Evidence report hashes and snapshot roots",
+    queryParameters: ["caseId", "reportHash", "snapshotRoot"]
+  },
+  {
     id: "trust-update-entry",
     path: "/api/trust/updates/verify",
     description: "Verify signed trust update entries by update id, entry hash, root, signature, or issuer key",
@@ -62,6 +69,7 @@ const verificationEndpoints = [
 export function createVerificationIndex() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
+  const launchEvidenceIndex = createLaunchEvidenceIndex();
   const workspaceEvidence = createWorkspaceEvidenceCapsule("launch-lab-private");
   const workspaceUploadToken = createWorkspaceUploadTokenSample("launch-lab-private");
   const registryCheckpoint = createRegistryCheckpoint();
@@ -119,6 +127,7 @@ export function createVerificationIndex() {
           }
         : null,
       localFakenetEvidence: createLocalFakenetEvidenceSample(localFakenetEvidence),
+      launchEvidence: createLaunchEvidenceSample(launchEvidenceIndex),
       workspaceEvidence: createWorkspaceEvidenceSample(workspaceEvidence),
       workspaceUploadToken,
       trustUpdate: sampleTrustUpdate
@@ -141,6 +150,27 @@ export function createVerificationIndex() {
       openApi: `${registryCanonicalBaseUrl}/openapi.json`,
       checkpoint: `${registryCanonicalBaseUrl}/api/registry/checkpoint`
     }
+  };
+}
+
+function createLaunchEvidenceSample(
+  launchEvidenceIndex: ReturnType<typeof createLaunchEvidenceIndex>
+) {
+  const sampleCase = launchEvidenceIndex.cases.find((launchCase) => launchCase.visibility !== "private");
+
+  if (!sampleCase) {
+    return null;
+  }
+
+  return {
+    caseId: sampleCase.caseId,
+    reportHash: sampleCase.report.reportHash,
+    snapshotRoot: sampleCase.report.snapshotRoot,
+    url: createUrl("/api/launch-evidence/verify", {
+      caseId: sampleCase.caseId,
+      reportHash: sampleCase.report.reportHash,
+      snapshotRoot: sampleCase.report.snapshotRoot
+    })
   };
 }
 
