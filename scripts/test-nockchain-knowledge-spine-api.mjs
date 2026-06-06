@@ -112,6 +112,23 @@ async function main() {
   assertIncludes(body.monitoringContract.forbiddenFields, "rawPmaSlab", "forbids raw PMA");
   assertIncludes(body.monitoringContract.forbiddenFields, "rawStateJam", "forbids raw state jam");
   assertIncludes(body.monitoringContract.forbiddenFields, "walletSeedPhrase", "forbids wallet seed");
+  assertEqual(
+    body.driftCheck.command,
+    "npm run check:nockchain-docs-drift -- --json",
+    "docs drift command"
+  );
+  assertEqual(
+    body.driftCheck.testCommand,
+    "npm run test:nockchain-docs-drift-check",
+    "docs drift test command"
+  );
+  assertIncludes(body.driftCheck.compareFields, "sha256", "docs drift compares hashes");
+  assertIncludes(body.driftCheck.documentPaths, "START_HERE.md", "docs drift path list");
+  assertIncludes(
+    body.driftCheck.sourceUrls,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md",
+    "docs drift START_HERE source URL"
+  );
 
   assertIncludes(body.expertiseLadder.map((entry) => entry.id), "orientation", "orientation ladder");
   assertIncludes(body.expertiseLadder.map((entry) => entry.id), "rust-implementation", "Rust ladder");
@@ -167,6 +184,21 @@ async function main() {
     "checkpoint forbidden seed"
   );
   assertEqual(
+    checkpointBody.nockchainKnowledgeSpine.driftCheck.command,
+    "npm run check:nockchain-docs-drift -- --json",
+    "checkpoint docs drift command"
+  );
+  assertIncludes(
+    checkpointBody.nockchainKnowledgeSpine.driftCheck.compareFields,
+    "sha256",
+    "checkpoint docs drift hash field"
+  );
+  assertIncludes(
+    checkpointBody.nockchainKnowledgeSpine.driftCheck.documentPaths,
+    "START_HERE.md",
+    "checkpoint docs drift document path"
+  );
+  assertEqual(
     checkpointBody.links.nockchainKnowledgeSpine,
     "https://nocksperimental.com/api/nockchain/knowledge-spine",
     "checkpoint knowledge spine link"
@@ -183,13 +215,33 @@ async function main() {
     "npm run test:nockchain-knowledge-spine-api",
     "full test includes knowledge spine API"
   );
+  assertEqual(
+    packageJson.scripts["check:nockchain-docs-drift"],
+    "node scripts/check-nockchain-docs-drift.mjs",
+    "package docs drift check script"
+  );
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-docs-drift-check",
+    "full test includes docs drift check"
+  );
 
   const smokeSource = readText("scripts/smoke-cloudflare-preview.mjs");
   assertIncludes(smokeSource, "/api/nockchain/knowledge-spine", "Cloudflare smoke includes knowledge spine API");
 
+  const page = readText("src/app/nockchain/knowledge-spine/page.tsx");
+  assertIncludes(page, "Drift Check", "page renders docs drift check");
+  assertIncludes(page, "npm run check:nockchain-docs-drift -- --json", "page renders docs drift command");
+  assertIncludes(
+    page,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md",
+    "page renders raw START_HERE source"
+  );
+
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Knowledge Spine", "README documents knowledge spine");
   assertIncludes(readme, "/api/nockchain/knowledge-spine", "README documents knowledge spine API");
+  assertIncludes(readme, "check:nockchain-docs-drift", "README documents docs drift command");
 }
 
 function assertDocHash(body, docPath, tier, sha256) {

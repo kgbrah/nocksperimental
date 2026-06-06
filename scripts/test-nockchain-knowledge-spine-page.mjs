@@ -26,6 +26,13 @@ async function main() {
   assertIncludes(page, "Workspace Manifest", "knowledge spine page renders workspace manifest");
   assertIncludes(page, "Coverage Matrix", "knowledge spine page renders coverage matrix");
   assertIncludes(page, "Monitoring Contract", "knowledge spine page renders monitoring contract");
+  assertIncludes(page, "Drift Check", "knowledge spine page renders drift check");
+  assertIncludes(page, "npm run check:nockchain-docs-drift -- --json", "knowledge spine page renders drift command");
+  assertIncludes(
+    page,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md",
+    "knowledge spine page renders raw START_HERE source"
+  );
   assertIncludes(page, "Expertise Ladder", "knowledge spine page renders expertise ladder");
   assertIncludes(page, "START_HERE.md", "knowledge spine page renders START_HERE");
   assertIncludes(page, "crates/nockchain-wallet/README.md", "knowledge spine page renders wallet README");

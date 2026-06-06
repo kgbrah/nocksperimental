@@ -19,6 +19,9 @@ export const dynamic = "force-dynamic";
 const highlightedDocuments = ["START_HERE.md", "PROTOCOL.md", "crates/nockchain-wallet/README.md"];
 const highlightedStartHereHash = "61f86959050831147bebb6f350be297d7a0f2f68d476c8bfac15928efebd71aa";
 const highlightedForbiddenFields = ["rawPmaSlab", "walletSeedPhrase"];
+const highlightedDocsDriftCommand = "npm run check:nockchain-docs-drift -- --json";
+const highlightedDocsDriftSourceUrl =
+  "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md";
 
 export default function NockchainKnowledgeSpinePage() {
   const spine = createNockchainKnowledgeSpine();
@@ -45,6 +48,11 @@ export default function NockchainKnowledgeSpinePage() {
   const remainingForbiddenFields = spine.monitoringContract.forbiddenFields.filter(
     (field) => !(highlightedForbiddenFields as readonly string[]).includes(field)
   );
+  const primaryDocsDriftSources = [
+    highlightedDocsDriftSourceUrl,
+    ...spine.driftCheck.sourceUrls.filter((sourceUrl) => sourceUrl !== highlightedDocsDriftSourceUrl)
+  ];
+  const docsDriftCommand = spine.driftCheck.command || highlightedDocsDriftCommand;
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -196,6 +204,41 @@ export default function NockchainKnowledgeSpinePage() {
               <div className="mt-3 grid gap-2">
                 {primaryForbiddenFields.concat(remainingForbiddenFields).map((field) => (
                   <Callout key={field} label="forbidden" value={field} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#E5F3FF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <FileCheck2 size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Drift Check</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+            {spine.driftCheck.interpretation}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="command" value={docsDriftCommand} />
+            <Callout label="testCommand" value={spine.driftCheck.testCommand} />
+            <Callout label="compareFields" value={spine.driftCheck.compareFields.join(", ")} />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div>
+              <h3 className="font-semibold">Document Paths</h3>
+              <div className="mt-3 grid gap-2">
+                {spine.driftCheck.documentPaths.map((docPath) => (
+                  <Callout key={docPath} label="path" value={docPath} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold">Raw Sources</h3>
+              <div className="mt-3 grid gap-2">
+                {primaryDocsDriftSources.map((sourceUrl) => (
+                  <Callout key={sourceUrl} label="source" value={sourceUrl} />
                 ))}
               </div>
             </div>

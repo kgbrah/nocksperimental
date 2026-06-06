@@ -59,6 +59,18 @@ const documentFingerprints = [
   }
 ] as const;
 
+const rawDocsBaseUrl = "https://raw.githubusercontent.com/nockchain/nockchain/master";
+const docsDriftCheck = {
+  command: "npm run check:nockchain-docs-drift -- --json",
+  script: "scripts/check-nockchain-docs-drift.mjs",
+  testCommand: "npm run test:nockchain-docs-drift-check",
+  sourceUrls: documentFingerprints.map((doc) => `${rawDocsBaseUrl}/${doc.path}`),
+  compareFields: ["path", "tier", "sha256"],
+  documentPaths: documentFingerprints.map((doc) => doc.path),
+  interpretation:
+    "Compares pinned Tier 0 and promoted Tier 1 Nockchain document fingerprints against raw GitHub master docs before Nocksperimental treats them as receipt authority."
+} as const;
+
 const coverageMatrix = [
   {
     id: "docs-authority",
@@ -228,6 +240,7 @@ export function createNockchainKnowledgeSpine() {
       commit: upstream.latestCommit.sha,
       url: `${upstream.links.repository}/blob/${upstream.repository.defaultBranch}/${doc.path}`
     })),
+    driftCheck: docsDriftCheck,
     workspaceManifest: {
       language: rustAtlas.workspace.language,
       resolver: rustAtlas.workspace.resolver,

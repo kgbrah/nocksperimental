@@ -247,6 +247,7 @@ export function createRegistryCheckpoint() {
       upstream: nockchainKnowledgeSpine.upstream,
       authorityReadOrder: nockchainKnowledgeSpine.authorityReadOrder,
       documentFingerprints: nockchainKnowledgeSpine.documentFingerprints,
+      driftCheck: nockchainKnowledgeSpine.driftCheck,
       workspaceManifest: nockchainKnowledgeSpine.workspaceManifest,
       coverageMatrix: nockchainKnowledgeSpine.coverageMatrix,
       monitoringContract: nockchainKnowledgeSpine.monitoringContract
@@ -519,6 +520,9 @@ export function createRegistryCheckpoint() {
         nockchainKnowledgeSpine.monitoringContract.requiredEvidence.includes(
           "workspaceMemberHash"
         ) &&
+        nockchainKnowledgeSpine.driftCheck.command ===
+          "npm run check:nockchain-docs-drift -- --json" &&
+        nockchainKnowledgeSpine.driftCheck.compareFields.includes("sha256") &&
         nockchainKnowledgeSpine.monitoringContract.forbiddenFields.includes(
           "walletSeedPhrase"
         ),
@@ -852,7 +856,13 @@ export function createRegistryCheckpoint() {
       workspaceMemberHash: nockchainKnowledgeSpine.workspaceManifest.workspaceMemberHash,
       coverageDomainIds: nockchainKnowledgeSpine.coverageMatrix.map((entry) => entry.id),
       requiredEvidence: nockchainKnowledgeSpine.monitoringContract.requiredEvidence,
-      forbiddenFields: nockchainKnowledgeSpine.monitoringContract.forbiddenFields
+      forbiddenFields: nockchainKnowledgeSpine.monitoringContract.forbiddenFields,
+      driftCheck: {
+        command: nockchainKnowledgeSpine.driftCheck.command,
+        sourceUrls: nockchainKnowledgeSpine.driftCheck.sourceUrls,
+        compareFields: nockchainKnowledgeSpine.driftCheck.compareFields,
+        documentPaths: nockchainKnowledgeSpine.driftCheck.documentPaths
+      }
     },
     nockchainProtocolTrace: {
       sourceCount: nockchainProtocolTrace.authoritySources.length,

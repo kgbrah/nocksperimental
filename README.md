@@ -143,6 +143,8 @@ The knowledge spine binds the current upstream Nockchain commit to exact SHA-256
 
 Use it when deciding whether Nocksperimental still understands the upstream source it is testing against. It records `documentFingerprints`, `workspaceMemberHash`, coverage domains, update triggers, and forbidden fields such as `rawPmaSlab`, `rawStateJam`, and `walletSeedPhrase`.
 
+Run `npm run check:nockchain-docs-drift -- --json` to compare those pinned Tier 0 and promoted Tier 1 document fingerprints against the live raw docs from `nockchain/nockchain` master before treating the knowledge spine as current receipt authority.
+
 ## Nockchain Protocol Authority Trace
 
 The protocol authority trace turns `PROTOCOL.md`, `changelog/protocol/SPECIFICATION.md`, and selected upgrade specs into a receipt-safe contract for activation state, consensus-critical posture, lifecycle status, required validation sections, and consistency alerts. It keeps 013 Nous rollout-gated networking context separate from 014 Aletheia consensus-critical activation, and it preserves the 014 status drift between the protocol index and spec frontmatter.
