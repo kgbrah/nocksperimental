@@ -26,6 +26,8 @@ const highlightedCrateNames = [
   "nockapp",
   "nockchain-wallet",
   "nockchain-api",
+  "wallet-tx-builder",
+  "nockchain-bridge-sequencer",
   "nockup"
 ];
 const highlightedWatchTheme = "PMA dynamic growth";
@@ -86,8 +88,35 @@ export default function NockchainRustAtlasPage() {
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-4 lg:px-8">
         <Metric label="Workspace" value={rustWorkspaceSummary} />
         <Metric label="Crates" value={atlas.crates.length.toString()} />
+        <Metric label="Members" value={atlas.workspace.memberCount.toString()} />
         <Metric label="Groups" value={atlas.groups.length.toString()} />
-        <Metric label="Build" value={atlas.upstream.commit.shortSha} />
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Workspace Coverage</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <Callout
+              label="trackedWorkspaceMemberCount"
+              value={atlas.workspace.coverage.trackedWorkspaceMemberCount.toString()}
+            />
+            <Callout
+              label="missingWorkspaceMembers"
+              value={
+                atlas.workspace.coverage.missingWorkspaceMembers.length === 0
+                  ? "none"
+                  : atlas.workspace.coverage.missingWorkspaceMembers.join(", ")
+              }
+            />
+            <Callout
+              label="nonWorkspaceTrackedCrates"
+              value={atlas.workspace.coverage.nonWorkspaceTrackedCrates.join(", ")}
+            />
+          </div>
+        </article>
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">

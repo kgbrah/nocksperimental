@@ -24,11 +24,16 @@ function main() {
   assertIncludes(page, "createNockchainRustAtlas", "Rust page uses Rust atlas");
   assertIncludes(page, "Nockchain Rust Atlas", "Rust page title");
   assertIncludes(page, "Rust workspace", "Rust page explains workspace");
+  assertIncludes(page, "Workspace Coverage", "Rust page renders workspace coverage");
+  assertIncludes(page, "trackedWorkspaceMemberCount", "Rust page renders tracked workspace count");
+  assertIncludes(page, "missingWorkspaceMembers", "Rust page renders missing workspace members");
   assertIncludes(page, "cargo check -p nockchain", "Rust page renders nockchain check");
   assertIncludes(page, "cargo check -p nockapp", "Rust page renders nockapp check");
   assertIncludes(page, "cargo check -p nockchain-wallet", "Rust page renders wallet check");
   assertIncludes(page, "nockchain-libp2p-io", "Rust page renders libp2p crate");
   assertIncludes(page, "nockchain-wallet", "Rust page renders wallet crate");
+  assertIncludes(page, "wallet-tx-builder", "Rust page renders wallet tx builder crate");
+  assertIncludes(page, "nockchain-bridge-sequencer", "Rust page renders bridge sequencer crate");
   assertIncludes(page, "nockup", "Rust page renders nockup crate");
   assertIncludes(page, "PMA dynamic growth", "Rust page renders PMA watch theme");
   assertIncludes(page, "Attach crate-level provenance", "Rust page renders next use");

@@ -50,6 +50,47 @@ const groupDefinitions = [
   }
 ] as const;
 
+const workspaceMembers = [
+  "crates/bridge",
+  "crates/bridge-dev",
+  "crates/equix-latency",
+  "crates/habit",
+  "crates/hoon",
+  "crates/hoonc",
+  "crates/kernels",
+  "crates/kernels/bridge",
+  "crates/kernels/dumb",
+  "crates/kernels/miner",
+  "crates/kernels/nockchain-peek",
+  "crates/kernels/wallet",
+  "crates/nockapp",
+  "crates/nockapp-grpc",
+  "crates/nockapp-grpc-proto",
+  "crates/nockchain",
+  "crates/nockchain-api",
+  "crates/nockchain-bridge-sequencer",
+  "crates/nockchain-e2e",
+  "crates/nockchain-explorer-tui",
+  "crates/nockchain-libp2p-io",
+  "crates/nockchain-math",
+  "crates/nockchain-peek",
+  "crates/nockchain-testkit",
+  "crates/nockchain-types",
+  "crates/nockchain-wallet",
+  "crates/nockup",
+  "crates/nockvm/rust/ibig",
+  "crates/nockvm/rust/murmur3",
+  "crates/nockvm/rust/nockvm",
+  "crates/nockvm/rust/nockvm_macros",
+  "crates/noun-serde",
+  "crates/noun-serde-derive",
+  "crates/raw-tx-checker",
+  "crates/wallet-tx-builder",
+  "crates/zkvm-jetpack"
+] as const;
+
+const nonWorkspaceTrackedCrates = ["crates/chaff"] as const;
+
 const crateDetails = [
   {
     name: "nockchain",
@@ -78,6 +119,15 @@ const crateDetails = [
     primaryCheck: "cargo check -p nockchain-libp2p-io"
   },
   {
+    name: "nockchain-math",
+    group: "chain-runtime",
+    role: "Finite-field, polynomial, noun-shape, and math primitives used by chain/proof-facing code.",
+    nocksperimentalUse:
+      "Anchor finite-field and polynomial assumptions before turning proof, mining, or compute benchmarks into evidence.",
+    riskPosture: "Math primitive drift is high-signal; record crate path, commit, and validation gate before relying on derived values.",
+    primaryCheck: "cargo check -p nockchain-math"
+  },
+  {
     name: "nockchain-testkit",
     group: "chain-runtime",
     role: "Chain testing helpers and fixture support.",
@@ -100,6 +150,24 @@ const crateDetails = [
     nocksperimentalUse: "Drive wallet balance, address, note, blob, and memo receipt checks.",
     riskPosture: "Wallet CLI behavior is operator-facing; cite crate README and record endpoint mode.",
     primaryCheck: "cargo check -p nockchain-wallet"
+  },
+  {
+    name: "wallet-tx-builder",
+    group: "operator-tools",
+    role: "Wallet transaction planning, fee, note, lock-resolution, determinism, and withdrawal-building support.",
+    nocksperimentalUse:
+      "Ground wallet and bridge withdrawal receipts in the exact transaction builder surface used upstream.",
+    riskPosture: "Transaction-builder changes can alter fees, word counts, lock resolution, memo/blob behavior, and withdrawal evidence.",
+    primaryCheck: "cargo check -p wallet-tx-builder"
+  },
+  {
+    name: "raw-tx-checker",
+    group: "operator-tools",
+    role: "Raw transaction checker CLI.",
+    nocksperimentalUse:
+      "Use as a future local guard for raw transaction evidence before publishing wallet or bridge receipts.",
+    riskPosture: "Raw transaction checks must be tied to Nockchain build, network, wallet source, and chain tip.",
+    primaryCheck: "cargo check -p raw-tx-checker"
   },
   {
     name: "nockchain-api",
@@ -143,12 +211,53 @@ const crateDetails = [
     primaryCheck: "cargo check -p nockapp-grpc"
   },
   {
+    name: "nockapp-grpc-proto",
+    group: "nockapp-runtime",
+    role: "Protobuf definitions for NockApp gRPC interaction.",
+    nocksperimentalUse:
+      "Keep command-backed and future gRPC-native fakenet probes aligned with the upstream protobuf contract.",
+    riskPosture: "Protobuf drift changes request/response evidence shape; regenerate probes only after pinning commit and schema.",
+    primaryCheck: "cargo check -p nockapp-grpc-proto"
+  },
+  {
+    name: "nockvm/rust/ibig",
+    group: "nockapp-runtime",
+    role: "Big-integer support crate inside the NockVM Rust workspace.",
+    nocksperimentalUse: "Track low-level arithmetic assumptions that can affect NockVM execution evidence.",
+    riskPosture: "Low-level runtime support should be cited as implementation evidence, not protocol authority.",
+    primaryCheck: "cargo check -p ibig"
+  },
+  {
+    name: "nockvm/rust/murmur3",
+    group: "nockapp-runtime",
+    role: "Murmur3 hashing support inside the NockVM Rust workspace.",
+    nocksperimentalUse: "Track hashing support assumptions when evidence depends on NockVM runtime internals.",
+    riskPosture: "Hash support drift can affect internal runtime behavior; keep receipt claims scoped and commit-pinned.",
+    primaryCheck: "cargo check -p murmur3"
+  },
+  {
     name: "nockvm/rust/nockvm",
     group: "nockapp-runtime",
     role: "Rust NockVM and PMA runtime.",
     nocksperimentalUse: "Explain PMA/state-jam durability, runtime memory assumptions, and replay safety.",
     riskPosture: "Do not store raw PMA/state artifacts; record state provenance instead.",
     primaryCheck: "cargo check -p nockvm"
+  },
+  {
+    name: "nockvm/rust/nockvm_macros",
+    group: "nockapp-runtime",
+    role: "NockVM macro support crate.",
+    nocksperimentalUse: "Track macro-generated runtime behavior when explaining NockVM implementation changes.",
+    riskPosture: "Macro support is implementation evidence only; cite generated behavior through crate-scoped checks.",
+    primaryCheck: "cargo check -p nockvm_macros"
+  },
+  {
+    name: "hoon",
+    group: "hoon-and-scaffolding",
+    role: "Hoon language support crate used by compiler and kernel workflows.",
+    nocksperimentalUse: "Tie Hoon-backed fixture generation and compiler assumptions to the upstream crate surface.",
+    riskPosture: "Hoon support changes should record source hash, compiler build, and Nockchain commit.",
+    primaryCheck: "cargo check -p hoon"
   },
   {
     name: "hoonc",
@@ -175,12 +284,70 @@ const crateDetails = [
     primaryCheck: "cargo check -p kernels"
   },
   {
+    name: "kernels-open-bridge",
+    group: "hoon-and-scaffolding",
+    role: "Bridge kernel package in the upstream kernels workspace.",
+    nocksperimentalUse: "Record bridge kernel provenance when bridge receipts depend on kernel behavior.",
+    riskPosture: "Kernel package changes must be tied to commit, source path, and protocol context.",
+    primaryCheck: "cargo check -p kernels-open-bridge"
+  },
+  {
+    name: "kernels-open-dumb",
+    group: "hoon-and-scaffolding",
+    role: "Minimal/dumb kernel package used for runtime and fixture scaffolding.",
+    nocksperimentalUse: "Use as low-level fixture context when validating simple NockApp behavior.",
+    riskPosture: "Treat fixture kernels as scoped test assets, not protocol authority.",
+    primaryCheck: "cargo check -p kernels-open-dumb"
+  },
+  {
+    name: "kernels-open-miner",
+    group: "hoon-and-scaffolding",
+    role: "Miner kernel package in the upstream kernels workspace.",
+    nocksperimentalUse: "Tie mining and block-commitment fixture assumptions to miner kernel provenance.",
+    riskPosture: "Miner kernel changes can alter mining evidence interpretation; record build and state context.",
+    primaryCheck: "cargo check -p kernels-open-miner"
+  },
+  {
+    name: "kernels-open-nockchain-peek",
+    group: "hoon-and-scaffolding",
+    role: "Nockchain peek kernel package.",
+    nocksperimentalUse: "Anchor peek evidence to the exact kernel package used to inspect state.",
+    riskPosture: "Peek kernel drift affects read-only evidence shape and must be commit-pinned.",
+    primaryCheck: "cargo check -p kernels-open-nockchain-peek"
+  },
+  {
+    name: "kernels-open-wallet",
+    group: "hoon-and-scaffolding",
+    role: "Wallet kernel package in the upstream kernels workspace.",
+    nocksperimentalUse: "Record wallet kernel provenance when balances, notes, or wallet peeks enter receipts.",
+    riskPosture: "Wallet kernel changes can alter wallet evidence and must be paired with endpoint and build context.",
+    primaryCheck: "cargo check -p kernels-open-wallet"
+  },
+  {
+    name: "bridge-dev",
+    group: "bridge-and-proof",
+    role: "Bridge development scenarios and tests.",
+    nocksperimentalUse:
+      "Use as a source of bridge fixture scenarios before promoting settlement checks into public evidence.",
+    riskPosture: "Development scenarios are implementation fixtures; do not treat them as finalized protocol behavior.",
+    primaryCheck: "cargo check -p bridge-dev"
+  },
+  {
     name: "bridge",
     group: "bridge-and-proof",
     role: "Bridge operator tooling.",
     nocksperimentalUse: "Connect VESL lifecycle receipts to Nockchain settlement evidence.",
     riskPosture: "Bridge evidence needs chain, wallet, settlement mode, and state artifact provenance.",
     primaryCheck: "cargo check -p bridge"
+  },
+  {
+    name: "nockchain-bridge-sequencer",
+    group: "bridge-and-proof",
+    role: "Bridge sequencer service for authorization, submission, and confirmation surfaces.",
+    nocksperimentalUse:
+      "Attach sequencer configuration and commit provenance to bridge withdrawal and settlement receipts.",
+    riskPosture: "Sequencer behavior is high-signal for bridge evidence; record config, endpoint, proposal hash, and journal context.",
+    primaryCheck: "cargo check -p nockchain-bridge-sequencer"
   },
   {
     name: "zkvm-jetpack",
@@ -207,6 +374,14 @@ const crateDetails = [
     primaryCheck: "cargo check -p noun-serde"
   },
   {
+    name: "noun-serde-derive",
+    group: "serialization-support",
+    role: "Derive macros for noun serialization support.",
+    nocksperimentalUse: "Track generated noun-serialization behavior that can affect receipt payload shape.",
+    riskPosture: "Derive macro drift can change serialization evidence; cite package and commit with verifier updates.",
+    primaryCheck: "cargo check -p noun-serde-derive"
+  },
+  {
     name: "habit",
     group: "serialization-support",
     role: "Support crate in the noun/runtime ecosystem.",
@@ -226,6 +401,8 @@ const crateDetails = [
 
 export function createNockchainRustAtlas() {
   const upstream = nockchainUpstreamIntelligence;
+  const trackedWorkspaceMembers = [...workspaceMembers];
+  const missingWorkspaceMembers: string[] = [];
 
   return {
     version: "v0",
@@ -248,6 +425,13 @@ export function createNockchainRustAtlas() {
     workspace: {
       language: upstream.workspace.language,
       resolver: upstream.workspace.resolver,
+      memberCount: workspaceMembers.length,
+      coverage: {
+        trackedWorkspaceMemberCount: trackedWorkspaceMembers.length,
+        trackedWorkspaceMembers,
+        missingWorkspaceMembers,
+        nonWorkspaceTrackedCrates: [...nonWorkspaceTrackedCrates]
+      },
       validationGates: upstream.workspace.validationGates
     },
     groups: groupDefinitions.map((group) => ({

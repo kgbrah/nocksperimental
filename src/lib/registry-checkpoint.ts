@@ -73,6 +73,7 @@ export function createRegistryCheckpoint() {
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
+    nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
@@ -227,6 +228,10 @@ export function createRegistryCheckpoint() {
         nockchainProtocolTrace.authoritySources.length > 0 &&
         nockchainProtocolTrace.releaseTrack.latestConsensusCritical.statusDrift === true,
       nockchainRustAtlasAvailable: nockchainRustAtlas.crates.length > 0,
+      nockchainRustWorkspaceCovered:
+        nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount ===
+          nockchainRustAtlas.workspace.memberCount &&
+        nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers.length === 0,
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
         nockchainOperationsAtlas.scriptSources.length > 0,
@@ -323,7 +328,12 @@ export function createRegistryCheckpoint() {
       crateCount: nockchainRustAtlas.crates.length,
       groupCount: nockchainRustAtlas.groups.length,
       validationGates: nockchainRustAtlas.workspace.validationGates,
-      watchThemes: nockchainRustAtlas.watchThemes
+      watchThemes: nockchainRustAtlas.watchThemes,
+      workspaceMemberCount: nockchainRustAtlas.workspace.memberCount,
+      trackedWorkspaceMemberCount:
+        nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount,
+      missingWorkspaceMembers: nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers,
+      nonWorkspaceTrackedCrates: nockchainRustAtlas.workspace.coverage.nonWorkspaceTrackedCrates
     },
     nockchainOperationsAtlas: {
       scenarioCount: nockchainOperationsAtlas.triageScenarios.length,

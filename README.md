@@ -165,7 +165,7 @@ Use it when a fakenet receipt or bootstrap workflow needs to explain which state
 
 ## Nockchain Rust Workspace Atlas
 
-The Rust workspace atlas breaks the upstream Nockchain monorepo into crate groups with roles, primary cargo checks, risk posture, and Nocksperimental integration uses. It highlights chain runtime, operator tools, NockApp runtime, Hoon/nockup scaffolding, bridge/proof, and serialization support crates.
+The Rust workspace atlas breaks the upstream Nockchain monorepo into crate groups with roles, primary cargo checks, risk posture, and Nocksperimental integration uses. It tracks all 36 upstream workspace members, plus the extra `chaff` support lineage crate, and highlights chain runtime, operator tools, NockApp runtime, Hoon/nockup scaffolding, bridge/proof, and serialization support crates.
 
 - `/nockchain/rust`
 - `/api/nockchain/rust-atlas`

@@ -32,6 +32,29 @@ async function main() {
   );
   assertEqual(body.workspace.language, "Rust", "workspace language");
   assertEqual(body.workspace.resolver, "2", "workspace resolver");
+  assertEqual(body.workspace.memberCount, 36, "workspace member count");
+  assertEqual(body.workspace.coverage.trackedWorkspaceMemberCount, 36, "tracked workspace member count");
+  assertEqual(body.workspace.coverage.missingWorkspaceMembers.length, 0, "missing workspace member count");
+  assertIncludes(
+    body.workspace.coverage.trackedWorkspaceMembers,
+    "crates/wallet-tx-builder",
+    "workspace coverage includes wallet-tx-builder"
+  );
+  assertIncludes(
+    body.workspace.coverage.trackedWorkspaceMembers,
+    "crates/nockchain-bridge-sequencer",
+    "workspace coverage includes bridge sequencer"
+  );
+  assertIncludes(
+    body.workspace.coverage.trackedWorkspaceMembers,
+    "crates/kernels/wallet",
+    "workspace coverage includes wallet kernel"
+  );
+  assertIncludes(
+    body.workspace.coverage.nonWorkspaceTrackedCrates,
+    "crates/chaff",
+    "workspace coverage preserves chaff lineage"
+  );
   assertIncludes(body.workspace.validationGates, "cargo check -p nockchain", "nockchain check gate");
   assertIncludes(body.workspace.validationGates, "cargo check -p nockapp", "nockapp check gate");
   assertIncludes(body.workspace.validationGates, "cargo check -p nockchain-wallet", "wallet check gate");
@@ -41,12 +64,12 @@ async function main() {
     "clippy gate"
   );
 
-  assertGroup(body, "chain-runtime", ["nockchain", "nockchain-libp2p-io", "nockchain-testkit"]);
-  assertGroup(body, "nockapp-runtime", ["nockapp", "nockvm/rust/nockvm", "nockapp-grpc"]);
-  assertGroup(body, "operator-tools", ["nockchain-wallet", "nockchain-api", "nockchain-peek"]);
-  assertGroup(body, "hoon-and-scaffolding", ["hoonc", "nockup", "kernels"]);
-  assertGroup(body, "bridge-and-proof", ["bridge", "zkvm-jetpack", "equix-latency"]);
-  assertGroup(body, "serialization-support", ["noun-serde", "habit", "chaff"]);
+  assertGroup(body, "chain-runtime", ["nockchain", "nockchain-libp2p-io", "nockchain-testkit", "nockchain-math"]);
+  assertGroup(body, "nockapp-runtime", ["nockapp", "nockvm/rust/nockvm", "nockapp-grpc", "nockapp-grpc-proto"]);
+  assertGroup(body, "operator-tools", ["nockchain-wallet", "nockchain-api", "nockchain-peek", "wallet-tx-builder", "raw-tx-checker"]);
+  assertGroup(body, "hoon-and-scaffolding", ["hoon", "hoonc", "nockup", "kernels", "kernels-open-wallet"]);
+  assertGroup(body, "bridge-and-proof", ["bridge", "bridge-dev", "nockchain-bridge-sequencer", "zkvm-jetpack", "equix-latency"]);
+  assertGroup(body, "serialization-support", ["noun-serde", "noun-serde-derive", "habit", "chaff"]);
 
   assertCrate(body, "nockchain", "chain-runtime", "fakenet receipts");
   assertCrate(body, "nockchain-libp2p-io", "chain-runtime", "peer");
@@ -54,6 +77,11 @@ async function main() {
   assertCrate(body, "nockchain-wallet", "operator-tools", "wallet");
   assertCrate(body, "nockchain-api", "operator-tools", "alpha/test-grade");
   assertCrate(body, "nockup", "hoon-and-scaffolding", "build/run receipts");
+  assertCrate(body, "wallet-tx-builder", "operator-tools", "withdrawal");
+  assertCrate(body, "nockchain-bridge-sequencer", "bridge-and-proof", "sequencer");
+  assertCrate(body, "raw-tx-checker", "operator-tools", "raw transaction");
+  assertCrate(body, "nockchain-math", "chain-runtime", "finite-field");
+  assertCrate(body, "nockapp-grpc-proto", "nockapp-runtime", "protobuf");
 
   assertIncludes(body.watchThemes, "#125 fix(nockup): harden templates and run UX", "nockup watch PR");
   assertIncludes(body.watchThemes, "#116 wallet blobs and memo support", "wallet watch PR");
@@ -90,7 +118,18 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertGreaterThan(checkpointBody.counts.nockchainRustCrates, 10, "checkpoint rust crate count");
+  assertEqual(checkpointBody.counts.nockchainRustWorkspaceMembers, 36, "checkpoint rust workspace member count");
   assertStartsWith(checkpointBody.roots.nockchainRustAtlas, "sha256:", "checkpoint rust atlas root");
+  assertEqual(
+    checkpointBody.nockchainRustAtlas.missingWorkspaceMembers.length,
+    0,
+    "checkpoint missing rust workspace members"
+  );
+  assertEqual(
+    checkpointBody.checks.nockchainRustWorkspaceCovered,
+    true,
+    "checkpoint rust workspace coverage"
+  );
   assertEqual(
     checkpointBody.links.nockchainRustAtlas,
     "https://nocksperimental.com/api/nockchain/rust-atlas",
@@ -110,6 +149,7 @@ async function main() {
 
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "Nockchain Rust Workspace Atlas", "README documents Rust atlas");
+  assertIncludes(readme, "36 upstream workspace members", "README documents Rust workspace coverage");
   assertIncludes(readme, "/api/nockchain/rust-atlas", "README documents Rust atlas endpoint");
 }
 
