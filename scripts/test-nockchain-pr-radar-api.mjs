@@ -36,12 +36,12 @@ async function main() {
   );
 
   assertEqual(body.snapshot.openPullRequestCount, 35, "open PR count");
-  assertEqual(body.snapshot.openIssueCount, 0, "open issue count");
+  assertEqual(body.snapshot.openIssueCount, 1, "open issue count");
   assertEqual(body.snapshot.draftCount, 11, "draft PR count");
   assertEqual(body.snapshot.highPriorityCount, 20, "high priority PR count");
   assertEqual(body.snapshot.latestUpdatedAt, "2026-06-06T00:07:44Z", "latest PR update");
   assertEqual(body.pullRequests.length, 35, "tracked PR count");
-  assertEqual(body.openIssues.length, 0, "tracked issue count");
+  assertEqual(body.openIssues.length, 1, "tracked issue count");
 
   assertPr(body, 125, "nockup-fixture-manifest", "high", true, "nockupValidation");
   assertPr(body, 113, "pma-runtime-persistence", "high", true, "stateJamRegistry");
@@ -100,6 +100,11 @@ async function main() {
   assertIncludes(pr83.title, "grpc", "PR 83 title");
   assertIncludes(pr83.receiptFields, "grpcMaxMessageBytes", "PR 83 gRPC limit field");
 
+  const issue121 = findIssue(body, 121);
+  assertEqual(issue121.riskClass, "runtime-stack-frame-safety", "issue 121 risk class");
+  assertIncludes(issue121.targetSurfaces, "nockvmRuntimeSafety", "issue 121 target surface");
+  assertIncludes(issue121.receiptFields, "stackFramePointerRange", "issue 121 receipt field");
+
   const riskClassIds = body.riskClasses.map((riskClass) => riskClass.id);
   assertIncludes(riskClassIds, "nockup-fixture-manifest", "nockup risk class");
   assertIncludes(riskClassIds, "wallet-transaction-metadata", "wallet risk class");
@@ -110,6 +115,7 @@ async function main() {
   assertIncludes(riskClassIds, "pma-runtime-persistence", "PMA risk class");
   assertIncludes(riskClassIds, "offline-wallet-signing", "offline wallet risk class");
   assertIncludes(riskClassIds, "x402-agentic-payments", "x402 risk class");
+  assertIncludes(riskClassIds, "runtime-stack-frame-safety", "runtime stack frame risk class");
   assertIncludes(riskClassIds, "jam-cue-hardening", "jam cue risk class");
   assertIncludes(riskClassIds, "p2p-jam-cue-hardening", "p2p jam cue risk class");
   assertIncludes(riskClassIds, "grpc-message-size", "gRPC risk class");
@@ -188,13 +194,14 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainOpenPullRequests, 35, "checkpoint PR count");
-  assertEqual(checkpointBody.counts.nockchainOpenIssues, 0, "checkpoint issue count");
+  assertEqual(checkpointBody.counts.nockchainOpenIssues, 1, "checkpoint issue count");
   assertGreaterThan(checkpointBody.counts.nockchainPrRiskClasses, 5, "checkpoint risk class count");
   assertStartsWith(checkpointBody.roots.nockchainPrRadar, "sha256:", "checkpoint PR radar root");
   assertEqual(checkpointBody.checks.nockchainPrRadarAvailable, true, "checkpoint PR radar check");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 116, "checkpoint high priority wallet PR");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 113, "checkpoint high priority PMA PR");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 94, "checkpoint high priority jam PR");
+  assertIncludes(checkpointBody.nockchainPrRadar.openIssueNumbers, 121, "checkpoint open runtime issue");
   assertIncludes(
     checkpointBody.nockchainPrRadar.targetSurfaces,
     "nockchainWalletAtlas",
@@ -259,6 +266,16 @@ function findRiskClass(body, id) {
   }
 
   return riskClass;
+}
+
+function findIssue(body, number) {
+  const issue = body.openIssues.find((candidate) => candidate.number === number);
+
+  if (!issue) {
+    throw new Error(`Missing issue: ${number}`);
+  }
+
+  return issue;
 }
 
 function loadTypeScriptModule(relativePath) {

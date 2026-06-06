@@ -765,7 +765,20 @@ type OpenIssue = {
   nocksperimentalAction: string;
 };
 
-const openIssues: OpenIssue[] = [];
+const openIssues: OpenIssue[] = [
+  createOpenIssue({
+    number: 121,
+    title: "NockStack::is_in_frame panics in debug on pointers outside the stack arena",
+    updatedAt: "2026-05-18T19:33:14Z",
+    author: "nocktoshi",
+    riskClass: "runtime-stack-frame-safety",
+    priority: "high",
+    receiptFields: ["stackFramePointerRange", "debugPanicMode", "runtimeSafetyCheck"],
+    forbiddenFields: ["rawCoreDump", "rawPmaSlab"],
+    nocksperimentalAction:
+      "Track issue #121 before changing runtime stack-frame safety diagnostics or local fakenet panic triage."
+  })
+];
 
 const reviewContract = {
   requiredFields: [
@@ -838,6 +851,7 @@ export function createNockchainPrRadar() {
       "Review PR #113/#112/#107/#104 before trusting PMA snapshot, event-log, or state-jam assumptions.",
       "Review PR #116 before publishing wallet transaction metadata receipts.",
       "Review PR #103 before changing offline/cold wallet signing receipts.",
+      "Track issue #121 before changing runtime stack-frame safety diagnostics.",
       "Review PR #119 before trusting live NockApp state export snapshots.",
       "Review PR #126 before claiming Rust benchmarking coverage.",
       "Review PR #124 as compute/proof benchmark material, not current Nockchain runtime authority.",
@@ -900,6 +914,52 @@ function createPullRequest({
     url: `${repositoryUrl}/pull/${number}`,
     status: "open",
     draft,
+    updatedAt,
+    author,
+    riskClass,
+    priority,
+    sourceAuthority: risk.sourceAuthority,
+    targetSurfaces: risk.targetSurfaces,
+    receiptImpact: risk.receiptImpact,
+    verificationCommand: risk.verificationCommand,
+    receiptFields,
+    forbiddenFields,
+    nocksperimentalAction
+  };
+}
+
+function createOpenIssue({
+  number,
+  title,
+  updatedAt,
+  author,
+  riskClass,
+  priority,
+  receiptFields,
+  forbiddenFields,
+  nocksperimentalAction
+}: {
+  number: number;
+  title: string;
+  updatedAt: string;
+  author: string;
+  riskClass: (typeof riskClasses)[number]["id"];
+  priority: "high" | "medium" | "watch";
+  receiptFields: string[];
+  forbiddenFields: string[];
+  nocksperimentalAction: string;
+}): OpenIssue {
+  const risk = riskClasses.find((candidate) => candidate.id === riskClass);
+
+  if (!risk) {
+    throw new Error(`Unknown Nockchain issue risk class: ${riskClass}`);
+  }
+
+  return {
+    number,
+    title,
+    url: `${repositoryUrl}/issues/${number}`,
+    status: "open",
     updatedAt,
     author,
     riskClass,

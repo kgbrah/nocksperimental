@@ -22,6 +22,7 @@ const priorityRiskClasses = [
   "benchmarking",
   "compute-proof-puzzle",
   "runtime-stack-size",
+  "runtime-stack-frame-safety",
   "jam-cue-hardening",
   "grpc-message-size"
 ] as const;
@@ -35,6 +36,7 @@ const pr100Label = "PR #100";
 const pr94Label = "PR #94";
 const pr83Label = "PR #83";
 const pr79Label = "PR #79";
+const issue121Label = "Issue #121";
 const noOpenIssuesLabel = "No open non-PR issues";
 
 export default function NockchainPrRadarPage() {
@@ -124,7 +126,8 @@ export default function NockchainPrRadarPage() {
             <Callout label={pr113Label} value={radar.operatorQueue[1]} />
             <Callout label={pr116Label} value={radar.operatorQueue[2]} />
             <Callout label={pr103Label} value={radar.operatorQueue[3]} />
-            <Callout label={pr119Label} value={radar.operatorQueue[4]} />
+            <Callout label={issue121Label} value={radar.operatorQueue[4]} />
+            <Callout label={pr119Label} value={radar.operatorQueue[5]} />
             <Callout
               label={pr100Label}
               value="Track PMA checkpoint-stream persistence before changing state-artifact provenance."
@@ -141,7 +144,7 @@ export default function NockchainPrRadarPage() {
               label={pr79Label}
               value="Track peek v1 transaction support before changing transaction inspection receipts."
             />
-            {radar.operatorQueue.slice(5).map((item) => (
+            {radar.operatorQueue.slice(6).map((item) => (
               <Callout key={item} label="review" value={item} />
             ))}
           </div>

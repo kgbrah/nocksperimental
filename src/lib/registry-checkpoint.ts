@@ -448,7 +448,7 @@ export function createRegistryCheckpoint() {
         ),
       nockchainPrRadarAvailable:
         nockchainPrRadar.pullRequests.length === 35 &&
-        nockchainPrRadar.openIssues.length === 0 &&
+        nockchainPrRadar.openIssues.length === 1 &&
         nockchainPrRadar.riskClasses.length >= 6 &&
         nockchainPrRadar.pullRequests.some(
           (pullRequest) =>
@@ -473,6 +473,12 @@ export function createRegistryCheckpoint() {
             pullRequest.number === 93 &&
             pullRequest.riskClass === "p2p-jam-cue-hardening" &&
             (pullRequest.targetSurfaces as readonly string[]).includes("nockchainSyncGossipTrace")
+        ) &&
+        nockchainPrRadar.openIssues.some(
+          (issue) =>
+            issue.number === 121 &&
+            issue.riskClass === "runtime-stack-frame-safety" &&
+            (issue.targetSurfaces as readonly string[]).includes("nockvmRuntimeSafety")
         ) &&
         nockchainPrRadar.reviewContract.forbiddenFields.includes("walletSeedPhrase"),
       nockchainSyncGossipTraceAvailable:

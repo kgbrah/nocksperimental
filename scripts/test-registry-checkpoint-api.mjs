@@ -29,7 +29,7 @@ async function main() {
   assertGreaterThan(body.counts.generatedReports, 0, "generated report count");
   assertGreaterThan(body.counts.localFakenetReports, 0, "local fakenet report count");
   assertEqual(body.counts.nockchainOpenPullRequests, 35, "Nockchain open PR count");
-  assertEqual(body.counts.nockchainOpenIssues, 0, "Nockchain open issue count");
+  assertEqual(body.counts.nockchainOpenIssues, 1, "Nockchain open issue count");
   assertEqual(body.counts.zorpMonitorReviewClasses, 5, "Zorp monitor review class count");
   assertGreaterThan(body.counts.trustUpdates, 0, "trust update count");
   assertEqual(body.checks.appendOnlyTrustUpdates, true, "append-only trust updates");
