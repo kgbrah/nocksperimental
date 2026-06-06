@@ -6,6 +6,7 @@ import process from "node:process";
 const commands = [
   ["npm", ["run", "test:launch-evidence-api"]],
   ["npm", ["run", "test:launch-evidence-pages"]],
+  ["npm", ["run", "lab:ci"]],
   ["npm", ["run", "test:registry-manifest"]],
   ["npm", ["run", "test:well-known-manifest"]],
   ["npm", ["run", "test:openapi-spec"]],

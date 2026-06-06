@@ -19,9 +19,11 @@ main().catch((error) => {
 
 async function main() {
   const { GET } = loadTypeScriptModule("src/app/api/fakenet/evidence/verify/route.ts");
+  const { GET: getVerificationIndex } = loadTypeScriptModule("src/app/api/verify/route.ts");
   const readyRoot = await createEvidenceRoot("ready");
   const blockedRoot = await createEvidenceRoot("blocked");
   const originalCwd = process.cwd();
+  let verificationBody = null;
 
   try {
     process.chdir(readyRoot);
@@ -68,6 +70,9 @@ async function main() {
     assertEqual(mismatchBody.checks.blockCommitmentMatched, false, "mismatch block commitment check");
     assertEqual(mismatchBody.checks.generatedAtMatched, true, "mismatch generatedAt still matched");
 
+    const verificationIndex = await getVerificationIndex();
+    verificationBody = await verificationIndex.json();
+
     process.chdir(blockedRoot);
     const blockedResponse = await GET(new Request(createVerifyRequestUrl({
       generatedAt: "2026-06-04T10:01:00.000Z",
@@ -92,8 +97,9 @@ async function main() {
     process.chdir(originalCwd);
   }
 
-  const verificationIndex = await loadTypeScriptModule("src/app/api/verify/route.ts").GET();
-  const verificationBody = await verificationIndex.json();
+  if (!verificationBody) {
+    throw new Error("verification index body: expected local fakenet sample from ready evidence root");
+  }
 
   assertVerifier(
     verificationBody,
