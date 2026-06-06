@@ -39,7 +39,7 @@ async function main() {
   assertEqual(body.snapshot.openIssueCount, 1, "open issue count");
   assertEqual(body.snapshot.draftCount, 11, "draft PR count");
   assertEqual(body.snapshot.highPriorityCount, 20, "high priority PR count");
-  assertEqual(body.snapshot.latestUpdatedAt, "2026-06-06T00:07:44Z", "latest PR update");
+  assertEqual(body.snapshot.latestUpdatedAt, "2026-06-06T16:03:42Z", "latest PR update");
   assertEqual(body.pullRequests.length, 35, "tracked PR count");
   assertEqual(body.openIssues.length, 1, "tracked issue count");
 

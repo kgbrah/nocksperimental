@@ -297,7 +297,7 @@ const pullRequests = [
     number: 125,
     title: "fix(nockup): render template manifests from hbs sources",
     draft: true,
-    updatedAt: "2026-06-06T00:07:44Z",
+    updatedAt: "2026-06-06T16:03:42Z",
     author: "davetist",
     riskClass: "nockup-fixture-manifest",
     priority: "high",
