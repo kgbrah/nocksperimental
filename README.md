@@ -137,7 +137,7 @@ Use it when a VESL, x402, fakenet, or bridge-settlement receipt depends on withd
 
 ## Nockchain Release Asset Manifest
 
-The release asset manifest records metadata for the current Nockchain build release: binary tarballs for `nockchain`, `nockchain-wallet`, `nockup`, `hoon`, `hoonc`, plus `nockchain-manifest.toml`. It groups assets by tool and platform so local fakenet, wallet, and Nockup receipts can cite the exact upstream binary source without storing downloaded artifacts.
+The release asset manifest records metadata for the current Nockchain build release: binary tarballs for `nockchain`, `nockchain-wallet`, `nockup`, `hoon`, `hoonc`, plus `nockchain-manifest.toml`. It groups assets by tool and platform, preserves BLAKE3 and SHA1 hashes from the upstream manifest, and makes local fakenet, wallet, and Nockup receipts cite the exact upstream binary source without storing downloaded artifacts.
 
 - `/nockchain/releases`
 - `/api/nockchain/release-assets`

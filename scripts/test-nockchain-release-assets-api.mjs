@@ -38,6 +38,24 @@ async function main() {
   assertEqual(body.release.assetCount, 16, "release asset count");
   assertEqual(body.release.commitMatchesTag, true, "release tag commit match");
   assertEqual(body.release.manifestPresent, true, "release manifest present");
+  assertEqual(body.manifest.version, "1", "manifest version");
+  assertEqual(body.manifest.date, "2026-06-06", "manifest date");
+  assertEqual(
+    body.manifest.commit,
+    "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "manifest commit"
+  );
+  assertEqual(body.manifest.commitShort, "33ba97b", "manifest short commit");
+  assertEqual(body.manifest.targetCount, 15, "manifest target count");
+  assertEqual(body.manifest.hashes.hashBlake3Count, 15, "manifest BLAKE3 hash count");
+  assertEqual(body.manifest.hashes.hashSha1Count, 15, "manifest SHA1 hash count");
+  assertEqual(body.manifest.coverage.hashedAssetCount, 15, "hashed asset count");
+  assertEqual(body.manifest.coverage.unhashedAssetCount, 1, "unhashed asset count");
+  assertIncludes(
+    body.manifest.coverage.assetsWithoutManifestHashes,
+    "nockchain-manifest.toml",
+    "manifest asset is un-hashed by itself"
+  );
   assertIncludes(body.release.platformTriples, "aarch64-apple-darwin", "mac arm64 platform");
   assertIncludes(body.release.platformTriples, "aarch64-unknown-linux-gnu", "linux arm64 platform");
   assertIncludes(body.release.platformTriples, "x86_64-unknown-linux-gnu", "linux x64 platform");
@@ -53,29 +71,44 @@ async function main() {
     tool: "nockchain",
     platform: "x86_64-unknown-linux-gnu",
     size: 52807818,
-    kind: "binary-tarball"
+    kind: "binary-tarball",
+    hashBlake3: "46ef027463b3bccfa1d3ddc7de4a80d5884a6452e3a2119aac264353b20ff5cb",
+    hashSha1: "5e5126ec561c1bfd0677ce8eff79d93bdceb3ee9"
   });
   assertAsset(body, "nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz", {
     tool: "nockchain-wallet",
     platform: "aarch64-unknown-linux-gnu",
     size: 31816862,
-    kind: "binary-tarball"
+    kind: "binary-tarball",
+    hashBlake3: "e57a287abc5adf1a227e3737134c6e87398d1163d567d5a7d61529241142bedc",
+    hashSha1: "059b7a54d64d161930c5803a1e046c28245ccda4"
   });
   assertAsset(body, "nockup-x86_64-unknown-linux-gnu.tar.gz", {
     tool: "nockup",
     platform: "x86_64-unknown-linux-gnu",
     size: 11382286,
-    kind: "binary-tarball"
+    kind: "binary-tarball",
+    hashBlake3: "7ff15ecdf36ac4d06818a4a73d0b59afda4c1b56f10a71155f5d0399cea45940",
+    hashSha1: "d7e2fcf6199f2948f62c3d6ba87a854afa843091"
   });
   assertAsset(body, "nockchain-manifest.toml", {
     tool: "manifest",
     platform: "all",
     size: 6686,
-    kind: "release-manifest"
+    kind: "release-manifest",
+    hashBlake3: null,
+    hashSha1: null
+  });
+  assertManifestTarget(body, "hoon", "x86_64-unknown-linux-gnu", {
+    assetName: "hoon-x86_64-unknown-linux-gnu.tar.gz",
+    hashBlake3: "d9b0a8e3f1542166de5fb5f8de70383a588e1f273a2fd41329d7a8c546c061b9",
+    hashSha1: "c1cea5a0b572b4a407a9db86cd68f47a0df39e4c"
   });
 
   assertIncludes(body.provenance.requiredReceiptFields, "nockchainReleaseAsset", "asset receipt field");
   assertIncludes(body.provenance.requiredReceiptFields, "releaseManifestUrl", "manifest receipt field");
+  assertIncludes(body.provenance.requiredReceiptFields, "releaseAssetHashBlake3", "BLAKE3 receipt field");
+  assertIncludes(body.provenance.requiredReceiptFields, "releaseAssetHashSha1", "SHA1 receipt field");
   assertIncludes(
     body.provenance.operatorChecklist,
     "Record the exact release asset name and URL before using a downloaded binary for fakenet, wallet, or Nockup evidence.",
@@ -116,8 +149,14 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainReleaseAssets, 16, "checkpoint release asset count");
+  assertEqual(checkpointBody.counts.nockchainReleaseManifestTargets, 15, "checkpoint manifest target count");
   assertStartsWith(checkpointBody.roots.nockchainReleaseAssets, "sha256:", "checkpoint release assets root");
   assertEqual(checkpointBody.checks.nockchainReleaseAssetsAvailable, true, "checkpoint release assets guard");
+  assertEqual(
+    checkpointBody.checks.nockchainReleaseManifestHashesAvailable,
+    true,
+    "checkpoint release manifest hash guard"
+  );
   assertEqual(
     checkpointBody.links.nockchainReleaseAssets,
     "https://nocksperimental.com/api/nockchain/release-assets",
@@ -136,6 +175,8 @@ async function main() {
   assertIncludes(page, "Nockchain Release Assets", "release page title");
   assertIncludes(page, "nockchain-manifest.toml", "release page renders manifest asset");
   assertIncludes(page, "nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz", "release page renders wallet asset");
+  assertIncludes(page, "hash_blake3", "release page renders BLAKE3 label");
+  assertIncludes(page, "manifest.coverage.hashedAssetCount", "release page renders hash coverage");
   assertIncludes(page, 'href="/api/nockchain/release-assets"', "release page links API");
   assertIncludes(page, 'href="/nockchain"', "release page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/releases"', "Nockchain page links releases page");
@@ -148,6 +189,7 @@ async function main() {
   assertIncludes(smokeScript, "/api/nockchain/release-assets", "Cloudflare smoke includes release assets API");
   assertIncludes(smokeScript, "/nockchain/releases", "Cloudflare smoke includes release assets page");
   assertIncludes(readme, "Nockchain Release Asset Manifest", "README documents release assets");
+  assertIncludes(readme, "BLAKE3 and SHA1", "README documents manifest hashes");
   assertIncludes(readme, "/api/nockchain/release-assets", "README documents release assets endpoint");
   assertIncludes(readme, "/nockchain/releases", "README documents release assets page");
 }
@@ -173,7 +215,23 @@ function assertAsset(body, name, expected) {
   assertEqual(asset.platform, expected.platform, `${name} platform`);
   assertEqual(asset.size, expected.size, `${name} size`);
   assertEqual(asset.kind, expected.kind, `${name} kind`);
+  assertEqual(asset.hashBlake3, expected.hashBlake3, `${name} BLAKE3 hash`);
+  assertEqual(asset.hashSha1, expected.hashSha1, `${name} SHA1 hash`);
   assertStartsWith(asset.downloadUrl, "https://github.com/nockchain/nockchain/releases/download/", `${name} download URL`);
+}
+
+function assertManifestTarget(body, tool, platform, expected) {
+  const target = body.manifest.targets.find(
+    (candidate) => candidate.tool === tool && candidate.platform === platform
+  );
+
+  if (!target) {
+    throw new Error(`Missing manifest target: ${tool} ${platform}`);
+  }
+
+  assertEqual(target.assetName, expected.assetName, `${tool} ${platform} asset name`);
+  assertEqual(target.hashBlake3, expected.hashBlake3, `${tool} ${platform} BLAKE3 hash`);
+  assertEqual(target.hashSha1, expected.hashSha1, `${tool} ${platform} SHA1 hash`);
 }
 
 function assertEndpoint(registryBody, id, pathName, description) {

@@ -69,6 +69,7 @@ export function createRegistryCheckpoint() {
     zorpRepositories: zorpUpstream.repositories.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
+    nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
@@ -105,6 +106,7 @@ export function createRegistryCheckpoint() {
       generatedAt: nockchainReleaseAssets.generatedAt,
       upstream: nockchainReleaseAssets.upstream,
       release: nockchainReleaseAssets.release,
+      manifest: nockchainReleaseAssets.manifest,
       assets: nockchainReleaseAssets.assets,
       assetGroups: nockchainReleaseAssets.assetGroups,
       provenance: nockchainReleaseAssets.provenance
@@ -212,6 +214,13 @@ export function createRegistryCheckpoint() {
         nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
         nockchainReleaseAssets.release.manifestPresent &&
         nockchainReleaseAssets.release.commitMatchesTag,
+      nockchainReleaseManifestHashesAvailable:
+        nockchainReleaseAssets.manifest.coverage.hashedAssetCount ===
+          nockchainReleaseAssets.manifest.targets.length &&
+        nockchainReleaseAssets.manifest.hashes.hashBlake3Count ===
+          nockchainReleaseAssets.manifest.targets.length &&
+        nockchainReleaseAssets.manifest.hashes.hashSha1Count ===
+          nockchainReleaseAssets.manifest.targets.length,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainProtocolTraceAvailable:
         nockchainProtocolTrace.authoritySources.length > 0 &&
@@ -350,6 +359,8 @@ export function createRegistryCheckpoint() {
       groupCount: nockchainReleaseAssets.assetGroups.length,
       platformTriples: nockchainReleaseAssets.release.platformTriples,
       manifestPresent: nockchainReleaseAssets.release.manifestPresent,
+      manifestTargetCount: nockchainReleaseAssets.manifest.targets.length,
+      hashCoverage: nockchainReleaseAssets.manifest.coverage,
       receiptFields: nockchainReleaseAssets.provenance.requiredReceiptFields
     },
     nockchainSyncGossipTrace: {

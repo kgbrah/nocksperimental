@@ -58,8 +58,9 @@ export default function NockchainReleaseAssetsPage() {
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-4 lg:px-8">
         <Metric label="Commit" value={manifest.upstream.commit.shortSha} />
         <Metric label="Assets" value={manifest.release.assetCount.toString()} />
-        <Metric label="Platforms" value={manifest.release.platformTriples.length.toString()} />
-        <Metric label="Manifest" value={manifest.release.manifestPresent ? "present" : "missing"} />
+        <Metric label="Hashed" value={manifest.manifest.coverage.hashedAssetCount.toString()} />
+        <Metric label="Targets" value={manifest.manifest.targetCount.toString()} />
+        <Metric label="Manifest" value={manifest.manifest.version} />
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -74,6 +75,10 @@ export default function NockchainReleaseAssetsPage() {
             <Callout label="targetCommitish" value={manifest.release.targetCommitish} />
             <Callout label="commitMatchesTag" value={String(manifest.release.commitMatchesTag)} />
             <Callout label="nockchain-manifest.toml" value={manifest.links.manifest} />
+            <Callout
+              label="hashCoverage"
+              value={`hashed=${manifest.manifest.coverage.hashedAssetCount} unhashed=${manifest.manifest.coverage.unhashedAssetCount}`}
+            />
           </div>
         </article>
 
@@ -132,6 +137,14 @@ export default function NockchainReleaseAssetsPage() {
                   <span className="border border-[#0B0B0B] px-2 py-1 font-mono">{asset.tool}</span>
                   <span className="border border-[#0B0B0B] px-2 py-1 font-mono">{asset.platform}</span>
                   <span className="border border-[#0B0B0B] px-2 py-1 font-mono">{asset.size} bytes</span>
+                </div>
+                <div className="mt-2 grid gap-2 text-xs">
+                  <span className="break-all border border-[#0B0B0B] px-2 py-1 font-mono">
+                    hash_blake3={asset.hashBlake3 ?? "not-in-manifest"}
+                  </span>
+                  <span className="break-all border border-[#0B0B0B] px-2 py-1 font-mono">
+                    hash_sha1={asset.hashSha1 ?? "not-in-manifest"}
+                  </span>
                 </div>
                 <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">
                   {asset.downloadUrl}
