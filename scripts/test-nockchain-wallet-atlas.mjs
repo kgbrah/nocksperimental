@@ -27,7 +27,7 @@ async function main() {
   assertEqual(body.upstream.commit.shortSha, "33ba97b1e206", "upstream commit");
   assertEqual(
     body.upstream.release.tag,
-    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "upstream release"
   );
   assertIncludes(body.upstream.docs, "crates/nockchain-wallet/README.md", "wallet README source");

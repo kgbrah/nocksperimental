@@ -50,7 +50,7 @@ const watchQueue = [
     source: "nockchain/nockchain",
     latestSignal: "bridge: add end-to-end withdrawal execution (#127)",
     whyItMatters:
-      "Default branch now includes bridge withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence ahead of the latest public build release.",
+      "The latest public build release now includes bridge withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence.",
     reviewTrigger:
       "Any commit or release touching crates/bridge, crates/nockchain-bridge-sequencer, wallet-tx-builder withdrawal fixtures, or hoon/apps/bridge.",
     nocksperimentalAction:
@@ -139,7 +139,7 @@ export function createNockchainWatchBoard() {
   const jock = zorp.repositories.find((repo) => repo.fullName === "zorp-corp/jock-lang");
   const commitMatchesPinned = upstream.latestCommit.shortSha === "33ba97b1e206";
   const releaseMatchesPinned =
-    upstream.latestRelease.tag === "build-5d022ced55040221e8b6fcfd78114189fbae91a0";
+    upstream.latestRelease.tag === "build-33ba97b1e206dd89b15c61b72b7802caf2136c18";
   const latestCommitReleased = upstream.latestRelease.tag.includes(upstream.latestCommit.sha);
   const zorpStateJamFolderClassified =
     zorp.stateJamDrive.classification.includes("not a VESL folder") &&
@@ -211,7 +211,7 @@ export function createNockchainWatchBoard() {
       zorpStateJamFolderClassified,
       requiresHumanReview: watchQueue.some((item) => item.severity === "high"),
       requiredReviewSignals: [
-        "bridge withdrawal execution landed on default branch ahead of the latest public build release",
+        "bridge withdrawal execution is now represented by the latest public build release",
         "libp2p behind-tip gossip suppression affects fakenet mining interpretation",
         "zorp-corp/nockapp archived repo updated metadata",
         "Zorp state-jam Drive folder requires metadata inventory before trust",

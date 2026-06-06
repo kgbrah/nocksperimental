@@ -195,7 +195,8 @@ export function createRegistryCheckpoint() {
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
       nockchainBridgeTraceAvailable:
         nockchainBridgeTrace.sourceAnchors.length > 0 &&
-        nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease === true,
+        nockchainBridgeTrace.withdrawalFlow.length > 0 &&
+        nockchainBridgeTrace.releaseDrift.releaseCommitSha.length > 0,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainProtocolTraceAvailable:
         nockchainProtocolTrace.authoritySources.length > 0 &&

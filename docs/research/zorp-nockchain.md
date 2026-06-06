@@ -1,6 +1,6 @@
 # Zorp And Nockchain Research Notes
 
-Updated: 2026-06-05
+Updated: 2026-06-06
 
 ## Source Classification
 
@@ -20,9 +20,9 @@ Zorp is the developer lineage behind the current Nockchain stack. The public Zor
 
 ## Fresh Snapshot
 
-As of this scan, the latest default-branch commit in `nockchain/nockchain` is `33ba97b1e206`, "bridge: add end-to-end withdrawal execution (#127)", committed 2026-06-05. That is directly relevant to bridge, settlement, VESL, and x402-adjacent receipts: the default branch now includes withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence surfaces that are ahead of the latest public build release.
+As of this scan, the latest default-branch commit in `nockchain/nockchain` is `33ba97b1e206`, "bridge: add end-to-end withdrawal execution (#127)", committed 2026-06-05. That is directly relevant to bridge, settlement, VESL, and x402-adjacent receipts: the latest public build release now includes withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence surfaces.
 
-The latest public build release for Nockchain is still `build-5d022ced55040221e8b6fcfd78114189fbae91a0`, published 2026-06-02. Its commit remains important for behind-tip gossip suppression and local mining/sync symptoms, but monitoring should now explicitly distinguish default-branch bridge behavior from released-build behavior rather than assuming only one update channel.
+The latest public build release for Nockchain is `build-33ba97b1e206dd89b15c61b72b7802caf2136c18`, published 2026-06-06. The earlier `5d022ced5504` commit remains important for behind-tip gossip suppression and local mining/sync symptoms, but monitoring should explicitly distinguish current release state from older source signals rather than assuming only one update channel.
 
 ## Canonical Docs Policy
 

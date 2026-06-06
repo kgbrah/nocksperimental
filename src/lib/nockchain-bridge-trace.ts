@@ -164,8 +164,9 @@ export function createNockchainBridgeTrace() {
       defaultBranchAheadOfRelease: !latestCommitReleased,
       releaseCommitSha: releaseSha,
       releaseCommitShortSha: releaseSha.slice(0, 12),
-      explanation:
-        "The default branch has bridge withdrawal execution work that is not yet represented by the latest public build release tag."
+      explanation: latestCommitReleased
+        ? "The latest public build release contains the bridge withdrawal execution commit, so receipts can cite a matching commit/build pair while still preserving sequencer authorization, proposal, and journal provenance."
+        : "The default branch has bridge withdrawal execution work that is not yet represented by the latest public build release tag."
     },
     sourceAnchors,
     changedSurfaces: {
@@ -210,7 +211,7 @@ export function createNockchainBridgeTrace() {
     ],
     nocksperimentalImplications: [
       "VESL and x402 settlement receipts need bridge withdrawal provenance fields before claiming end-to-end payout behavior.",
-      "Fakenet/local test receipts should show whether bridge withdrawal code is ahead of the deployed build release.",
+      "Fakenet/local test receipts should show whether bridge withdrawal evidence came from the latest released build, a default-branch commit, or a local fork.",
       "Future bridge test functions should verify sequencer authorization, journal mirroring, and confirmed inclusion independently.",
       "Nockchain expertise pages should treat bridge crate docs as scoped runtime authority, not protocol activation authority."
     ],

@@ -1,6 +1,6 @@
 # Nockchain Rust Architecture Notes
 
-Updated: 2026-06-05
+Updated: 2026-06-06
 
 ## Why This Exists
 
@@ -22,9 +22,9 @@ Latest scanned canonical Nockchain commit:
 - `33ba97b1e206`
 - Message: `bridge: add end-to-end withdrawal execution (#127)`
 - Date: 2026-06-05
-- Release: `build-5d022ced55040221e8b6fcfd78114189fbae91a0`
+- Release: `build-33ba97b1e206dd89b15c61b72b7802caf2136c18`
 
-This commit matters for Nocksperimental because bridge withdrawal execution is now ahead of the latest public build release. Receipts that claim bridge settlement, VESL/x402 payout behavior, or fakenet withdrawal coverage need to record commit/build provenance, sequencer authorization state, proposal hashes, blockchain constants source, journal mirroring, and confirmed inclusion separately.
+This commit matters for Nocksperimental because bridge withdrawal execution is now represented by the latest public build release. Receipts that claim bridge settlement, VESL/x402 payout behavior, or fakenet withdrawal coverage need to record commit/build provenance, sequencer authorization state, proposal hashes, blockchain constants source, journal mirroring, and confirmed inclusion separately.
 
 Recent high-signal upstream changes:
 

@@ -30,9 +30,10 @@ async function main() {
   assertIncludes(body.latestCommit.message, "bridge", "latest commit message");
   assertEqual(
     body.latestRelease.tag,
-    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "latest release tag"
   );
+  assertEqual(body.latestRelease.publishedAt, "2026-06-06T00:17:53Z", "latest release published timestamp");
   assertEqual(body.docs.canonicalSpine[0].path, "START_HERE.md", "canonical docs start");
   assertIncludes(
     body.docs.policy,

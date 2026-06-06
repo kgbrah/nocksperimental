@@ -25,13 +25,13 @@ export const nockchainUpstreamIntelligence = {
     message: "bridge: add end-to-end withdrawal execution (#127)",
     url: "https://github.com/nockchain/nockchain/commit/33ba97b1e206dd89b15c61b72b7802caf2136c18",
     nocksperimentalRelevance:
-      "Bridge withdrawal execution landed on default branch ahead of the latest public build release, so bridge, settlement, x402, and VESL-adjacent receipts need commit/build provenance and release-lag context."
+      "Bridge withdrawal execution is now represented by the latest public build release, so bridge, settlement, x402, and VESL-adjacent receipts can cite a matching commit/build pair while preserving sequencer and journal provenance."
   },
   latestRelease: {
-    tag: "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
-    name: "Build 5d022ced55040221e8b6fcfd78114189fbae91a0",
-    publishedAt: "2026-06-02T20:51:14Z",
-    url: "https://github.com/nockchain/nockchain/releases/tag/build-5d022ced55040221e8b6fcfd78114189fbae91a0"
+    tag: "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    name: "Build 33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    publishedAt: "2026-06-06T00:17:53Z",
+    url: "https://github.com/nockchain/nockchain/releases/tag/build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
   },
   recentSignals: [
     {
@@ -259,13 +259,13 @@ export const nockchainUpstreamIntelligence = {
       "Add state-jam registry metadata without hosting raw state artifacts.",
       "Attach canonical Nockchain doc authority to test assumptions.",
       "Add nockup build/run receipts for app scaffold validation.",
-      "Expose bridge withdrawal execution, sequencer authorization, and release-lag context beside settlement receipts."
+      "Expose bridge withdrawal execution, sequencer authorization, and commit/build provenance beside settlement receipts."
     ]
   },
   links: {
     repository: "https://github.com/nockchain/nockchain",
     zorp: "https://github.com/zorp-corp",
-    release: "https://github.com/nockchain/nockchain/releases/tag/build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    release: "https://github.com/nockchain/nockchain/releases/tag/build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     research: `${registryCanonicalBaseUrl}/docs/research/nockchain-rust-architecture.md`,
     registry: `${registryCanonicalBaseUrl}/api/registry`,
     openApi: `${registryCanonicalBaseUrl}/openapi.json`

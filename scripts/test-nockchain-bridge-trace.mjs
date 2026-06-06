@@ -25,10 +25,15 @@ async function main() {
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/bridge", "canonical URL");
   assertEqual(body.upstream.commit.shortSha, "33ba97b1e206", "latest bridge commit");
-  assertEqual(body.upstream.release.tag, "build-5d022ced55040221e8b6fcfd78114189fbae91a0", "latest release tag");
-  assertEqual(body.releaseDrift.defaultBranchAheadOfRelease, true, "default branch ahead of release");
-  assertEqual(body.releaseDrift.latestCommitReleased, false, "latest commit not yet released");
-  assertEqual(body.releaseDrift.releaseCommitShortSha, "5d022ced5504", "release commit short sha");
+  assertEqual(body.upstream.release.tag, "build-33ba97b1e206dd89b15c61b72b7802caf2136c18", "latest release tag");
+  assertEqual(body.releaseDrift.defaultBranchAheadOfRelease, false, "default branch release catch-up");
+  assertEqual(body.releaseDrift.latestCommitReleased, true, "latest commit released");
+  assertEqual(body.releaseDrift.releaseCommitShortSha, "33ba97b1e206", "release commit short sha");
+  assertIncludes(
+    body.releaseDrift.explanation,
+    "latest public build release contains the bridge withdrawal execution commit",
+    "release catch-up explanation"
+  );
 
   assertSource(body, "bridge-withdrawals-spec", "crates/bridge/docs/bridge-withdrawals.md");
   assertSource(body, "bridge-architecture", "crates/bridge/docs/architecture.md");
@@ -67,13 +72,13 @@ async function main() {
 
   const watch = await loadTypeScriptModule("src/app/api/nockchain/watch/route.ts").GET();
   const watchBody = await watch.json();
-  assertEqual(watchBody.status, "review-needed", "watch status reflects release lag");
+  assertEqual(watchBody.status, "in-sync", "watch status reflects release catch-up");
   assertEqual(watchBody.observed.nockchain.commit.shortSha, "33ba97b1e206", "watch observed commit");
-  assertEqual(watchBody.drift.latestCommitReleased, false, "watch release lag");
+  assertEqual(watchBody.drift.latestCommitReleased, true, "watch release catch-up");
   assertIncludes(
     watchBody.drift.requiredReviewSignals,
-    "bridge withdrawal execution landed on default branch ahead of the latest public build release",
-    "watch release lag signal"
+    "bridge withdrawal execution is now represented by the latest public build release",
+    "watch release catch-up signal"
   );
   assertWatchItem(watchBody, "bridge-withdrawal-execution", "bridge-withdrawals", "high");
 
@@ -108,7 +113,7 @@ async function main() {
   assertEqual(checkpointBody.counts.nockchainBridgeSources, body.sourceAnchors.length, "checkpoint source count");
   assertStartsWith(checkpointBody.roots.nockchainBridgeTrace, "sha256:", "checkpoint bridge root");
   assertEqual(checkpointBody.checks.nockchainBridgeTraceAvailable, true, "checkpoint bridge guard");
-  assertEqual(checkpointBody.checks.nockchainWatchInSync, false, "checkpoint watch lag guard");
+  assertEqual(checkpointBody.checks.nockchainWatchInSync, true, "checkpoint watch catch-up guard");
   assertEqual(
     checkpointBody.links.nockchainBridgeTrace,
     "https://nocksperimental.com/api/nockchain/bridge",

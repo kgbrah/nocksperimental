@@ -36,7 +36,7 @@ async function main() {
   assertEqual(body.nockchain.latestCommit.shortSha, "33ba97b1e206", "Nockchain latest commit");
   assertEqual(
     body.nockchain.latestRelease.tag,
-    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "Nockchain latest release"
   );
 

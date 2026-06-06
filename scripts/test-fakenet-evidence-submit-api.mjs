@@ -70,7 +70,7 @@ async function main() {
   assertEqual(receipt.nockchain.commit.shortSha, "33ba97b1e206", "receipt Nockchain commit");
   assertEqual(
     receipt.nockchain.release.tag,
-    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "receipt Nockchain release"
   );
   assertEqual(receipt.nockchain.protocol.next.codename, "Nous", "receipt Nockchain protocol track");

@@ -24,23 +24,23 @@ async function main() {
   assertEqual(body.service, "nocksperimental", "service name");
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/watch", "canonical URL");
-  assertEqual(body.status, "review-needed", "watch drift status");
+  assertEqual(body.status, "in-sync", "watch drift status");
   assertEqual(body.pinned.nockchain.commit.shortSha, "33ba97b1e206", "pinned commit");
   assertEqual(body.observed.nockchain.commit.shortSha, "33ba97b1e206", "observed commit");
   assertEqual(
     body.observed.nockchain.release.tag,
-    "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "observed release"
   );
   assertEqual(body.drift.commitMatchesPinned, true, "commit drift");
   assertEqual(body.drift.releaseMatchesPinned, true, "release drift");
-  assertEqual(body.drift.latestCommitReleased, false, "release lag");
-  assertEqual(body.drift.defaultBranchAheadOfRelease, true, "default branch release lag");
+  assertEqual(body.drift.latestCommitReleased, true, "release catch-up");
+  assertEqual(body.drift.defaultBranchAheadOfRelease, false, "default branch release catch-up");
   assertEqual(body.drift.zorpStateJamFolderClassified, true, "state-jam folder classification");
   assertIncludes(
     body.drift.requiredReviewSignals,
-    "bridge withdrawal execution landed on default branch ahead of the latest public build release",
-    "bridge release lag signal"
+    "bridge withdrawal execution is now represented by the latest public build release",
+    "bridge release catch-up signal"
   );
   assertIncludes(body.drift.requiredReviewSignals, "zorp-corp/nockapp archived repo updated metadata", "nockapp review signal");
 
@@ -96,7 +96,7 @@ async function main() {
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainWatchItems, body.watchQueue.length, "checkpoint watch count");
   assertStartsWith(checkpointBody.roots.nockchainWatch, "sha256:", "checkpoint watch root");
-  assertEqual(checkpointBody.checks.nockchainWatchInSync, false, "checkpoint watch in sync");
+  assertEqual(checkpointBody.checks.nockchainWatchInSync, true, "checkpoint watch in sync");
   assertEqual(
     checkpointBody.links.nockchainWatch,
     "https://nocksperimental.com/api/nockchain/watch",
