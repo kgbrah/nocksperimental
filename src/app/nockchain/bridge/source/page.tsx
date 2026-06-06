@@ -26,9 +26,16 @@ const priorityAnchorIds = [
   "orphan-retry-loop",
   "sequencer-rpc-service",
   "sequencer-store",
-  "sequencer-journal"
+  "sequencer-journal",
+  "bridge-dev-scenario-readme",
+  "bridge-dev-withdrawal-scenarios"
 ] as const;
-const highlightedForbiddenFields = ["rawTransactionJam", "sequencerJournalSigningKey"] as const;
+const highlightedForbiddenFields = [
+  "rawTransactionJam",
+  "sequencerJournalSigningKey",
+  "tenderlyAccessKey",
+  "r2TestToken"
+] as const;
 const highlightedForbiddenFieldSet = new Set<string>(highlightedForbiddenFields);
 const bridgePrLabel = "PR #127";
 
@@ -51,6 +58,7 @@ export default function NockchainBridgeSourcePage() {
     )
   ];
   const bridgePr = trace.upstreamSignals.find((signal) => signal.prNumber === 127);
+  const scenarioContract = trace.externalScenarioEvidenceContract;
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -70,7 +78,8 @@ export default function NockchainBridgeSourcePage() {
                 Commit-pinned Rust and bridge-doc anchors for the current
                 withdrawal path: kernel effects, proposal assembly, sequencer
                 authorization, public Nockchain submission, confirmation polling,
-                orphan retry, journal continuity, and kernel reconciliation.
+                orphan retry, journal continuity, kernel reconciliation, and
+                opt-in bridge-dev scenario evidence.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -182,6 +191,35 @@ export default function NockchainBridgeSourcePage() {
             {trace.operatorInvariants.map((item) => (
               <div className="border border-[#0B0B0B] bg-white p-3 text-sm leading-6" key={item}>
                 {item}
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">External Scenario Contract</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="command" value={scenarioContract.command} />
+            <Callout label="buildCommand" value={scenarioContract.buildCommand} />
+            <Callout label="requiredEnv" value={scenarioContract.requiredEnv.join(", ")} />
+            <Callout label="optionalEnv" value={scenarioContract.optionalEnv.join(", ")} />
+            <Callout label="r2Env" value={scenarioContract.r2Env.join(", ")} />
+            <Callout label="scenarioIds" value={scenarioContract.scenarioIds.join(", ")} />
+            <Callout
+              label="receiptSafeFields"
+              value={scenarioContract.receiptSafeFields.join(", ")}
+            />
+            <Callout label="forbiddenFields" value={scenarioContract.forbiddenFields.join(", ")} />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {scenarioContract.interpretationRules.map((rule) => (
+              <div className="border border-[#0B0B0B] bg-white p-3 text-sm leading-6" key={rule}>
+                {rule}
               </div>
             ))}
           </div>

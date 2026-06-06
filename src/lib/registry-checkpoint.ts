@@ -185,6 +185,7 @@ export function createRegistryCheckpoint() {
       sourceAnchors: nockchainBridgeSourceTrace.sourceAnchors,
       executionFlow: nockchainBridgeSourceTrace.executionFlow,
       sourceTraceContract: nockchainBridgeSourceTrace.sourceTraceContract,
+      externalScenarioEvidenceContract: nockchainBridgeSourceTrace.externalScenarioEvidenceContract,
       receiptFieldMapping: nockchainBridgeSourceTrace.receiptFieldMapping,
       upstreamSignals: nockchainBridgeSourceTrace.upstreamSignals,
       operatorInvariants: nockchainBridgeSourceTrace.operatorInvariants
@@ -464,13 +465,19 @@ export function createRegistryCheckpoint() {
           "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY"
         ),
       nockchainBridgeSourceTraceAvailable:
-        nockchainBridgeSourceTrace.sourceAnchors.length === 12 &&
+        nockchainBridgeSourceTrace.sourceAnchors.length === 14 &&
         nockchainBridgeSourceTrace.executionFlow.length === 8 &&
         nockchainBridgeSourceTrace.sourceTraceContract.requiredFields.includes(
           "confirmationEvidence"
         ) &&
         nockchainBridgeSourceTrace.sourceTraceContract.forbiddenFields.includes(
           "sequencerJournalSigningKey"
+        ) &&
+        nockchainBridgeSourceTrace.externalScenarioEvidenceContract.requiredEnv.includes(
+          "BRIDGE_DEV_RUN_E2E"
+        ) &&
+        nockchainBridgeSourceTrace.externalScenarioEvidenceContract.forbiddenFields.includes(
+          "r2TestToken"
         ),
       nockchainCargoSurfaceAvailable:
         nockchainCargoSurface.crates.length === 9 &&
@@ -1120,6 +1127,8 @@ export function createRegistryCheckpoint() {
       flowStepIds: nockchainBridgeSourceTrace.executionFlow.map((step) => step.id),
       receiptFields: nockchainBridgeSourceTrace.receiptFieldMapping.receiptFields,
       forbiddenFields: nockchainBridgeSourceTrace.sourceTraceContract.forbiddenFields,
+      externalScenarioCommand: nockchainBridgeSourceTrace.externalScenarioEvidenceContract.command,
+      externalScenarioIds: nockchainBridgeSourceTrace.externalScenarioEvidenceContract.scenarioIds,
       upstreamSignalPrs: nockchainBridgeSourceTrace.upstreamSignals.map(
         (signal) => signal.prNumber
       ),

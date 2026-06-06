@@ -289,6 +289,58 @@ const sourceAnchors = [
     ],
     riskPosture:
       "Journal object ids and hashes are receipt-safe; sequencer journal signing keys and object-store secrets must never enter receipts."
+  },
+  {
+    id: "bridge-dev-scenario-readme",
+    label: "Bridge-dev scenario README",
+    upstreamFile: "crates/bridge-dev/tests/README.md",
+    upstreamSymbols: ["bridge-dev Scenario Tests", "BRIDGE_DEV_RUN_E2E", "BRIDGE_R2_RUN_E2E"],
+    lineRange: "L1-L66",
+    upstreamUrl: sourceBlobUrl("crates/bridge-dev/tests/README.md", "L1-L66"),
+    exposure: "external-state-e2e-fixture",
+    evidenceBoundary:
+      "Ignored bridge-dev scenarios run against fresh Tenderly VNET state and release-built bridge binaries; they are opt-in external-state fixtures, not default CI.",
+    evidenceUse:
+      "Use to label scenario receipts with command, opt-in gate, Tenderly/R2 boundary, and hashed artifact provenance without storing credentials.",
+    receiptFields: [
+      "scenarioName",
+      "scenarioRunRootHash",
+      "scenarioPortOffset",
+      "tenderlyVnetId",
+      "bridgeDevRunE2e",
+      "r2JournalEventPrefixHash",
+      "scenarioArtifactHash"
+    ],
+    riskPosture:
+      "Bridge-dev scenarios may prove live integration behavior, but receipts must redact Tenderly credentials, private keys, raw VNET env files, R2 tokens, and raw object-store journal payloads."
+  },
+  {
+    id: "bridge-dev-withdrawal-scenarios",
+    label: "Bridge-dev withdrawal scenarios",
+    upstreamFile: "crates/bridge-dev/tests/scenarios.rs",
+    upstreamSymbols: [
+      "withdrawal_happy_path_reaches_executed",
+      "withdrawal_sequencer_rebuilds_from_r2_after_sqlite_wipe",
+      "two_node_degraded_withdrawal_still_executes"
+    ],
+    lineRange: "L953-L1125",
+    upstreamUrl: sourceBlobUrl("crates/bridge-dev/tests/scenarios.rs", "L953-L1125"),
+    exposure: "withdrawal-e2e-fixture",
+    evidenceBoundary:
+      "Opt-in withdrawal scenarios cover happy path execution, bridge restart, sequencer restart, R2 journal replay after SQLite wipe, full bridge downtime recovery, and degraded two-node execution.",
+    evidenceUse:
+      "Use when an external scenario receipt needs to prove withdrawal phase progression and recovery mode without publishing raw authorized transactions or scenario secrets.",
+    receiptFields: [
+      "withdrawalScenarioPhase",
+      "proposalHash",
+      "authorizedTransactionName",
+      "sequencedState",
+      "handoffOwner",
+      "scenarioRecoveryMode",
+      "componentStopSet"
+    ],
+    riskPosture:
+      "Scenario output should be reduced to stable names, hashes, phases, and recovery classification before entering Nocksperimental evidence."
   }
 ] as const;
 
@@ -367,6 +419,102 @@ const executionFlow = [
   }
 ] as const;
 
+const externalScenarioEvidenceContract = {
+  command: "cargo test -p bridge-dev --test scenarios -- --ignored --test-threads=1",
+  buildCommand: "cargo build --release -p bridge -p nockchain-bridge-sequencer -p nockchain-wallet",
+  gating: {
+    mode: "opt-in-external-state",
+    defaultCi: "forbidden",
+    testThreads: 1,
+    sourceAnchorIds: ["bridge-dev-scenario-readme", "bridge-dev-withdrawal-scenarios"]
+  },
+  requiredEnv: [
+    "BRIDGE_DEV_RUN_E2E",
+    "TENDERLY_ACCESS_KEY",
+    "TENDERLY_ACCOUNT_ID",
+    "TENDERLY_PROJECT_SLUG",
+    "TENDERLY_TEST_PRIVATE_KEY"
+  ],
+  optionalEnv: [
+    "BRIDGE_DEV_E2E_PORT_OFFSET",
+    "BRIDGE_DEV_TEST_RUN_ROOT",
+    "BRIDGE_DEV_PORT_OFFSET",
+    "BRIDGE_DEV_FAKENET_GENESIS_JAM",
+    "BRIDGE_DEV_FAKENET_POW_LEN",
+    "BRIDGE_DEV_FAKENET_LOG_DIFFICULTY",
+    "BRIDGE_DEV_BASE_BLOCKS_CHUNK",
+    "BRIDGE_NOCK_OBSERVER_POLL_MILLIS",
+    "BRIDGE_DEV_BRIDGE_SAVE_INTERVAL_MILLIS"
+  ],
+  r2Env: [
+    "BRIDGE_R2_RUN_E2E",
+    "BRIDGE_R2_TEST_URL",
+    "BRIDGE_R2_TEST_ENDPOINT",
+    "BRIDGE_R2_TEST_BUCKET",
+    "BRIDGE_R2_TEST_REGION",
+    "BRIDGE_R2_TEST_PREFIX",
+    "BRIDGE_R2_TEST_TOKEN",
+    "BRIDGE_R2_TEST_ACCESS_KEY_ID",
+    "BRIDGE_R2_TEST_SECRET_ACCESS_KEY",
+    "BRIDGE_R2_KEEP_OBJECTS"
+  ],
+  scenarioIds: [
+    "fresh-vnet-boot",
+    "deposit-happy-path",
+    "deposit-downtime-recovery",
+    "all-bridge-restart-after-deposit",
+    "multiple-deposits",
+    "withdrawal-happy-path",
+    "withdrawal-ready-restart",
+    "withdrawal-submitted-sequencer-restart",
+    "withdrawal-r2-sequencer-recovery",
+    "withdrawal-bridge-downtime",
+    "two-node-degraded-withdrawal",
+    "two-node-degraded-deposit"
+  ],
+  receiptSafeFields: [
+    "scenarioName",
+    "scenarioRunId",
+    "scenarioRunRootHash",
+    "scenarioPortOffset",
+    "componentStopSet",
+    "withdrawalScenarioPhase",
+    "proposalHash",
+    "authorizedTransactionName",
+    "sequencedState",
+    "handoffOwner",
+    "scenarioRecoveryMode",
+    "r2JournalIdHash",
+    "r2JournalEventPrefixHash",
+    "scenarioArtifactHash"
+  ],
+  forbiddenFields: [
+    "tenderlyAccessKey",
+    "tenderlyTestPrivateKey",
+    "r2TestToken",
+    "r2AccessKeyId",
+    "r2SecretAccessKey",
+    "sequencerJournalObjectStoreSecretAccessKey",
+    "bridgeDevOwnerPrivateKey",
+    "rawTenderlyVnetEnv",
+    "rawScenarioStdout",
+    "rawScenarioStderr",
+    "rawR2JournalObject",
+    "rawAuthorizedRawTx"
+  ],
+  interpretationRules: [
+    "Bridge-dev scenarios are opt-in external-state fixtures, not default CI proof.",
+    "A passing scenario can support integration evidence only with commit, release build, command, env gate, and artifact hashes.",
+    "Tenderly, R2, wallet, owner, sequencer journal, and raw transaction secrets stay outside public receipts.",
+    "R2-backed recovery evidence should publish hashed journal ids or prefixes, never raw object keys with credentials."
+  ],
+  verificationGates: [
+    "test:nockchain-bridge-source-api",
+    "test:nockchain-bridge-trace",
+    "cargo test -p bridge-dev --test scenarios -- --ignored --test-threads=1"
+  ]
+} as const;
+
 const sourceTraceContract = {
   requiredFields: [
     "nockchainCommit",
@@ -388,7 +536,12 @@ const sourceTraceContract = {
     "includedBlockId",
     "kernelReconciliationStatus",
     "reservedInputNames",
-    "retryAfterBaseBlocks"
+    "retryAfterBaseBlocks",
+    "scenarioName",
+    "scenarioRunRootHash",
+    "scenarioArtifactHash",
+    "r2JournalIdHash",
+    "r2JournalEventPrefixHash"
   ],
   forbiddenFields: [
     "rawTransactionJam",
@@ -397,14 +550,26 @@ const sourceTraceContract = {
     "sequencerObjectStoreSecret",
     "bridgeNodePrivateKey",
     "walletSeedPhrase",
-    "walletPrivateKey"
+    "walletPrivateKey",
+    "tenderlyAccessKey",
+    "tenderlyTestPrivateKey",
+    "r2TestToken",
+    "r2AccessKeyId",
+    "r2SecretAccessKey",
+    "sequencerJournalObjectStoreSecretAccessKey",
+    "bridgeDevOwnerPrivateKey",
+    "rawTenderlyVnetEnv",
+    "rawScenarioStdout",
+    "rawScenarioStderr",
+    "rawR2JournalObject"
   ],
   interpretationRules: [
     "Use bridge docs and current bridge Rust source for bridge-specific operational claims.",
     "Treat peer-canonical as a proposal-hash agreement, not submission authorization.",
     "Treat tx-accepted as diagnostic and submitted as advisory until confirmation depth is observed.",
     "Treat sequencer journal records as append-only metadata; never publish signing keys or object-store secrets.",
-    "Keep kernel reconciliation separate from sequencer confirmation evidence."
+    "Keep kernel reconciliation separate from sequencer confirmation evidence.",
+    "Bridge-dev scenarios are opt-in external-state fixtures, not default CI proof."
   ]
 } as const;
 
@@ -458,6 +623,7 @@ export function createNockchainBridgeSourceTrace() {
     sourceAnchors,
     executionFlow,
     sourceTraceContract,
+    externalScenarioEvidenceContract,
     receiptFieldMapping: {
       receiptFields,
       lifecycleFields: [
@@ -476,6 +642,7 @@ export function createNockchainBridgeSourceTrace() {
       "Attach bridge sourceAnchorId fields to Launch Evidence bridge withdrawal receipts.",
       "Use the sequencer journal fields to distinguish append-only lifecycle metadata from raw transaction artifacts.",
       "Add bridge support-bundle checks for peer-canonical, authorized, mempool-accepted, confirmed, and kernel-reconciled states.",
+      "Use bridge-dev scenario receipts only as opt-in external-state evidence with redacted Tenderly/R2 fields and hashed artifacts.",
       "Monitor PR #126 for benchmark evidence that could extend bridge runtime performance receipts."
     ],
     links: {
@@ -485,6 +652,8 @@ export function createNockchainBridgeSourceTrace() {
       upstream: upstream.canonicalUrl,
       release: upstream.latestRelease.url,
       bridgePr127: "https://github.com/nockchain/nockchain/pull/127",
+      bridgeDevScenarios:
+        "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/bridge-dev/tests/README.md",
       bridgeDocs:
         "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/bridge/docs/bridge-withdrawals.md"
     }

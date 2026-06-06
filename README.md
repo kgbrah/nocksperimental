@@ -165,12 +165,12 @@ Use it when a VESL, x402, fakenet, or bridge-settlement receipt depends on withd
 
 ## Nockchain Bridge Source Trace
 
-The bridge source trace pins the latest bridge withdrawal execution path to exact upstream Rust files, symbols, and line ranges. It maps runtime loop activation, kernel poke/peek seams, withdrawal execution effects, proposal assembly, sequencer authorization, public Nockchain submission, confirmation polling, orphan retry, durable sequencer store state, and append-only journal records into receipt fields. It preserves the key operational distinction that peer-canonical is not submit-ready, submitted is advisory, and confirmation requires observed block inclusion plus depth.
+The bridge source trace pins the latest bridge withdrawal execution path to exact upstream Rust files, symbols, and line ranges. It maps runtime loop activation, kernel poke/peek seams, withdrawal execution effects, proposal assembly, sequencer authorization, public Nockchain submission, confirmation polling, orphan retry, durable sequencer store state, append-only journal records, and opt-in `bridge-dev` scenario evidence into receipt fields. It preserves the key operational distinction that peer-canonical is not submit-ready, submitted is advisory, and confirmation requires observed block inclusion plus depth.
 
 - `/nockchain/bridge/source`
 - `/api/nockchain/bridge-source`
 
-Use it when a bridge, VESL, x402, Launch Evidence, or support-bundle receipt needs to cite the exact Rust boundary behind a withdrawal state without storing raw transaction jams, authorized raw transactions, sequencer journal signing keys, object-store secrets, or bridge node private keys.
+Use it when a bridge, VESL, x402, Launch Evidence, or support-bundle receipt needs to cite the exact Rust boundary behind a withdrawal state without storing raw transaction jams, authorized raw transactions, Tenderly credentials, R2 tokens, sequencer journal signing keys, object-store secrets, or bridge node private keys.
 
 ## Nockchain Release Asset Manifest
 

@@ -34,7 +34,7 @@ async function main() {
     "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
     "upstream release"
   );
-  assertEqual(body.sourceAnchors.length, 12, "source anchor count");
+  assertEqual(body.sourceAnchors.length, 14, "source anchor count");
 
   assertAnchor(body, "bridge-withdrawals-spec", "crates/bridge/docs/bridge-withdrawals.md", "bridge-withdrawals");
   assertAnchor(body, "runtime-loop-bootstrap", "crates/bridge/src/withdrawal/runtime.rs", "spawn_runtime_loops");
@@ -48,6 +48,8 @@ async function main() {
   assertAnchor(body, "sequencer-rpc-service", "crates/bridge/src/withdrawal/sequencer/rpc.rs", "WithdrawalSequencerRpcService");
   assertAnchor(body, "sequencer-store", "crates/bridge/src/withdrawal/sequencer/store.rs", "WithdrawalSequencerStore");
   assertAnchor(body, "sequencer-journal", "crates/bridge/src/withdrawal/sequencer/journal.rs", "SequencerJournalRecord");
+  assertAnchor(body, "bridge-dev-scenario-readme", "crates/bridge-dev/tests/README.md", "BRIDGE_DEV_RUN_E2E");
+  assertAnchor(body, "bridge-dev-withdrawal-scenarios", "crates/bridge-dev/tests/scenarios.rs", "withdrawal_happy_path_reaches_executed");
 
   const spec = findAnchor(body, "bridge-withdrawals-spec");
   assertIncludes(spec.evidenceUse, "peer canonicalization is not enough", "spec captures peer canonical risk");
@@ -71,6 +73,16 @@ async function main() {
   assertIncludes(journal.receiptFields, "recordHash", "journal maps record hash");
   assertIncludes(journal.receiptFields, "signature", "journal maps signature");
 
+  const scenarioReadme = findAnchor(body, "bridge-dev-scenario-readme");
+  assertEqual(scenarioReadme.exposure, "external-state-e2e-fixture", "bridge-dev README exposure");
+  assertIncludes(scenarioReadme.receiptFields, "scenarioName", "bridge-dev README maps scenario");
+  assertIncludes(scenarioReadme.receiptFields, "r2JournalEventPrefixHash", "bridge-dev README maps R2 prefix hash");
+
+  const withdrawalScenarios = findAnchor(body, "bridge-dev-withdrawal-scenarios");
+  assertEqual(withdrawalScenarios.exposure, "withdrawal-e2e-fixture", "bridge-dev scenarios exposure");
+  assertIncludes(withdrawalScenarios.receiptFields, "authorizedTransactionName", "bridge-dev scenarios map authorized tx name");
+  assertIncludes(withdrawalScenarios.receiptFields, "scenarioRecoveryMode", "bridge-dev scenarios map recovery mode");
+
   assertEqual(body.executionFlow.length, 8, "execution flow step count");
   assertFlowStep(body, "base-burn-pending", "bridge-withdrawals-spec");
   assertFlowStep(body, "kernel-effects-to-driver", "execution-driver-effects");
@@ -89,8 +101,98 @@ async function main() {
   assertIncludes(body.sourceTraceContract.requiredFields, "sequencerState", "trace requires sequencer state");
   assertIncludes(body.sourceTraceContract.requiredFields, "journalEventId", "trace requires journal event");
   assertIncludes(body.sourceTraceContract.requiredFields, "confirmationEvidence", "trace requires confirmation evidence");
+  assertIncludes(body.sourceTraceContract.optionalFields, "scenarioName", "trace allows scenario names");
+  assertIncludes(body.sourceTraceContract.optionalFields, "r2JournalEventPrefixHash", "trace allows hashed R2 event prefixes");
   assertIncludes(body.sourceTraceContract.forbiddenFields, "rawTransactionJam", "trace forbids raw tx jam");
   assertIncludes(body.sourceTraceContract.forbiddenFields, "sequencerJournalSigningKey", "trace forbids journal signing key");
+  assertIncludes(body.sourceTraceContract.forbiddenFields, "tenderlyAccessKey", "trace forbids Tenderly access key");
+  assertIncludes(body.sourceTraceContract.forbiddenFields, "r2TestToken", "trace forbids R2 token");
+
+  assertEqual(
+    body.externalScenarioEvidenceContract.command,
+    "cargo test -p bridge-dev --test scenarios -- --ignored --test-threads=1",
+    "bridge-dev scenario command"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.requiredEnv,
+    "BRIDGE_DEV_RUN_E2E",
+    "bridge-dev contract requires opt-in env"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.requiredEnv,
+    "TENDERLY_ACCESS_KEY",
+    "bridge-dev contract names Tenderly key"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.requiredEnv,
+    "TENDERLY_TEST_PRIVATE_KEY",
+    "bridge-dev contract names Tenderly private key"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.optionalEnv,
+    "BRIDGE_DEV_E2E_PORT_OFFSET",
+    "bridge-dev contract names port offset"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.r2Env,
+    "BRIDGE_R2_RUN_E2E",
+    "bridge-dev contract names R2 gate"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.r2Env,
+    "BRIDGE_R2_TEST_TOKEN",
+    "bridge-dev contract names R2 token"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.forbiddenFields,
+    "tenderlyAccessKey",
+    "bridge-dev contract forbids Tenderly access key"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.forbiddenFields,
+    "r2TestToken",
+    "bridge-dev contract forbids R2 token"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.forbiddenFields,
+    "sequencerJournalObjectStoreSecretAccessKey",
+    "bridge-dev contract forbids sequencer object store secret"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.receiptSafeFields,
+    "scenarioName",
+    "bridge-dev contract allows scenario names"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.receiptSafeFields,
+    "proposalHash",
+    "bridge-dev contract allows proposal hashes"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.receiptSafeFields,
+    "authorizedTransactionName",
+    "bridge-dev contract allows authorized tx artifact names"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.receiptSafeFields,
+    "r2JournalEventPrefixHash",
+    "bridge-dev contract allows hashed R2 prefixes"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.scenarioIds,
+    "withdrawal-r2-sequencer-recovery",
+    "bridge-dev contract includes R2 recovery scenario"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.scenarioIds,
+    "two-node-degraded-withdrawal",
+    "bridge-dev contract includes degraded withdrawal scenario"
+  );
+  assertIncludes(
+    body.externalScenarioEvidenceContract.interpretationRules,
+    "Bridge-dev scenarios are opt-in external-state fixtures, not default CI proof.",
+    "bridge-dev contract identifies opt-in boundary"
+  );
 
   assertIncludes(body.upstreamSignals.map((item) => item.prNumber), 127, "trace includes bridge PR 127");
   const bridgePr = body.upstreamSignals.find((item) => item.prNumber === 127);
@@ -137,7 +239,7 @@ async function main() {
 
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
-  assertEqual(checkpointBody.counts.nockchainBridgeSourceAnchors, 12, "checkpoint bridge source anchor count");
+  assertEqual(checkpointBody.counts.nockchainBridgeSourceAnchors, 14, "checkpoint bridge source anchor count");
   assertEqual(checkpointBody.counts.nockchainBridgeExecutionFlowSteps, 8, "checkpoint bridge flow count");
   assertStartsWith(checkpointBody.roots.nockchainBridgeSourceTrace, "sha256:", "checkpoint bridge source root");
   assertEqual(
@@ -154,6 +256,16 @@ async function main() {
     checkpointBody.nockchainBridgeSourceTrace.receiptFields,
     "singleFlightWithdrawal",
     "checkpoint bridge source single-flight field"
+  );
+  assertIncludes(
+    checkpointBody.nockchainBridgeSourceTrace.receiptFields,
+    "scenarioName",
+    "checkpoint bridge source scenario field"
+  );
+  assertIncludes(
+    checkpointBody.nockchainBridgeSourceTrace.receiptFields,
+    "r2JournalEventPrefixHash",
+    "checkpoint bridge source R2 prefix hash field"
   );
   assertEqual(
     checkpointBody.links.nockchainBridgeSourceTrace,
@@ -179,6 +291,15 @@ async function main() {
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "Nockchain Bridge Source Trace", "README documents bridge source trace");
   assertIncludes(readme, "/api/nockchain/bridge-source", "README documents bridge source endpoint");
+  assertIncludes(readme, "bridge-dev", "README documents bridge-dev scenario evidence");
+
+  const bridgeSourcePage = readFileSync(path.join(process.cwd(), "src/app/nockchain/bridge/source/page.tsx"), "utf8");
+  assertIncludes(bridgeSourcePage, "External Scenario Contract", "bridge source page renders scenario contract");
+  assertIncludes(
+    bridgeSourcePage,
+    "externalScenarioEvidenceContract",
+    "bridge source page consumes scenario contract"
+  );
 }
 
 function findAnchor(body, id) {
