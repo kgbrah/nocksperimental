@@ -23,6 +23,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
+- Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
@@ -194,6 +195,15 @@ The state-jam provenance endpoint tracks metadata requirements and watched sourc
 Use it when a fakenet receipt or bootstrap workflow needs to explain which state-jam source was considered, what provenance is still missing, and which Nockchain build/protocol context should be attached before trusting the artifact.
 
 The state-jams page renders the same registry for operators: Zorp Drive folder classification, metadata-only policy, PMA boot and recovery safety, required provenance fields, verification questions, and the raw artifact denylist.
+
+## Nockchain PMA Source Trace
+
+The PMA source trace pins Nockchain's persistent memory arena and NockApp state-recovery path to exact Rust files and symbols. It follows PMA trailer metadata, growth and migration journal recovery, source PMA fdatasync before snapshot creation, ready snapshot verification, and SQLite event-log replay boundaries. It is receipt-oriented: publish metadata such as `pmaMetadataVersion`, `snapshotUsedBlake3`, `eventLogMaxEventNum`, `stateJamFingerprint`, `nockchainCommit`, and `nockchainBuild`, while keeping raw PMA slabs, copied snapshot PMAs, raw event-log SQLite files, raw state jams, and wallet secrets out of public evidence.
+
+- `/api/nockchain/pma`
+- `/nockchain/pma`
+
+Use it when a fakenet, state-jam, support-bundle, VESL, Launch Evidence, or future NockApp export-state receipt needs to explain how durable kernel state was produced, verified, or replayed without redistributing chain/runtime state.
 
 ## Nockchain Rust Workspace Atlas
 

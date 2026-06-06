@@ -86,6 +86,11 @@ export const registryEndpoints = [
     description: "Nockchain state-jam provenance registry"
   },
   {
+    id: "nockchain-pma-source-trace",
+    path: "/api/nockchain/pma",
+    description: "Nockchain PMA durability source trace"
+  },
+  {
     id: "nockchain-rust-atlas",
     path: "/api/nockchain/rust-atlas",
     description: "Nockchain Rust workspace atlas"
@@ -356,6 +361,7 @@ export function createWellKnownRegistryManifest() {
       nockchainReleaseAssets: endpointUrl("nockchain-release-assets"),
       zorpUpstream: endpointUrl("zorp-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
+      nockchainPmaSourceTrace: endpointUrl("nockchain-pma-source-trace"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
       nockchainRustSourceGuide: endpointUrl("nockchain-rust-source-guide"),
       nockchainNockAppAtlas: endpointUrl("nockchain-nockapp-atlas"),
@@ -411,6 +417,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-release-asset-manifest",
       "zorp-nockchain-upstream-map",
       "nockchain-state-jam-provenance",
+      "nockchain-pma-source-trace",
       "nockchain-rust-workspace-atlas",
       "nockchain-rust-source-guide",
       "nockchain-nockapp-runtime-atlas",
