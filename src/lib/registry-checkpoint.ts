@@ -7,6 +7,7 @@ import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
+import { createNockchainPrRadar } from "@/lib/nockchain-pr-radar";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
 import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
@@ -47,6 +48,7 @@ export function createRegistryCheckpoint() {
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
+  const nockchainPrRadar = createNockchainPrRadar();
   const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
@@ -95,6 +97,8 @@ export function createRegistryCheckpoint() {
       nockchainWalletAtlas.publicApiEvidenceContract.surfaces.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
     nockchainWatchChangeClasses: nockchainWatch.changeClassificationContract.classes.length,
+    nockchainOpenPullRequests: nockchainPrRadar.pullRequests.length,
+    nockchainPrRiskClasses: nockchainPrRadar.riskClasses.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
     pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
@@ -238,6 +242,15 @@ export function createRegistryCheckpoint() {
       watchQueue: nockchainWatch.watchQueue,
       monitor: nockchainWatch.monitor
     }),
+    nockchainPrRadar: createSha256Root({
+      observedAt: nockchainPrRadar.observedAt,
+      upstream: nockchainPrRadar.upstream,
+      snapshot: nockchainPrRadar.snapshot,
+      pullRequests: nockchainPrRadar.pullRequests,
+      riskClasses: nockchainPrRadar.riskClasses,
+      reviewContract: nockchainPrRadar.reviewContract,
+      operatorQueue: nockchainPrRadar.operatorQueue
+    }),
     nockchainSyncGossipTrace: createSha256Root({
       generatedAt: nockchainSyncGossipTrace.generatedAt,
       upstream: nockchainSyncGossipTrace.upstream,
@@ -350,6 +363,16 @@ export function createRegistryCheckpoint() {
         nockchainWatch.changeClassificationContract.requiredEvidenceFields.includes(
           "recommendedNocksperimentalUpdates"
         ),
+      nockchainPrRadarAvailable:
+        nockchainPrRadar.pullRequests.length === 12 &&
+        nockchainPrRadar.riskClasses.length >= 6 &&
+        nockchainPrRadar.pullRequests.some(
+          (pullRequest) =>
+            pullRequest.number === 116 &&
+            pullRequest.riskClass === "wallet-transaction-metadata" &&
+            (pullRequest.targetSurfaces as readonly string[]).includes("nockchainWalletAtlas")
+        ) &&
+        nockchainPrRadar.reviewContract.forbiddenFields.includes("walletSeedPhrase"),
       nockchainSyncGossipTraceAvailable:
         nockchainSyncGossipTrace.sourceAnchors.length > 0 &&
         nockchainSyncGossipTrace.triageScenarios.length > 0 &&
@@ -523,6 +546,19 @@ export function createRegistryCheckpoint() {
       latestCommitReleased: nockchainWatch.drift.latestCommitReleased,
       defaultBranchAheadOfRelease: nockchainWatch.drift.defaultBranchAheadOfRelease
     },
+    nockchainPrRadar: {
+      observedAt: nockchainPrRadar.observedAt,
+      openPullRequestCount: nockchainPrRadar.snapshot.openPullRequestCount,
+      draftCount: nockchainPrRadar.snapshot.draftCount,
+      highPriorityPrs: nockchainPrRadar.pullRequests
+        .filter((pullRequest) => pullRequest.priority === "high")
+        .map((pullRequest) => pullRequest.number),
+      riskClassIds: nockchainPrRadar.riskClasses.map((riskClass) => riskClass.id),
+      targetSurfaces: Array.from(
+        new Set(nockchainPrRadar.pullRequests.flatMap((pullRequest) => pullRequest.targetSurfaces))
+      ),
+      forbiddenFields: nockchainPrRadar.reviewContract.forbiddenFields
+    },
     nockchainBridgeTrace: {
       sourceCount: nockchainBridgeTrace.sourceAnchors.length,
       sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
@@ -587,6 +623,7 @@ export function createRegistryCheckpoint() {
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
+      nockchainPrRadar: `${registryCanonicalBaseUrl}/api/nockchain/pr-radar`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,

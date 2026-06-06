@@ -233,6 +233,15 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
+## Nockchain PR Radar
+
+The PR radar tracks currently open upstream Nockchain pull requests as early-warning signals before they become canonical behavior. It classifies Nockup manifest rendering, AI PoW puzzles, benchmark work, wallet blob/memo metadata, NockApp state export, stack-size behavior, install-path fixes, extension hooks, template pinning, Hoon app surfaces, and height-bound validation by target Nocksperimental surface, receipt impact, and verification command.
+
+- `/nockchain/pr-radar`
+- `/api/nockchain/pr-radar`
+
+Use it when deciding whether a pending upstream PR should refresh a Nockup, wallet, NockApp, operations, Rust atlas, compute benchmark, protocol trace, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
+
 ## Nockchain Sync/Gossip Source Trace
 
 The sync/gossip trace turns the latest Nockchain `nockchain-libp2p-io` source change into a receipt-safe diagnostic contract. It anchors `CatchUpSignal::is_catching_up`, `P2PState::should_suppress_outgoing_gossip`, driver `%gossip` fan-out, the `gossip_suppressed_behind_tip_total` metric, and upstream suppression tests so wrong block commitments, empty route tables, quiet mining output, and tx gossip silence can be interpreted with sync mode and Zorp/state-jam provenance attached.

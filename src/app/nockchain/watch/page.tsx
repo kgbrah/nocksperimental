@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Code2,
   GitBranch,
+  GitPullRequest,
   ListChecks,
   RadioTower,
   ShieldCheck
@@ -85,6 +86,13 @@ export default function NockchainWatchPage() {
               >
                 <GitBranch size={16} aria-hidden="true" />
                 Zorp Map
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/pr-radar"
+              >
+                <GitPullRequest size={16} aria-hidden="true" />
+                PR Radar
               </Link>
             </div>
           </div>
