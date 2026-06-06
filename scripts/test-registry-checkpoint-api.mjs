@@ -28,12 +28,18 @@ async function main() {
   assertGreaterThan(body.counts.publicBadgeEmbeds, 0, "public badge embed count");
   assertGreaterThan(body.counts.generatedReports, 0, "generated report count");
   assertGreaterThan(body.counts.localFakenetReports, 0, "local fakenet report count");
+  assertEqual(body.counts.zorpMonitorReviewClasses, 5, "Zorp monitor review class count");
   assertGreaterThan(body.counts.trustUpdates, 0, "trust update count");
   assertEqual(body.checks.appendOnlyTrustUpdates, true, "append-only trust updates");
   assertEqual(body.checks.validTrustUpdateSignatures, true, "valid trust update signatures");
   assertEqual(body.checks.generatedReportsAvailable, true, "generated reports available");
   assertEqual(body.checks.localFakenetEvidenceAvailable, true, "local fakenet evidence available");
   assertEqual(body.checks.publicBadgesAvailable, true, "public badges available");
+  assertEqual(
+    body.checks.zorpMonitorReviewContractAvailable,
+    true,
+    "Zorp monitor review contract available"
+  );
   assertStartsWith(body.roots.trustSignals, "sha256:", "trust signal root");
   assertStartsWith(body.roots.generatedReports, "sha256:", "generated reports root");
   assertStartsWith(body.roots.localFakenetEvidence, "sha256:", "local fakenet evidence root");

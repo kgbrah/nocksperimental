@@ -352,6 +352,105 @@ const repositoryWatchMatrix = [
   }
 ] as const;
 
+const zorpMonitorReviewContract = {
+  sourcePolicy: "zorp-nockchain-source-authority",
+  reviewOutputContract: [
+    "Every Zorp monitor finding must classify the source before recommending code, docs, receipt, or runbook updates.",
+    "Canonical Nockchain commits, releases, build tags, and Tier 0 docs outrank Zorp lineage or authoring repositories.",
+    "State-jam findings remain metadata-only until artifact identity, network context, and producing build are recorded.",
+    "Lineage and authoring findings can update fixtures or docs only after naming a target Nocksperimental surface and verification command."
+  ],
+  requiredEvidenceFields: [
+    "upstreamSourceUrl",
+    "observedAt",
+    "sourceAuthority",
+    "repoFullName",
+    "commitShaOrArtifactHash",
+    "affectedPaths",
+    "receiptImpact",
+    "operatorAction",
+    "nocksperimentalSurface",
+    "verificationCommand"
+  ],
+  classes: [
+    {
+      id: "canonical-nockchain",
+      label: "Canonical Nockchain",
+      escalation: "immediate",
+      sourceAuthority: "canonical-protocol-authority",
+      sourceSignals: [
+        "nockchain/nockchain commit or release",
+        "Tier 0 docs",
+        "PMA, fakenet, wallet, libp2p, bridge, or Hoon kernel path"
+      ],
+      targetSurfaces: [
+        "nockchainWatch",
+        "nockchainKnowledgeSpine",
+        "nockchainProtocolTrace",
+        "nockchainReleaseAssets"
+      ],
+      receiptRisk:
+        "Current protocol, runtime, wallet, mining, bridge, or build evidence can become stale.",
+      requiredAction:
+        "Refresh upstream commit/build provenance and rerun the affected Nockchain atlas or trace tests before accepting new receipts."
+    },
+    {
+      id: "zorp-authoring",
+      label: "Zorp Authoring",
+      escalation: "review",
+      sourceAuthority: "lineage-and-authoring-signal",
+      sourceSignals: ["zorp-corp/jock-lang", "Nock authoring examples", "compiler-facing docs"],
+      targetSurfaces: ["nockupValidation", "generatedLabReports", "fixtureDocs"],
+      receiptRisk:
+        "Fixture generation or explanation can drift even when current Nockchain protocol is unchanged.",
+      requiredAction:
+        "Review fixture assumptions and promote only reusable Jock/NockApp authoring patterns into Nocksperimental tests."
+    },
+    {
+      id: "zorp-lineage",
+      label: "Zorp Lineage",
+      escalation: "context-only",
+      sourceAuthority: "lineage-and-authoring-signal",
+      sourceSignals: ["zorp-corp/nockapp", "zorp-corp/sword", "zorp-corp/knock"],
+      targetSurfaces: ["zorpUpstream", "nockchainWatch", "docsResearch"],
+      receiptRisk:
+        "Historical runtime, persistence, or semantic notes can improve explanation but should not override canonical Nockchain sources.",
+      requiredAction:
+        "Update lineage notes only when they clarify NockApp fixture language, PMA/state interpretation, or Nock semantics."
+    },
+    {
+      id: "state-artifact-provenance",
+      label: "State Artifact Provenance",
+      escalation: "immediate",
+      sourceAuthority: "state-artifact-provenance",
+      sourceSignals: ["Zorp state-jam Drive folder", "checkpoint or state-jam artifact metadata"],
+      targetSurfaces: ["stateJamRegistry", "localFakenetEvidence", "nockchainOperationsAtlas"],
+      receiptRisk:
+        "Bootstrap artifacts can change local replay boundaries, balances, peer state, and support-bundle interpretation.",
+      requiredAction:
+        "Inventory source URL, filename, hash, size, network, height or event boundary, and producing build without storing raw artifacts."
+    },
+    {
+      id: "low-signal-tooling",
+      label: "Low-Signal Tooling",
+      escalation: "defer",
+      sourceAuthority: "zorp-public-repo-lineage",
+      sourceSignals: [
+        "zorp-corp/create-pull-request",
+        "zorp-corp/setup-bazel",
+        "zorp-corp/rust-cache",
+        "zorp-corp/criterion-compare-action",
+        "zorp-corp/mnist-hoon"
+      ],
+      targetSurfaces: ["docsResearch", "nockchainWatch"],
+      receiptRisk:
+        "Tooling updates are ecosystem context unless they affect reproducibility, benchmark reports, or fixture generation.",
+      requiredAction:
+        "Defer until Nockchain or a high-signal Zorp repo starts relying on the tooling for builds, tests, or evidence."
+    }
+  ]
+} as const;
+
 export function createZorpUpstreamMap() {
   const nockchain = nockchainUpstreamIntelligence;
 
@@ -473,6 +572,7 @@ export function createZorpUpstreamMap() {
         "new or renamed state-jam artifacts in the Drive folder"
       ]
     },
+    monitorReviewContract: zorpMonitorReviewContract,
     monitorBrief: zorpMonitorBrief,
     repositoryWatchMatrix,
     nocksperimentalImplications: {
@@ -487,6 +587,7 @@ export function createZorpUpstreamMap() {
       ],
       nextProductSlices: [
         "Expose Zorp repo and state-jam provenance beside Nockchain receipts.",
+        "Run monitor findings through the Zorp review contract before changing receipt or runbook assumptions.",
         "Attach source-layer labels to fakenet, VESL, and future nockup receipts.",
         "Let users connect their own fakenets while recording which Nockchain build and state source produced evidence.",
         "Use Jock/NockApp lineage to design higher-level NockApp fixture reports without confusing lineage with protocol authority."

@@ -82,6 +82,7 @@ export function createRegistryCheckpoint() {
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
     zorpWatchMatrixEntries: zorpUpstream.repositoryWatchMatrix.length,
+    zorpMonitorReviewClasses: zorpUpstream.monitorReviewContract.classes.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainBridgeSequencerLifecycleStates:
       nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.length,
@@ -186,6 +187,7 @@ export function createRegistryCheckpoint() {
       repositories: zorpUpstream.repositories,
       layers: zorpUpstream.layers,
       repositoryWatchMatrix: zorpUpstream.repositoryWatchMatrix,
+      monitorReviewContract: zorpUpstream.monitorReviewContract,
       monitor: zorpUpstream.monitor
     }),
     nockchainDocsAtlas: createSha256Root({
@@ -478,6 +480,23 @@ export function createRegistryCheckpoint() {
             entry.id === "authoring-fixtures" &&
             entry.sources.includes("zorp-corp/jock-lang")
         ),
+      zorpMonitorReviewContractAvailable:
+        zorpUpstream.monitorReviewContract.classes.length === 5 &&
+        zorpUpstream.monitorReviewContract.classes.some(
+          (reviewClass) =>
+            reviewClass.id === "canonical-nockchain" &&
+            reviewClass.escalation === "immediate" &&
+            reviewClass.targetSurfaces.includes("nockchainWatch")
+        ) &&
+        zorpUpstream.monitorReviewContract.classes.some(
+          (reviewClass) =>
+            reviewClass.id === "state-artifact-provenance" &&
+            reviewClass.sourceAuthority === "state-artifact-provenance" &&
+            reviewClass.targetSurfaces.includes("stateJamRegistry")
+        ) &&
+        zorpUpstream.monitorReviewContract.requiredEvidenceFields.includes(
+          "nocksperimentalSurface"
+        ),
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
     chain: {
@@ -539,6 +558,7 @@ export function createRegistryCheckpoint() {
         zorpUpstream.sourceAuthority.stateJams.sourceRole
       ],
       watchMatrixEntryIds: zorpUpstream.repositoryWatchMatrix.map((entry) => entry.id),
+      monitorReviewClassIds: zorpUpstream.monitorReviewContract.classes.map((entry) => entry.id),
       monitor: {
         active: zorpUpstream.monitor.active,
         interval: zorpUpstream.monitor.interval

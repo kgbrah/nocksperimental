@@ -169,6 +169,33 @@ async function main() {
   );
   assertIncludes(body.monitor.highSignalChanges, "Jock language/compiler changes", "Jock monitor signal");
 
+  assertEqual(
+    body.monitorReviewContract.sourcePolicy,
+    "zorp-nockchain-source-authority",
+    "Zorp monitor review source policy"
+  );
+  assertEqual(body.monitorReviewContract.classes.length, 5, "Zorp monitor review class count");
+  assertIncludes(
+    body.monitorReviewContract.reviewOutputContract,
+    "Every Zorp monitor finding must classify the source before recommending code, docs, receipt, or runbook updates.",
+    "Zorp review output contract"
+  );
+  assertIncludes(
+    body.monitorReviewContract.requiredEvidenceFields,
+    "upstreamSourceUrl",
+    "Zorp review evidence source field"
+  );
+  assertIncludes(
+    body.monitorReviewContract.requiredEvidenceFields,
+    "nocksperimentalSurface",
+    "Zorp review evidence surface field"
+  );
+  assertMonitorReviewClass(body, "canonical-nockchain", "immediate", "nockchainWatch");
+  assertMonitorReviewClass(body, "zorp-authoring", "review", "nockupValidation");
+  assertMonitorReviewClass(body, "zorp-lineage", "context-only", "zorpUpstream");
+  assertMonitorReviewClass(body, "state-artifact-provenance", "immediate", "stateJamRegistry");
+  assertMonitorReviewClass(body, "low-signal-tooling", "defer", "docsResearch");
+
   assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
   const canonicalRuntime = findWatchMatrixEntry(body, "canonical-runtime");
   assertEqual(canonicalRuntime.escalation, "immediate", "canonical runtime escalation");
@@ -226,6 +253,11 @@ async function main() {
     "Zorp provenance product slice"
   );
   assertIncludes(
+    body.nocksperimentalImplications.nextProductSlices,
+    "Run monitor findings through the Zorp review contract before changing receipt or runbook assumptions.",
+    "Zorp review contract product slice"
+  );
+  assertIncludes(
     body.nocksperimentalImplications.receiptFields,
     "zorpSource",
     "Zorp source receipt field"
@@ -256,11 +288,17 @@ async function main() {
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.zorpRepositories, 10, "checkpoint Zorp repo count");
   assertEqual(checkpointBody.counts.zorpWatchMatrixEntries, 5, "checkpoint Zorp watch matrix count");
+  assertEqual(checkpointBody.counts.zorpMonitorReviewClasses, 5, "checkpoint Zorp review class count");
   assertStartsWith(checkpointBody.roots.zorpUpstream, "sha256:", "checkpoint Zorp root");
   assertEqual(
     checkpointBody.checks.zorpWatchMatrixAvailable,
     true,
     "checkpoint Zorp watch matrix check"
+  );
+  assertEqual(
+    checkpointBody.checks.zorpMonitorReviewContractAvailable,
+    true,
+    "checkpoint Zorp review contract check"
   );
   assertIncludes(
     checkpointBody.zorpUpstream.watchMatrixEntryIds,
@@ -281,6 +319,16 @@ async function main() {
     checkpointBody.zorpUpstream.sourceAuthorityRoles,
     "state-artifact-provenance",
     "checkpoint source authority state role"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.monitorReviewClassIds,
+    "canonical-nockchain",
+    "checkpoint Zorp review canonical class"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.monitorReviewClassIds,
+    "state-artifact-provenance",
+    "checkpoint Zorp review state class"
   );
   assertEqual(
     checkpointBody.links.zorpUpstream,
@@ -328,6 +376,17 @@ function findWatchMatrixEntry(body, id) {
   }
 
   return entry;
+}
+
+function assertMonitorReviewClass(body, id, escalation, targetSurface) {
+  const reviewClass = body.monitorReviewContract.classes.find((candidate) => candidate.id === id);
+
+  if (!reviewClass) {
+    throw new Error(`Missing Zorp monitor review class: ${id}`);
+  }
+
+  assertEqual(reviewClass.escalation, escalation, `${id} escalation`);
+  assertIncludes(reviewClass.targetSurfaces, targetSurface, `${id} target surface`);
 }
 
 function loadTypeScriptModule(relativePath) {

@@ -37,6 +37,14 @@ const watchMatrixEntryOrder: readonly string[] = [
   "proof-and-semantics",
   "low-signal-tooling"
 ];
+const monitorReviewClassOrder: readonly string[] = [
+  "canonical-nockchain",
+  "zorp-authoring",
+  "zorp-lineage",
+  "state-artifact-provenance",
+  "low-signal-tooling"
+];
+const highlightedReviewEvidenceField = "nocksperimentalSurface";
 const highlightedWatchMatrixTrigger = "nockchain release/build tag change";
 const highlightedWatchMatrixAction = "Refresh upstream commit";
 
@@ -86,6 +94,14 @@ export default function ZorpIntelligencePage() {
     .map((id) => zorp.repositoryWatchMatrix.find((entry) => entry.id === id))
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
     .concat(zorp.repositoryWatchMatrix.filter((entry) => !watchMatrixEntryOrder.includes(entry.id)));
+  const orderedMonitorReviewClasses = monitorReviewClassOrder
+    .map((id) => zorp.monitorReviewContract.classes.find((entry) => entry.id === id))
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .concat(
+      zorp.monitorReviewContract.classes.filter(
+        (entry) => !monitorReviewClassOrder.includes(entry.id)
+      )
+    );
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -267,6 +283,49 @@ export default function ZorpIntelligencePage() {
                 <p className="mt-3 break-all font-mono text-xs leading-6 text-[#4A4A4A]">
                   fields: {entry.receiptFields.join(", ")}
                 </p>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Monitor Review Contract</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="sourcePolicy" value={zorp.monitorReviewContract.sourcePolicy} />
+            <Callout
+              label="requiredEvidenceFields"
+              value={zorp.monitorReviewContract.requiredEvidenceFields.join(", ")}
+            />
+            <Callout label="highlightedEvidenceField" value={highlightedReviewEvidenceField} />
+          </div>
+          <div className="mt-4 grid gap-3">
+            {zorp.monitorReviewContract.reviewOutputContract.map((rule) => (
+              <Callout key={rule} label="reviewRule" value={rule} />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {orderedMonitorReviewClasses.map((reviewClass) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={reviewClass.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {reviewClass.id}
+                </p>
+                <h3 className="mt-1 font-semibold">{reviewClass.label}</h3>
+                <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-[#4A4A4A]">
+                  escalation: {reviewClass.escalation}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">
+                  {reviewClass.receiptRisk}
+                </p>
+                <Callout
+                  label="targetSurfaces"
+                  value={reviewClass.targetSurfaces.join(", ")}
+                />
+                <Callout label="requiredAction" value={reviewClass.requiredAction} />
               </div>
             ))}
           </div>

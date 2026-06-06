@@ -105,12 +105,19 @@ async function main() {
   assertIncludes(page, "low-signal-tooling", "Zorp page renders low-signal tooling matrix entry");
   assertIncludes(page, "nockchain release/build tag change", "Zorp page renders canonical runtime trigger");
   assertIncludes(page, "Refresh upstream commit", "Zorp page renders matrix action");
+  assertIncludes(page, "Monitor Review Contract", "Zorp page renders monitor review contract");
+  assertIncludes(page, "canonical-nockchain", "Zorp page renders canonical Nockchain review class");
+  assertIncludes(page, "zorp-authoring", "Zorp page renders Zorp authoring review class");
+  assertIncludes(page, "state-artifact-provenance", "Zorp page renders state artifact review class");
+  assertIncludes(page, "nocksperimentalSurface", "Zorp page renders review evidence field");
+  assertIncludes(page, "targetSurfaces", "Zorp page labels review target surfaces");
   assertIncludes(page, 'href="/api/nockchain/zorp"', "Zorp page links API");
   assertIncludes(page, 'href="/nockchain"', "Zorp page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/zorp"', "Nockchain page links Zorp page");
   assertIncludes(readme, "/nockchain/zorp", "README documents Zorp page");
   assertIncludes(readme, "legacy `zorp-corp/nockchain` redirect", "README documents legacy redirect");
   assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
+  assertIncludes(readme, "monitor review contract", "README documents Zorp monitor review contract");
   assertEqual(
     packageJson.scripts["test:zorp-intelligence-page"],
     "node scripts/test-zorp-intelligence-page.mjs",

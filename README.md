@@ -21,6 +21,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
+- Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
@@ -171,14 +172,14 @@ Use it when a test run depends on a downloaded Nockchain binary, wallet build, N
 
 ## Zorp/Nockchain Upstream Map
 
-The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, the legacy `zorp-corp/nockchain` redirect, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos. It also exposes a source-authority matrix so receipts can distinguish canonical protocol authority, Zorp lineage/authoring signals, and metadata-only state-jam provenance.
+The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, the legacy `zorp-corp/nockchain` redirect, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos. It also exposes a source-authority matrix and monitor review contract so receipts can distinguish canonical protocol authority, Zorp lineage/authoring signals, metadata-only state-jam provenance, and low-signal tooling.
 
 - `/api/nockchain/zorp`
 - `/nockchain/zorp`
 
 Use it when interpreting whether a source is current protocol authority, historical lineage, state-jam provenance, or future product signal for Nocksperimental receipts.
 
-The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
+The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, a monitor review contract, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 ## Nockchain State-Jam Provenance
 
