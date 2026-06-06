@@ -1,0 +1,89 @@
+{
+  "version": "v0",
+  "status": "in-sync",
+  "observedAt": "2026-06-06T23:06:14.520Z",
+  "generatedAt": "2026-06-06T23:06:14.529Z",
+  "source": "scripts/refresh-drift-status.mjs",
+  "aggregateCommand": "npm run check:nockchain-upstream-drift -- --json",
+  "summary": {
+    "totalChecks": 10,
+    "inSyncChecks": 10,
+    "reviewNeededChecks": 0,
+    "failedChecks": 0
+  },
+  "checks": [
+    {
+      "id": "docs",
+      "label": "Tier 0 and promoted Tier 1 docs",
+      "domain": "source-authority",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "cargo-workspace",
+      "label": "Cargo workspace manifest",
+      "domain": "rust-workspace",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "cargo-manifests",
+      "label": "Crate Cargo manifests",
+      "domain": "rust-crate-manifests",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "bridge-source",
+      "label": "Bridge source anchors and bridge-dev scenarios",
+      "domain": "bridge-source",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "wallet-source",
+      "label": "Wallet transaction source anchors",
+      "domain": "wallet-source",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "release-assets",
+      "label": "Latest release assets",
+      "domain": "release-build",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "pr-radar",
+      "label": "Open PR and issue radar",
+      "domain": "pre-merge-review",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "zorp-org",
+      "label": "Zorp org and state-jam lineage",
+      "domain": "zorp-lineage",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "pma-source",
+      "label": "PMA, snapshot, and event-log source anchors",
+      "domain": "pma-state-jam",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    },
+    {
+      "id": "mining-source",
+      "label": "Mining and PoW source anchors",
+      "domain": "mining-pow",
+      "status": "in-sync",
+      "observedAt": "2026-06-06T23:06:14.520Z"
+    }
+  ],
+  "freshness": {
+    "maxAgeHours": 168
+  }
+}

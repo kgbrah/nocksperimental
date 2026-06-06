@@ -60,7 +60,7 @@ async function main() {
     body,
     "event-log-replay-boundary",
     "crates/nockapp/src/event_log.rs",
-    "EventLog::replay_events_after"
+    "replay_events_after"
   );
   assertSourceAnchor(
     body,

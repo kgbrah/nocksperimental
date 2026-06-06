@@ -146,6 +146,11 @@ export const registryEndpoints = [
     description: "Nockchain upstream watch board"
   },
   {
+    id: "nockchain-drift-status",
+    path: "/api/nockchain/drift-status",
+    description: "Public Nockchain upstream drift status snapshot"
+  },
+  {
     id: "nockchain-pr-radar",
     path: "/api/nockchain/pr-radar",
     description: "Nockchain open PR radar"
@@ -403,6 +408,7 @@ export function createWellKnownRegistryManifest() {
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
       nockchainApiSourceTrace: endpointUrl("nockchain-api-source-trace"),
       nockchainWatch: endpointUrl("nockchain-watch"),
+      nockchainDriftStatus: endpointUrl("nockchain-drift-status"),
       nockchainPrRadar: endpointUrl("nockchain-pr-radar"),
       nockchainImpactQueue: endpointUrl("nockchain-impact-queue"),
       nockchainSyncGossipTrace: endpointUrl("nockchain-sync-gossip-trace"),
@@ -443,6 +449,7 @@ export function createWellKnownRegistryManifest() {
       "registry-checkpoints",
       "public-verification-index",
       "nockchain-upstream-intelligence",
+      "nockchain-drift-status",
       "nockchain-docs-protocol-atlas",
       "nockchain-knowledge-spine",
       "nockchain-cargo-surface",

@@ -231,6 +231,8 @@ The PMA source trace pins Nockchain's persistent memory arena and NockApp state-
 - `/api/nockchain/pma`
 - `/nockchain/pma`
 
+Run `npm run check:nockchain-pma-source-drift -- --json` to compare the commit-pinned PMA, snapshot, and event-log source anchors against current upstream `nockchain/nockchain` master before state-jam, fakenet, or Launch Evidence bootstrap receipts rely on them.
+
 Use it when a fakenet, state-jam, support-bundle, VESL, Launch Evidence, or future NockApp export-state receipt needs to explain how durable kernel state was produced, verified, or replayed without redistributing chain/runtime state.
 
 ## Nockchain Runtime Safety Trace
@@ -358,7 +360,16 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, and mining source drift checks into one monitor report before treating the watch board as current.
+
+### Drift Status (public freshness snapshot)
+
+The drift-status surface publishes the latest aggregate drift result as a committed, deterministic snapshot so anyone can confirm Nocksperimental is still pinned to the exact Nockchain build it tests against — without a live fetch at request time.
+
+- `/nockchain/drift-status`
+- `/api/nockchain/drift-status`
+
+The snapshot lives at `src/data/nockchain-drift-status.json` and is read offline by the page, API, and tests. Run `npm run refresh:nockchain-drift-status` (or `-- --dry-run` to preview) to regenerate it from the live aggregate check. The scheduled `.github/workflows/nockchain-drift-monitor.yml` Action refreshes it daily and opens a pull request when drift is detected. Each entry carries a `status`, `observedAt`, and a computed `freshness` (`stale` once the snapshot is older than `maxAgeHours`); the surface stays a watch board, never authority, and never publishes raw chain state or secrets.
 
 ## Nockchain PR Radar
 
@@ -401,6 +412,8 @@ The mining/PoW source trace anchors upstream fakenet miner scripts, CLI flags, f
 
 - `/nockchain/mining/source`
 - `/api/nockchain/mining-source`
+
+Run `npm run check:nockchain-mining-source-drift -- --json` to compare the commit-pinned mining and PoW source anchors against current upstream `nockchain/nockchain` master before fakenet mining or block-commitment receipts rely on them.
 
 Use it when diagnosing wrong block commitments, empty routing tables, quiet fakenet miners, stale candidate work, or confusion between libp2p anti-spam PoW and block-mining proof.
 

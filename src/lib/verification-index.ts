@@ -63,6 +63,12 @@ const verificationEndpoints = [
     path: "/api/registry/checkpoint",
     description: "Verify registry counts, roots, and append-only trust update state",
     queryParameters: []
+  },
+  {
+    id: "nockchain-drift-status",
+    path: "/api/nockchain/drift-status",
+    description: "Read the committed Nockchain upstream drift status snapshot to confirm pinned sources are still current",
+    queryParameters: []
   }
 ];
 

@@ -92,10 +92,20 @@ const aggregateDriftCheck = {
       id: "zorp-org",
       command: "npm run check:zorp-org-drift -- --json",
       targetSurface: "zorpUpstream"
+    },
+    {
+      id: "pma-source",
+      command: "npm run check:nockchain-pma-source-drift -- --json",
+      targetSurface: "nockchainPmaSourceTrace"
+    },
+    {
+      id: "mining-source",
+      command: "npm run check:nockchain-mining-source-drift -- --json",
+      targetSurface: "nockchainMiningSourceTrace"
     }
   ],
   interpretation:
-    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, wallet transaction source, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
+    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, wallet transaction source, release asset, PR radar, Zorp org, PMA source, and mining source drift checks as one monitor report before treating watch-board evidence as current."
 } as const;
 
 const watchQueue = [

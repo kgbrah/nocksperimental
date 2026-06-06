@@ -414,6 +414,29 @@ const localVerification = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-mining-source-drift -- --json",
+  script: "scripts/check-nockchain-mining-source-drift.mjs",
+  testCommand: "npm run test:nockchain-mining-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainMiningSourceTrace",
+    "nockchainSyncGossipTrace",
+    "localFakenetEvidence",
+    "nockchainOperationsAtlas",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned mining and PoW source anchors against current upstream master before fakenet mining or block-commitment receipts rely on them."
+} as const;
+
 export function createNockchainMiningSourceTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -441,6 +464,7 @@ export function createNockchainMiningSourceTrace() {
     diagnosticScenarios: [...diagnosticScenarios],
     receiptContract,
     localVerification,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "Use mining source receipts when diagnosing wrong block commitments, empty route tables, or quiet local fakenet miners.",
       "Pair mining evidence with sync/gossip diagnostics before deciding whether no output is a mining failure or an upstream connectivity/sync state.",

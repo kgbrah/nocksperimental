@@ -90,10 +90,10 @@ const sourceAnchors = [
     lineRange: "261-414",
     symbols: [
       "EventLog::open",
-      "EventLog::append_event",
-      "EventLog::quick_check",
-      "EventLog::insert_ready_snapshot",
-      "EventLog::replay_events_after"
+      "append_event",
+      "quick_check",
+      "insert_ready_snapshot",
+      "replay_events_after"
     ],
     sourceUrls: [sourceUrl("crates/nockapp/src/event_log.rs", 261, 414)],
     role:
@@ -110,7 +110,7 @@ const sourceAnchors = [
       "SerfThread::new_with_event_log",
       "EventLog::open",
       "PmaPersistMetadata::new",
-      "SerfThread::replay_event_jobs"
+      "replay_event_jobs"
     ],
     sourceUrls: [
       sourceUrl("crates/nockapp/src/kernel/form.rs", 780, 852),
@@ -232,6 +232,29 @@ const operatorGuards = [
   "verify-snapshot-before-trusting-state-jam"
 ] as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-pma-source-drift -- --json",
+  script: "scripts/check-nockchain-pma-source-drift.mjs",
+  testCommand: "npm run test:nockchain-pma-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainPmaSourceTrace",
+    "nockchainStateJams",
+    "localFakenetEvidence",
+    "launchEvidence",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned PMA, snapshot, and event-log source anchors against current upstream master before state-jam, fakenet, or Launch Evidence bootstrap receipts rely on them."
+} as const;
+
 export function createNockchainPmaSourceTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -254,6 +277,7 @@ export function createNockchainPmaSourceTrace() {
     eventLogContract,
     receiptContract,
     operatorGuards,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "State-jam receipts should cite PMA metadata, snapshot manifest, event boundary, and producing build before trusting bootstrap state.",
       "Fakenet support bundles can include PMA/source trace ids without attaching raw slabs, SQLite event logs, or state jams.",

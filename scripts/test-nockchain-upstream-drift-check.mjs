@@ -46,8 +46,8 @@ async function main() {
   assertEqual(passing.status, 0, "matching fixture exit status");
   const passingBody = JSON.parse(passing.stdout);
   assertEqual(passingBody.status, "in-sync", "matching fixture status");
-  assertEqual(passingBody.summary.totalChecks, 8, "matching total check count");
-  assertEqual(passingBody.summary.inSyncChecks, 8, "matching in-sync check count");
+  assertEqual(passingBody.summary.totalChecks, 10, "matching total check count");
+  assertEqual(passingBody.summary.inSyncChecks, 10, "matching in-sync check count");
   assertEqual(passingBody.summary.reviewNeededChecks, 0, "matching review-needed check count");
   assertEqual(passingBody.summary.failedChecks, 0, "matching failed check count");
   assertIncludes(
@@ -89,6 +89,16 @@ async function main() {
     passingBody.requiredCommands,
     "npm run check:zorp-org-drift -- --json",
     "aggregate includes Zorp org drift command"
+  );
+  assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-pma-source-drift -- --json",
+    "aggregate includes PMA source drift command"
+  );
+  assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-mining-source-drift -- --json",
+    "aggregate includes mining source drift command"
   );
   assertIncludes(
     passingBody.sourceUrls,
@@ -140,7 +150,7 @@ async function main() {
   assertEqual(drift.status, 1, "drift fixture exit status");
   const driftBody = JSON.parse(drift.stdout);
   assertEqual(driftBody.status, "review-needed", "drift fixture status");
-  assertEqual(driftBody.summary.inSyncChecks, 7, "drift fixture in-sync count");
+  assertEqual(driftBody.summary.inSyncChecks, 9, "drift fixture in-sync count");
   assertEqual(driftBody.summary.reviewNeededChecks, 1, "drift fixture review-needed count");
   assertIncludes(driftBody.drift.reviewNeededCheckIds, "pr-radar", "aggregate detects PR radar drift");
   assertIncludes(
@@ -357,6 +367,20 @@ function fixtureChecks() {
       id: "zorp-org",
       sourceUrls: ["https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public"],
       snapshot: { localRepoCount: 10, githubRepoCount: 10 }
+    },
+    {
+      id: "pma-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/nockvm/src/pma.rs"
+      ],
+      snapshot: { sourceAnchorCount: 6, sourceFileCount: 4 }
+    },
+    {
+      id: "mining-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain/src/mining.rs"
+      ],
+      snapshot: { sourceAnchorCount: 14, sourceFileCount: 11 }
     }
   ];
 }

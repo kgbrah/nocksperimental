@@ -61,6 +61,20 @@ const aggregateChecks = [
     domain: "zorp-lineage",
     command: "npm run check:zorp-org-drift -- --json",
     npmScript: "check:zorp-org-drift"
+  },
+  {
+    id: "pma-source",
+    label: "PMA, snapshot, and event-log source anchors",
+    domain: "pma-state-jam",
+    command: "npm run check:nockchain-pma-source-drift -- --json",
+    npmScript: "check:nockchain-pma-source-drift"
+  },
+  {
+    id: "mining-source",
+    label: "Mining and PoW source anchors",
+    domain: "mining-pow",
+    command: "npm run check:nockchain-mining-source-drift -- --json",
+    npmScript: "check:nockchain-mining-source-drift"
   }
 ];
 
