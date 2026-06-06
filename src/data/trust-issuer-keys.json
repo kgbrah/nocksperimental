@@ -1,0 +1,24 @@
+{
+  "version": "v0",
+  "activeKeyId": "nocksperimental-registry-ed25519-dev-v1",
+  "issuerKeys": [
+    {
+      "keyId": "nocksperimental-registry-ed25519-dev-v0",
+      "algorithm": "ed25519",
+      "validFrom": "2026-05-01T00:00:00.000Z",
+      "validUntil": "2026-06-01T00:00:00.000Z",
+      "status": "retired",
+      "supersededBy": "nocksperimental-registry-ed25519-dev-v1",
+      "publicKeySpki": "MCowBQYDK2VwAyEAwxDyAQni/0RIaXTg7Hccb8vKSxsjGbXXyqB7VAo5oxo="
+    },
+    {
+      "keyId": "nocksperimental-registry-ed25519-dev-v1",
+      "algorithm": "ed25519",
+      "validFrom": "2026-06-01T00:00:00.000Z",
+      "validUntil": null,
+      "status": "active",
+      "supersededBy": null,
+      "publicKeySpki": "MCowBQYDK2VwAyEAaeOavsSuuVkJEiKVsDDEDDr6n3sPgTDFTUViV2ir3ZY="
+    }
+  ]
+}

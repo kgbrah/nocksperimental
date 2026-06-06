@@ -492,12 +492,21 @@ Current verifier families:
 - trust updates: `/api/trust/updates/verify`
 - registry checkpoints: `/api/registry/checkpoint`
 
+### Upstream-anchored, Ed25519-signed badges
+
+Verified badges are now bound to the exact Nockchain build they were verified against and are cryptographically signed for offline verification:
+
+- Each badge records a `sourceAnchor` (`commit`, `build`) and resolves a `freshness` of `fresh | stale | unknown` by comparing that anchor to the current pinned upstream commit; a badge goes `stale` when Nockchain drifts past the commit it was verified against.
+- Issuance receipts are signed with a real Ed25519 key (Node built-in, no dependency) over the canonical signed payload, which includes the `sourceAnchor`. `/api/trust/badges/verify` verifies the signature against the published issuer public key and reports `signatureCryptographicallyValid`, `freshness`, and `staleWarning` alongside revocation status.
+- Issuer public keys are discoverable at `/api/trust/keys` with a rotation model (`validFrom`/`validUntil`/`status`); retired keys still verify the badges they signed, so verification never depends on trusting the hosted endpoint. Production signs with the `NOCKS_BADGE_ISSUER_SIGNING_SEED` env var; committed demo badges are signed with a public dev seed and can be regenerated with `npm run trust:badges:sign`.
+
 Registry and discovery endpoints:
 
 - `/registry`
 - `/api/registry`
 - `/api/registry/checkpoint`
 - `/api/trust`
+- `/api/trust/keys`
 - `/api/trust/feed`
 - `/api/trust/updates`
 - `/openapi.json`

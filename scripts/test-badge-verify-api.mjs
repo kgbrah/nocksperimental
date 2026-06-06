@@ -47,6 +47,34 @@ async function main() {
   assertEqual(verifiedBody.match.links.verification, "https://nocksperimental.com/api/trust/badges/badge-payment-flow-verified/verification", "verification link");
   assertEqual(verifiedBody.match.links.embed, "https://nocksperimental.com/api/trust/badges/badge-payment-flow-verified/embed", "embed link");
   assertEqual(verifiedBody.match.links.reportProvenance, "https://nocksperimental.com/api/reports/generated/payment-flow/provenance", "provenance link");
+  // Pillar 2: real Ed25519 verification + upstream freshness.
+  assertEqual(verifiedBody.checks.signatureCryptographicallyValid, true, "cryptographic signature valid");
+  assertEqual(verifiedBody.checks.issuerKeyResolved, true, "issuer key resolved");
+  assertEqual(verifiedBody.checks.upstreamFresh, true, "verified badge is upstream-fresh");
+  assertEqual(verifiedBody.freshness, "fresh", "verified badge freshness");
+  assertEqual(verifiedBody.staleWarning, false, "verified badge no stale warning");
+  assertEqual(verifiedBody.match.links.issuerKeys, "https://nocksperimental.com/api/trust/keys", "issuer key discovery link");
+  assertEqual(verifiedBody.match.sourceAnchor.commit, "33ba97b1e206dd89b15c61b72b7802caf2136c18", "matched source anchor commit");
+
+  // Cross-badge replay: a valid signature from another badge must not verify here.
+  const solverBundle = loadTypeScriptModule("src/lib/trust-badge-verification.ts")
+    .createBadgeVerificationBundle("badge-solver-a-qualified");
+  const replay = await GET(createRequest({
+    badgeId: "badge-payment-flow-verified",
+    signature: solverBundle.issuance.signature
+  }));
+  const replayBody = await replay.json();
+  assertEqual(replayBody.verified, false, "cross-badge replay does not verify");
+  assertEqual(replayBody.checks.signatureMatched, false, "cross-badge replay signature mismatch");
+
+  // Revoked + stale legacy badge: cryptographically valid signature, but not verified.
+  const legacyVerify = await GET(createRequest({ badgeId: "badge-payment-flow-legacy" }));
+  const legacyBody = await legacyVerify.json();
+  assertEqual(legacyBody.verified, false, "revoked legacy badge not verified");
+  assertEqual(legacyBody.checks.notRevoked, false, "legacy badge is revoked");
+  assertEqual(legacyBody.checks.signatureCryptographicallyValid, true, "legacy signature still cryptographically valid");
+  assertEqual(legacyBody.freshness, "stale", "legacy badge is stale");
+  assertEqual(legacyBody.staleWarning, true, "legacy badge raises stale warning");
 
   const badSignature = await GET(createRequest({
     badgeId: badgeBundle.badgeId,

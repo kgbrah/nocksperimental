@@ -296,6 +296,11 @@ export const registryEndpoints = [
     description: "Verified badge registry"
   },
   {
+    id: "trust-issuer-keys",
+    path: "/api/trust/keys",
+    description: "Public badge issuer key discovery"
+  },
+  {
     id: "trust-feed",
     path: "/api/trust/feed",
     description: "Chronological trust registry event feed"
@@ -439,12 +444,15 @@ export function createWellKnownRegistryManifest() {
       workspaceUploadTokenVerifier: endpointUrl("workspace-upload-token-verifier"),
       workspaceEvidenceVerifier: endpointUrl("workspace-evidence-verifier"),
       verifiedBadges: endpointUrl("verified-badges"),
+      trustIssuerKeys: endpointUrl("trust-issuer-keys"),
       trustFeed: endpointUrl("trust-feed"),
       trustUpdates: endpointUrl("registry-updates"),
       bazaar: endpointUrl("bazaar-directory")
     },
     capabilities: [
       "verified-badges",
+      "upstream-anchored-badges",
+      "trust-issuer-key-discovery",
       "append-only-trust-updates",
       "registry-checkpoints",
       "public-verification-index",

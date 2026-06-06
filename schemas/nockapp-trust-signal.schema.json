@@ -72,6 +72,20 @@
     }
   },
   "$defs": {
+    "sourceAnchor": {
+      "type": "object",
+      "required": ["commit", "build"],
+      "additionalProperties": false,
+      "properties": {
+        "commit": { "type": "string" },
+        "build": { "type": "string" },
+        "workspaceMemberHash": { "type": "string" },
+        "sourceRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "verifiedBadge": {
       "type": "object",
       "required": [
@@ -84,10 +98,12 @@
         "issuedAt",
         "expiresAt",
         "issuer",
-        "evidence"
+        "evidence",
+        "sourceAnchor"
       ],
       "additionalProperties": false,
       "properties": {
+        "sourceAnchor": { "$ref": "#/$defs/sourceAnchor" },
         "id": { "type": "string" },
         "label": { "type": "string" },
         "kind": {
@@ -156,7 +172,8 @@
             "reportHash",
             "snapshotRoot",
             "issuedAt",
-            "expiresAt"
+            "expiresAt",
+            "sourceAnchor"
           ],
           "additionalProperties": false,
           "properties": {
@@ -173,7 +190,8 @@
             "expiresAt": {
               "type": "string",
               "format": "date-time"
-            }
+            },
+            "sourceAnchor": { "$ref": "#/$defs/sourceAnchor" }
           }
         },
         "verification": {

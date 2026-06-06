@@ -16,7 +16,13 @@
         "reportHash": "sha256:3a6d6bff59cb624f-payment-flow",
         "snapshotRoot": "3a6d6bff59cb624f",
         "signature": "nocklab-sig-payment-flow-v0",
-        "invariantPacks": ["payments-core-v0"]
+        "invariantPacks": [
+          "payments-core-v0"
+        ]
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
     },
     {
@@ -33,7 +39,13 @@
         "reportHash": "sha256:legacy-payment-flow-alpha",
         "snapshotRoot": "payment-flow-alpha-root",
         "signature": "nocklab-sig-payment-flow-alpha",
-        "invariantPacks": ["payments-core-v0"]
+        "invariantPacks": [
+          "payments-core-v0"
+        ]
+      },
+      "sourceAnchor": {
+        "commit": "5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4",
+        "build": "build-5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4"
       }
     },
     {
@@ -50,7 +62,13 @@
         "reportHash": "sha256:b84c2c688d08c3c2-intent-settlement",
         "snapshotRoot": "b84c2c688d08c3c2",
         "signature": "nocklab-sig-solver-a-v0",
-        "invariantPacks": ["intents-core-v0"]
+        "invariantPacks": [
+          "intents-core-v0"
+        ]
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
     },
     {
@@ -67,7 +85,13 @@
         "reportHash": "sha256:cd7cc46d9b8d0f59-token-issuance",
         "snapshotRoot": "cd7cc46d9b8d0f59",
         "signature": "nocklab-sig-token-compatible-v0",
-        "invariantPacks": ["token-issuance-core-v0"]
+        "invariantPacks": [
+          "token-issuance-core-v0"
+        ]
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
     },
     {
@@ -85,6 +109,10 @@
         "snapshotRoot": "compute-alpha-jobclass-root",
         "signature": "nocklab-sig-compute-alpha-v0",
         "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
     }
   ],
@@ -95,19 +123,23 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
-      "payloadDigest": "sha256:issue-payment-flow-v0-3a6d6bff59cb624f",
-      "signature": "ed25519-dev-sig-issue-payment-flow-v0",
+      "payloadDigest": "sha256:caf644841075a99fedb76c75c94d510fb9c14ec06715ef1515018779069789f9",
+      "signature": "ePvuCT6037ajCJkBmFAWdnyN9b1msztnG3CdJwv6f7muzQ54BPxxDJkrOqjicKcZf5bjY8GnNfdYMDd1KUEqBw==",
       "signedPayload": {
         "badgeId": "badge-payment-flow-verified",
         "status": "verified",
         "reportHash": "sha256:3a6d6bff59cb624f-payment-flow",
         "snapshotRoot": "3a6d6bff59cb624f",
         "issuedAt": "2026-05-30T02:00:00.000Z",
-        "expiresAt": "2027-05-30T02:00:00.000Z"
+        "expiresAt": "2027-05-30T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
       },
       "verification": {
         "status": "valid",
-        "algorithm": "ed25519-devnet-v0",
+        "algorithm": "ed25519",
         "checkedAt": "2026-05-30T02:10:00.000Z"
       }
     },
@@ -117,19 +149,23 @@
       "issuedAt": "2026-05-20T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
-      "payloadDigest": "sha256:issue-payment-flow-alpha-payment-flow-alpha-root",
-      "signature": "ed25519-dev-sig-issue-payment-flow-alpha",
+      "payloadDigest": "sha256:823368c3cbf3710e2be36e4dd3275bedba9cbfdeab8ba7d09a5f4b0cc7f11cfc",
+      "signature": "/d2WKvIui+Xap6KlNmVPlgVXHoffcJ6UyC3hfI0Dk+iB1WECQ4/CBxMc8JzbEdwIP7SIdW0zupn7xJaxie3PCA==",
       "signedPayload": {
         "badgeId": "badge-payment-flow-legacy",
         "status": "verified",
         "reportHash": "sha256:legacy-payment-flow-alpha",
         "snapshotRoot": "payment-flow-alpha-root",
         "issuedAt": "2026-05-20T02:00:00.000Z",
-        "expiresAt": "2027-05-20T02:00:00.000Z"
+        "expiresAt": "2027-05-20T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4",
+          "build": "build-5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4"
+        }
       },
       "verification": {
         "status": "valid",
-        "algorithm": "ed25519-devnet-v0",
+        "algorithm": "ed25519",
         "checkedAt": "2026-05-20T02:10:00.000Z"
       }
     },
@@ -139,19 +175,23 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
-      "payloadDigest": "sha256:issue-intent-settlement-v0-b84c2c688d08c3c2",
-      "signature": "ed25519-dev-sig-issue-solver-a-v0",
+      "payloadDigest": "sha256:ff78de12cbe959192a25086cb17aeb67e98429152c47938b948f7ff72199f277",
+      "signature": "JaT+7sKReU2gYbZAZsn8KX8IA/LKB/6GyvjbhmltSYBoGJ/uOKZnTXA+yAoumZZLdfobZl9vfV+lz8WGcn+8BA==",
       "signedPayload": {
         "badgeId": "badge-solver-a-qualified",
         "status": "verified",
         "reportHash": "sha256:b84c2c688d08c3c2-intent-settlement",
         "snapshotRoot": "b84c2c688d08c3c2",
         "issuedAt": "2026-05-30T02:00:00.000Z",
-        "expiresAt": "2027-05-30T02:00:00.000Z"
+        "expiresAt": "2027-05-30T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
       },
       "verification": {
         "status": "valid",
-        "algorithm": "ed25519-devnet-v0",
+        "algorithm": "ed25519",
         "checkedAt": "2026-05-30T02:10:00.000Z"
       }
     },
@@ -161,19 +201,23 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
-      "payloadDigest": "sha256:issue-token-issuance-v0-cd7cc46d9b8d0f59",
-      "signature": "ed25519-dev-sig-issue-token-compatible-v0",
+      "payloadDigest": "sha256:6c367ab05a9aa274a133fd4200f121d5db0e31a7b0c8cacae7f3d56ecc180603",
+      "signature": "dzumu+E3FeEz8f1Fnjdw5zlF3EPLy77fSJ7zaYWriLgV1fSxjruVEjgcZJ4VxDRZ2v/CXgU2BdFTbhcDQxiWBQ==",
       "signedPayload": {
         "badgeId": "badge-mock-token-compatible",
         "status": "verified",
         "reportHash": "sha256:cd7cc46d9b8d0f59-token-issuance",
         "snapshotRoot": "cd7cc46d9b8d0f59",
         "issuedAt": "2026-05-30T02:00:00.000Z",
-        "expiresAt": "2027-05-30T02:00:00.000Z"
+        "expiresAt": "2027-05-30T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
       },
       "verification": {
         "status": "valid",
-        "algorithm": "ed25519-devnet-v0",
+        "algorithm": "ed25519",
         "checkedAt": "2026-05-30T02:10:00.000Z"
       }
     },
@@ -183,19 +227,23 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
-      "payloadDigest": "sha256:issue-compute-alpha-v0-compute-alpha-jobclass-root",
-      "signature": "ed25519-dev-sig-issue-compute-alpha-v0",
+      "payloadDigest": "sha256:d0ac08ffff94d7e1bd30dc3cb96e24648b584e88560c534a35f9f72772854590",
+      "signature": "2YDT+gCzr2GUCrVdVYI9bRro2l3nwWGWjChUrTzrkH9z0j+krSwgWliuTTmDwy5XpcuGXmJ6xGy4EllmEg2xBw==",
       "signedPayload": {
         "badgeId": "badge-compute-provider-alpha",
         "status": "verified",
         "reportHash": "sha256:benchmark-alpha-provider-profile",
         "snapshotRoot": "compute-alpha-jobclass-root",
         "issuedAt": "2026-05-30T02:00:00.000Z",
-        "expiresAt": "2027-05-30T02:00:00.000Z"
+        "expiresAt": "2027-05-30T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
       },
       "verification": {
         "status": "valid",
-        "algorithm": "ed25519-devnet-v0",
+        "algorithm": "ed25519",
         "checkedAt": "2026-05-30T02:10:00.000Z"
       }
     }
@@ -228,7 +276,7 @@
       "fixtureId": "intent-settlement-v0",
       "metrics": {
         "fillRate": 0.99,
-        "failureRate": 0.0,
+        "failureRate": 0,
         "medianSettlementMs": 740,
         "proofLatencyMs": 1180,
         "replayCount": 128

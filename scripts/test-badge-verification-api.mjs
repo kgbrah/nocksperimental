@@ -15,6 +15,11 @@ main().catch((error) => {
 });
 
 async function main() {
+  const trustSignals = require(path.join(process.cwd(), "src/data/trust-signals.json"));
+  const expectedDigest = trustSignals.badgeIssuanceReceipts.find(
+    (issuance) => issuance.badgeId === "badge-payment-flow-verified"
+  ).payloadDigest;
+
   const { GET } = loadTypeScriptModule("src/app/api/trust/badges/[badgeId]/verification/route.ts");
   const response = await GET(createRequest(), createContext("badge-payment-flow-verified"));
   const body = await response.json();
@@ -30,7 +35,7 @@ async function main() {
   assertEqual(body.checks.publicEmbedAvailable, true, "public embed check");
   assertEqual(body.issuance.verification.status, "valid", "issuance verification status");
   assertEqual(body.issuance.issuerKeyId, "nocksperimental-registry-ed25519-dev-v0", "issuer key id");
-  assertEqual(body.issuance.payloadDigest, "sha256:issue-payment-flow-v0-3a6d6bff59cb624f", "payload digest");
+  assertEqual(body.issuance.payloadDigest, expectedDigest, "payload digest");
   assertEqual(body.evidence.reportHash, "sha256:3a6d6bff59cb624f-payment-flow", "report hash");
   assertEqual(body.evidence.snapshotRoot, "3a6d6bff59cb624f", "snapshot root");
   assertEqual(body.revocation, null, "active badge revocation");

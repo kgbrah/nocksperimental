@@ -1,4 +1,9 @@
 import trustSignalData from "@/data/trust-signals.json";
+import {
+  computeBadgeFreshness,
+  type BadgeFreshness,
+  type BadgeSourceAnchor
+} from "@/lib/trust-badge-freshness";
 
 export type TrustBadgeKind =
   | "app-report"
@@ -26,6 +31,7 @@ export type VerifiedBadge = {
     signature: string;
     invariantPacks: string[];
   };
+  sourceAnchor: BadgeSourceAnchor;
 };
 
 export type BadgeRevocation = {
@@ -60,6 +66,7 @@ export type BadgeIssuanceReceipt = {
     snapshotRoot: string;
     issuedAt: string;
     expiresAt: string;
+    sourceAnchor: BadgeSourceAnchor;
   };
   verification: {
     status: BadgeIssuanceVerificationStatus;
@@ -71,6 +78,7 @@ export type BadgeIssuanceReceipt = {
 export type ResolvedVerifiedBadge = VerifiedBadge & {
   currentStatus: TrustBadgeStatus;
   isRevoked: boolean;
+  freshness: BadgeFreshness;
   issuance?: BadgeIssuanceReceipt;
   revocation?: BadgeRevocation;
 };
@@ -83,8 +91,11 @@ export type TrustBadgeEmbed = {
   fixtureId: string;
   issuanceDigest: string;
   issuerKeyId: string;
+  freshness: BadgeFreshness;
+  sourceCommit: string;
   verificationUrl: string;
   apiUrl: string;
+  keyDiscoveryUrl: string;
   htmlSnippet: string;
   markdownSnippet: string;
 };
@@ -261,6 +272,7 @@ function resolveBadge(badge: VerifiedBadge): ResolvedVerifiedBadge {
     ...badge,
     currentStatus: revocation ? "revoked" : badge.status,
     isRevoked: Boolean(revocation),
+    freshness: computeBadgeFreshness(badge.sourceAnchor),
     issuance,
     revocation
   };
@@ -394,14 +406,19 @@ function createBadgeEmbed(badge: ResolvedVerifiedBadge): TrustBadgeEmbed {
     fixtureId: badge.fixtureId,
     issuanceDigest: issuance.payloadDigest,
     issuerKeyId: issuance.issuerKeyId,
+    freshness: badge.freshness,
+    sourceCommit: badge.sourceAnchor.commit,
     verificationUrl,
     apiUrl,
+    keyDiscoveryUrl: "/api/trust/keys",
     htmlSnippet:
       `<a class="nocksperimental-badge" href="${verificationUrl}" ` +
       `data-nocksperimental-badge="${badge.id}" ` +
       `data-snapshot-root="${badge.evidence.snapshotRoot}" ` +
       `data-issuance-digest="${issuance.payloadDigest}" ` +
       `data-issuer-key="${issuance.issuerKeyId}" ` +
+      `data-source-commit="${badge.sourceAnchor.commit}" ` +
+      `data-freshness="${badge.freshness}" ` +
       `data-report-hash="${badge.evidence.reportHash}">` +
       `${badge.label} - ${badge.currentStatus}</a>`,
     markdownSnippet: `[${badge.label} (${badge.currentStatus})](${verificationUrl})`

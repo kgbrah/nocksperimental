@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nocksperimental.com/schemas/nockapp-trust-issuer-keys.schema.json",
+  "title": "Nocksperimental Trust Issuer Keys",
+  "type": "object",
+  "required": ["version", "activeKeyId", "issuerKeys"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "activeKeyId": { "type": "string" },
+    "issuerKeys": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/issuerKey" }
+    }
+  },
+  "$defs": {
+    "issuerKey": {
+      "type": "object",
+      "required": ["keyId", "algorithm", "publicKeySpki", "validFrom", "validUntil", "status", "supersededBy"],
+      "additionalProperties": false,
+      "properties": {
+        "keyId": { "type": "string" },
+        "algorithm": { "enum": ["ed25519"] },
+        "publicKeySpki": { "type": "string" },
+        "validFrom": { "type": "string", "format": "date-time" },
+        "validUntil": { "type": ["string", "null"] },
+        "status": { "enum": ["active", "retired"] },
+        "supersededBy": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

@@ -30,6 +30,10 @@ async function main() {
     tokenCompatibilityReports,
     verifiedBadges
   } = loadTypeScriptModule("src/lib/trust-signals.ts");
+  const { badgePayloadDigest, verifyBadgeSignature } = loadTypeScriptModule(
+    "src/lib/trust-badge-crypto.ts"
+  );
+  const { publicKeyForKeyId } = loadTypeScriptModule("src/lib/trust-issuer-keys.ts");
 
   assertEqual(badgeIssuanceReceipts.length, 5, "badge issuance receipt count");
   const paymentIssuance = issuanceForBadgeId("badge-payment-flow-verified");
@@ -41,11 +45,26 @@ async function main() {
   );
   assertEqual(
     paymentIssuance.payloadDigest,
-    "sha256:issue-payment-flow-v0-3a6d6bff59cb624f",
-    "payment issuance digest"
+    badgePayloadDigest(paymentIssuance.signedPayload),
+    "payment issuance digest matches canonical signed payload"
   );
   assertEqual(paymentIssuance.verification.status, "valid", "payment issuance verification");
-  assertEqual(paymentIssuance.verification.algorithm, "ed25519-devnet-v0", "payment issuance algorithm");
+  assertEqual(paymentIssuance.verification.algorithm, "ed25519", "payment issuance algorithm");
+  // Real Ed25519 signature must verify against the published issuer public key.
+  assertEqual(
+    verifyBadgeSignature({
+      payload: paymentIssuance.signedPayload,
+      signature: paymentIssuance.signature,
+      publicKeySpkiBase64: publicKeyForKeyId(paymentIssuance.issuerKeyId)
+    }),
+    true,
+    "payment issuance signature verifies against issuer key"
+  );
+  assertEqual(
+    paymentIssuance.signedPayload.sourceAnchor.commit,
+    "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "payment issuance signed payload pins upstream commit"
+  );
   assertEqual(
     paymentIssuance.signedPayload.reportHash,
     "sha256:3a6d6bff59cb624f-payment-flow",
@@ -83,6 +102,9 @@ async function main() {
   assertEqual(activePaymentBadge.isRevoked, false, "active payment badge revocation flag");
   assertEqual(activePaymentBadge.issuance.payloadDigest, paymentIssuance.payloadDigest, "active payment issuance digest");
   assertEqual(activePaymentBadge.issuance.verification.status, "valid", "active payment issuance status");
+  assertEqual(activePaymentBadge.sourceAnchor.commit, "33ba97b1e206dd89b15c61b72b7802caf2136c18", "active payment badge anchor commit");
+  assertEqual(activePaymentBadge.freshness, "fresh", "active payment badge freshness");
+  assertEqual(legacyBadge.freshness, "stale", "legacy badge freshness is stale");
 
   const legacyIssuance = issuanceForBadgeId("badge-payment-flow-legacy");
   assertEqual(legacyBadge.issuance.payloadDigest, legacyIssuance.payloadDigest, "legacy badge issuance digest");
@@ -145,8 +167,13 @@ async function main() {
   );
   assertIncludes(
     paymentEmbed.htmlSnippet,
-    'data-issuance-digest="sha256:issue-payment-flow-v0-3a6d6bff59cb624f"',
+    `data-issuance-digest="${paymentIssuance.payloadDigest}"`,
     "payment embed html issuance digest"
+  );
+  assertIncludes(
+    paymentEmbed.htmlSnippet,
+    'data-freshness="fresh"',
+    "payment embed html freshness"
   );
   assertIncludes(
     paymentEmbed.htmlSnippet,

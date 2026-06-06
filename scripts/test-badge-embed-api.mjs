@@ -15,6 +15,11 @@ main().catch((error) => {
 });
 
 async function main() {
+  const trustSignals = require(path.join(process.cwd(), "src/data/trust-signals.json"));
+  const expectedDigest = trustSignals.badgeIssuanceReceipts.find(
+    (issuance) => issuance.badgeId === "badge-payment-flow-verified"
+  ).payloadDigest;
+
   const { GET } = loadTypeScriptModule("src/app/api/trust/badges/[badgeId]/embed/route.ts");
   const response = await GET(createRequest(), createContext("badge-payment-flow-verified"));
   const body = await response.json();
@@ -29,14 +34,14 @@ async function main() {
   assertEqual(body.display.kind, "app-report", "display kind");
   assertEqual(body.verification.status, "valid", "verification status");
   assertEqual(body.verification.issuerKeyId, "nocksperimental-registry-ed25519-dev-v0", "issuer key id");
-  assertEqual(body.verification.issuanceDigest, "sha256:issue-payment-flow-v0-3a6d6bff59cb624f", "issuance digest");
+  assertEqual(body.verification.issuanceDigest, expectedDigest, "issuance digest");
   assertEqual(body.evidence.reportHash, "sha256:3a6d6bff59cb624f-payment-flow", "report hash");
   assertEqual(body.evidence.snapshotRoot, "3a6d6bff59cb624f", "snapshot root");
   assertEqual(body.links.badge, "https://nocksperimental.com/api/trust/badges/badge-payment-flow-verified", "badge link");
   assertEqual(body.links.verification, "https://nocksperimental.com/api/trust/badges/badge-payment-flow-verified/verification", "verification link");
   assertEqual(body.links.reportProvenance, "https://nocksperimental.com/api/reports/generated/payment-flow/provenance", "report provenance link");
   assertIncludes(body.embed.htmlSnippet, "data-nocksperimental-badge=\"badge-payment-flow-verified\"", "HTML badge data attribute");
-  assertIncludes(body.embed.htmlSnippet, "data-issuance-digest=\"sha256:issue-payment-flow-v0-3a6d6bff59cb624f\"", "HTML issuance digest");
+  assertIncludes(body.embed.htmlSnippet, `data-issuance-digest="${expectedDigest}"`, "HTML issuance digest");
   assertIncludes(body.embed.markdownSnippet, "Payment Flow Verified", "Markdown badge label");
 
   const revoked = await GET(createRequest(), createContext("badge-payment-flow-legacy"));

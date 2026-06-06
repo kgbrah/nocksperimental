@@ -61,3 +61,13 @@ The trust registry includes four consumer categories:
 - providers use benchmark profiles as reputation signals
 
 This is intentionally static and low-capital. The next production step is moving the durable write path from a JSON file adapter to managed registry storage.
+
+## Upstream-anchored, signed badges
+
+Verified badges derive their authority from drift-monitored upstream source truth and are cryptographically verifiable offline.
+
+- **Source anchoring.** Every badge carries a `sourceAnchor` (`commit`, `build`, optional `workspaceMemberHash`/`sourceRefs`). `resolveBadge` computes a `freshness` of `fresh | stale | unknown` by comparing the anchor commit to the pinned upstream commit (`src/lib/nockchain-upstream-anchor.ts`); the committed drift-status snapshot reports whether that pin is still in-sync. A badge issued against an older Nockchain commit computes `stale`.
+- **Real signatures.** Issuance receipts are signed with Ed25519 using Node's built-in `crypto` (no dependency, deterministic per RFC 8032) over the canonical signed payload, which now includes the `sourceAnchor`. The signature therefore commits to the upstream anchor; tampering with it invalidates the signature. Helpers live in `src/lib/trust-badge-crypto.ts`.
+- **Key discovery and rotation.** `src/data/trust-issuer-keys.json` publishes issuer public keys (SPKI) with `validFrom`/`validUntil`/`status`/`supersededBy`, served at `/api/trust/keys`. Verification resolves the public key for a receipt's `issuerKeyId` and never depends on trusting the hosted endpoint. Retired keys remain resolvable so historical badges keep verifying after rotation.
+- **Verifier.** `/api/trust/badges/verify` reports `signatureCryptographicallyValid`, `issuerKeyResolved`, `issuerKeyActive`, `freshness`, and `staleWarning` together with revocation status. Policy: a validly-signed but stale badge returns `verified: true` with `staleWarning: true` — cryptographic validity and upstream freshness are surfaced separately.
+- **Signing.** Production signs with the `NOCKS_BADGE_ISSUER_SIGNING_SEED` env var (32-byte hex, never committed). Committed demo badges are signed with a public dev seed; regenerate reproducibly with `npm run trust:badges:sign`.
