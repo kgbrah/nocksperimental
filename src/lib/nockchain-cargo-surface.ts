@@ -403,9 +403,13 @@ export function createNockchainCargoSurface() {
         "cargo fmt --check",
         "cargo clippy --all-targets -- -Dclippy::unwrap_used -Aclippy::missing_safety_doc"
       ],
+      availableTooling: [
+        "cargo 1.96.0",
+        "cargo metadata --no-deps --format-version 1"
+      ],
       localLimitations: [
-        "cargo binary is not installed in this WSL environment",
-        "This surface is manifest/source-backed until a local Rust toolchain is available for cargo metadata and crate-scoped checks."
+        "$HOME/.cargo/bin must be present on PATH for cargo metadata and crate checks",
+        "Full crate checks may still fetch or build upstream dependencies; use scratch upstream checkouts for exploratory checks."
       ]
     },
     evidenceContract: {
@@ -428,7 +432,7 @@ export function createNockchainCargoSurface() {
         "sequencerJournalSigningKey"
       ],
       interpretationRules: [
-        "Manifest and source presence identify Rust surfaces, but passing cargo checks requires a local Rust toolchain.",
+        "Manifest, source presence, and cargo metadata identify Rust surfaces; passing crate checks still requires running the listed cargo gates.",
         "Binary target presence does not prove runtime health; pair it with command output and endpoint evidence.",
         "Bench targets are performance/investigation surfaces, not production proof by themselves."
       ]

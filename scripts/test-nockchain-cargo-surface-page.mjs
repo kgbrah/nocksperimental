@@ -32,7 +32,8 @@ async function main() {
   assertIncludes(page, "nockchain-libp2p-io", "cargo surface page renders libp2p crate");
   assertIncludes(page, "nockapp-chkjam-to-state-jam", "cargo surface page renders NockApp helper");
   assertIncludes(page, "pma_growth", "cargo surface page renders PMA bench");
-  assertIncludes(page, "cargo binary is not installed in this WSL environment", "cargo surface page renders local limitation");
+  assertIncludes(page, "cargo 1.96.0", "cargo surface page renders local cargo availability");
+  assertIncludes(page, "$HOME/.cargo/bin must be present on PATH", "cargo surface page renders PATH caution");
   assertIncludes(page, "rawPmaSlab", "cargo surface page renders forbidden PMA");
   assertIncludes(page, "walletSeedPhrase", "cargo surface page renders forbidden seed");
   assertIncludes(page, 'href="/api/nockchain/cargo-surface"', "cargo surface page links API");

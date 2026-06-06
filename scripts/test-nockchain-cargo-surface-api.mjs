@@ -127,7 +127,12 @@ async function main() {
   assertIncludes(body.verificationMatrix.requiredCommands, "cargo check -p nockchain-wallet", "verification wallet check");
   assertIncludes(body.verificationMatrix.requiredCommands, "cargo check -p nockapp", "verification NockApp check");
   assertIncludes(body.verificationMatrix.requiredCommands, "cargo check -p nockchain-libp2p-io", "verification libp2p check");
-  assertIncludes(body.verificationMatrix.localLimitations, "cargo binary is not installed in this WSL environment", "local cargo limitation");
+  assertIncludes(body.verificationMatrix.availableTooling, "cargo 1.96.0", "local cargo availability");
+  assertIncludes(
+    body.verificationMatrix.localLimitations,
+    "$HOME/.cargo/bin must be present on PATH for cargo metadata and crate checks",
+    "local cargo PATH caution"
+  );
   assertIncludes(body.evidenceContract.requiredFields, "manifestPath", "contract manifest path");
   assertIncludes(body.evidenceContract.requiredFields, "targetKind", "contract target kind");
   assertIncludes(body.evidenceContract.requiredFields, "sourceFocus", "contract source focus");

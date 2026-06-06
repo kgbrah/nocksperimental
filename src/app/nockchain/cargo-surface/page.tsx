@@ -23,7 +23,8 @@ const highlightedCrates = [
 ];
 const highlightedBenchmarks = ["pma_growth", "bench_nockchain_kernel"];
 const highlightedHelperTargets = ["nockapp-chkjam-to-state-jam"];
-const highlightedLocalLimitation = "cargo binary is not installed in this WSL environment";
+const highlightedAvailableTooling = "cargo 1.96.0";
+const highlightedLocalLimitation = "$HOME/.cargo/bin must be present on PATH";
 const highlightedForbiddenFields = ["rawPmaSlab", "walletSeedPhrase"];
 
 export default function NockchainCargoSurfacePage() {
@@ -138,6 +139,16 @@ export default function NockchainCargoSurfacePage() {
             {surface.verificationMatrix.requiredCommands.slice(0, 6).map((command) => (
               <Callout key={command} label="required" value={command} />
             ))}
+            {surface.verificationMatrix.availableTooling
+              .filter((tooling) => tooling.includes(highlightedAvailableTooling))
+              .concat(
+                surface.verificationMatrix.availableTooling.filter(
+                  (tooling) => !tooling.includes(highlightedAvailableTooling)
+                )
+              )
+              .map((tooling) => (
+                <Callout key={tooling} label="availableTooling" value={tooling} />
+              ))}
             {primaryLimitations.concat(remainingLimitations).map((limitation) => (
               <Callout key={limitation} label="localLimitation" value={limitation} />
             ))}

@@ -242,6 +242,10 @@ export default function NockchainKnowledgeSpinePage() {
               <Code2 size={15} aria-hidden="true" />
               Checkpoint
             </Link>
+            <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm" href="/nockchain/hoon-kernels">
+              <FileCheck2 size={15} aria-hidden="true" />
+              Hoon Kernels
+            </Link>
           </div>
         </article>
       </section>

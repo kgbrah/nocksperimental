@@ -14,6 +14,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - Nockchain knowledge spine for exact upstream doc fingerprints, Rust workspace-member identity, coverage mapping, and monitoring rules.
 - Nockchain Cargo surface for high-signal Rust manifests, binary/library targets, benchmark surfaces, source entrypoints, and crate-scoped checks.
+- Nockchain Hoon kernel atlas for Hoon entrypoints, compiled jam targets, Rust embedding crates, cause/effect tags, and receipt-safe kernel identity.
 - Nockchain protocol authority trace for protocol index/spec lifecycle, activation status, consensus-critical posture, and receipt fields.
 - Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
@@ -206,7 +207,16 @@ The Cargo surface turns upstream manifests and source entrypoints into a Rust ta
 - `/api/nockchain/cargo-surface`
 - `/nockchain/cargo-surface`
 
-Use it when translating an upstream Rust change into the exact binary, library, benchmark, or source file that needs verification. The current surface is manifest/source-backed because the local WSL environment does not have `cargo` installed; it records that limitation beside the verification matrix.
+Use it when translating an upstream Rust change into the exact binary, library, benchmark, or source file that needs verification. The current surface records that `cargo 1.96.0` and `cargo metadata --no-deps --format-version 1` are available when `$HOME/.cargo/bin` is on `PATH`, while full crate checks may still fetch or build upstream dependencies.
+
+## Nockchain Hoon Kernel Atlas
+
+The Hoon kernel atlas maps upstream Hoon entrypoints to compiled jam assets and Rust embedding crates. It tracks `assets/dumb.jam`, `assets/miner.jam`, `assets/wal.jam`, `assets/peek.jam`, and `assets/bridge.jam`; the corresponding `hoon/apps/...` sources; kernel crates under `crates/kernels/*`; consumer crates such as `nockchain`, `nockchain-wallet`, `nockchain-peek`, and `bridge`; and receipt fields for consensus, mining, wallet, peek, and bridge evidence.
+
+- `/api/nockchain/hoon-kernels`
+- `/nockchain/hoon-kernels`
+
+Use it when a test or receipt depends on the deterministic Hoon/Nock kernel behind a Rust command. The surface is metadata-only: it records kernel id, jam asset, Hoon source, Rust consumer, commit/build, cause/effect tags, and source anchors without storing raw jam bytes, kernel state, PMA slabs, state jams, event logs, wallet seed phrases, or private keys.
 
 ## Nockchain NockApp Runtime Atlas
 

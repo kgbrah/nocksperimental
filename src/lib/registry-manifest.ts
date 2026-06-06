@@ -51,6 +51,11 @@ export const registryEndpoints = [
     description: "Nockchain Cargo manifest and target surface"
   },
   {
+    id: "nockchain-hoon-kernels",
+    path: "/api/nockchain/hoon-kernels",
+    description: "Nockchain Hoon kernel and jam atlas"
+  },
+  {
     id: "nockchain-protocol-trace",
     path: "/api/nockchain/protocol",
     description: "Nockchain protocol authority trace"
@@ -334,6 +339,7 @@ export function createWellKnownRegistryManifest() {
       nockchainDocsAtlas: endpointUrl("nockchain-docs-atlas"),
       nockchainKnowledgeSpine: endpointUrl("nockchain-knowledge-spine"),
       nockchainCargoSurface: endpointUrl("nockchain-cargo-surface"),
+      nockchainHoonKernels: endpointUrl("nockchain-hoon-kernels"),
       nockchainProtocolTrace: endpointUrl("nockchain-protocol-trace"),
       nockchainBridgeTrace: endpointUrl("nockchain-bridge-trace"),
       nockchainBridgeSourceTrace: endpointUrl("nockchain-bridge-source-trace"),
@@ -386,6 +392,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-docs-protocol-atlas",
       "nockchain-knowledge-spine",
       "nockchain-cargo-surface",
+      "nockchain-hoon-kernel-atlas",
       "nockchain-protocol-trace",
       "nockchain-bridge-withdrawal-trace",
       "nockchain-bridge-source-trace",

@@ -5,6 +5,7 @@ import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainBridgeSourceTrace } from "@/lib/nockchain-bridge-source-trace";
 import { createNockchainCargoSurface } from "@/lib/nockchain-cargo-surface";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
+import { createNockchainHoonKernelAtlas } from "@/lib/nockchain-hoon-kernels";
 import { createNockchainKnowledgeSpine } from "@/lib/nockchain-knowledge-spine";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
@@ -42,6 +43,7 @@ export function createRegistryCheckpoint() {
   const nockchainBridgeTrace = createNockchainBridgeTrace();
   const nockchainBridgeSourceTrace = createNockchainBridgeSourceTrace();
   const nockchainCargoSurface = createNockchainCargoSurface();
+  const nockchainHoonKernels = createNockchainHoonKernelAtlas();
   const nockchainReleaseAssets = createNockchainReleaseAssets();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainKnowledgeSpine = createNockchainKnowledgeSpine();
@@ -87,6 +89,8 @@ export function createRegistryCheckpoint() {
     nockchainBridgeExecutionFlowSteps: nockchainBridgeSourceTrace.executionFlow.length,
     nockchainCargoSurfaceCrates: nockchainCargoSurface.crates.length,
     nockchainCargoSurfaceTargets: nockchainCargoSurface.targetSummary.targetCount,
+    nockchainHoonKernels: nockchainHoonKernels.kernels.length,
+    nockchainHoonJamAssets: nockchainHoonKernels.buildPipeline.assetTargets.length,
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
@@ -154,6 +158,15 @@ export function createRegistryCheckpoint() {
       targetSummary: nockchainCargoSurface.targetSummary,
       verificationMatrix: nockchainCargoSurface.verificationMatrix,
       evidenceContract: nockchainCargoSurface.evidenceContract
+    }),
+    nockchainHoonKernels: createSha256Root({
+      generatedAt: nockchainHoonKernels.generatedAt,
+      upstream: nockchainHoonKernels.upstream,
+      buildPipeline: nockchainHoonKernels.buildPipeline,
+      kernels: nockchainHoonKernels.kernels,
+      rustEmbedding: nockchainHoonKernels.rustEmbedding,
+      verificationMatrix: nockchainHoonKernels.verificationMatrix,
+      evidenceContract: nockchainHoonKernels.evidenceContract
     }),
     nockchainReleaseAssets: createSha256Root({
       generatedAt: nockchainReleaseAssets.generatedAt,
@@ -337,6 +350,21 @@ export function createRegistryCheckpoint() {
             crateDetail.sourceFocus.includes("crates/nockchain-libp2p-io/src/catch_up.rs")
         ) &&
         nockchainCargoSurface.evidenceContract.forbiddenFields.includes("walletSeedPhrase"),
+      nockchainHoonKernelsAvailable:
+        nockchainHoonKernels.kernels.length === 5 &&
+        nockchainHoonKernels.buildPipeline.assetTargets.length === 5 &&
+        nockchainHoonKernels.kernels.some(
+          (kernel) =>
+            kernel.id === "bridge" &&
+            kernel.jamAsset === "assets/bridge.jam" &&
+            kernel.causeTags.includes("%create-withdrawal-tx")
+        ) &&
+        nockchainHoonKernels.kernels.some(
+          (kernel) =>
+            kernel.id === "nockchain-peek" &&
+            kernel.kernelCrate === "crates/kernels/nockchain-peek"
+        ) &&
+        nockchainHoonKernels.evidenceContract.forbiddenFields.includes("rawJamBytes"),
       nockchainReleaseAssetsAvailable:
         nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
         nockchainReleaseAssets.release.manifestPresent &&
@@ -653,6 +681,15 @@ export function createRegistryCheckpoint() {
       requiredCommands: nockchainCargoSurface.verificationMatrix.requiredCommands,
       forbiddenFields: nockchainCargoSurface.evidenceContract.forbiddenFields
     },
+    nockchainHoonKernels: {
+      generatedAt: nockchainHoonKernels.generatedAt,
+      kernelCount: nockchainHoonKernels.kernels.length,
+      jamAssets: nockchainHoonKernels.buildPipeline.assetTargets,
+      kernelIds: nockchainHoonKernels.kernels.map((kernel) => kernel.id),
+      kernelCrates: nockchainHoonKernels.rustEmbedding.kernelCrates,
+      requiredFields: nockchainHoonKernels.evidenceContract.requiredFields,
+      forbiddenFields: nockchainHoonKernels.evidenceContract.forbiddenFields
+    },
     nockchainReleaseAssets: {
       assetCount: nockchainReleaseAssets.assets.length,
       groupCount: nockchainReleaseAssets.assetGroups.length,
@@ -685,6 +722,7 @@ export function createRegistryCheckpoint() {
       nockchainBridgeTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge`,
       nockchainBridgeSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge-source`,
       nockchainCargoSurface: `${registryCanonicalBaseUrl}/api/nockchain/cargo-surface`,
+      nockchainHoonKernels: `${registryCanonicalBaseUrl}/api/nockchain/hoon-kernels`,
       nockchainReleaseAssets: `${registryCanonicalBaseUrl}/api/nockchain/release-assets`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainKnowledgeSpine: `${registryCanonicalBaseUrl}/api/nockchain/knowledge-spine`,

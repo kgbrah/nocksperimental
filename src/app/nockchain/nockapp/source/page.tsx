@@ -3,6 +3,7 @@ import {
   Code2,
   Database,
   ExternalLink,
+  FileCode2,
   Fingerprint,
   GitPullRequest,
   ListChecks,
@@ -85,6 +86,13 @@ export default function NockchainNockAppSourcePage() {
               >
                 <Network size={16} aria-hidden="true" />
                 Runtime Atlas
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/hoon-kernels"
+              >
+                <FileCode2 size={16} aria-hidden="true" />
+                Hoon Kernels
               </Link>
             </div>
           </div>
