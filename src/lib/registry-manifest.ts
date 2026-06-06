@@ -71,6 +71,11 @@ export const registryEndpoints = [
     description: "Nockchain Rust workspace atlas"
   },
   {
+    id: "nockchain-nockapp-atlas",
+    path: "/api/nockchain/nockapp-atlas",
+    description: "Nockchain NockApp runtime atlas"
+  },
+  {
     id: "nockchain-operations-atlas",
     path: "/api/nockchain/operations",
     description: "Nockchain operations atlas"
@@ -308,6 +313,7 @@ export function createWellKnownRegistryManifest() {
       zorpUpstream: endpointUrl("zorp-upstream"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
+      nockchainNockAppAtlas: endpointUrl("nockchain-nockapp-atlas"),
       nockchainOperationsAtlas: endpointUrl("nockchain-operations-atlas"),
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
       nockchainWatch: endpointUrl("nockchain-watch"),
@@ -354,6 +360,7 @@ export function createWellKnownRegistryManifest() {
       "zorp-nockchain-upstream-map",
       "nockchain-state-jam-provenance",
       "nockchain-rust-workspace-atlas",
+      "nockchain-nockapp-runtime-atlas",
       "nockchain-operations-atlas",
       "nockchain-wallet-api-atlas",
       "nockchain-upstream-watch",

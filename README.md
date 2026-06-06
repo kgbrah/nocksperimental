@@ -16,6 +16,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
+- Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
@@ -177,6 +178,15 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 - `/api/nockchain/rust-atlas`
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
+
+## Nockchain NockApp Runtime Atlas
+
+The NockApp runtime atlas turns current `nockchain/nockchain` NockApp crates, Zorp NockApp/Sword lineage, Nockup fixture flow, private gRPC endpoints, poke/peek semantics, PMA durability, and metadata-only state-jam provenance into a receipt-safe contract. It separates current runtime authority from historical Zorp lineage so fakenet, user-connected fakenet, VESL, Launch Evidence, and Nockup receipts can preserve exactly which boundary produced the evidence.
+
+- `/nockchain/nockapp`
+- `/api/nockchain/nockapp-atlas`
+
+Use it when a NockApp test needs to say whether evidence came from a state-changing poke, a read-only peek, a private endpoint probe, a Nockup fixture build/run, or a state-export/state-jam context without storing raw PMA, event logs, state jams, wallet secrets, or API tokens.
 
 ## Nockchain Operations Atlas
 

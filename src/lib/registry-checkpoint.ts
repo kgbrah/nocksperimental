@@ -3,6 +3,7 @@ import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
+import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
@@ -38,6 +39,7 @@ export function createRegistryCheckpoint() {
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
+  const nockchainNockAppAtlas = createNockchainNockAppAtlas();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
@@ -77,6 +79,8 @@ export function createRegistryCheckpoint() {
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
     nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
+    nockchainNockAppRuntimeBoundaries: nockchainNockAppAtlas.runtimeBoundaries.length,
+    nockchainNockAppProbeTemplates: nockchainNockAppAtlas.probeTemplates.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainPublicApiEvidenceSurfaces:
@@ -165,6 +169,15 @@ export function createRegistryCheckpoint() {
       groups: nockchainRustAtlas.groups,
       crates: nockchainRustAtlas.crates,
       watchThemes: nockchainRustAtlas.watchThemes
+    }),
+    nockchainNockAppAtlas: createSha256Root({
+      scannedAt: nockchainNockAppAtlas.scannedAt,
+      upstream: nockchainNockAppAtlas.upstream,
+      sourceAuthority: nockchainNockAppAtlas.sourceAuthority,
+      runtimeBoundaries: nockchainNockAppAtlas.runtimeBoundaries,
+      probeTemplates: nockchainNockAppAtlas.probeTemplates,
+      receiptContract: nockchainNockAppAtlas.receiptContract,
+      safety: nockchainNockAppAtlas.safety
     }),
     nockchainOperationsAtlas: createSha256Root({
       generatedAt: nockchainOperationsAtlas.generatedAt,
@@ -256,6 +269,11 @@ export function createRegistryCheckpoint() {
         nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount ===
           nockchainRustAtlas.workspace.memberCount &&
         nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers.length === 0,
+      nockchainNockAppAtlasAvailable:
+        nockchainNockAppAtlas.runtimeBoundaries.length >= 5 &&
+        nockchainNockAppAtlas.probeTemplates.length >= 4 &&
+        nockchainNockAppAtlas.receiptContract.requiredFields.includes("stateJamFingerprint") &&
+        nockchainNockAppAtlas.receiptContract.forbiddenFields.includes("rawPmaSlab"),
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
         nockchainOperationsAtlas.scriptSources.length > 0,
@@ -405,6 +423,16 @@ export function createRegistryCheckpoint() {
       missingWorkspaceMembers: nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers,
       nonWorkspaceTrackedCrates: nockchainRustAtlas.workspace.coverage.nonWorkspaceTrackedCrates
     },
+    nockchainNockAppAtlas: {
+      boundaryCount: nockchainNockAppAtlas.runtimeBoundaries.length,
+      probeTemplateCount: nockchainNockAppAtlas.probeTemplates.length,
+      boundaryIds: nockchainNockAppAtlas.runtimeBoundaries.map((boundary) => boundary.id),
+      probeTemplateIds: nockchainNockAppAtlas.probeTemplates.map((template) => template.id),
+      receiptFields: nockchainNockAppAtlas.receiptContract.requiredFields,
+      forbiddenFields: nockchainNockAppAtlas.receiptContract.forbiddenFields,
+      canonicalSources: nockchainNockAppAtlas.sourceAuthority.canonical.sources,
+      lineageSources: nockchainNockAppAtlas.sourceAuthority.lineage.sources
+    },
     nockchainOperationsAtlas: {
       scenarioCount: nockchainOperationsAtlas.triageScenarios.length,
       scriptSourceCount: nockchainOperationsAtlas.scriptSources.length,
@@ -483,6 +511,7 @@ export function createRegistryCheckpoint() {
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
+      nockchainNockAppAtlas: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-atlas`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
