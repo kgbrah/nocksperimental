@@ -28,6 +28,15 @@ const sourceAuthorityRoleOrder: readonly string[] = [
   "lineage-and-authoring-signal",
   "state-artifact-provenance"
 ];
+const watchMatrixEntryOrder: readonly string[] = [
+  "canonical-runtime",
+  "authoring-fixtures",
+  "lineage-runtime",
+  "proof-and-semantics",
+  "low-signal-tooling"
+];
+const highlightedWatchMatrixTrigger = "nockchain release/build tag change";
+const highlightedWatchMatrixAction = "Refresh upstream commit";
 
 export default function ZorpIntelligencePage() {
   const zorp = createZorpUpstreamMap();
@@ -63,6 +72,18 @@ export default function ZorpIntelligencePage() {
   const orderedRiskFlags = riskFlagOrder
     .filter((flag) => riskFlags.includes(flag))
     .concat(riskFlags.filter((flag) => !riskFlagOrder.includes(flag)));
+  const primaryWatchMatrixEntry =
+    zorp.repositoryWatchMatrix.find((entry) =>
+      entry.triggers.some((trigger) => trigger === highlightedWatchMatrixTrigger)
+    ) ?? zorp.repositoryWatchMatrix[0];
+  const primaryWatchMatrixAction =
+    primaryWatchMatrixEntry?.nocksperimentalActions.find((action) =>
+      action.startsWith(highlightedWatchMatrixAction)
+    ) ?? primaryWatchMatrixEntry?.nocksperimentalActions[0];
+  const orderedWatchMatrix = watchMatrixEntryOrder
+    .map((id) => zorp.repositoryWatchMatrix.find((entry) => entry.id === id))
+    .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+    .concat(zorp.repositoryWatchMatrix.filter((entry) => !watchMatrixEntryOrder.includes(entry.id)));
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -191,6 +212,52 @@ export default function ZorpIntelligencePage() {
             <Callout label="classification" value={zorp.stateJamDrive.classification} />
             <Callout label="artifactPolicy" value={zorp.stateJamDrive.artifactPolicy} />
             <Callout label="driveFolder" value={zorp.stateJamDrive.url} />
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Watch Matrix</h2>
+          </div>
+          {primaryWatchMatrixEntry && primaryWatchMatrixAction ? (
+            <div className="mt-4 border border-[#0B0B0B] bg-[#E7F7FF] p-3">
+              <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                {primaryWatchMatrixEntry.id}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#22313A]">{primaryWatchMatrixAction}</p>
+            </div>
+          ) : null}
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {orderedWatchMatrix.map((entry) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={entry.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {entry.id}
+                </p>
+                <h3 className="mt-1 font-semibold">{entry.label}</h3>
+                <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-[#4A4A4A]">
+                  escalation: {entry.escalation}
+                </p>
+                <p className="mt-2 break-all font-mono text-xs leading-6 text-[#4A4A4A]">
+                  {entry.sources.join(", ")}
+                </p>
+                <div className="mt-3 grid gap-2">
+                  {entry.triggers.map((trigger) => (
+                    <Callout key={trigger} label="trigger" value={trigger} />
+                  ))}
+                </div>
+                <div className="mt-3 grid gap-2">
+                  {entry.nocksperimentalActions.map((action) => (
+                    <Callout key={action} label="action" value={action} />
+                  ))}
+                </div>
+                <p className="mt-3 break-all font-mono text-xs leading-6 text-[#4A4A4A]">
+                  fields: {entry.receiptFields.join(", ")}
+                </p>
+              </div>
+            ))}
           </div>
         </article>
       </section>

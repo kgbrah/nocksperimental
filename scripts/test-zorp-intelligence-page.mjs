@@ -64,6 +64,14 @@ async function main() {
   assertIncludes(page, "state-jam folder, not a VESL folder", "Zorp page preserves Drive correction");
   assertIncludes(page, "legacy-repos-are-lineage-not-authority", "Zorp page renders lineage risk flag");
   assertIncludes(page, "state-jam-folder-is-metadata-only", "Zorp page renders state-jam risk flag");
+  assertIncludes(page, "Watch Matrix", "Zorp page renders watch matrix");
+  assertIncludes(page, "canonical-runtime", "Zorp page renders canonical runtime matrix entry");
+  assertIncludes(page, "authoring-fixtures", "Zorp page renders authoring fixtures matrix entry");
+  assertIncludes(page, "lineage-runtime", "Zorp page renders lineage runtime matrix entry");
+  assertIncludes(page, "proof-and-semantics", "Zorp page renders proof and semantics matrix entry");
+  assertIncludes(page, "low-signal-tooling", "Zorp page renders low-signal tooling matrix entry");
+  assertIncludes(page, "nockchain release/build tag change", "Zorp page renders canonical runtime trigger");
+  assertIncludes(page, "Refresh upstream commit", "Zorp page renders matrix action");
   assertIncludes(page, 'href="/api/nockchain/zorp"', "Zorp page links API");
   assertIncludes(page, 'href="/nockchain"', "Zorp page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/zorp"', "Nockchain page links Zorp page");

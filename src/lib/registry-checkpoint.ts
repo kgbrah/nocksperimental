@@ -67,6 +67,7 @@ export function createRegistryCheckpoint() {
     scoreHistories: scoreHistorySummaries.length,
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
+    zorpWatchMatrixEntries: zorpUpstream.repositoryWatchMatrix.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
@@ -121,6 +122,7 @@ export function createRegistryCheckpoint() {
       stateJamDrive: zorpUpstream.stateJamDrive,
       repositories: zorpUpstream.repositories,
       layers: zorpUpstream.layers,
+      repositoryWatchMatrix: zorpUpstream.repositoryWatchMatrix,
       monitor: zorpUpstream.monitor
     }),
     nockchainDocsAtlas: createSha256Root({
@@ -257,6 +259,19 @@ export function createRegistryCheckpoint() {
         stateJamRegistry.pmaSafety.bootSources.includes("pma-fast-path") &&
         stateJamRegistry.pmaSafety.forbiddenRawArtifacts.includes("pma/*.pma"),
       zorpUpstreamAvailable: zorpUpstream.repositories.length > 0,
+      zorpWatchMatrixAvailable:
+        zorpUpstream.repositoryWatchMatrix.length >= 5 &&
+        zorpUpstream.repositoryWatchMatrix.some(
+          (entry) =>
+            entry.id === "canonical-runtime" &&
+            entry.escalation === "immediate" &&
+            entry.sources.includes("nockchain/nockchain")
+        ) &&
+        zorpUpstream.repositoryWatchMatrix.some(
+          (entry) =>
+            entry.id === "authoring-fixtures" &&
+            entry.sources.includes("zorp-corp/jock-lang")
+        ),
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
     chain: {
@@ -317,6 +332,7 @@ export function createRegistryCheckpoint() {
         zorpUpstream.sourceAuthority.zorpOrg.sourceRole,
         zorpUpstream.sourceAuthority.stateJams.sourceRole
       ],
+      watchMatrixEntryIds: zorpUpstream.repositoryWatchMatrix.map((entry) => entry.id),
       monitor: {
         active: zorpUpstream.monitor.active,
         interval: zorpUpstream.monitor.interval

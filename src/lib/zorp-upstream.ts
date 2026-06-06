@@ -250,6 +250,101 @@ const zorpMonitorBrief = {
     "Zorp is useful as Nockchain lineage, language-authoring signal, and state-artifact provenance. Current protocol and operational authority stays with nockchain/nockchain and its Tier 0 docs."
 } as const;
 
+const repositoryWatchMatrix = [
+  {
+    id: "canonical-runtime",
+    label: "Canonical runtime",
+    escalation: "immediate",
+    sources: ["nockchain/nockchain"],
+    triggers: [
+      "nockchain release/build tag change",
+      "Tier 0 protocol, architecture, workflow, or decision doc change",
+      "PMA, state-jam, checkpoint, fakenet, mining, wallet, libp2p, or bridge change"
+    ],
+    nocksperimentalActions: [
+      "Refresh upstream commit, release, protocol, PMA, fakenet, wallet, and bridge receipt fields before treating new evidence as comparable.",
+      "Run Nockchain watch, release asset, protocol trace, operations, wallet, sync/gossip, and state-jam checks."
+    ],
+    receiptFields: [
+      "nockchainCommit",
+      "nockchainBuild",
+      "protocolTrack",
+      "stateJamFingerprint",
+      "walletEndpointMode"
+    ]
+  },
+  {
+    id: "authoring-fixtures",
+    label: "Authoring fixtures",
+    escalation: "review",
+    sources: ["zorp-corp/jock-lang"],
+    triggers: [
+      "Jock language/compiler change",
+      "new Nock authoring example",
+      "fixture-shaping parser or codegen change"
+    ],
+    nocksperimentalActions: [
+      "Review fixture authoring assumptions and decide whether Jock changes should become new NockApp lab templates.",
+      "Keep protocol claims anchored to nockchain/nockchain even when authoring examples come from Jock."
+    ],
+    receiptFields: ["sourceRepo", "sourceRepoPushedAt", "fixtureAuthoringSignal"]
+  },
+  {
+    id: "lineage-runtime",
+    label: "Lineage runtime",
+    escalation: "context-only",
+    sources: ["zorp-corp/nockapp", "zorp-corp/sword"],
+    triggers: [
+      "archived NockApp doc or example clarification",
+      "runtime persistence lineage note",
+      "poke, peek, or state-machine semantic clarification"
+    ],
+    nocksperimentalActions: [
+      "Use as explanatory lineage for receipts and docs, not as current operational authority.",
+      "Promote only clarifications that improve NockApp fixture language or PMA/state interpretation."
+    ],
+    receiptFields: ["lineageSource", "lineageInterpretation"]
+  },
+  {
+    id: "proof-and-semantics",
+    label: "Proof and semantics",
+    escalation: "watch",
+    sources: ["zorp-corp/knock", "zorp-corp/sppark"],
+    triggers: [
+      "formal Nock semantics change",
+      "proof or accelerator tooling change",
+      "benchmark or verification primitive change"
+    ],
+    nocksperimentalActions: [
+      "Evaluate whether semantics or proof changes should become compute/proof benchmark evidence.",
+      "Keep any proof-adjacent claim separate from Nockchain protocol authority until upstream Nockchain uses it."
+    ],
+    receiptFields: ["proofSource", "semanticSource", "benchmarkContext"]
+  },
+  {
+    id: "low-signal-tooling",
+    label: "Low-signal tooling",
+    escalation: "defer",
+    sources: [
+      "zorp-corp/create-pull-request",
+      "zorp-corp/setup-bazel",
+      "zorp-corp/rust-cache",
+      "zorp-corp/criterion-compare-action",
+      "zorp-corp/mnist-hoon"
+    ],
+    triggers: [
+      "automation fork update",
+      "CI or benchmark utility change",
+      "old Hoon example update"
+    ],
+    nocksperimentalActions: [
+      "Ignore unless Nockchain or Zorp starts relying on the tooling for builds, benchmark evidence, or fixture generation.",
+      "Record as ecosystem context only when it changes reproducibility or reporting assumptions."
+    ],
+    receiptFields: ["toolingSource", "reproducibilityContext"]
+  }
+] as const;
+
 export function createZorpUpstreamMap() {
   const nockchain = nockchainUpstreamIntelligence;
 
@@ -357,6 +452,7 @@ export function createZorpUpstreamMap() {
       ]
     },
     monitorBrief: zorpMonitorBrief,
+    repositoryWatchMatrix,
     nocksperimentalImplications: {
       receiptFields: [
         "zorpSource",

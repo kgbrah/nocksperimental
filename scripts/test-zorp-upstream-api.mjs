@@ -126,6 +126,57 @@ async function main() {
   assertIncludes(body.monitor.watchedSources, body.stateJamDrive.url, "Drive monitor source");
   assertIncludes(body.monitor.highSignalChanges, "Jock language/compiler changes", "Jock monitor signal");
 
+  assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
+  const canonicalRuntime = findWatchMatrixEntry(body, "canonical-runtime");
+  assertEqual(canonicalRuntime.escalation, "immediate", "canonical runtime escalation");
+  assertIncludes(
+    canonicalRuntime.sources,
+    "nockchain/nockchain",
+    "canonical runtime tracks Nockchain"
+  );
+  assertIncludes(
+    canonicalRuntime.triggers,
+    "nockchain release/build tag change",
+    "canonical runtime release trigger"
+  );
+  assertIncludes(
+    canonicalRuntime.nocksperimentalActions,
+    "Refresh upstream commit, release, protocol, PMA, fakenet, wallet, and bridge receipt fields before treating new evidence as comparable.",
+    "canonical runtime action"
+  );
+  assertIncludes(canonicalRuntime.receiptFields, "nockchainCommit", "canonical runtime receipt field");
+  assertIncludes(canonicalRuntime.receiptFields, "protocolTrack", "canonical runtime protocol field");
+
+  const authoringFixtures = findWatchMatrixEntry(body, "authoring-fixtures");
+  assertEqual(authoringFixtures.escalation, "review", "authoring fixtures escalation");
+  assertIncludes(authoringFixtures.sources, "zorp-corp/jock-lang", "authoring fixtures tracks Jock");
+  assertIncludes(
+    authoringFixtures.nocksperimentalActions,
+    "Review fixture authoring assumptions and decide whether Jock changes should become new NockApp lab templates.",
+    "authoring fixtures action"
+  );
+
+  const lineageRuntime = findWatchMatrixEntry(body, "lineage-runtime");
+  assertIncludes(lineageRuntime.sources, "zorp-corp/nockapp", "lineage runtime tracks NockApp");
+  assertIncludes(lineageRuntime.sources, "zorp-corp/sword", "lineage runtime tracks Sword");
+  assertEqual(lineageRuntime.escalation, "context-only", "lineage runtime escalation");
+
+  const proofSemantics = findWatchMatrixEntry(body, "proof-and-semantics");
+  assertIncludes(proofSemantics.sources, "zorp-corp/knock", "proof semantics tracks Knock");
+  assertIncludes(proofSemantics.sources, "zorp-corp/sppark", "proof semantics tracks SPARK");
+
+  const lowSignalTooling = findWatchMatrixEntry(body, "low-signal-tooling");
+  assertIncludes(
+    lowSignalTooling.sources,
+    "zorp-corp/create-pull-request",
+    "low signal tooling tracks automation fork"
+  );
+  assertIncludes(
+    lowSignalTooling.sources,
+    "zorp-corp/criterion-compare-action",
+    "low signal tooling tracks benchmark action"
+  );
+
   assertIncludes(
     body.nocksperimentalImplications.nextProductSlices,
     "Expose Zorp repo and state-jam provenance beside Nockchain receipts.",
@@ -161,7 +212,23 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.zorpRepositories, 10, "checkpoint Zorp repo count");
+  assertEqual(checkpointBody.counts.zorpWatchMatrixEntries, 5, "checkpoint Zorp watch matrix count");
   assertStartsWith(checkpointBody.roots.zorpUpstream, "sha256:", "checkpoint Zorp root");
+  assertEqual(
+    checkpointBody.checks.zorpWatchMatrixAvailable,
+    true,
+    "checkpoint Zorp watch matrix check"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.watchMatrixEntryIds,
+    "canonical-runtime",
+    "checkpoint Zorp watch matrix canonical entry"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.watchMatrixEntryIds,
+    "authoring-fixtures",
+    "checkpoint Zorp watch matrix authoring entry"
+  );
   assertIncludes(
     checkpointBody.zorpUpstream.sourceAuthorityRoles,
     "canonical-protocol-authority",
@@ -207,6 +274,16 @@ function findRepo(body, name) {
   }
 
   return repo;
+}
+
+function findWatchMatrixEntry(body, id) {
+  const entry = body.repositoryWatchMatrix.find((candidate) => candidate.id === id);
+
+  if (!entry) {
+    throw new Error(`Missing Zorp watch matrix entry: ${id}`);
+  }
+
+  return entry;
 }
 
 function loadTypeScriptModule(relativePath) {

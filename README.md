@@ -153,7 +153,7 @@ The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and
 
 Use it when interpreting whether a source is current protocol authority, historical lineage, state-jam provenance, or future product signal for Nocksperimental receipts.
 
-The Zorp intelligence page renders the same map as an operator brief: priority repos, lineage risk flags, state-jam metadata boundaries, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
+The Zorp intelligence page renders the same map as an operator brief: priority repos, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 ## Nockchain State-Jam Provenance
 
