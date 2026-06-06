@@ -150,6 +150,13 @@ export default function ZorpIntelligencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/zorp/monitor"
+              >
+                <ListChecks size={16} aria-hidden="true" />
+                Monitor
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/nockchain/state-jams"
               >
                 <Database size={16} aria-hidden="true" />

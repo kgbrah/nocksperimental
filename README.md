@@ -23,6 +23,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
+- Zorp Monitor Runbook for converting recurring Zorp/Nockchain monitor output into receipt-safe findings, source-authority classes, routed product updates, and verification commands.
 - Nockchain Public API Source Trace for public gRPC enablement, endpoint posture, tx acceptance, block explorer cache, metrics, and receipt fields.
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
 - Nockchain Runtime Safety Trace for NockStack frame checks, jam/cue bounds, noun-space provenance, HAMT traversal, PMA offset bounds, and support-bundle fields.
@@ -189,6 +190,15 @@ Use it when interpreting whether a source is current protocol authority, histori
 The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, a monitor review contract, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, and archived `zorp-corp/sword` so Jock authoring, NockApp poke/peek lineage, and Sword persistence history can inform fixtures without outranking current Nockchain protocol authority.
+
+## Zorp Monitor Runbook
+
+The Zorp monitor runbook turns recurring checks of `zorp-corp`, the legacy `zorp-corp/nockchain` redirect, canonical `nockchain/nockchain`, and the Zorp state-jam Drive folder into a receipt-safe finding contract. It names the active monitor automation, superseded watch jobs, watched sources, classification flow, source-authority classes, route matrix, forbidden raw artifact fields, and the local snapshot command `node scripts/run-zorp-monitor-snapshot.mjs --json`.
+
+- `/api/nockchain/zorp/monitor`
+- `/nockchain/zorp/monitor`
+
+Use it when a monitor run reports a repository, release, protocol-doc, fakenet/mining, wallet/API, PMA/state-jam, Jock authoring, NockApp lineage, or Drive artifact metadata change. Findings must record source URL, source authority, target Nocksperimental surface, raw artifact policy, and verification command before changing receipt assumptions.
 
 ## Nockchain State-Jam Provenance
 

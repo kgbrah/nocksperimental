@@ -56,6 +56,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/bridge-source`, 200, "Nockchain bridge source trace");
     await expectStatus(`${baseUrl}/api/nockchain/release-assets`, 200, "Nockchain release asset manifest");
     await expectStatus(`${baseUrl}/api/nockchain/zorp`, 200, "Zorp/Nockchain upstream map API");
+    await expectStatus(`${baseUrl}/api/nockchain/zorp/monitor`, 200, "Zorp and Nockchain monitor runbook");
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/pma`, 200, "Nockchain PMA durability source trace");
     await expectStatus(`${baseUrl}/api/nockchain/runtime-safety`, 200, "Nockchain NockVM runtime safety trace");
@@ -102,6 +103,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/bridge/source`, 200, "Nockchain bridge source trace page");
     await expectStatus(`${baseUrl}/nockchain/releases`, 200, "Nockchain release assets page");
     await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
+    await expectStatus(`${baseUrl}/nockchain/zorp/monitor`, 200, "Zorp monitor runbook page");
     await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
     await expectStatus(`${baseUrl}/nockchain/pma`, 200, "Nockchain PMA source trace page");
     await expectStatus(`${baseUrl}/nockchain/runtime-safety`, 200, "Nockchain runtime safety page");

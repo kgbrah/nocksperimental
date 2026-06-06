@@ -27,6 +27,7 @@ import { createNockchainMiningSourceTrace } from "@/lib/nockchain-mining-source-
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
+import { createZorpMonitorRunbook } from "@/lib/zorp-monitor-runbook";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -74,6 +75,7 @@ export function createRegistryCheckpoint() {
   const nockchainTestkitE2e = createNockchainTestkitE2eTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
+  const zorpMonitorRunbook = createZorpMonitorRunbook();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
     appSlug: report.appSlug,
     fixtureId: report.fixtureId,
@@ -99,6 +101,8 @@ export function createRegistryCheckpoint() {
     zorpRepositories: zorpUpstream.repositories.length,
     zorpWatchMatrixEntries: zorpUpstream.repositoryWatchMatrix.length,
     zorpMonitorReviewClasses: zorpUpstream.monitorReviewContract.classes.length,
+    zorpMonitorRunbookClasses: zorpMonitorRunbook.monitorClasses.length,
+    zorpMonitorRunbookRouteMatrixEntries: zorpMonitorRunbook.routeMatrix.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainBridgeSequencerLifecycleStates:
       nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.length,
@@ -407,6 +411,18 @@ export function createRegistryCheckpoint() {
       receiptContract: nockchainMiningSourceTrace.receiptContract,
       localVerification: nockchainMiningSourceTrace.localVerification
     }),
+    zorpMonitorRunbook: createSha256Root({
+      generatedAt: zorpMonitorRunbook.generatedAt,
+      automation: zorpMonitorRunbook.automation,
+      currentSnapshot: zorpMonitorRunbook.currentSnapshot,
+      watchedSources: zorpMonitorRunbook.watchedSources,
+      findingSchema: zorpMonitorRunbook.findingSchema,
+      classificationFlow: zorpMonitorRunbook.classificationFlow,
+      monitorClasses: zorpMonitorRunbook.monitorClasses,
+      routeMatrix: zorpMonitorRunbook.routeMatrix,
+      monitorRunTemplates: zorpMonitorRunbook.monitorRunTemplates,
+      localVerification: zorpMonitorRunbook.localVerification
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -688,6 +704,18 @@ export function createRegistryCheckpoint() {
           (entry) =>
             entry.id === "authoring-fixtures" &&
             entry.sources.includes("zorp-corp/jock-lang")
+        ),
+      zorpMonitorRunbookAvailable:
+        zorpMonitorRunbook.automation.active &&
+        zorpMonitorRunbook.watchedSources.length >= 4 &&
+        zorpMonitorRunbook.findingSchema.requiredFields.includes("upstreamSourceUrl") &&
+        zorpMonitorRunbook.findingSchema.requiredFields.includes("nocksperimentalSurface") &&
+        zorpMonitorRunbook.findingSchema.forbiddenFields.includes("rawStateJam") &&
+        zorpMonitorRunbook.routeMatrix.some((entry) =>
+          (entry.targetSurfaces as readonly string[]).includes("nockchainMiningSourceTrace")
+        ) &&
+        zorpMonitorRunbook.localVerification.recommendedCommands.includes(
+          "node scripts/run-zorp-monitor-snapshot.mjs --json"
         ),
       zorpMonitorReviewContractAvailable:
         zorpUpstream.monitorReviewContract.classes.length === 5 &&
@@ -1048,6 +1076,16 @@ export function createRegistryCheckpoint() {
       forbiddenFields: nockchainMiningSourceTrace.receiptContract.forbiddenFields,
       localVerificationStatus: nockchainMiningSourceTrace.localVerification.status
     },
+    zorpMonitorRunbook: {
+      generatedAt: zorpMonitorRunbook.generatedAt,
+      automationId: zorpMonitorRunbook.automation.automationId,
+      watchedSourceIds: zorpMonitorRunbook.watchedSources.map((source) => source.id),
+      monitorClassIds: zorpMonitorRunbook.monitorClasses.map((monitorClass) => monitorClass.id),
+      routeMatrixIds: zorpMonitorRunbook.routeMatrix.map((entry) => entry.id),
+      requiredFields: zorpMonitorRunbook.findingSchema.requiredFields,
+      forbiddenFields: zorpMonitorRunbook.findingSchema.forbiddenFields,
+      localVerificationStatus: zorpMonitorRunbook.localVerification.status
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -1060,6 +1098,7 @@ export function createRegistryCheckpoint() {
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
+      zorpMonitorRunbook: `${registryCanonicalBaseUrl}/api/nockchain/zorp/monitor`,
       nockchainBridgeTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge`,
       nockchainBridgeSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge-source`,
       nockchainCargoSurface: `${registryCanonicalBaseUrl}/api/nockchain/cargo-surface`,

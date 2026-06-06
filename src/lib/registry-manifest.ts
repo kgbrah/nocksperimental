@@ -81,6 +81,11 @@ export const registryEndpoints = [
     description: "Zorp/Nockchain upstream map"
   },
   {
+    id: "zorp-monitor-runbook",
+    path: "/api/nockchain/zorp/monitor",
+    description: "Zorp and Nockchain monitor runbook"
+  },
+  {
     id: "nockchain-state-jams",
     path: "/api/nockchain/state-jams",
     description: "Nockchain state-jam provenance registry"
@@ -385,6 +390,7 @@ export function createWellKnownRegistryManifest() {
       nockchainBridgeSourceTrace: endpointUrl("nockchain-bridge-source-trace"),
       nockchainReleaseAssets: endpointUrl("nockchain-release-assets"),
       zorpUpstream: endpointUrl("zorp-upstream"),
+      zorpMonitorRunbook: endpointUrl("zorp-monitor-runbook"),
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainPmaSourceTrace: endpointUrl("nockchain-pma-source-trace"),
       nockchainRuntimeSafety: endpointUrl("nockchain-runtime-safety"),
@@ -446,6 +452,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-bridge-source-trace",
       "nockchain-release-asset-manifest",
       "zorp-nockchain-upstream-map",
+      "zorp-monitor-runbook",
       "nockchain-state-jam-provenance",
       "nockchain-pma-source-trace",
       "nockchain-runtime-safety",
