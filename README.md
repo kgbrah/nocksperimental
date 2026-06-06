@@ -349,6 +349,14 @@ The PR radar tracks currently open upstream Nockchain pull requests and open iss
 
 Use it when deciding whether a pending upstream PR or open issue should refresh a Nockup, wallet, NockApp, PMA/state-jam, operations, Rust atlas, compute benchmark, protocol trace, x402, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
 
+Run the live drift check before relying on the static radar:
+
+```bash
+npm run check:nockchain-pr-radar-drift -- --json
+```
+
+The drift check compares the local radar against the GitHub pulls/issues APIs for PR number, title, draft status, `updatedAt`, and author. A `drift` result means the PR radar should be refreshed before product, receipt, or monitor decisions.
+
 ## Nockchain Impact Queue
 
 The impact queue turns current Nockchain releases, open PRs, Zorp lineage, and state-jam provenance into concrete Nocksperimental work items. It groups bridge withdrawal execution, Nockup template manifests, wallet blob/memo metadata, NockApp state export, PMA/state-jam provenance, fakenet sync/gossip diagnostics, Zorp/Jock authoring lineage, and benchmark/AI PoW puzzle signals by action lane, target surface, receipt fields, forbidden fields, and verification gates.
@@ -528,6 +536,7 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run verify:launch-evidence` checks Launch Evidence routes, registry discovery, manifests, and verifier behavior.
 - `npm run test:launch-evidence-api` and `npm run test:launch-evidence-pages` run the focused Launch Evidence API and page suites.
 - `npm run test:x402` runs the x402 metered-trust-API suite (config, verifier, meter cycle, facilitator mode, gating, discovery).
+- `npm run check:nockchain-pr-radar-drift` compares the static Nockchain PR radar against current GitHub PR/issue metadata.
 - `npm run smoke:cloudflare` validates the OpenNext Cloudflare preview bundle.
 - `npm run deploy` builds and deploys to Cloudflare Workers through OpenNext.
 

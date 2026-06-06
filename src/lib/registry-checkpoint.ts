@@ -358,6 +358,7 @@ export function createRegistryCheckpoint() {
       openIssues: nockchainPrRadar.openIssues,
       riskClasses: nockchainPrRadar.riskClasses,
       reviewContract: nockchainPrRadar.reviewContract,
+      driftCheck: nockchainPrRadar.driftCheck,
       operatorQueue: nockchainPrRadar.operatorQueue
     }),
     nockchainImpactQueue: createSha256Root({
@@ -968,7 +969,9 @@ export function createRegistryCheckpoint() {
           )
         )
       ),
-      forbiddenFields: nockchainPrRadar.reviewContract.forbiddenFields
+      forbiddenFields: nockchainPrRadar.reviewContract.forbiddenFields,
+      driftCheckCommand: nockchainPrRadar.driftCheck.command,
+      driftCheckSourceUrls: nockchainPrRadar.driftCheck.sourceUrls
     },
     nockchainImpactQueue: {
       generatedAt: nockchainImpactQueue.generatedAt,

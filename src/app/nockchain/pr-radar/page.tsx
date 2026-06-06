@@ -27,6 +27,9 @@ const priorityRiskClasses = [
   "grpc-message-size"
 ] as const;
 const highlightedForbiddenFields = ["rawStateJam", "rawPmaSlab", "walletSeedPhrase"] as const;
+const highlightedDriftCommand = "npm run check:nockchain-pr-radar-drift -- --json";
+const highlightedPullRequestsApiSource =
+  "https://api.github.com/repos/nockchain/nockchain/pulls?state=open&per_page=100&sort=updated&direction=desc";
 const pr125Label = "PR #125";
 const pr113Label = "PR #113";
 const pr116Label = "PR #116";
@@ -195,6 +198,23 @@ export default function NockchainPrRadarPage() {
             {radar.reviewContract.reviewRules.map((rule) => (
               <Callout key={rule} label="rule" value={rule} />
             ))}
+          </div>
+        </article>
+
+        <article className="border border-[#0B0B0B] bg-[#E7F7FF] p-5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Drift Check</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            <Callout label="status" value={radar.driftCheck.status} />
+            <Callout label="command" value={radar.driftCheck.command} />
+            <Callout label="highlightedCommand" value={highlightedDriftCommand} />
+            <Callout label="testCommand" value={radar.driftCheck.testCommand} />
+            <Callout label="highlightedPullRequestsApi" value={highlightedPullRequestsApiSource} />
+            <Callout label="sourceUrls" value={radar.driftCheck.sourceUrls.join(", ")} />
+            <Callout label="compareFields" value={radar.driftCheck.compareFields.join(", ")} />
+            <Callout label="interpretation" value={radar.driftCheck.interpretation} />
           </div>
         </article>
 

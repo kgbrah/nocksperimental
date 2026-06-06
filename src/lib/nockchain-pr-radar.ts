@@ -6,6 +6,10 @@ import {
 import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 
 const repositoryUrl = "https://github.com/nockchain/nockchain";
+const pullRequestsApiUrl =
+  "https://api.github.com/repos/nockchain/nockchain/pulls?state=open&per_page=100&sort=updated&direction=desc";
+const issuesApiUrl =
+  "https://api.github.com/repos/nockchain/nockchain/issues?state=open&per_page=100&sort=updated&direction=desc";
 
 const riskClasses = [
   {
@@ -846,6 +850,18 @@ export function createNockchainPrRadar() {
     openIssues,
     riskClasses,
     reviewContract,
+    driftCheck: {
+      status: "available",
+      command: "npm run check:nockchain-pr-radar-drift -- --json",
+      script: "scripts/check-nockchain-pr-radar-drift.mjs",
+      testCommand: "npm run test:nockchain-pr-radar-drift-check",
+      sourceUrls: [pullRequestsApiUrl, issuesApiUrl],
+      compareFields: ["number", "title", "draft", "updatedAt", "author"],
+      successStatus: "in-sync",
+      driftStatus: "drift",
+      interpretation:
+        "Use this before accepting the static PR radar as current; open PRs are early-warning signals and drift means the radar should be refreshed before product decisions."
+    },
     operatorQueue: [
       "Review PR #125 before changing Nockup validation fixture manifest assumptions.",
       "Review PR #113/#112/#107/#104 before trusting PMA snapshot, event-log, or state-jam assumptions.",
@@ -869,6 +885,8 @@ export function createNockchainPrRadar() {
       page: `${registryCanonicalBaseUrl}/nockchain/pr-radar`,
       repository: repositoryUrl,
       pulls: `${repositoryUrl}/pulls`,
+      pullRequestsApi: pullRequestsApiUrl,
+      issuesApi: issuesApiUrl,
       watch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
       nockup: `${registryCanonicalBaseUrl}/api/nockchain/nockup/submit`,
       wallet: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,

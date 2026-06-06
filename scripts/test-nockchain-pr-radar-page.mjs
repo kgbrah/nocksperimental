@@ -26,6 +26,17 @@ async function main() {
   assertIncludes(page, "Open Issues", "PR radar page renders open issues");
   assertIncludes(page, "Risk Classes", "PR radar page renders risk classes");
   assertIncludes(page, "Review Contract", "PR radar page renders review contract");
+  assertIncludes(page, "Drift Check", "PR radar page renders drift check");
+  assertIncludes(
+    page,
+    "npm run check:nockchain-pr-radar-drift",
+    "PR radar page renders drift command"
+  );
+  assertIncludes(
+    page,
+    "https://api.github.com/repos/nockchain/nockchain/pulls?state=open",
+    "PR radar page renders GitHub PR API source"
+  );
   assertIncludes(page, "PR #125", "PR radar page renders Nockup manifest PR");
   assertIncludes(page, "PR #113", "PR radar page renders PMA PR");
   assertIncludes(page, "PR #116", "PR radar page renders wallet PR");

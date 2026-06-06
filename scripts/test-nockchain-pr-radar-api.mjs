@@ -138,6 +138,24 @@ async function main() {
     "Draft PRs can shape future tests but cannot be treated as merged behavior.",
     "contract draft rule"
   );
+  assertEqual(body.driftCheck.status, "available", "drift check status");
+  assertEqual(
+    body.driftCheck.command,
+    "npm run check:nockchain-pr-radar-drift -- --json",
+    "drift check command"
+  );
+  assertEqual(
+    body.driftCheck.testCommand,
+    "npm run test:nockchain-pr-radar-drift-check",
+    "drift check test command"
+  );
+  assertIncludes(
+    body.driftCheck.sourceUrls,
+    "https://api.github.com/repos/nockchain/nockchain/pulls?state=open&per_page=100&sort=updated&direction=desc",
+    "drift check PR API source"
+  );
+  assertIncludes(body.driftCheck.compareFields, "updatedAt", "drift check updatedAt field");
+  assertIncludes(body.driftCheck.compareFields, "draft", "drift check draft field");
 
   assertIncludes(
     body.operatorQueue,
@@ -218,6 +236,16 @@ async function main() {
     "checkpoint PMA target"
   );
   assertEqual(
+    checkpointBody.nockchainPrRadar.driftCheckCommand,
+    "npm run check:nockchain-pr-radar-drift -- --json",
+    "checkpoint PR radar drift command"
+  );
+  assertIncludes(
+    checkpointBody.nockchainPrRadar.driftCheckSourceUrls,
+    "https://api.github.com/repos/nockchain/nockchain/issues?state=open&per_page=100&sort=updated&direction=desc",
+    "checkpoint PR radar issues source"
+  );
+  assertEqual(
     checkpointBody.links.nockchainPrRadar,
     "https://nocksperimental.com/api/nockchain/pr-radar",
     "checkpoint PR radar link"
@@ -229,7 +257,22 @@ async function main() {
     "node scripts/test-nockchain-pr-radar-api.mjs",
     "package PR radar API test script"
   );
+  assertEqual(
+    packageJson.scripts["check:nockchain-pr-radar-drift"],
+    "node scripts/check-nockchain-pr-radar-drift.mjs",
+    "package PR radar drift check script"
+  );
+  assertEqual(
+    packageJson.scripts["test:nockchain-pr-radar-drift-check"],
+    "node scripts/test-nockchain-pr-radar-drift-check.mjs",
+    "package PR radar drift check test script"
+  );
   assertIncludes(packageJson.scripts.test, "npm run test:nockchain-pr-radar-api", "full test includes PR radar API");
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-pr-radar-drift-check",
+    "full test includes PR radar drift check"
+  );
 
   const smokeSource = readText("scripts/smoke-cloudflare-preview.mjs");
   assertIncludes(smokeSource, "/api/nockchain/pr-radar", "Cloudflare smoke includes PR radar API");
@@ -237,6 +280,11 @@ async function main() {
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain PR Radar", "README documents PR radar");
   assertIncludes(readme, "/api/nockchain/pr-radar", "README documents PR radar API");
+  assertIncludes(
+    readme,
+    "npm run check:nockchain-pr-radar-drift",
+    "README documents PR radar drift check"
+  );
 }
 
 function assertPr(body, number, riskClass, priority, draft, targetSurface) {
