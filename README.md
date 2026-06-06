@@ -266,12 +266,12 @@ Use it before interpreting fakenet failures or publishing receipts: if the pinne
 
 ## Nockchain PR Radar
 
-The PR radar tracks currently open upstream Nockchain pull requests as early-warning signals before they become canonical behavior. It classifies Nockup manifest rendering, AI PoW puzzles, benchmark work, wallet blob/memo metadata, NockApp state export, stack-size behavior, install-path fixes, extension hooks, template pinning, Hoon app surfaces, and height-bound validation by target Nocksperimental surface, receipt impact, and verification command.
+The PR radar tracks currently open upstream Nockchain pull requests and open issues as early-warning signals before they become canonical behavior. It classifies Nockup manifest rendering, AI PoW puzzles, benchmark work, wallet blob/memo metadata, offline wallet signing, NockApp state export, PMA snapshot/event-log work, stack-size behavior, runtime stack-frame safety, install-path fixes, extension hooks, template pinning, x402 agentic-payment specs, parser work, Hoon app surfaces, and height-bound validation by target Nocksperimental surface, receipt impact, and verification command.
 
 - `/nockchain/pr-radar`
 - `/api/nockchain/pr-radar`
 
-Use it when deciding whether a pending upstream PR should refresh a Nockup, wallet, NockApp, operations, Rust atlas, compute benchmark, protocol trace, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
+Use it when deciding whether a pending upstream PR or open issue should refresh a Nockup, wallet, NockApp, PMA/state-jam, operations, Rust atlas, compute benchmark, protocol trace, x402, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
 
 ## Nockchain Sync/Gossip Source Trace
 

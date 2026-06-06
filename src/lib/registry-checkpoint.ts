@@ -111,6 +111,7 @@ export function createRegistryCheckpoint() {
     nockchainWatchItems: nockchainWatch.watchQueue.length,
     nockchainWatchChangeClasses: nockchainWatch.changeClassificationContract.classes.length,
     nockchainOpenPullRequests: nockchainPrRadar.pullRequests.length,
+    nockchainOpenIssues: nockchainPrRadar.openIssues.length,
     nockchainPrRiskClasses: nockchainPrRadar.riskClasses.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
@@ -289,6 +290,7 @@ export function createRegistryCheckpoint() {
       upstream: nockchainPrRadar.upstream,
       snapshot: nockchainPrRadar.snapshot,
       pullRequests: nockchainPrRadar.pullRequests,
+      openIssues: nockchainPrRadar.openIssues,
       riskClasses: nockchainPrRadar.riskClasses,
       reviewContract: nockchainPrRadar.reviewContract,
       operatorQueue: nockchainPrRadar.operatorQueue
@@ -445,13 +447,26 @@ export function createRegistryCheckpoint() {
           "recommendedNocksperimentalUpdates"
         ),
       nockchainPrRadarAvailable:
-        nockchainPrRadar.pullRequests.length === 12 &&
+        nockchainPrRadar.pullRequests.length === 20 &&
+        nockchainPrRadar.openIssues.length === 1 &&
         nockchainPrRadar.riskClasses.length >= 6 &&
         nockchainPrRadar.pullRequests.some(
           (pullRequest) =>
             pullRequest.number === 116 &&
             pullRequest.riskClass === "wallet-transaction-metadata" &&
             (pullRequest.targetSurfaces as readonly string[]).includes("nockchainWalletAtlas")
+        ) &&
+        nockchainPrRadar.pullRequests.some(
+          (pullRequest) =>
+            pullRequest.number === 113 &&
+            pullRequest.riskClass === "pma-runtime-persistence" &&
+            (pullRequest.targetSurfaces as readonly string[]).includes("stateJamRegistry")
+        ) &&
+        nockchainPrRadar.openIssues.some(
+          (issue) =>
+            issue.number === 121 &&
+            issue.riskClass === "runtime-stack-frame-safety" &&
+            (issue.targetSurfaces as readonly string[]).includes("nockvmRuntimeSafety")
         ) &&
         nockchainPrRadar.reviewContract.forbiddenFields.includes("walletSeedPhrase"),
       nockchainSyncGossipTraceAvailable:
@@ -657,13 +672,19 @@ export function createRegistryCheckpoint() {
     nockchainPrRadar: {
       observedAt: nockchainPrRadar.observedAt,
       openPullRequestCount: nockchainPrRadar.snapshot.openPullRequestCount,
+      openIssueCount: nockchainPrRadar.snapshot.openIssueCount,
       draftCount: nockchainPrRadar.snapshot.draftCount,
       highPriorityPrs: nockchainPrRadar.pullRequests
         .filter((pullRequest) => pullRequest.priority === "high")
         .map((pullRequest) => pullRequest.number),
+      openIssueNumbers: nockchainPrRadar.openIssues.map((issue) => issue.number),
       riskClassIds: nockchainPrRadar.riskClasses.map((riskClass) => riskClass.id),
       targetSurfaces: Array.from(
-        new Set(nockchainPrRadar.pullRequests.flatMap((pullRequest) => pullRequest.targetSurfaces))
+        new Set(
+          [...nockchainPrRadar.pullRequests, ...nockchainPrRadar.openIssues].flatMap(
+            (item) => item.targetSurfaces
+          )
+        )
       ),
       forbiddenFields: nockchainPrRadar.reviewContract.forbiddenFields
     },

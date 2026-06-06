@@ -35,20 +35,30 @@ async function main() {
     "upstream release"
   );
 
-  assertEqual(body.snapshot.openPullRequestCount, 12, "open PR count");
-  assertEqual(body.snapshot.draftCount, 1, "draft PR count");
-  assertEqual(body.snapshot.highPriorityCount, 6, "high priority PR count");
+  assertEqual(body.snapshot.openPullRequestCount, 20, "open PR count");
+  assertEqual(body.snapshot.openIssueCount, 1, "open issue count");
+  assertEqual(body.snapshot.draftCount, 6, "draft PR count");
+  assertEqual(body.snapshot.highPriorityCount, 11, "high priority PR count");
   assertEqual(body.snapshot.latestUpdatedAt, "2026-06-06T00:07:44Z", "latest PR update");
-  assertEqual(body.pullRequests.length, 12, "tracked PR count");
+  assertEqual(body.pullRequests.length, 20, "tracked PR count");
+  assertEqual(body.openIssues.length, 1, "tracked issue count");
 
   assertPr(body, 125, "nockup-fixture-manifest", "high", true, "nockupValidation");
+  assertPr(body, 113, "pma-runtime-persistence", "high", true, "stateJamRegistry");
   assertPr(body, 124, "compute-proof-puzzle", "high", false, "computeBenchmarkProfiles");
   assertPr(body, 126, "benchmarking", "high", false, "nockchainRustAtlas");
   assertPr(body, 116, "wallet-transaction-metadata", "high", false, "nockchainWalletAtlas");
   assertPr(body, 119, "nockapp-state-export", "high", false, "nockchainNockAppSourceTrace");
+  assertPr(body, 103, "offline-wallet-signing", "high", false, "nockchainWalletAtlas");
   assertPr(body, 118, "runtime-stack-size", "high", false, "nockchainOperationsAtlas");
+  assertPr(body, 112, "pma-runtime-persistence", "high", true, "stateJamRegistry");
+  assertPr(body, 107, "pma-runtime-persistence", "high", true, "stateJamRegistry");
+  assertPr(body, 104, "pma-runtime-persistence", "high", true, "stateJamRegistry");
   assertPr(body, 122, "nockup-install-path", "medium", false, "nockupValidation");
   assertPr(body, 120, "nockup-extension-hooks", "medium", false, "fixtureDocs");
+  assertPr(body, 102, "x402-agentic-payments", "medium", false, "x402MeteredTrustApi");
+  assertPr(body, 101, "parser-arm-comparison", "watch", true, "nockchainHoonKernelAtlas");
+  assertPr(body, 95, "jojo-repl-surface", "watch", false, "nockchainNockAppAtlas");
   assertPr(body, 88, "consensus-height-bounds", "medium", false, "nockchainProtocolTrace");
 
   const pr125 = findPr(body, 125);
@@ -65,6 +75,21 @@ async function main() {
   assertIncludes(pr119.receiptFields, "exportStateCommit", "PR 119 export state field");
   assertIncludes(pr119.forbiddenFields, "rawExportJam", "PR 119 forbids raw export jam");
 
+  const pr113 = findPr(body, 113);
+  assertIncludes(pr113.title, "PMA trailhead", "PR 113 title");
+  assertIncludes(pr113.receiptFields, "pmaSnapshotRoot", "PR 113 PMA snapshot field");
+  assertIncludes(pr113.forbiddenFields, "rawPmaSlab", "PR 113 forbids raw PMA slab");
+
+  const pr103 = findPr(body, 103);
+  assertIncludes(pr103.title, "Offline/cold wallet signing", "PR 103 title");
+  assertIncludes(pr103.receiptFields, "signingMode", "PR 103 signing mode field");
+  assertIncludes(pr103.forbiddenFields, "coldWalletPrivateKey", "PR 103 forbids cold wallet key");
+
+  const issue121 = findIssue(body, 121);
+  assertEqual(issue121.riskClass, "runtime-stack-frame-safety", "issue 121 risk class");
+  assertIncludes(issue121.targetSurfaces, "nockvmRuntimeSafety", "issue 121 target surface");
+  assertIncludes(issue121.receiptFields, "stackFramePointerRange", "issue 121 receipt field");
+
   const riskClassIds = body.riskClasses.map((riskClass) => riskClass.id);
   assertIncludes(riskClassIds, "nockup-fixture-manifest", "nockup risk class");
   assertIncludes(riskClassIds, "wallet-transaction-metadata", "wallet risk class");
@@ -72,6 +97,10 @@ async function main() {
   assertIncludes(riskClassIds, "consensus-height-bounds", "consensus risk class");
   assertIncludes(riskClassIds, "benchmarking", "benchmark risk class");
   assertIncludes(riskClassIds, "compute-proof-puzzle", "compute risk class");
+  assertIncludes(riskClassIds, "pma-runtime-persistence", "PMA risk class");
+  assertIncludes(riskClassIds, "offline-wallet-signing", "offline wallet risk class");
+  assertIncludes(riskClassIds, "x402-agentic-payments", "x402 risk class");
+  assertIncludes(riskClassIds, "runtime-stack-frame-safety", "runtime stack frame risk class");
 
   const walletClass = findRiskClass(body, "wallet-transaction-metadata");
   assertEqual(walletClass.escalation, "high", "wallet class escalation");
@@ -80,8 +109,10 @@ async function main() {
   assertIncludes(body.reviewContract.requiredFields, "prNumber", "contract requires PR number");
   assertIncludes(body.reviewContract.requiredFields, "riskClass", "contract requires risk class");
   assertIncludes(body.reviewContract.requiredFields, "targetSurfaces", "contract requires targets");
+  assertIncludes(body.reviewContract.requiredFields, "openIssueNumber", "contract requires issue number when present");
   assertIncludes(body.reviewContract.requiredFields, "verificationCommand", "contract requires verification");
   assertIncludes(body.reviewContract.forbiddenFields, "rawStateJam", "contract forbids raw state jam");
+  assertIncludes(body.reviewContract.forbiddenFields, "rawPmaSlab", "contract forbids raw PMA slab");
   assertIncludes(body.reviewContract.forbiddenFields, "walletSeedPhrase", "contract forbids wallet seed");
   assertIncludes(
     body.reviewContract.reviewRules,
@@ -93,6 +124,11 @@ async function main() {
     body.operatorQueue,
     "Review PR #125 before changing Nockup validation fixture manifest assumptions.",
     "operator queue Nockup"
+  );
+  assertIncludes(
+    body.operatorQueue,
+    "Review PR #113/#112/#107/#104 before trusting PMA snapshot, event-log, or state-jam assumptions.",
+    "operator queue PMA"
   );
   assertIncludes(
     body.operatorQueue,
@@ -138,15 +174,23 @@ async function main() {
 
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
-  assertEqual(checkpointBody.counts.nockchainOpenPullRequests, 12, "checkpoint PR count");
+  assertEqual(checkpointBody.counts.nockchainOpenPullRequests, 20, "checkpoint PR count");
+  assertEqual(checkpointBody.counts.nockchainOpenIssues, 1, "checkpoint issue count");
   assertGreaterThan(checkpointBody.counts.nockchainPrRiskClasses, 5, "checkpoint risk class count");
   assertStartsWith(checkpointBody.roots.nockchainPrRadar, "sha256:", "checkpoint PR radar root");
   assertEqual(checkpointBody.checks.nockchainPrRadarAvailable, true, "checkpoint PR radar check");
   assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 116, "checkpoint high priority wallet PR");
+  assertIncludes(checkpointBody.nockchainPrRadar.highPriorityPrs, 113, "checkpoint high priority PMA PR");
+  assertIncludes(checkpointBody.nockchainPrRadar.openIssueNumbers, 121, "checkpoint open runtime issue");
   assertIncludes(
     checkpointBody.nockchainPrRadar.targetSurfaces,
     "nockchainWalletAtlas",
     "checkpoint wallet target"
+  );
+  assertIncludes(
+    checkpointBody.nockchainPrRadar.targetSurfaces,
+    "stateJamRegistry",
+    "checkpoint PMA target"
   );
   assertEqual(
     checkpointBody.links.nockchainPrRadar,
@@ -197,6 +241,16 @@ function findRiskClass(body, id) {
   }
 
   return riskClass;
+}
+
+function findIssue(body, number) {
+  const issue = body.openIssues.find((candidate) => candidate.number === number);
+
+  if (!issue) {
+    throw new Error(`Missing issue: ${number}`);
+  }
+
+  return issue;
 }
 
 function loadTypeScriptModule(relativePath) {

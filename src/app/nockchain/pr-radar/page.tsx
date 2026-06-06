@@ -12,19 +12,25 @@ import { createNockchainPrRadar } from "@/lib/nockchain-pr-radar";
 
 export const dynamic = "force-dynamic";
 
-const priorityPrNumbers = [125, 116, 119, 126, 124, 118] as const;
+const priorityPrNumbers = [125, 113, 116, 103, 119, 126, 124, 118] as const;
 const priorityRiskClasses = [
   "nockup-fixture-manifest",
+  "pma-runtime-persistence",
   "wallet-transaction-metadata",
+  "offline-wallet-signing",
   "nockapp-state-export",
   "benchmarking",
   "compute-proof-puzzle",
-  "runtime-stack-size"
+  "runtime-stack-size",
+  "runtime-stack-frame-safety"
 ] as const;
-const highlightedForbiddenFields = ["rawStateJam", "walletSeedPhrase"] as const;
+const highlightedForbiddenFields = ["rawStateJam", "rawPmaSlab", "walletSeedPhrase"] as const;
 const pr125Label = "PR #125";
+const pr113Label = "PR #113";
 const pr116Label = "PR #116";
+const pr103Label = "PR #103";
 const pr119Label = "PR #119";
+const issue121Label = "Issue #121";
 
 export default function NockchainPrRadarPage() {
   const radar = createNockchainPrRadar();
@@ -34,6 +40,7 @@ export default function NockchainPrRadarPage() {
   const remainingPullRequests = radar.pullRequests.filter(
     (pullRequest) => !priorityPrNumbers.includes(pullRequest.number as (typeof priorityPrNumbers)[number])
   );
+  const priorityIssues = radar.openIssues.filter((issue) => issue.priority === "high");
   const priorityClasses = priorityRiskClasses
     .map((id) => radar.riskClasses.find((riskClass) => riskClass.id === id))
     .filter((riskClass): riskClass is NonNullable<typeof riskClass> => Boolean(riskClass));
@@ -84,9 +91,9 @@ export default function NockchainPrRadarPage() {
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-4 lg:px-8">
         <Metric label="Open PRs" value={radar.snapshot.openPullRequestCount.toString()} />
+        <Metric label="Open Issues" value={radar.snapshot.openIssueCount.toString()} />
         <Metric label="High Priority" value={radar.snapshot.highPriorityCount.toString()} />
         <Metric label="Drafts" value={radar.snapshot.draftCount.toString()} />
-        <Metric label="Commit" value={radar.upstream.commit.shortSha} />
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
@@ -109,9 +116,12 @@ export default function NockchainPrRadarPage() {
           </div>
           <div className="mt-4 grid gap-3">
             <Callout label={pr125Label} value={radar.operatorQueue[0]} />
-            <Callout label={pr116Label} value={radar.operatorQueue[1]} />
-            <Callout label={pr119Label} value={radar.operatorQueue[2]} />
-            {radar.operatorQueue.slice(3).map((item) => (
+            <Callout label={pr113Label} value={radar.operatorQueue[1]} />
+            <Callout label={pr116Label} value={radar.operatorQueue[2]} />
+            <Callout label={pr103Label} value={radar.operatorQueue[3]} />
+            <Callout label={issue121Label} value={radar.operatorQueue[4]} />
+            <Callout label={pr119Label} value={radar.operatorQueue[5]} />
+            {radar.operatorQueue.slice(6).map((item) => (
               <Callout key={item} label="review" value={item} />
             ))}
           </div>
@@ -119,6 +129,18 @@ export default function NockchainPrRadarPage() {
       </section>
 
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Open Issues</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {priorityIssues.map((issue) => (
+              <OpenIssueCard issue={issue} key={issue.number} />
+            ))}
+          </div>
+        </article>
+
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <ListChecks size={18} aria-hidden="true" />
@@ -130,7 +152,9 @@ export default function NockchainPrRadarPage() {
             ))}
           </div>
         </article>
+      </section>
 
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
           <div className="flex items-center gap-2">
             <ShieldCheck size={18} aria-hidden="true" />
@@ -145,9 +169,7 @@ export default function NockchainPrRadarPage() {
             ))}
           </div>
         </article>
-      </section>
 
-      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-10 lg:grid-cols-[1fr_1fr] lg:px-8">
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
             <GitPullRequest size={18} aria-hidden="true" />
@@ -173,6 +195,28 @@ export default function NockchainPrRadarPage() {
         </article>
       </section>
     </main>
+  );
+}
+
+function OpenIssueCard({
+  issue
+}: {
+  issue: ReturnType<typeof createNockchainPrRadar>["openIssues"][number];
+}) {
+  return (
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+        Issue #{issue.number}
+      </p>
+      <h3 className="mt-2 text-sm font-semibold leading-6">{issue.title}</h3>
+      <p className="mt-2 font-mono text-xs uppercase tracking-[0.12em] text-[#4A4A4A]">
+        {issue.priority} / {issue.riskClass}
+      </p>
+      <Callout label="targetSurfaces" value={issue.targetSurfaces.join(", ")} />
+      <Callout label="receiptFields" value={issue.receiptFields.join(", ")} />
+      <Callout label="verificationCommand" value={issue.verificationCommand} />
+      <Callout label="action" value={issue.nocksperimentalAction} />
+    </div>
   );
 }
 
