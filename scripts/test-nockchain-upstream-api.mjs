@@ -26,8 +26,8 @@ async function main() {
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/upstream", "canonical URL");
   assertEqual(body.repository.fullName, "nockchain/nockchain", "repository name");
   assertEqual(body.repository.defaultBranch, "master", "repository default branch");
-  assertEqual(body.latestCommit.shortSha, "5d022ced5504", "latest commit short sha");
-  assertIncludes(body.latestCommit.message, "libp2p", "latest commit message");
+  assertEqual(body.latestCommit.shortSha, "33ba97b1e206", "latest commit short sha");
+  assertIncludes(body.latestCommit.message, "bridge", "latest commit message");
   assertEqual(
     body.latestRelease.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
@@ -44,10 +44,26 @@ async function main() {
   assertIncludes(body.workspace.crateGroups.chainRuntime, "nockchain", "chain runtime crate");
   assertIncludes(body.workspace.crateGroups.nockAppRuntime, "nockapp", "nockapp crate");
   assertIncludes(body.workspace.crateGroups.operatorTools, "nockchain-wallet", "wallet crate");
+  assertIncludes(body.workspace.crateGroups.bridgeAndProof, "bridge-dev", "bridge dev crate");
+  assertIncludes(
+    body.workspace.crateGroups.bridgeAndProof,
+    "nockchain-bridge-sequencer",
+    "bridge sequencer crate"
+  );
   assertIncludes(body.operationalScripts.fakenet, "scripts/run_nockchain_node_fakenet.sh", "fakenet node script");
   assertIncludes(body.operationalScripts.fakenet, "scripts/run_nockchain_miner_fakenet.sh", "fakenet miner script");
   assertIncludes(body.watchItems, "libp2p/sync behavior while behind tip", "sync watch item");
+  assertIncludes(
+    body.watchItems,
+    "bridge withdrawal execution and sequencer journal persistence",
+    "bridge watch item"
+  );
   assertIncludes(body.nocksperimentalImplications.receiptFields, "nockchainBuild", "receipt build implication");
+  assertIncludes(
+    body.nocksperimentalImplications.receiptFields,
+    "sequencerAuthorizationState",
+    "bridge receipt implication"
+  );
   assertIncludes(body.safety.stateArtifacts.doNotStore, "raw PMA slabs", "state safety");
   assertEqual(body.links.repository, "https://github.com/nockchain/nockchain", "repository link");
   assertEqual(body.links.research, "https://nocksperimental.com/docs/research/nockchain-rust-architecture.md", "research link");

@@ -13,6 +13,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - Nockchain protocol authority trace for protocol index/spec lifecycle, activation status, consensus-critical posture, and receipt fields.
+- Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
 - Nockchain Rust workspace atlas for crate-level roles, validation gates, risks, and Nocksperimental integration uses.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
@@ -124,6 +125,15 @@ The protocol authority trace turns `PROTOCOL.md`, `changelog/protocol/SPECIFICAT
 - `/api/nockchain/protocol`
 
 Use it when a fakenet test, Nockup validation run, wallet/balance receipt, or state-jam provenance record depends on protocol activation height, consensus-critical status, network partition risk, or the exact Nockchain source that justified the assumption.
+
+## Nockchain Bridge Withdrawal Trace
+
+The bridge withdrawal trace follows the latest default-branch bridge work from Base burn through Hoon kernel pending/commit effects, Rust withdrawal proposal assembly, sequencer authorization, journal persistence, submission, confirmation polling, and kernel reconciliation. It explicitly records that the default branch is ahead of the latest public build release, so settlement and bridge receipts do not flatten commit/build provenance.
+
+- `/nockchain/bridge`
+- `/api/nockchain/bridge`
+
+Use it when a VESL, x402, fakenet, or bridge-settlement receipt depends on withdrawal proposal hashes, sequencer authorization state, blockchain constants, journal mirroring, or confirmed inclusion.
 
 ## Zorp/Nockchain Upstream Map
 

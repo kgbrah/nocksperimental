@@ -33,7 +33,7 @@ async function main() {
 
   assertEqual(body.nockchain.repository.fullName, "nockchain/nockchain", "canonical Nockchain repo");
   assertEqual(body.nockchain.repository.defaultBranch, "master", "canonical default branch");
-  assertEqual(body.nockchain.latestCommit.shortSha, "5d022ced5504", "Nockchain latest commit");
+  assertEqual(body.nockchain.latestCommit.shortSha, "33ba97b1e206", "Nockchain latest commit");
   assertEqual(
     body.nockchain.latestRelease.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",

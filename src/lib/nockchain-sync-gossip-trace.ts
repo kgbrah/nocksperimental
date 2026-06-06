@@ -146,6 +146,17 @@ const receiptFields = [
 
 export function createNockchainSyncGossipTrace() {
   const upstream = nockchainUpstreamIntelligence;
+  const releaseCommitSha = upstream.latestRelease.tag.replace(/^build-/, "");
+  const sourceSignal = upstream.recentSignals.find((signal) =>
+    /suppress all outgoing gossip|behind tip|libp2p/i.test(signal.message)
+  );
+  const sourceCommit = {
+    shortSha: sourceSignal?.shortSha ?? releaseCommitSha.slice(0, 12),
+    sha: releaseCommitSha,
+    committedAt: "2026-06-02T20:51:14Z",
+    message: sourceSignal?.message ?? "libp2p: suppress all outgoing gossip while catching up (behind tip)",
+    url: `https://github.com/nockchain/nockchain/commit/${releaseCommitSha}`
+  };
 
   return {
     version: "v0",
@@ -156,9 +167,11 @@ export function createNockchainSyncGossipTrace() {
     upstream: {
       repository: upstream.repository.fullName,
       commit: upstream.latestCommit,
+      sourceCommit,
       release: upstream.latestRelease,
       crate: "nockchain-libp2p-io",
-      sourceCommitUrl: upstream.latestCommit.url
+      sourceCommitUrl: sourceCommit.url,
+      currentCommitUrl: upstream.latestCommit.url
     },
     sourceAnchors,
     behaviorInvariants,
@@ -200,7 +213,8 @@ export function createNockchainSyncGossipTrace() {
       rustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       diagnostics: `${registryCanonicalBaseUrl}/api/fakenet/diagnostics`,
       syncGossipPage: `${registryCanonicalBaseUrl}/nockchain/sync-gossip`,
-      commit: upstream.latestCommit.url,
+      commit: sourceCommit.url,
+      currentCommit: upstream.latestCommit.url,
       release: upstream.latestRelease.url
     }
   };

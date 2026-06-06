@@ -24,9 +24,9 @@ async function main() {
   assertEqual(body.service, "nocksperimental", "service name");
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/watch", "canonical URL");
-  assertEqual(body.status, "in-sync", "watch drift status");
-  assertEqual(body.pinned.nockchain.commit.shortSha, "5d022ced5504", "pinned commit");
-  assertEqual(body.observed.nockchain.commit.shortSha, "5d022ced5504", "observed commit");
+  assertEqual(body.status, "review-needed", "watch drift status");
+  assertEqual(body.pinned.nockchain.commit.shortSha, "33ba97b1e206", "pinned commit");
+  assertEqual(body.observed.nockchain.commit.shortSha, "33ba97b1e206", "observed commit");
   assertEqual(
     body.observed.nockchain.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
@@ -34,7 +34,14 @@ async function main() {
   );
   assertEqual(body.drift.commitMatchesPinned, true, "commit drift");
   assertEqual(body.drift.releaseMatchesPinned, true, "release drift");
+  assertEqual(body.drift.latestCommitReleased, false, "release lag");
+  assertEqual(body.drift.defaultBranchAheadOfRelease, true, "default branch release lag");
   assertEqual(body.drift.zorpStateJamFolderClassified, true, "state-jam folder classification");
+  assertIncludes(
+    body.drift.requiredReviewSignals,
+    "bridge withdrawal execution landed on default branch ahead of the latest public build release",
+    "bridge release lag signal"
+  );
   assertIncludes(body.drift.requiredReviewSignals, "zorp-corp/nockapp archived repo updated metadata", "nockapp review signal");
 
   assertSource(body, "github-nockchain-commit", "https://api.github.com/repos/nockchain/nockchain/commits/master");
@@ -42,6 +49,7 @@ async function main() {
   assertSource(body, "github-zorp-repos", "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated");
   assertSource(body, "zorp-state-jam-drive", "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw");
 
+  assertWatchItem(body, "bridge-withdrawal-execution", "bridge-withdrawals", "high");
   assertWatchItem(body, "libp2p-behind-tip-gossip", "fakenet-mining", "high");
   assertWatchItem(body, "state-jam-drive-inventory", "state-artifacts", "high");
   assertWatchItem(body, "zorp-nockapp-archived-update", "zorp-lineage", "medium");
@@ -88,7 +96,7 @@ async function main() {
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainWatchItems, body.watchQueue.length, "checkpoint watch count");
   assertStartsWith(checkpointBody.roots.nockchainWatch, "sha256:", "checkpoint watch root");
-  assertEqual(checkpointBody.checks.nockchainWatchInSync, true, "checkpoint watch in sync");
+  assertEqual(checkpointBody.checks.nockchainWatchInSync, false, "checkpoint watch in sync");
   assertEqual(
     checkpointBody.links.nockchainWatch,
     "https://nocksperimental.com/api/nockchain/watch",

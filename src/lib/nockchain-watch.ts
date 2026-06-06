@@ -7,7 +7,7 @@ import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 
-const observedAt = "2026-06-05T17:45:00.000Z";
+const observedAt = "2026-06-05T23:59:00.000Z";
 
 const sources = [
   {
@@ -43,6 +43,19 @@ const sources = [
 ] as const;
 
 const watchQueue = [
+  {
+    id: "bridge-withdrawal-execution",
+    domain: "bridge-withdrawals",
+    severity: "high",
+    source: "nockchain/nockchain",
+    latestSignal: "bridge: add end-to-end withdrawal execution (#127)",
+    whyItMatters:
+      "Default branch now includes bridge withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence ahead of the latest public build release.",
+    reviewTrigger:
+      "Any commit or release touching crates/bridge, crates/nockchain-bridge-sequencer, wallet-tx-builder withdrawal fixtures, or hoon/apps/bridge.",
+    nocksperimentalAction:
+      "Keep bridge and settlement receipts explicit about commit/build provenance, sequencer authorization state, blockchain constants, proposal hashes, and confirmed inclusion."
+  },
   {
     id: "libp2p-behind-tip-gossip",
     domain: "fakenet-mining",
@@ -124,9 +137,10 @@ export function createNockchainWatchBoard() {
   const stateJams = createNockchainStateJamRegistry();
   const nockapp = zorp.repositories.find((repo) => repo.fullName === "zorp-corp/nockapp");
   const jock = zorp.repositories.find((repo) => repo.fullName === "zorp-corp/jock-lang");
-  const commitMatchesPinned = upstream.latestCommit.shortSha === "5d022ced5504";
+  const commitMatchesPinned = upstream.latestCommit.shortSha === "33ba97b1e206";
   const releaseMatchesPinned =
     upstream.latestRelease.tag === "build-5d022ced55040221e8b6fcfd78114189fbae91a0";
+  const latestCommitReleased = upstream.latestRelease.tag.includes(upstream.latestCommit.sha);
   const zorpStateJamFolderClassified =
     zorp.stateJamDrive.classification.includes("not a VESL folder") &&
     stateJams.sources.every((source) => source.artifactPolicy === "metadata-only");
@@ -137,7 +151,10 @@ export function createNockchainWatchBoard() {
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
     observedAt,
-    status: commitMatchesPinned && releaseMatchesPinned ? "in-sync" : "review-needed",
+    status:
+      commitMatchesPinned && releaseMatchesPinned && latestCommitReleased
+        ? "in-sync"
+        : "review-needed",
     sources,
     pinned: {
       source: "nockchain-upstream-intelligence",
@@ -189,9 +206,12 @@ export function createNockchainWatchBoard() {
     drift: {
       commitMatchesPinned,
       releaseMatchesPinned,
+      latestCommitReleased,
+      defaultBranchAheadOfRelease: !latestCommitReleased,
       zorpStateJamFolderClassified,
       requiresHumanReview: watchQueue.some((item) => item.severity === "high"),
       requiredReviewSignals: [
+        "bridge withdrawal execution landed on default branch ahead of the latest public build release",
         "libp2p behind-tip gossip suppression affects fakenet mining interpretation",
         "zorp-corp/nockapp archived repo updated metadata",
         "Zorp state-jam Drive folder requires metadata inventory before trust",

@@ -168,6 +168,9 @@ function createNockchainTriage(
   evidenceText: string
 ) {
   const upstream = nockchainUpstreamIntelligence;
+  const syncSignal = upstream.recentSignals.find((signal) =>
+    /suppress all outgoing gossip|behind tip|libp2p/i.test(signal.message)
+  );
   const issues: NockchainTriageIssue[] = [
     createEmptyRoutingTableIssue(readiness, evidenceText),
     createNoConnectedPeersIssue(readiness, evidenceText),
@@ -186,7 +189,7 @@ function createNockchainTriage(
         previous: upstream.protocol.currentTrack.previous,
         draft: upstream.protocol.currentTrack.draft
       },
-      latestSignal: upstream.latestCommit.message
+      latestSignal: syncSignal?.message ?? upstream.latestCommit.message
     },
     summary: summarizeNockchainTriage(issues),
     issues,

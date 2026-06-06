@@ -10,7 +10,7 @@ export const nockchainUpstreamIntelligence = {
   service: registryServiceName,
   subject: registrySubject,
   canonicalUrl: `${registryCanonicalBaseUrl}/api/nockchain/upstream`,
-  scannedAt: "2026-06-05T18:35:00.000Z",
+  scannedAt: "2026-06-05T23:55:00.000Z",
   repository: {
     fullName: "nockchain/nockchain",
     defaultBranch: "master",
@@ -19,13 +19,13 @@ export const nockchainUpstreamIntelligence = {
     description: "Nockchain protocol monorepo"
   },
   latestCommit: {
-    shortSha: "5d022ced5504",
-    sha: "5d022ced55040221e8b6fcfd78114189fbae91a0",
-    committedAt: "2026-06-02T20:11:49Z",
-    message: "libp2p: suppress all outgoing gossip while catching up (behind tip)",
-    url: "https://github.com/nockchain/nockchain/commit/5d022ced55040221e8b6fcfd78114189fbae91a0",
+    shortSha: "33ba97b1e206",
+    sha: "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    committedAt: "2026-06-05T23:46:59Z",
+    message: "bridge: add end-to-end withdrawal execution (#127)",
+    url: "https://github.com/nockchain/nockchain/commit/33ba97b1e206dd89b15c61b72b7802caf2136c18",
     nocksperimentalRelevance:
-      "Behind-tip nodes can intentionally suppress gossip, so fakenet/mining receipts need sync, peer, route-table, and tip context before treating no-peers or wrong-commitment symptoms as test failure."
+      "Bridge withdrawal execution landed on default branch ahead of the latest public build release, so bridge, settlement, x402, and VESL-adjacent receipts need commit/build provenance and release-lag context."
   },
   latestRelease: {
     tag: "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
@@ -34,6 +34,18 @@ export const nockchainUpstreamIntelligence = {
     url: "https://github.com/nockchain/nockchain/releases/tag/build-5d022ced55040221e8b6fcfd78114189fbae91a0"
   },
   recentSignals: [
+    {
+      shortSha: "33ba97b1e206",
+      message: "bridge: add end-to-end withdrawal execution (#127)",
+      significance:
+        "Bridge withdrawals now have Rust runtime loops, sequencer authorization/submission, Hoon kernel seams, wallet tx-builder fixtures, and journaled persistence surfaces."
+    },
+    {
+      shortSha: "5d022ced5504",
+      message: "libp2p: suppress all outgoing gossip while catching up (behind tip)",
+      significance:
+        "Behind-tip nodes can intentionally suppress gossip, so fakenet/mining receipts need sync, peer, route-table, and tip context before treating no-peers or wrong-commitment symptoms as test failure."
+    },
     {
       shortSha: "2601509be0da",
       message: "Nous Protocol Upgrade (#40)",
@@ -151,7 +163,13 @@ export const nockchainUpstreamIntelligence = {
         "nockvm/rust/nockvm_macros"
       ],
       hoonAndScaffolding: ["hoon", "hoonc", "kernels", "nockup"],
-      bridgeAndProof: ["bridge", "zkvm-jetpack", "equix-latency"],
+      bridgeAndProof: [
+        "bridge",
+        "bridge-dev",
+        "nockchain-bridge-sequencer",
+        "zkvm-jetpack",
+        "equix-latency"
+      ],
       serializationSupport: ["noun-serde", "noun-serde-derive", "habit", "chaff"]
     },
     validationGates: [
@@ -210,7 +228,8 @@ export const nockchainUpstreamIntelligence = {
     "nockup template/run UX PRs",
     "wallet blob/memo transaction support",
     "public NockApp::export_state",
-    "protocol specs 013-nous and 014-aletheia"
+    "protocol specs 013-nous and 014-aletheia",
+    "bridge withdrawal execution and sequencer journal persistence"
   ],
   nocksperimentalImplications: {
     receiptFields: [
@@ -228,13 +247,19 @@ export const nockchainUpstreamIntelligence = {
       "peerCount",
       "routeTableSize",
       "tipStatus",
-      "walletEndpointMode"
+      "walletEndpointMode",
+      "bridgeWithdrawalId",
+      "withdrawalProposalHash",
+      "sequencerAuthorizationState",
+      "blockchainConstantsSource",
+      "withdrawalJournalMirror"
     ],
     nextProductSlices: [
       "Expose sync/peer/tip diagnostics beside fakenet mining checks.",
       "Add state-jam registry metadata without hosting raw state artifacts.",
       "Attach canonical Nockchain doc authority to test assumptions.",
-      "Add nockup build/run receipts for app scaffold validation."
+      "Add nockup build/run receipts for app scaffold validation.",
+      "Expose bridge withdrawal execution, sequencer authorization, and release-lag context beside settlement receipts."
     ]
   },
   links: {

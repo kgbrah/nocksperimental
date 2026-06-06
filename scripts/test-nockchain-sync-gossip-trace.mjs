@@ -24,13 +24,14 @@ async function main() {
   assertEqual(body.service, "nocksperimental", "service name");
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/sync-gossip", "canonical URL");
-  assertEqual(body.upstream.commit.shortSha, "5d022ced5504", "upstream commit");
+  assertEqual(body.upstream.commit.shortSha, "33ba97b1e206", "upstream commit");
+  assertEqual(body.upstream.sourceCommit.shortSha, "5d022ced5504", "source commit");
   assertEqual(
     body.upstream.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
     "upstream release"
   );
-  assertIncludes(body.upstream.commit.message, "suppress all outgoing gossip", "commit message");
+  assertIncludes(body.upstream.sourceCommit.message, "suppress all outgoing gossip", "source commit message");
 
   assertSourceAnchor(body, "catch-up-signal", "crates/nockchain-libp2p-io/src/catch_up.rs", "CatchUpSignal::is_catching_up");
   assertSourceAnchor(body, "p2p-state-gate", "crates/nockchain-libp2p-io/src/p2p_state.rs", "P2PState::should_suppress_outgoing_gossip");

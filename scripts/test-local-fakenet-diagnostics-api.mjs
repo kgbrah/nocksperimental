@@ -74,7 +74,7 @@ async function main() {
     assertDiagnostic(peerFaultBody, "block-commitment-mismatch", "blocker", "npm run lab:local:chain");
     assertEqual(
       peerFaultBody.nockchainTriage.upstream.commit.shortSha,
-      "5d022ced5504",
+      "33ba97b1e206",
       "peer fault upstream commit"
     );
     assertEqual(

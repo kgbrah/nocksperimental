@@ -19,15 +19,17 @@ Primary upstream sources:
 
 Latest scanned canonical Nockchain commit:
 
-- `5d022ced5504`
-- Message: `libp2p: suppress all outgoing gossip while catching up (behind tip)`
-- Date: 2026-06-02
+- `33ba97b1e206`
+- Message: `bridge: add end-to-end withdrawal execution (#127)`
+- Date: 2026-06-05
 - Release: `build-5d022ced55040221e8b6fcfd78114189fbae91a0`
 
-This commit matters for Nocksperimental because sync state can now explain behavior that otherwise looks like "no peers", empty routing tables, or wrong block commitment errors. We should expose enough sync/peer/tip context in receipts to distinguish bad test setup from a node intentionally limiting gossip while behind.
+This commit matters for Nocksperimental because bridge withdrawal execution is now ahead of the latest public build release. Receipts that claim bridge settlement, VESL/x402 payout behavior, or fakenet withdrawal coverage need to record commit/build provenance, sequencer authorization state, proposal hashes, blockchain constants source, journal mirroring, and confirmed inclusion separately.
 
 Recent high-signal upstream changes:
 
+- `33ba97b1e206`: end-to-end bridge withdrawal execution, sequencer authorization, submission, confirmation polling, and withdrawal journal persistence.
+- `5d022ced5504`: behind-tip gossip suppression that affects fakenet/mining interpretation.
 - `2601509be0da`: Nous protocol upgrade.
 - `0787a54906e0`: PMA dynamic growth, libp2p IP-level exclusion, bridge operator tooling.
 - `1cbd470b0c08`: kernel-state migration and gRPC IP blocklist work.
@@ -121,6 +123,8 @@ Hoon, kernels, and scaffolding:
 Bridge and proof-adjacent:
 
 - `crates/bridge`
+- `crates/bridge-dev`
+- `crates/nockchain-bridge-sequencer`
 - `crates/zkvm-jetpack`
 - `crates/equix-latency`
 
@@ -236,4 +240,3 @@ Medium-term improvements:
 - Add a Rust crate map page that helps developers understand which upstream crate a Nocksperimental test touches.
 - Add optional receipts for `nockup` project build/run flows.
 - Add PMA/state-jam bootstrap diagnostics with explicit safety warnings.
-

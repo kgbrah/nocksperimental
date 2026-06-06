@@ -46,6 +46,11 @@ const scriptSources = [
   }
 ] as const;
 
+const syncGossipSignal =
+  nockchainUpstreamIntelligence.recentSignals.find((signal) =>
+    /suppress all outgoing gossip|behind tip|libp2p/i.test(signal.message)
+  )?.message ?? nockchainUpstreamIntelligence.latestCommit.message;
+
 const triageScenarios = [
   {
     id: "empty-routing-table",
@@ -101,7 +106,7 @@ const triageScenarios = [
     symptom: "node is syncing or appears quiet while behind tip",
     interpretation:
       "A node that is behind tip can intentionally suppress outgoing gossip while catching up; quiet gossip is not by itself proof that mining or networking is broken.",
-    upstreamSignal: nockchainUpstreamIntelligence.latestCommit.message,
+    upstreamSignal: syncGossipSignal,
     relatedCrates: ["nockchain", "nockchain-libp2p-io"],
     checks: [
       "Record sync mode or tip evidence before diagnosing peer/mining symptoms.",

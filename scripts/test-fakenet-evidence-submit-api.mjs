@@ -67,7 +67,7 @@ async function main() {
   assertEqual(receipt.summary.passedReports, 2, "receipt passed report count");
   assertEqual(receipt.summary.failedReports, 0, "receipt failed report count");
   assertEqual(receipt.nockchain.repository.fullName, "nockchain/nockchain", "receipt Nockchain repository");
-  assertEqual(receipt.nockchain.commit.shortSha, "5d022ced5504", "receipt Nockchain commit");
+  assertEqual(receipt.nockchain.commit.shortSha, "33ba97b1e206", "receipt Nockchain commit");
   assertEqual(
     receipt.nockchain.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
@@ -126,7 +126,7 @@ async function main() {
   assertEqual(detailResponse.status, 200, "receipt detail status");
   assertEqual(detail.receiptId, receipt.receiptId, "receipt detail id");
   assertEqual(detail.summary.endpoint, "127.0.0.1:5555", "receipt detail endpoint");
-  assertEqual(detail.nockchain.commit.shortSha, "5d022ced5504", "receipt detail Nockchain commit");
+  assertEqual(detail.nockchain.commit.shortSha, "33ba97b1e206", "receipt detail Nockchain commit");
 
   const mismatchResponse = await POST(
     new Request("https://nocksperimental.com/api/fakenet/evidence/submit", {

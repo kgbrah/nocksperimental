@@ -20,9 +20,9 @@ Zorp is the developer lineage behind the current Nockchain stack. The public Zor
 
 ## Fresh Snapshot
 
-As of this scan, the latest default-branch commit in `nockchain/nockchain` is `5d022ced5504`, "libp2p: suppress all outgoing gossip while catching up (behind tip)", committed 2026-06-02. That is directly relevant to our earlier mining/sync symptoms: wrong block commitment, empty routing table, no connected peers, and possible behind-tip behavior should be interpreted against the node's catch-up state.
+As of this scan, the latest default-branch commit in `nockchain/nockchain` is `33ba97b1e206`, "bridge: add end-to-end withdrawal execution (#127)", committed 2026-06-05. That is directly relevant to bridge, settlement, VESL, and x402-adjacent receipts: the default branch now includes withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence surfaces that are ahead of the latest public build release.
 
-The latest public build release for Nockchain is `build-5d022ced55040221e8b6fcfd78114189fbae91a0`, published 2026-06-02. The repo also has newer stable-build tags, so monitoring should check releases, tags, and default-branch commits rather than assuming only one update channel.
+The latest public build release for Nockchain is still `build-5d022ced55040221e8b6fcfd78114189fbae91a0`, published 2026-06-02. Its commit remains important for behind-tip gossip suppression and local mining/sync symptoms, but monitoring should now explicitly distinguish default-branch bridge behavior from released-build behavior rather than assuming only one update channel.
 
 ## Canonical Docs Policy
 
@@ -71,6 +71,7 @@ High-signal changes to watch:
 - `changelog/protocol/`, `PROTOCOL.md`, `ARCHITECTURE.md`, `WORKFLOWS.md`, and `DECISIONS/README.md`
 - PMA docs and state migration notes
 - fakenet scripts, mining scripts, libp2p changes, peer/sync behavior, and wallet/API changes
+- bridge withdrawal docs/runtime/sequencer changes, especially when default branch is ahead of public build releases
 - `jock-lang` compiler/runtime changes that affect NockApp or `hoonc`
 - new or renamed state-jam artifacts in Drive
 

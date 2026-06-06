@@ -24,7 +24,7 @@ async function main() {
   assertEqual(body.service, "nocksperimental", "service name");
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/wallet", "canonical URL");
-  assertEqual(body.upstream.commit.shortSha, "5d022ced5504", "upstream commit");
+  assertEqual(body.upstream.commit.shortSha, "33ba97b1e206", "upstream commit");
   assertEqual(
     body.upstream.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",

@@ -49,6 +49,7 @@ async function main() {
     await expectNockchainUpstream(`${baseUrl}/api/nockchain/upstream`);
     await expectStatus(`${baseUrl}/api/nockchain/docs-atlas`, 200, "Nockchain docs and protocol atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/protocol`, 200, "Nockchain protocol authority trace");
+    await expectStatus(`${baseUrl}/api/nockchain/bridge`, 200, "Nockchain bridge withdrawal trace");
     await expectStatus(`${baseUrl}/api/nockchain/zorp`, 200, "Zorp/Nockchain upstream map API");
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
@@ -78,6 +79,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/registry/checkpoint`, 200, "registry checkpoint API");
     await expectStatus(`${baseUrl}/nockchain`, 200, "Nockchain evidence page");
     await expectStatus(`${baseUrl}/nockchain/protocol`, 200, "Nockchain protocol page");
+    await expectStatus(`${baseUrl}/nockchain/bridge`, 200, "Nockchain bridge page");
     await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
@@ -481,7 +483,7 @@ async function expectNockupValidationSubmission(baseUrl) {
         template: "basic",
         installPath: "apps/nockup-smoke",
         nockupVersion: "upstream-master",
-        commit: "5d022ced55040221e8b6fcfd78114189fbae91a0"
+        commit: "33ba97b1e206dd89b15c61b72b7802caf2136c18"
       },
       commands: [
         {
@@ -824,7 +826,7 @@ async function expectNockchainUpstream(url) {
 
   if (
     upstream.repository?.fullName !== "nockchain/nockchain" ||
-    upstream.latestCommit?.shortSha !== "5d022ced5504" ||
+    upstream.latestCommit?.shortSha !== "33ba97b1e206" ||
     !upstream.docs?.canonicalSpine?.some((doc) => doc.path === "PROTOCOL.md") ||
     !upstream.workspace?.crateGroups?.chainRuntime?.includes("nockchain")
   ) {

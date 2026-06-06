@@ -30,7 +30,7 @@ function main() {
   });
 
   assertEqual(provenance.source, "nockchain-upstream-intelligence", "provenance source");
-  assertEqual(provenance.commit.shortSha, "5d022ced5504", "provenance commit");
+  assertEqual(provenance.commit.shortSha, "33ba97b1e206", "provenance commit");
   assertEqual(
     provenance.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",

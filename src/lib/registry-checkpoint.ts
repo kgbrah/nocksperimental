@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
+import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
@@ -31,6 +32,7 @@ import {
 export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
+  const nockchainBridgeTrace = createNockchainBridgeTrace();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
@@ -63,6 +65,7 @@ export function createRegistryCheckpoint() {
     scoreHistories: scoreHistorySummaries.length,
     trustConsumers: trustSignals.trustConsumers.length,
     zorpRepositories: zorpUpstream.repositories.length,
+    nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
     nockchainProtocolSources: nockchainProtocolTrace.authoritySources.length,
     nockchainRustCrates: nockchainRustAtlas.crates.length,
@@ -85,6 +88,15 @@ export function createRegistryCheckpoint() {
       status: localFakenetEvidence.status,
       summary: localFakenetEvidence.summary,
       verifier: localFakenetEvidence.verifier
+    }),
+    nockchainBridgeTrace: createSha256Root({
+      generatedAt: nockchainBridgeTrace.generatedAt,
+      upstream: nockchainBridgeTrace.upstream,
+      releaseDrift: nockchainBridgeTrace.releaseDrift,
+      sourceAnchors: nockchainBridgeTrace.sourceAnchors,
+      withdrawalFlow: nockchainBridgeTrace.withdrawalFlow,
+      safetyInvariants: nockchainBridgeTrace.safetyInvariants,
+      receiptFields: nockchainBridgeTrace.receiptFields
     }),
     zorpUpstream: createSha256Root({
       scannedAt: zorpUpstream.scannedAt,
@@ -181,6 +193,9 @@ export function createRegistryCheckpoint() {
         trustUpdateChainSummary.signedEntryCount === trustUpdateChainSummary.validSignatureCount,
       generatedReportsAvailable: generatedReports.totals.reportCount > 0,
       localFakenetEvidenceAvailable: localFakenetEvidence.summary.reportCount > 0,
+      nockchainBridgeTraceAvailable:
+        nockchainBridgeTrace.sourceAnchors.length > 0 &&
+        nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease === true,
       nockchainDocsAtlasAvailable: nockchainDocsAtlas.protocolSpecs.specs.length > 0,
       nockchainProtocolTraceAvailable:
         nockchainProtocolTrace.authoritySources.length > 0 &&
@@ -302,7 +317,17 @@ export function createRegistryCheckpoint() {
         .map((item) => item.id),
       sourceIds: nockchainWatch.sources.map((source) => source.id),
       commitMatchesPinned: nockchainWatch.drift.commitMatchesPinned,
-      releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned
+      releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned,
+      latestCommitReleased: nockchainWatch.drift.latestCommitReleased,
+      defaultBranchAheadOfRelease: nockchainWatch.drift.defaultBranchAheadOfRelease
+    },
+    nockchainBridgeTrace: {
+      sourceCount: nockchainBridgeTrace.sourceAnchors.length,
+      sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
+      flowStepIds: nockchainBridgeTrace.withdrawalFlow.map((step) => step.id),
+      latestCommitReleased: nockchainBridgeTrace.releaseDrift.latestCommitReleased,
+      defaultBranchAheadOfRelease: nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease,
+      receiptFields: nockchainBridgeTrace.receiptFields
     },
     nockchainSyncGossipTrace: {
       anchorCount: nockchainSyncGossipTrace.sourceAnchors.length,
@@ -324,6 +349,7 @@ export function createRegistryCheckpoint() {
       trustUpdates: `${registryCanonicalBaseUrl}/api/trust/updates`,
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
+      nockchainBridgeTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,

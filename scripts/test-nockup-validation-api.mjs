@@ -51,7 +51,7 @@ async function main() {
   assertEqual(receipt.checks.installPathRecorded, true, "install path check");
   assertEqual(receipt.checks.noSecretFields, true, "secret-field check");
   assertEqual(receipt.nockchain.repository.fullName, "nockchain/nockchain", "receipt Nockchain repository");
-  assertEqual(receipt.nockchain.commit.shortSha, "5d022ced5504", "receipt Nockchain commit");
+  assertEqual(receipt.nockchain.commit.shortSha, "33ba97b1e206", "receipt Nockchain commit");
   assertEqual(
     receipt.nockchain.release.tag,
     "build-5d022ced55040221e8b6fcfd78114189fbae91a0",
@@ -100,7 +100,7 @@ async function main() {
   assertEqual(detailResponse.status, 200, "receipt detail status");
   assertEqual(detail.receiptId, receipt.receiptId, "receipt detail id");
   assertEqual(detail.nockup.crate, "nockup", "receipt detail Nockup crate");
-  assertEqual(detail.nockchain.commit.shortSha, "5d022ced5504", "receipt detail Nockchain commit");
+  assertEqual(detail.nockchain.commit.shortSha, "33ba97b1e206", "receipt detail Nockchain commit");
 
   const badResponse = await POST(
     new Request("https://nocksperimental.com/api/nockchain/nockup/submit", {
@@ -197,7 +197,7 @@ function createNockupPayload() {
       template: "basic",
       installPath: "apps/counter",
       nockupVersion: "upstream-master",
-      commit: "5d022ced55040221e8b6fcfd78114189fbae91a0"
+      commit: "33ba97b1e206dd89b15c61b72b7802caf2136c18"
     },
     commands: [
       {

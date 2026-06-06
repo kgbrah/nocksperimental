@@ -45,7 +45,7 @@ async function main() {
   assertIncludes(zorpSource?.watchReasons, "state-jam/checkpoint provenance", "Zorp watch reason");
   assertIncludes(zorpSource?.verificationQuestions, "Which Nockchain commit/build produced it?", "Zorp provenance question");
 
-  assertEqual(body.upstream.commit.shortSha, "5d022ced5504", "upstream commit");
+  assertEqual(body.upstream.commit.shortSha, "33ba97b1e206", "upstream commit");
   assertEqual(body.upstream.protocol.next.codename, "Nous", "protocol context");
   assertEqual(body.links.upstream, "https://nocksperimental.com/api/nockchain/upstream", "upstream link");
   assertEqual(body.links.zorp, "https://github.com/zorp-corp", "Zorp org link");
