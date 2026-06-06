@@ -38,7 +38,7 @@ Not included:
 
 Run these before editing. If another agent has overlapping work, stop and coordinate.
 
-- [ ] **Step 1: Refresh remote state**
+- [x] **Step 1: Refresh remote state**
 
 Run:
 
@@ -48,7 +48,7 @@ git -C C:\Users\kg333\nocksperimental fetch --all --prune
 
 Expected: command completes without errors.
 
-- [ ] **Step 2: Check local status and branches**
+- [x] **Step 2: Check local status and branches**
 
 Run:
 
@@ -59,7 +59,7 @@ git -C C:\Users\kg333\nocksperimental branch --all --verbose --no-abbrev
 
 Expected: no dirty files unless they belong to the current task.
 
-- [ ] **Step 3: Check GitHub coordination surfaces**
+- [x] **Step 3: Check GitHub coordination surfaces**
 
 Run:
 
@@ -133,7 +133,7 @@ Expected: CodeGraph reports the current tree and includes `src/lib/vesl-evidence
 - Create: `scripts/verify-launch-evidence.mjs`
 - Modify: `package.json`
 
-- [ ] **Step 1: Create `scripts/test-launch-evidence-api.mjs`**
+- [x] **Step 1: Create `scripts/test-launch-evidence-api.mjs`**
 
 Use this exact file:
 
@@ -422,7 +422,7 @@ function assertNonEmpty(actual, label) {
 }
 ```
 
-- [ ] **Step 2: Create `scripts/test-launch-evidence-pages.mjs`**
+- [x] **Step 2: Create `scripts/test-launch-evidence-pages.mjs`**
 
 Use this exact file:
 
@@ -469,7 +469,7 @@ function assertIncludes(haystack, needle, label) {
 }
 ```
 
-- [ ] **Step 3: Create `scripts/verify-launch-evidence.mjs`**
+- [x] **Step 3: Create `scripts/verify-launch-evidence.mjs`**
 
 Use this exact file:
 
@@ -500,7 +500,7 @@ for (const [command, args] of commands) {
 }
 ```
 
-- [ ] **Step 4: Add package scripts**
+- [x] **Step 4: Add package scripts**
 
 Modify `package.json` scripts:
 
@@ -516,7 +516,7 @@ Insert these in the main `test` script after `npm run test:vesl-evidence-submit`
 npm run test:launch-evidence-api && npm run test:launch-evidence-pages
 ```
 
-- [ ] **Step 5: Run the focused test and verify RED**
+- [x] **Step 5: Run the focused test and verify RED**
 
 Run:
 
@@ -532,7 +532,7 @@ src/data/launch-evidence.json
 src/lib/launch-evidence.ts
 ```
 
-- [ ] **Step 6: Commit the RED tests**
+- [x] **Step 6: Commit the RED tests**
 
 Run:
 
@@ -551,7 +551,7 @@ Expected: commit succeeds with only test/script/package changes.
 - Create: `src/data/launch-evidence.json`
 - Create: `src/lib/launch-evidence.ts`
 
-- [ ] **Step 1: Create `schemas/nockapp-launch-evidence.schema.json`**
+- [x] **Step 1: Create `schemas/nockapp-launch-evidence.schema.json`**
 
 Use this exact schema:
 
@@ -716,7 +716,7 @@ Use this exact schema:
 }
 ```
 
-- [ ] **Step 2: Create `src/data/launch-evidence.json`**
+- [x] **Step 2: Create `src/data/launch-evidence.json`**
 
 Use this exact seed data:
 
@@ -948,7 +948,7 @@ Use this exact seed data:
 }
 ```
 
-- [ ] **Step 3: Create `src/lib/launch-evidence.ts`**
+- [x] **Step 3: Create `src/lib/launch-evidence.ts`**
 
 Use this exact module:
 
@@ -1204,7 +1204,7 @@ function normalizeInput(value?: string | null) {
 }
 ```
 
-- [ ] **Step 4: Run the focused test**
+- [x] **Step 4: Run the focused test**
 
 Run:
 
@@ -1214,7 +1214,7 @@ npm run test:launch-evidence-api
 
 Expected: FAIL on missing API routes and discovery entries, not on the schema/data/lib assertions.
 
-- [ ] **Step 5: Commit the model**
+- [x] **Step 5: Commit the model**
 
 Run:
 
@@ -1233,7 +1233,7 @@ Expected: commit succeeds with schema, data, and lib files.
 - Create: `src/app/api/launch-evidence/[caseId]/route.ts`
 - Create: `src/app/api/launch-evidence/verify/route.ts`
 
-- [ ] **Step 1: Create the index route**
+- [x] **Step 1: Create the index route**
 
 Create `src/app/api/launch-evidence/route.ts`:
 
@@ -1246,7 +1246,7 @@ export function GET() {
 }
 ```
 
-- [ ] **Step 2: Create the detail route**
+- [x] **Step 2: Create the detail route**
 
 Create `src/app/api/launch-evidence/[caseId]/route.ts`:
 
@@ -1278,7 +1278,7 @@ export function GET(_request: Request, { params }: LaunchEvidenceDetailRouteCont
 }
 ```
 
-- [ ] **Step 3: Create the verifier route**
+- [x] **Step 3: Create the verifier route**
 
 Create `src/app/api/launch-evidence/verify/route.ts`:
 
@@ -1300,7 +1300,7 @@ export function GET(request: Request) {
 }
 ```
 
-- [ ] **Step 4: Run the focused test**
+- [x] **Step 4: Run the focused test**
 
 Run:
 
@@ -1310,7 +1310,7 @@ npm run test:launch-evidence-api
 
 Expected: FAIL only on discovery, README, verification-index, and page assertions.
 
-- [ ] **Step 5: Commit the routes**
+- [x] **Step 5: Commit the routes**
 
 Run:
 
@@ -1329,7 +1329,7 @@ Expected: commit succeeds with the three route files.
 - Modify: `src/lib/openapi-spec.ts`
 - Modify: `src/lib/verification-index.ts`
 
-- [ ] **Step 1: Add Launch Evidence counts and endpoints to registry manifest**
+- [x] **Step 1: Add Launch Evidence counts and endpoints to registry manifest**
 
 In `src/lib/registry-manifest.ts`, add:
 
@@ -1378,7 +1378,7 @@ Inside `capabilities`, add:
 "launch-evidence-verifier",
 ```
 
-- [ ] **Step 2: Add OpenAPI detail path**
+- [x] **Step 2: Add OpenAPI detail path**
 
 In `src/lib/openapi-spec.ts`, add:
 
@@ -1394,7 +1394,7 @@ Add `launchEvidenceDetailEndpoint` to the `endpoints` array after `...registryEn
 
 The `/api/launch-evidence` and `/api/launch-evidence/verify` paths come from `registryEndpoints`; only the `{caseId}` path needs a dedicated endpoint constant.
 
-- [ ] **Step 3: Add Launch Evidence verifier**
+- [x] **Step 3: Add Launch Evidence verifier**
 
 In `src/lib/verification-index.ts`, add this verifier entry to `verificationEndpoints`:
 
@@ -1407,7 +1407,7 @@ In `src/lib/verification-index.ts`, add this verifier entry to `verificationEndp
 }
 ```
 
-- [ ] **Step 4: Run discovery tests**
+- [x] **Step 4: Run discovery tests**
 
 Run:
 
@@ -1421,7 +1421,7 @@ npm run test:verification-index-api
 
 Expected: `test:launch-evidence-api` still fails on README/pages; discovery tests pass.
 
-- [ ] **Step 5: Commit discovery wiring**
+- [x] **Step 5: Commit discovery wiring**
 
 Run:
 
@@ -1440,7 +1440,7 @@ Expected: commit succeeds with the three modified lib files.
 - Create: `src/app/launch-evidence/[caseId]/page.tsx`
 - Modify: `src/app/workspaces/[workspaceSlug]/page.tsx`
 
-- [ ] **Step 1: Create the Launch Evidence index page**
+- [x] **Step 1: Create the Launch Evidence index page**
 
 Create `src/app/launch-evidence/page.tsx`:
 
@@ -1557,7 +1557,7 @@ function StatusPill({ status }: { status: string }) {
 }
 ```
 
-- [ ] **Step 2: Create the Launch Evidence detail page**
+- [x] **Step 2: Create the Launch Evidence detail page**
 
 Create `src/app/launch-evidence/[caseId]/page.tsx`:
 
@@ -1702,7 +1702,7 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 ```
 
-- [ ] **Step 3: Add workspace links**
+- [x] **Step 3: Add workspace links**
 
 In `src/app/workspaces/[workspaceSlug]/page.tsx`, add this import:
 
@@ -1752,7 +1752,7 @@ After the Report Actions article, add:
 ) : null}
 ```
 
-- [ ] **Step 4: Run page tests**
+- [x] **Step 4: Run page tests**
 
 Run:
 
@@ -1763,7 +1763,7 @@ npm run test:launch-evidence-api
 
 Expected: `test:launch-evidence-pages` passes. `test:launch-evidence-api` fails only on README/package if package scripts were not committed in Task 1.
 
-- [ ] **Step 5: Commit pages**
+- [x] **Step 5: Commit pages**
 
 Run:
 
@@ -1780,7 +1780,7 @@ Expected: commit succeeds with two new page files and the workspace detail updat
 
 - Modify: `README.md`
 
-- [ ] **Step 1: Add Launch Evidence README section**
+- [x] **Step 1: Add Launch Evidence README section**
 
 Add this section after the `## Trust and Verification` section:
 
@@ -1809,7 +1809,7 @@ curl -G https://nocksperimental.com/api/launch-evidence/verify \
 ```
 ```
 
-- [ ] **Step 2: Run Launch Evidence verification**
+- [x] **Step 2: Run Launch Evidence verification**
 
 Run:
 
@@ -1819,7 +1819,7 @@ npm run verify:launch-evidence
 
 Expected: PASS.
 
-- [ ] **Step 3: Run related tests**
+- [x] **Step 3: Run related tests**
 
 Run:
 
@@ -1835,7 +1835,7 @@ npm run test:workspace-detail
 
 Expected: PASS.
 
-- [ ] **Step 4: Run full verification for shared surfaces**
+- [x] **Step 4: Run full verification for shared surfaces**
 
 Run:
 
@@ -1857,7 +1857,7 @@ codegraph index
 
 Expected: CodeGraph re-indexes the new Launch Evidence files.
 
-- [ ] **Step 6: Commit docs and final wiring**
+- [x] **Step 6: Commit docs and final wiring**
 
 Run:
 
@@ -1868,7 +1868,7 @@ git -C C:\Users\kg333\nocksperimental commit -m "add launch evidence slice"
 
 Expected: commit succeeds. If earlier task commits were made, this final commit may contain only README or verification cleanup.
 
-- [ ] **Step 7: Push**
+- [x] **Step 7: Push**
 
 Run:
 
