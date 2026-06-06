@@ -66,6 +66,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/nockapp-source`, 200, "Nockchain NockApp source trace API");
     await expectStatus(`${baseUrl}/api/nockchain/operations`, 200, "Nockchain operations atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/wallet`, 200, "Nockchain wallet/API atlas");
+    await expectStatus(`${baseUrl}/api/nockchain/api-source`, 200, "Nockchain public API source trace");
     await expectStatus(`${baseUrl}/api/nockchain/watch`, 200, "Nockchain upstream watch board");
     await expectStatus(`${baseUrl}/api/nockchain/pr-radar`, 200, "Nockchain open PR radar");
     await expectStatus(`${baseUrl}/api/nockchain/impact`, 200, "Nockchain upstream impact queue");
@@ -110,6 +111,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/nockapp/source`, 200, "Nockchain NockApp source trace page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
     await expectStatus(`${baseUrl}/nockchain/wallet`, 200, "Nockchain wallet page");
+    await expectStatus(`${baseUrl}/nockchain/api/source`, 200, "Nockchain public API source page");
     await expectStatus(`${baseUrl}/nockchain/watch`, 200, "Nockchain watch page");
     await expectStatus(`${baseUrl}/nockchain/pr-radar`, 200, "Nockchain PR radar page");
     await expectStatus(`${baseUrl}/nockchain/impact`, 200, "Nockchain impact queue page");

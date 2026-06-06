@@ -131,6 +131,11 @@ export const registryEndpoints = [
     description: "Nockchain wallet/API atlas"
   },
   {
+    id: "nockchain-api-source-trace",
+    path: "/api/nockchain/api-source",
+    description: "Nockchain public API source trace"
+  },
+  {
     id: "nockchain-watch",
     path: "/api/nockchain/watch",
     description: "Nockchain upstream watch board"
@@ -385,6 +390,7 @@ export function createWellKnownRegistryManifest() {
       nockchainNockAppSourceTrace: endpointUrl("nockchain-nockapp-source-trace"),
       nockchainOperationsAtlas: endpointUrl("nockchain-operations-atlas"),
       nockchainWalletAtlas: endpointUrl("nockchain-wallet-atlas"),
+      nockchainApiSourceTrace: endpointUrl("nockchain-api-source-trace"),
       nockchainWatch: endpointUrl("nockchain-watch"),
       nockchainPrRadar: endpointUrl("nockchain-pr-radar"),
       nockchainImpactQueue: endpointUrl("nockchain-impact-queue"),
@@ -444,6 +450,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-nockapp-source-trace",
       "nockchain-operations-atlas",
       "nockchain-wallet-api-atlas",
+      "nockchain-api-source-trace",
       "nockchain-upstream-watch",
       "nockchain-pr-radar",
       "nockchain-impact-queue",

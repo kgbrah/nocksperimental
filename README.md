@@ -23,6 +23,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
+- Nockchain Public API Source Trace for public gRPC enablement, endpoint posture, tx acceptance, block explorer cache, metrics, and receipt fields.
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
 - Nockchain Runtime Safety Trace for NockStack frame checks, jam/cue bounds, noun-space provenance, HAMT traversal, PMA offset bounds, and support-bundle fields.
 - Nockchain Testkit/E2E Trace for upstream YAML scenarios, fakenet node orchestration, gRPC readiness, transaction lifecycle assertions, report JSON, and receipt-safe test evidence.
@@ -306,6 +307,15 @@ The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs 
 - `/api/nockchain/wallet`
 
 Use it when a balance, reward, or transaction test needs to say which wallet command was run, which endpoint mode was used, and which wallet secrets must stay out of receipts and support bundles.
+
+## Nockchain Public API Source Trace
+
+The public API source trace anchors the wallet/API atlas to exact upstream `nockchain-api`, `nockapp-grpc`, `nockapp-grpc-proto`, `nockchain-wallet`, and `nockchain` files. It records public gRPC enablement, alpha/no-auth access-control posture, wallet public-client `tx-accepted`, block explorer cache warm-up, heaviest-chain freshness, metrics, gRPC-Web guardrails, and endpoint modes without storing raw transactions, raw noun slabs, private gRPC poke payloads, wallet seed phrases, private keys, or API server keys.
+
+- `/nockchain/api/source`
+- `/api/nockchain/api-source`
+
+Use it when a hosted or user-connected fakenet test needs to prove which API endpoint answered, whether the endpoint was private gRPC, public gRPC, or hosted HTTP manifest mode, and whether `tx-accepted` means node acceptance rather than block inclusion.
 
 ## Nockchain Upstream Watch
 

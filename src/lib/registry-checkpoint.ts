@@ -22,6 +22,7 @@ import { createNockchainRustSourceGuide } from "@/lib/nockchain-rust-source-guid
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
 import { createNockchainTestkitE2eTrace } from "@/lib/nockchain-testkit-e2e-trace";
+import { createNockchainApiSourceTrace } from "@/lib/nockchain-api-source-trace";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -61,6 +62,7 @@ export function createRegistryCheckpoint() {
   const nockchainNockupSourceTrace = createNockchainNockupSourceTrace();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
+  const nockchainApiSourceTrace = createNockchainApiSourceTrace();
   const nockchainWatch = createNockchainWatchBoard();
   const nockchainPrRadar = createNockchainPrRadar();
   const nockchainImpactQueue = createNockchainImpactQueue();
@@ -124,6 +126,8 @@ export function createRegistryCheckpoint() {
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainPublicApiEvidenceSurfaces:
       nockchainWalletAtlas.publicApiEvidenceContract.surfaces.length,
+    nockchainApiSourceAnchors: nockchainApiSourceTrace.sourceAnchors.length,
+    nockchainApiSourceCapabilities: nockchainApiSourceTrace.apiCapabilities.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
     nockchainWatchChangeClasses: nockchainWatch.changeClassificationContract.classes.length,
     nockchainOpenPullRequests: nockchainPrRadar.pullRequests.length,
@@ -314,6 +318,15 @@ export function createRegistryCheckpoint() {
       balanceEvidenceContract: nockchainWalletAtlas.balanceEvidenceContract,
       safety: nockchainWalletAtlas.safety,
       triageScenarios: nockchainWalletAtlas.triageScenarios
+    }),
+    nockchainApiSourceTrace: createSha256Root({
+      generatedAt: nockchainApiSourceTrace.generatedAt,
+      upstream: nockchainApiSourceTrace.upstream,
+      sourceAnchors: nockchainApiSourceTrace.sourceAnchors,
+      apiCapabilities: nockchainApiSourceTrace.apiCapabilities,
+      endpointModes: nockchainApiSourceTrace.endpointModes,
+      receiptContract: nockchainApiSourceTrace.receiptContract,
+      localVerification: nockchainApiSourceTrace.localVerification
     }),
     nockchainWatch: createSha256Root({
       observedAt: nockchainWatch.observedAt,
@@ -522,6 +535,17 @@ export function createRegistryCheckpoint() {
         ) &&
         nockchainWalletAtlas.publicApiEvidenceContract.interpretationRules.includes(
           "Treat tx-accepted as node acceptance, not block inclusion."
+        ),
+      nockchainApiSourceTraceAvailable:
+        nockchainApiSourceTrace.sourceAnchors.length >= 11 &&
+        nockchainApiSourceTrace.apiCapabilities.length >= 7 &&
+        nockchainApiSourceTrace.receiptContract.requiredFields.includes("apiEndpoint") &&
+        nockchainApiSourceTrace.receiptContract.requiredFields.includes(
+          "accessControlPosture"
+        ) &&
+        nockchainApiSourceTrace.receiptContract.forbiddenFields.includes("rawNounSlab") &&
+        nockchainApiSourceTrace.localVerification.recommendedCommands.includes(
+          "cargo check -p nockchain-api"
         ),
       nockchainWatchInSync:
         nockchainWatch.status === "in-sync" &&
@@ -822,6 +846,19 @@ export function createRegistryCheckpoint() {
         nockchainWalletAtlas.publicApiEvidenceContract.surfaces.map((surface) => surface.id),
       localWalletAddress: nockchainWalletAtlas.localFakenetProfile.walletAddress
     },
+    nockchainApiSourceTrace: {
+      generatedAt: nockchainApiSourceTrace.generatedAt,
+      anchorCount: nockchainApiSourceTrace.sourceAnchors.length,
+      apiCapabilityCount: nockchainApiSourceTrace.apiCapabilities.length,
+      sourceAnchors: nockchainApiSourceTrace.sourceAnchors.map((anchor) => anchor.id),
+      apiCapabilityIds: nockchainApiSourceTrace.apiCapabilities.map(
+        (capability) => capability.id
+      ),
+      endpointModeIds: nockchainApiSourceTrace.endpointModes.map((mode) => mode.id),
+      receiptFields: nockchainApiSourceTrace.receiptContract.requiredFields,
+      forbiddenFields: nockchainApiSourceTrace.receiptContract.forbiddenFields,
+      localVerificationStatus: nockchainApiSourceTrace.localVerification.status
+    },
     nockchainWatch: {
       status: nockchainWatch.status,
       observedAt: nockchainWatch.observedAt,
@@ -996,6 +1033,7 @@ export function createRegistryCheckpoint() {
       nockchainNockAppSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-source`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
+      nockchainApiSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/api-source`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
       nockchainPrRadar: `${registryCanonicalBaseUrl}/api/nockchain/pr-radar`,
       nockchainImpactQueue: `${registryCanonicalBaseUrl}/api/nockchain/impact`,
