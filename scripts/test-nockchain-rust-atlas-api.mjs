@@ -79,12 +79,23 @@ async function main() {
   assertCrate(body, "nockup", "hoon-and-scaffolding", "build/run receipts");
   assertCrate(body, "wallet-tx-builder", "operator-tools", "withdrawal");
   assertCrate(body, "nockchain-bridge-sequencer", "bridge-and-proof", "sequencer");
+  assertCrate(body, "bridge-dev", "bridge-and-proof", "bridge fixture scenarios");
   assertCrate(body, "raw-tx-checker", "operator-tools", "raw transaction");
   assertCrate(body, "nockchain-math", "chain-runtime", "finite-field");
   assertCrate(body, "nockapp-grpc-proto", "nockapp-runtime", "protobuf");
 
+  assertIncludes(
+    body.watchThemes,
+    "#127 bridge: add end-to-end withdrawal execution",
+    "merged bridge withdrawal watch signal"
+  );
   assertIncludes(body.watchThemes, "#125 fix(nockup): harden templates and run UX", "nockup watch PR");
   assertIncludes(body.watchThemes, "#116 wallet blobs and memo support", "wallet watch PR");
+  assertIncludes(
+    body.nocksperimentalNextUses,
+    "Use bridge-dev scenarios as implementation fixtures for bridge withdrawal tests before promoting settlement checks into public receipts.",
+    "bridge-dev next use"
+  );
   assertEqual(body.links.upstream, "https://nocksperimental.com/api/nockchain/upstream", "upstream link");
   assertEqual(body.links.stateJams, "https://nocksperimental.com/api/nockchain/state-jams", "state-jams link");
   assertEqual(body.links.repository, "https://github.com/nockchain/nockchain", "repository link");

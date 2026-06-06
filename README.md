@@ -249,7 +249,7 @@ Use it when Nockup-generated apps become Launch Evidence, VESL bridge, BYO faken
 
 ## Nockchain Rust Workspace Atlas
 
-The Rust workspace atlas breaks the upstream Nockchain monorepo into crate groups with roles, primary cargo checks, risk posture, and Nocksperimental integration uses. It tracks all 36 upstream workspace members, plus the extra `chaff` support lineage crate, and highlights chain runtime, operator tools, NockApp runtime, Hoon/nockup scaffolding, bridge/proof, and serialization support crates.
+The Rust workspace atlas breaks the upstream Nockchain monorepo into crate groups with roles, primary cargo checks, risk posture, and Nocksperimental integration uses. It tracks all 36 upstream workspace members, plus the extra `chaff` support lineage crate, and highlights chain runtime, operator tools, NockApp runtime, Hoon/nockup scaffolding, bridge/proof, and serialization support crates. The bridge/proof lane now keeps `bridge-dev` visible as the merged PR #127 implementation-fixture surface for bridge withdrawal scenarios before settlement checks become public receipts.
 
 - `/nockchain/rust`
 - `/api/nockchain/rust-atlas`

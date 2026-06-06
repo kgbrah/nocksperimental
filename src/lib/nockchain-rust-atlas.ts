@@ -442,6 +442,7 @@ export function createNockchainRustAtlas() {
     })),
     crates: crateDetails,
     watchThemes: [
+      "#127 bridge: add end-to-end withdrawal execution",
       "#125 fix(nockup): harden templates and run UX",
       "#126 nockchain-bench",
       "#116 wallet blobs and memo support",
@@ -452,6 +453,7 @@ export function createNockchainRustAtlas() {
     ],
     nocksperimentalNextUses: [
       "Attach crate-level provenance to fakenet and VESL receipts.",
+      "Use bridge-dev scenarios as implementation fixtures for bridge withdrawal tests before promoting settlement checks into public receipts.",
       "Add nockup build/run receipts for app scaffold validation.",
       "Use NockApp export_state when upstream stabilizes it for live-app snapshots.",
       "Treat wallet blob/memo support as a future receipt-field expansion."

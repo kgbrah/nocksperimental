@@ -28,10 +28,11 @@ const highlightedCrateNames = [
   "nockchain-api",
   "wallet-tx-builder",
   "nockchain-bridge-sequencer",
+  "bridge-dev",
   "nockup"
 ];
-const highlightedWatchTheme = "PMA dynamic growth";
-const highlightedNextUse = "Attach crate-level provenance";
+const highlightedWatchThemes = ["#127 bridge: add end-to-end withdrawal execution", "PMA dynamic growth"] as const;
+const highlightedNextUses = ["Attach crate-level provenance", "Use bridge-dev scenarios"] as const;
 
 export default function NockchainRustAtlasPage() {
   const atlas = createNockchainRustAtlas();
@@ -39,9 +40,11 @@ export default function NockchainRustAtlasPage() {
     .map((crateName) => atlas.crates.find((crateDetail) => crateDetail.name === crateName))
     .filter((crateDetail): crateDetail is NonNullable<typeof crateDetail> => Boolean(crateDetail));
   const rustWorkspaceSummary = `${atlas.workspace.language} / resolver ${atlas.workspace.resolver}`;
-  const primaryWatchThemes = atlas.watchThemes.filter((theme) => theme.includes(highlightedWatchTheme));
+  const primaryWatchThemes = atlas.watchThemes.filter((theme) =>
+    highlightedWatchThemes.some((highlight) => theme.includes(highlight))
+  );
   const primaryNextUses = atlas.nocksperimentalNextUses.filter((use) =>
-    use.includes(highlightedNextUse)
+    highlightedNextUses.some((highlight) => use.includes(highlight))
   );
 
   return (

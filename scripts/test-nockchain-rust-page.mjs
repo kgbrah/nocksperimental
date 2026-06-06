@@ -34,13 +34,17 @@ function main() {
   assertIncludes(page, "nockchain-wallet", "Rust page renders wallet crate");
   assertIncludes(page, "wallet-tx-builder", "Rust page renders wallet tx builder crate");
   assertIncludes(page, "nockchain-bridge-sequencer", "Rust page renders bridge sequencer crate");
+  assertIncludes(page, "bridge-dev", "Rust page renders bridge-dev crate");
   assertIncludes(page, "nockup", "Rust page renders nockup crate");
+  assertIncludes(page, "#127 bridge: add end-to-end withdrawal execution", "Rust page renders merged bridge watch theme");
   assertIncludes(page, "PMA dynamic growth", "Rust page renders PMA watch theme");
+  assertIncludes(page, "Use bridge-dev scenarios", "Rust page renders bridge-dev next use");
   assertIncludes(page, "Attach crate-level provenance", "Rust page renders next use");
   assertIncludes(page, 'href="/api/nockchain/rust-atlas"', "Rust page links Rust atlas API");
   assertIncludes(page, 'href="/nockchain"', "Rust page links parent Nockchain page");
   assertIncludes(nockchainPage, 'href="/nockchain/rust"', "Nockchain page links Rust page");
   assertIncludes(readme, "/nockchain/rust", "README documents Rust page");
+  assertIncludes(readme, "bridge-dev", "README documents bridge-dev in Rust atlas");
   assertIncludes(
     packageJson.scripts.test,
     "npm run test:nockchain-rust-page",
