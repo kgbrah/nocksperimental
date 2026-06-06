@@ -26,6 +26,19 @@ const blockExplorerCacheSurfaceId = "block-explorer-cache";
 const transactionAcceptanceSurfaceId = "transaction-acceptance";
 const publicApiMetricAnchor = "nockchain_public_grpc.*";
 const transactionAcceptanceCaveat = "accepted does not prove block inclusion";
+const transactionSourceAnchorPaths = [
+  "crates/wallet-tx-builder/src/planner.rs",
+  "crates/nockchain-wallet/src/create_tx.rs"
+];
+const transactionSourceReceiptAnchors = [
+  "walletTransactionSourceCommit",
+  "feeBreakdown",
+  "wordCountBreakdown",
+  "lockResolutionSource"
+];
+const transactionSourcePrAnchors = ["memo", "blob", "open-pr-early-warning"];
+const transactionSourceForbiddenAnchors = ["rawUnsignedTx", "rawTransactionJam"];
+const transactionSourceDriftCheck = "npm run test:nockchain-upstream-drift-check";
 
 export default function NockchainWalletPage() {
   const atlas = createNockchainWalletAtlas();
@@ -48,6 +61,14 @@ export default function NockchainWalletPage() {
   ]
     .map((id) => atlas.publicApiEvidenceContract.surfaces.find((surface) => surface.id === id))
     .filter((surface): surface is NonNullable<typeof surface> => Boolean(surface));
+  const transactionSourceAnchors = transactionSourceAnchorPaths
+    .map((sourcePath) =>
+      atlas.walletTransactionSourceContract.sourceAnchors.find((anchor) => anchor.path === sourcePath)
+    )
+    .filter((anchor): anchor is NonNullable<typeof anchor> => Boolean(anchor));
+  const transactionSourcePrSignal = atlas.walletTransactionSourceContract.openPrSignals.find(
+    (signal) => signal.id === "wallet-memo-blob-pr-116"
+  );
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -212,6 +233,81 @@ export default function NockchainWalletPage() {
               </div>
             ))}
           </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#F2F6E8] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <Code2 size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Transaction Source Contract</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#26311E]">
+            Transaction construction evidence cites current released wallet Rust
+            source from wallet-tx-builder and nockchain-wallet. Receipts should
+            keep planner metadata and source hashes, not raw transaction files.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout
+              label="release"
+              value={`${atlas.walletTransactionSourceContract.releaseBuild} (${atlas.walletTransactionSourceContract.releaseCommit})`}
+            />
+            <Callout
+              label="sourceAuthority"
+              value={atlas.walletTransactionSourceContract.sourceAuthority}
+            />
+            <Callout
+              label="crateSurfaces"
+              value={atlas.walletTransactionSourceContract.crateSurfaces.join(", ")}
+            />
+            <Callout
+              label="verification"
+              value={[
+                transactionSourceDriftCheck,
+                ...atlas.walletTransactionSourceContract.verificationCommands
+              ].join(", ")}
+            />
+            <Callout
+              label="receiptFields"
+              value={[
+                ...transactionSourceReceiptAnchors,
+                ...atlas.walletTransactionSourceContract.receiptFields
+              ].join(", ")}
+            />
+            <Callout
+              label="forbiddenFields"
+              value={[
+                ...transactionSourceForbiddenAnchors,
+                ...atlas.walletTransactionSourceContract.forbiddenFields
+              ].join(", ")}
+            />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {transactionSourceAnchors.map((anchor) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={anchor.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {anchor.crate}
+                </p>
+                <h3 className="mt-1 break-all font-semibold">{anchor.path}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{anchor.evidenceUse}</p>
+                <Callout label="sha256" value={anchor.sha256} />
+                <Callout label="symbols" value={anchor.lineAnchors.join(", ")} />
+              </div>
+            ))}
+          </div>
+          {transactionSourcePrSignal ? (
+            <div className="mt-4 border border-[#0B0B0B] bg-white p-3">
+              <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                {transactionSourcePrSignal.sourceAuthority}
+              </p>
+              <h3 className="mt-1 font-semibold">{transactionSourcePrSignal.title}</h3>
+              <Callout
+                label="signals"
+                value={[...transactionSourcePrAnchors, ...transactionSourcePrSignal.signals].join(", ")}
+              />
+              <Callout label="interpretation" value={transactionSourcePrSignal.interpretation} />
+            </div>
+          ) : null}
         </article>
       </section>
 

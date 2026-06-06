@@ -8,6 +8,10 @@ import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 const localFakenetWalletAddress =
   "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
 const localFakenetEndpoint = "127.0.0.1:5555";
+const walletTransactionSourceCommit = "33ba97b1e206dd89b15c61b72b7802caf2136c18";
+const walletTransactionReleaseBuild = `build-${walletTransactionSourceCommit}`;
+const walletTransactionBlobBase =
+  `https://github.com/nockchain/nockchain/blob/${walletTransactionSourceCommit}`;
 
 const walletCommands = [
   {
@@ -223,6 +227,213 @@ const publicApiEvidenceContract = {
   ]
 } as const;
 
+const walletTransactionSourceContract = {
+  releaseCommit: walletTransactionSourceCommit,
+  releaseBuild: walletTransactionReleaseBuild,
+  sourceAuthority: "current-released-nockchain-rust",
+  crateSurfaces: ["wallet-tx-builder", "nockchain-wallet"],
+  sourceAnchors: [
+    {
+      id: "wallet-tx-builder-planner",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/planner.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/planner.rs`,
+      sha256: "bbb80bb18f47c20c4c095138b402d339787650ebe4428ef375f1c82c3bc795e8",
+      bytes: 78573,
+      lineAnchors: [
+        "line 9: compute_bridge_fee, compute_minimum_fee, FeeInputs",
+        "line 10: LockResolutionSource and ResolveLockRequest",
+        "lines 12-13: CandidateVersionPolicy, ChainContext, PlanRequest, RawNoteDataEntry, SelectionMode",
+        "line 16: WitnessWordInput and WordCountEstimator"
+      ],
+      evidenceUse:
+        "Defines transaction planning, selection, fee recomputation, note-data propagation, lock resolution, and word-count inputs."
+    },
+    {
+      id: "wallet-note-data",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/note_data.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/note_data.rs`,
+      sha256: "4f47aab8658aff1f1eb996fbd65620cf269a7d72e1524c36d1afe660f6d68829",
+      bytes: 32367,
+      lineAnchors: [
+        "line 17: RawNoteDataEntry impl",
+        "line 29: from_bridge_withdrawal",
+        "line 109: from_blob decodes %lock payloads",
+        "line 313: from_raw_entry normalizes note data"
+      ],
+      evidenceUse:
+        "Pins note-data key/blob normalization so receipts can name noteDataKeys without storing raw blobs."
+    },
+    {
+      id: "wallet-lock-resolver",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/lock_resolver.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/lock_resolver.rs`,
+      sha256: "02f0a048e224db8964c4e7344b6cfecb3dbc3d4dcb22529ed15d09fd7a9d1d77",
+      bytes: 24172,
+      lineAnchors: [
+        "line 7: LockResolutionSource",
+        "line 38: ResolveLockRequest",
+        "line 86: NoteData resolution source",
+        "line 164: LockRootFirstName resolution source"
+      ],
+      evidenceUse:
+        "Explains whether a candidate lock came from note data, reconstruction, or lock-root matching."
+    },
+    {
+      id: "wallet-fee",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/fee.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/fee.rs`,
+      sha256: "88dcc863ab3ec13ea4c8eafd0aa63acc2dfa46689319f8e2a2b780880d29823e",
+      bytes: 5447,
+      lineAnchors: [
+        "line 28: compute_bridge_fee",
+        "line 37: compute_minimum_fee",
+        "line 106: compute_minimum_fee pre-Bythos test",
+        "line 170: compute_bridge_fee zero-amount test"
+      ],
+      evidenceUse:
+        "Pins the fee computation surface behind feeInputs and feeBreakdown receipt fields."
+    },
+    {
+      id: "wallet-word-count",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/word_count.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/word_count.rs`,
+      sha256: "b68dbb80fb0bfd0582abf995b8d18be61086622b87a467c60dd3c9ca25cb6eb4",
+      bytes: 36418,
+      lineAnchors: [
+        "line 34: WordCountEstimator",
+        "line 43: estimate_seed_words",
+        "line 81: estimate_witness_words",
+        "line 95: estimate_v0_witness_words"
+      ],
+      evidenceUse:
+        "Pins seed and witness word-count estimation for transaction size and fee explanations."
+    },
+    {
+      id: "wallet-types",
+      crate: "wallet-tx-builder",
+      path: "crates/wallet-tx-builder/src/types.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/wallet-tx-builder/src/types.rs`,
+      sha256: "4ae5fb18e586e0820ddf6894017fae96dfb021619c8acca94315b3e67a50f757",
+      bytes: 15335,
+      lineAnchors: [
+        "line 13: SelectionMode",
+        "line 30: CandidateVersionPolicy",
+        "line 39: ChainContext",
+        "line 258: CreateTxPlanningMode"
+      ],
+      evidenceUse:
+        "Defines the planner vocabulary receipts use for selectionMode, candidateVersionPolicy, and createTxPlanningMode."
+    },
+    {
+      id: "nockchain-wallet-create-tx",
+      crate: "nockchain-wallet",
+      path: "crates/nockchain-wallet/src/create_tx.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/nockchain-wallet/src/create_tx.rs`,
+      sha256: "544d662fffc4b239cd0aa81ac23613fee621d0f790e91d3172a40486d5168fc8",
+      bytes: 87565,
+      lineAnchors: [
+        "line 8: CandidateNote and CreateTxPlanningMode",
+        "line 12: ensure_manual_planner_parity",
+        "line 173: CreateTxRequest",
+        "line 432: CandidateVersionPolicy resolver"
+      ],
+      evidenceUse:
+        "Pins the create-tx CLI request boundary that turns recipients, fees, selection strategy, and planner mode into wallet transaction intent."
+    },
+    {
+      id: "nockchain-wallet-command",
+      crate: "nockchain-wallet",
+      path: "crates/nockchain-wallet/src/command.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/nockchain-wallet/src/command.rs`,
+      sha256: "7340d1c242e8f3317a124e856c5c3610afc9ea60d1ff74d22d8de43e26514784",
+      bytes: 26527,
+      lineAnchors: [
+        "line 176: NoteSelectionStrategyCli",
+        "line 432: recipients CLI option",
+        "line 465: note_selection_strategy CLI option",
+        "line 696: ascending selection default"
+      ],
+      evidenceUse:
+        "Pins the command-line option surface for recipient parsing, note selection, and create-tx invocation."
+    },
+    {
+      id: "nockchain-wallet-recipient",
+      crate: "nockchain-wallet",
+      path: "crates/nockchain-wallet/src/recipient.rs",
+      sourceUrl: `${walletTransactionBlobBase}/crates/nockchain-wallet/src/recipient.rs`,
+      sha256: "4fabfa51d9584840a876b54f9be7691c9efef713b9e017d73236dd7d186addf1",
+      bytes: 18860,
+      lineAnchors: [
+        "line 17: RecipientSpecToken",
+        "line 38: RecipientSpec",
+        "line 56: from_cli_arg",
+        "lines 69-75: from_json and from_legacy"
+      ],
+      evidenceUse:
+        "Pins recipient JSON and legacy CLI parsing so receipts can classify recipientSpecKind without storing raw tx files."
+    }
+  ],
+  receiptFields: [
+    "walletTransactionSourceCommit",
+    "walletTransactionSourceHash",
+    "createTxPlanningMode",
+    "selectionMode",
+    "candidateVersionPolicy",
+    "feeInputs",
+    "feeBreakdown",
+    "wordCountBreakdown",
+    "lockResolutionSource",
+    "noteDataKeys",
+    "recipientSpecKind",
+    "transactionName",
+    "allowLowFee",
+    "txId",
+    "nockchainBuild"
+  ],
+  forbiddenFields: [
+    "rawUnsignedTx",
+    "rawSignedTx",
+    "rawTransactionJam",
+    "walletSeedPhrase",
+    "walletPrivateKey",
+    "keys.export",
+    "walletDatabase",
+    "privateSpendKey"
+  ],
+  verificationCommands: [
+    "npm run test:nockchain-wallet-atlas",
+    "npm run test:nockchain-upstream-drift-check",
+    "npm run test:registry-checkpoint-api"
+  ],
+  openPrSignals: [
+    {
+      id: "wallet-memo-blob-pr-116",
+      title: "feat(wallet): support blobs and memo on transactions in wallet cli",
+      url: "https://github.com/nockchain/nockchain/pull/116",
+      status: "open",
+      sourceAuthority: "open-pr-early-warning",
+      updatedAt: "2026-06-03T05:32:58Z",
+      baseCommit: "5d022ced55040221e8b6fcfd78114189fbae91a0",
+      headCommit: "4f82b570ee3c4197ffc31850f63d721deae16846",
+      signals: ["memo", "blob"],
+      targetReceiptFields: ["noteDataKeys", "recipientSpecKind", "transactionMemoHash", "transactionBlobHash"],
+      interpretation:
+        "Open PR #116 would add memo/blob transaction note data to the wallet CLI; track it as early warning, not released authority."
+    }
+  ],
+  interpretationRules: [
+    "Treat current released wallet transaction evidence as defined by these commit-pinned source anchors.",
+    "Treat open PR #116 memo/blob support as watch-only until it lands in a released Nockchain build.",
+    "Record planner and source-anchor metadata in receipts, not raw unsigned transactions, signed transactions, transaction jams, wallet databases, or keys.",
+    "Tie transaction construction evidence to endpoint mode, chain context, wallet command, Nockchain build, and output hashes before comparing test results."
+  ]
+} as const;
+
 export function createNockchainWalletAtlas() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -247,6 +458,7 @@ export function createNockchainWalletAtlas() {
     walletCommands,
     endpointModes,
     publicApiEvidenceContract,
+    walletTransactionSourceContract,
     localFakenetProfile: {
       walletAddress: localFakenetWalletAddress,
       endpoint: localFakenetEndpoint,

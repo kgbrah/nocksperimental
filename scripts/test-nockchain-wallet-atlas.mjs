@@ -104,6 +104,112 @@ async function main() {
     "Treat empty or missing explorer pages during warm-up as inconclusive until cache state and heaviest-chain freshness are recorded.",
     "public API cache warm-up interpretation"
   );
+
+  const txSource = body.walletTransactionSourceContract;
+  assertEqual(txSource.releaseCommit, "33ba97b1e206dd89b15c61b72b7802caf2136c18", "wallet tx source release commit");
+  assertEqual(
+    txSource.releaseBuild,
+    "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "wallet tx source release build"
+  );
+  assertEqual(txSource.sourceAuthority, "current-released-nockchain-rust", "wallet tx source authority");
+  assertIncludes(txSource.crateSurfaces, "wallet-tx-builder", "wallet tx builder crate surface");
+  assertIncludes(txSource.crateSurfaces, "nockchain-wallet", "nockchain wallet crate surface");
+  assertSourceAnchor(
+    txSource,
+    "wallet-tx-builder-planner",
+    "crates/wallet-tx-builder/src/planner.rs",
+    "bbb80bb18f47c20c4c095138b402d339787650ebe4428ef375f1c82c3bc795e8",
+    78573,
+    "compute_minimum_fee"
+  );
+  assertSourceAnchor(
+    txSource,
+    "wallet-note-data",
+    "crates/wallet-tx-builder/src/note_data.rs",
+    "4f47aab8658aff1f1eb996fbd65620cf269a7d72e1524c36d1afe660f6d68829",
+    32367,
+    "RawNoteDataEntry"
+  );
+  assertSourceAnchor(
+    txSource,
+    "wallet-lock-resolver",
+    "crates/wallet-tx-builder/src/lock_resolver.rs",
+    "02f0a048e224db8964c4e7344b6cfecb3dbc3d4dcb22529ed15d09fd7a9d1d77",
+    24172,
+    "LockResolutionSource"
+  );
+  assertSourceAnchor(
+    txSource,
+    "wallet-fee",
+    "crates/wallet-tx-builder/src/fee.rs",
+    "88dcc863ab3ec13ea4c8eafd0aa63acc2dfa46689319f8e2a2b780880d29823e",
+    5447,
+    "compute_bridge_fee"
+  );
+  assertSourceAnchor(
+    txSource,
+    "wallet-word-count",
+    "crates/wallet-tx-builder/src/word_count.rs",
+    "b68dbb80fb0bfd0582abf995b8d18be61086622b87a467c60dd3c9ca25cb6eb4",
+    36418,
+    "WordCountEstimator"
+  );
+  assertSourceAnchor(
+    txSource,
+    "wallet-types",
+    "crates/wallet-tx-builder/src/types.rs",
+    "4ae5fb18e586e0820ddf6894017fae96dfb021619c8acca94315b3e67a50f757",
+    15335,
+    "CreateTxPlanningMode"
+  );
+  assertSourceAnchor(
+    txSource,
+    "nockchain-wallet-create-tx",
+    "crates/nockchain-wallet/src/create_tx.rs",
+    "544d662fffc4b239cd0aa81ac23613fee621d0f790e91d3172a40486d5168fc8",
+    87565,
+    "CreateTxRequest"
+  );
+  assertSourceAnchor(
+    txSource,
+    "nockchain-wallet-command",
+    "crates/nockchain-wallet/src/command.rs",
+    "7340d1c242e8f3317a124e856c5c3610afc9ea60d1ff74d22d8de43e26514784",
+    26527,
+    "NoteSelectionStrategyCli"
+  );
+  assertSourceAnchor(
+    txSource,
+    "nockchain-wallet-recipient",
+    "crates/nockchain-wallet/src/recipient.rs",
+    "4fabfa51d9584840a876b54f9be7691c9efef713b9e017d73236dd7d186addf1",
+    18860,
+    "RecipientSpec"
+  );
+  assertIncludes(txSource.receiptFields, "walletTransactionSourceCommit", "wallet tx receipt source commit");
+  assertIncludes(txSource.receiptFields, "feeBreakdown", "wallet tx receipt fee breakdown");
+  assertIncludes(txSource.receiptFields, "wordCountBreakdown", "wallet tx receipt word count");
+  assertIncludes(txSource.receiptFields, "lockResolutionSource", "wallet tx receipt lock source");
+  assertIncludes(txSource.receiptFields, "noteDataKeys", "wallet tx receipt note data keys");
+  assertIncludes(txSource.forbiddenFields, "rawUnsignedTx", "wallet tx forbidden unsigned tx");
+  assertIncludes(txSource.forbiddenFields, "rawTransactionJam", "wallet tx forbidden raw jam");
+  assertIncludes(txSource.verificationCommands, "npm run test:nockchain-upstream-drift-check", "wallet tx drift verification");
+  const memoBlobSignal = txSource.openPrSignals.find((signal) => signal.id === "wallet-memo-blob-pr-116");
+  if (!memoBlobSignal) {
+    throw new Error("Missing wallet memo/blob PR signal");
+  }
+  assertEqual(memoBlobSignal.status, "open", "wallet memo/blob PR status");
+  assertEqual(memoBlobSignal.sourceAuthority, "open-pr-early-warning", "wallet memo/blob PR authority");
+  assertEqual(memoBlobSignal.url, "https://github.com/nockchain/nockchain/pull/116", "wallet memo/blob PR URL");
+  assertIncludes(memoBlobSignal.signals, "memo", "wallet memo PR signal");
+  assertIncludes(memoBlobSignal.signals, "blob", "wallet blob PR signal");
+  assertIncludes(
+    txSource.interpretationRules,
+    "Treat open PR #116 memo/blob support as watch-only until it lands in a released Nockchain build.",
+    "wallet memo/blob watch-only interpretation"
+  );
+
   assertIncludes(body.safety.doNotStore, "seed phrases", "seed safety");
   assertIncludes(body.safety.doNotStore, "private keys", "private key safety");
   assertIncludes(body.safety.doNotStore, "keys.export", "exported key safety");
@@ -185,6 +291,24 @@ async function main() {
   assertIncludes(page, "transactionAcceptanceSurfaceId", "wallet page pins transaction acceptance surface");
   assertIncludes(page, "nockchain_public_grpc.*", "wallet page renders public API metrics");
   assertIncludes(page, "accepted does not prove block inclusion", "wallet page renders tx accepted caveat");
+  assertIncludes(page, "Transaction Source Contract", "wallet page renders tx source contract");
+  assertIncludes(page, "wallet-tx-builder", "wallet page renders wallet tx builder crate");
+  assertIncludes(page, "crates/wallet-tx-builder/src/planner.rs", "wallet page renders planner source path");
+  assertIncludes(page, "crates/nockchain-wallet/src/create_tx.rs", "wallet page renders create tx source path");
+  assertIncludes(page, "walletTransactionSourceCommit", "wallet page renders tx source receipt field");
+  assertIncludes(page, "feeBreakdown", "wallet page renders fee receipt field");
+  assertIncludes(page, "wordCountBreakdown", "wallet page renders word count receipt field");
+  assertIncludes(page, "lockResolutionSource", "wallet page renders lock source receipt field");
+  assertIncludes(page, "memo", "wallet page renders memo PR signal");
+  assertIncludes(page, "blob", "wallet page renders blob PR signal");
+  assertIncludes(page, "open-pr-early-warning", "wallet page renders open PR authority");
+  assertIncludes(page, "rawUnsignedTx", "wallet page renders raw unsigned tx forbidden field");
+  assertIncludes(page, "rawTransactionJam", "wallet page renders raw transaction jam forbidden field");
+  assertIncludes(
+    page,
+    "npm run test:nockchain-upstream-drift-check",
+    "wallet page renders tx source drift check"
+  );
   assertIncludes(page, "seed phrases", "wallet page renders secret safety");
   assertIncludes(page, 'href="/api/nockchain/wallet"', "wallet page links API");
   assertIncludes(page, 'href="/nockchain"', "wallet page links parent");
@@ -205,6 +329,9 @@ async function main() {
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Wallet/API Atlas", "README documents wallet atlas");
   assertIncludes(readme, "public API evidence contract", "README documents public API evidence contract");
+  assertIncludes(readme, "Transaction Source Contract", "README documents wallet tx source contract");
+  assertIncludes(readme, "wallet-tx-builder", "README documents wallet tx builder");
+  assertIncludes(readme, "PR #116", "README documents wallet memo/blob PR signal");
   assertIncludes(readme, "/api/nockchain/wallet", "README documents wallet endpoint");
   assertIncludes(readme, "/nockchain/wallet", "README documents wallet page");
 }
@@ -361,6 +488,20 @@ function assertContractSurface(body, id, expectedText) {
     expectedText,
     `${id} expected text`
   );
+}
+
+function assertSourceAnchor(contract, id, pathName, sha256, bytes, expectedSymbol) {
+  const anchor = contract.sourceAnchors.find((candidate) => candidate.id === id);
+
+  if (!anchor) {
+    throw new Error(`Missing wallet tx source anchor: ${id}`);
+  }
+
+  assertEqual(anchor.path, pathName, `${id} path`);
+  assertEqual(anchor.sha256, sha256, `${id} sha256`);
+  assertEqual(anchor.bytes, bytes, `${id} byte length`);
+  assertIncludes(anchor.sourceUrl, `/blob/${contract.releaseCommit}/${pathName}`, `${id} source URL`);
+  assertIncludes(anchor.lineAnchors.join("\n"), expectedSymbol, `${id} expected line anchor`);
 }
 
 function assertIncludes(collection, expected, label) {

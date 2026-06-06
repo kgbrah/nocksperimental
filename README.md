@@ -331,6 +331,8 @@ Use it when deciding whether a fakenet symptom is a sync, peer, state-artifact, 
 
 The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats local `fakenock --balance` as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context. Its public API evidence contract distinguishes node acceptance from block inclusion, cache warm-up from missing data, and reorg-window staleness from final explorer evidence.
 
+The atlas now includes a Transaction Source Contract for the released wallet transaction path. It pins `wallet-tx-builder` and `nockchain-wallet create-tx` source files, hashes, planner/fee/word-count/lock/note-data symbols, receipt fields, and raw transaction forbidden fields so tests can cite Rust provenance without storing unsigned transactions, signed transactions, transaction jams, wallet databases, or key material. Upstream PR #116 for wallet `memo`/`blob` transaction note data is tracked only as `open-pr-early-warning` until it lands in a released Nockchain build.
+
 - `/nockchain/wallet`
 - `/api/nockchain/wallet`
 
