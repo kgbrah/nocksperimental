@@ -26,8 +26,5 @@ export async function GET(_request: Request, { params }: LaunchEvidenceDetailRou
     );
   }
 
-  return NextResponse.json({
-    ...launchCase,
-    case: launchCase
-  });
+  return NextResponse.json(launchCase);
 }

@@ -91,8 +91,9 @@ async function assertLaunchEvidenceRoutes(firstCase, privateCase) {
   const detailBody = await detailResponse.json();
 
   assertEqual(detailResponse.status, 200, "launch evidence detail status");
-  assertEqual(detailBody.case.caseId, firstCase.caseId, "launch evidence detail case id");
-  assertEqual(detailBody.case.report.reportHash, firstCase.report.reportHash, "launch evidence detail report hash");
+  assertEqual(detailBody.caseId, firstCase.caseId, "launch evidence detail case id");
+  assertEqual(detailBody.report.reportHash, firstCase.report.reportHash, "launch evidence detail report hash");
+  assertEqual(detailBody.case, undefined, "launch evidence detail omits duplicate case wrapper");
 
   const missingResponse = await getCase(
     new Request("https://nocksperimental.com/api/launch-evidence/missing-launch-case"),
