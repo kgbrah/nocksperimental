@@ -649,7 +649,7 @@ export function createRegistryCheckpoint() {
       nockchainWatchAggregateDriftCheckAvailable:
         nockchainWatch.monitor.aggregateDriftCheck.command ===
           "npm run check:nockchain-upstream-drift -- --json" &&
-        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 7 &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 8 &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "cargo-workspace"
         ) &&
@@ -658,6 +658,9 @@ export function createRegistryCheckpoint() {
         ) &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "bridge-source"
+        ) &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.some(
+          (check) => check.id === "wallet-source"
         ),
       nockchainPrRadarAvailable:
         nockchainPrRadar.pullRequests.length === 35 &&

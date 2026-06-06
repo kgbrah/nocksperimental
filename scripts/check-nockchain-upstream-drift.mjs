@@ -35,6 +35,13 @@ const aggregateChecks = [
     npmScript: "check:nockchain-bridge-source-drift"
   },
   {
+    id: "wallet-source",
+    label: "Wallet transaction source anchors",
+    domain: "wallet-source",
+    command: "npm run check:nockchain-wallet-source-drift -- --json",
+    npmScript: "check:nockchain-wallet-source-drift"
+  },
+  {
     id: "release-assets",
     label: "Latest release assets",
     domain: "release-build",
@@ -198,7 +205,7 @@ function createAggregateReport(checkResults) {
     status,
     observedAt: new Date().toISOString(),
     interpretation:
-      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge source anchors, release, PR radar, and lineage assumptions current.",
+      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge and wallet source anchors, release, PR radar, and lineage assumptions current.",
     requiredCommands: aggregateChecks.map((check) => check.command),
     sourceUrls: unique(checkResults.flatMap((check) => check.sourceUrls)),
     summary: {

@@ -338,6 +338,8 @@ The atlas now includes a Transaction Source Contract for the released wallet tra
 
 Use it when a balance, reward, or transaction test needs to say which wallet command was run, which endpoint mode was used, and which wallet secrets must stay out of receipts and support bundles.
 
+Run `npm run check:nockchain-wallet-source-drift -- --json` before relying on the Transaction Source Contract; it compares the pinned wallet Rust source anchors, required symbols, and PR #116 memo/blob early-warning status against current upstream Nockchain.
+
 ## Nockchain Public API Source Trace
 
 The public API source trace anchors the wallet/API atlas to exact upstream `nockchain-api`, `nockapp-grpc`, `nockapp-grpc-proto`, `nockchain-wallet`, and `nockchain` files. It records public gRPC enablement, alpha/no-auth access-control posture, wallet public-client `tx-accepted`, block explorer cache warm-up, heaviest-chain freshness, metrics, gRPC-Web guardrails, and endpoint modes without storing raw transactions, raw noun slabs, private gRPC poke payloads, wallet seed phrases, private keys, or API server keys.

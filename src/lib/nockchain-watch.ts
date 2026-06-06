@@ -74,6 +74,11 @@ const aggregateDriftCheck = {
       targetSurface: "nockchainBridgeSourceTrace"
     },
     {
+      id: "wallet-source",
+      command: "npm run check:nockchain-wallet-source-drift -- --json",
+      targetSurface: "nockchainWalletAtlas"
+    },
+    {
       id: "release-assets",
       command: "npm run check:nockchain-release-assets-drift -- --json",
       targetSurface: "nockchainReleaseAssets"
@@ -90,7 +95,7 @@ const aggregateDriftCheck = {
     }
   ],
   interpretation:
-    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
+    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, wallet transaction source, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
 } as const;
 
 const watchQueue = [
@@ -407,6 +412,7 @@ export function createNockchainWatchBoard() {
         "zorp-corp/nockapp archived repo updated metadata",
         "Zorp state-jam Drive folder requires metadata inventory before trust",
         "wallet/API command surfaces need review when upstream README flags change",
+        "wallet transaction source anchors should be refreshed when upstream wallet-tx-builder or nockchain-wallet create-tx files change",
         "Rust workspace ownership should be refreshed when Cargo membership changes",
         "bridge-dev scenario source anchors should be refreshed when upstream bridge-dev fixtures change",
         "Crate manifest hashes should be refreshed when upstream Cargo.toml dependencies, targets, or features change"

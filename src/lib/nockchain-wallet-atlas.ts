@@ -378,6 +378,31 @@ const walletTransactionSourceContract = {
         "Pins recipient JSON and legacy CLI parsing so receipts can classify recipientSpecKind without storing raw tx files."
     }
   ],
+  sourceDriftCheck: {
+    command: "npm run check:nockchain-wallet-source-drift -- --json",
+    script: "scripts/check-nockchain-wallet-source-drift.mjs",
+    testCommand: "npm run test:nockchain-wallet-source-drift-check",
+    sourceAnchorIds: [
+      "wallet-tx-builder-planner",
+      "wallet-note-data",
+      "wallet-lock-resolver",
+      "wallet-fee",
+      "wallet-word-count",
+      "wallet-types",
+      "nockchain-wallet-create-tx",
+      "nockchain-wallet-command",
+      "nockchain-wallet-recipient"
+    ],
+    compareFields: [
+      "upstreamCommit",
+      "sourceAnchorId",
+      "sourceSha256",
+      "requiredSymbols",
+      "openPrSignal"
+    ],
+    interpretation:
+      "Compares wallet transaction source anchors and PR #116 memo/blob early-warning metadata against current upstream Nockchain before receipts trust wallet transaction construction evidence."
+  },
   receiptFields: [
     "walletTransactionSourceCommit",
     "walletTransactionSourceHash",

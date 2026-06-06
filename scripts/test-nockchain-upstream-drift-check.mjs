@@ -46,8 +46,8 @@ async function main() {
   assertEqual(passing.status, 0, "matching fixture exit status");
   const passingBody = JSON.parse(passing.stdout);
   assertEqual(passingBody.status, "in-sync", "matching fixture status");
-  assertEqual(passingBody.summary.totalChecks, 7, "matching total check count");
-  assertEqual(passingBody.summary.inSyncChecks, 7, "matching in-sync check count");
+  assertEqual(passingBody.summary.totalChecks, 8, "matching total check count");
+  assertEqual(passingBody.summary.inSyncChecks, 8, "matching in-sync check count");
   assertEqual(passingBody.summary.reviewNeededChecks, 0, "matching review-needed check count");
   assertEqual(passingBody.summary.failedChecks, 0, "matching failed check count");
   assertIncludes(
@@ -69,6 +69,11 @@ async function main() {
     passingBody.requiredCommands,
     "npm run check:nockchain-bridge-source-drift -- --json",
     "aggregate includes bridge source drift command"
+  );
+  assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-wallet-source-drift -- --json",
+    "aggregate includes wallet source drift command"
   );
   assertIncludes(
     passingBody.requiredCommands,
@@ -107,6 +112,11 @@ async function main() {
   );
   assertIncludes(
     passingBody.sourceUrls,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/wallet-tx-builder/src/planner.rs",
+    "aggregate includes wallet transaction planner source"
+  );
+  assertIncludes(
+    passingBody.sourceUrls,
     "https://api.github.com/repos/nockchain/nockchain/releases/latest",
     "aggregate includes release API source"
   );
@@ -130,7 +140,7 @@ async function main() {
   assertEqual(drift.status, 1, "drift fixture exit status");
   const driftBody = JSON.parse(drift.stdout);
   assertEqual(driftBody.status, "review-needed", "drift fixture status");
-  assertEqual(driftBody.summary.inSyncChecks, 6, "drift fixture in-sync count");
+  assertEqual(driftBody.summary.inSyncChecks, 7, "drift fixture in-sync count");
   assertEqual(driftBody.summary.reviewNeededChecks, 1, "drift fixture review-needed count");
   assertIncludes(driftBody.drift.reviewNeededCheckIds, "pr-radar", "aggregate detects PR radar drift");
   assertIncludes(
@@ -194,6 +204,11 @@ async function main() {
   );
   assertIncludes(
     board.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+    "wallet-source",
+    "watch aggregate includes wallet source check"
+  );
+  assertIncludes(
+    board.monitor.aggregateDriftCheck.checks.map((check) => check.id),
     "release-assets",
     "watch aggregate includes release assets check"
   );
@@ -239,6 +254,11 @@ async function main() {
     checkpointBody.nockchainWatch.aggregateDriftCheck.checkIds,
     "bridge-source",
     "checkpoint aggregate drift bridge source check ID"
+  );
+  assertIncludes(
+    checkpointBody.nockchainWatch.aggregateDriftCheck.checkIds,
+    "wallet-source",
+    "checkpoint aggregate drift wallet source check ID"
   );
 
   const watchTest = readText("scripts/test-nockchain-watch.mjs");
@@ -313,6 +333,13 @@ function fixtureChecks() {
         "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/bridge-dev/tests/README.md"
       ],
       snapshot: { sourceAnchorCount: 14, sourceFileCount: 9 }
+    },
+    {
+      id: "wallet-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/wallet-tx-builder/src/planner.rs"
+      ],
+      snapshot: { sourceAnchorCount: 9, sourceFileCount: 9 }
     },
     {
       id: "release-assets",
