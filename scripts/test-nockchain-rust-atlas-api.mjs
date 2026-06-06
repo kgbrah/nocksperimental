@@ -33,6 +33,25 @@ async function main() {
   assertEqual(body.workspace.language, "Rust", "workspace language");
   assertEqual(body.workspace.resolver, "2", "workspace resolver");
   assertEqual(body.workspace.memberCount, 36, "workspace member count");
+  assertEqual(body.workspace.manifest.path, "Cargo.toml", "workspace manifest path");
+  assertEqual(
+    body.workspace.manifest.sha256,
+    "a31885eb2d77adfb4d8583a52a62b8f05289087af1c4b10af616b6376b0773f0",
+    "workspace manifest hash"
+  );
+  assertEqual(body.workspace.manifest.bytes, 9781, "workspace manifest bytes");
+  assertStartsWith(body.workspace.workspaceMemberHash, "sha256:", "workspace member hash");
+  assertEqual(
+    body.workspace.driftCheck.command,
+    "npm run check:nockchain-cargo-workspace-drift -- --json",
+    "workspace drift command"
+  );
+  assertIncludes(body.workspace.driftCheck.compareFields, "members", "workspace drift member field");
+  assertIncludes(
+    body.workspace.driftCheck.sourceUrls,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml",
+    "workspace drift raw Cargo source"
+  );
   assertEqual(body.workspace.coverage.trackedWorkspaceMemberCount, 36, "tracked workspace member count");
   assertEqual(body.workspace.coverage.missingWorkspaceMembers.length, 0, "missing workspace member count");
   assertIncludes(
@@ -142,6 +161,21 @@ async function main() {
     "checkpoint rust workspace coverage"
   );
   assertEqual(
+    checkpointBody.checks.nockchainRustWorkspaceDriftCheckAvailable,
+    true,
+    "checkpoint rust workspace drift check"
+  );
+  assertEqual(
+    checkpointBody.nockchainRustAtlas.manifest.sha256,
+    "a31885eb2d77adfb4d8583a52a62b8f05289087af1c4b10af616b6376b0773f0",
+    "checkpoint rust manifest hash"
+  );
+  assertEqual(
+    checkpointBody.nockchainRustAtlas.driftCheck.command,
+    "npm run check:nockchain-cargo-workspace-drift -- --json",
+    "checkpoint rust workspace drift command"
+  );
+  assertEqual(
     checkpointBody.links.nockchainRustAtlas,
     "https://nocksperimental.com/api/nockchain/rust-atlas",
     "checkpoint rust atlas link"
@@ -154,6 +188,16 @@ async function main() {
     "package rust atlas test script"
   );
   assertIncludes(packageJson.scripts.test, "npm run test:nockchain-rust-atlas-api", "full test includes rust atlas test");
+  assertEqual(
+    packageJson.scripts["check:nockchain-cargo-workspace-drift"],
+    "node scripts/check-nockchain-cargo-workspace-drift.mjs",
+    "package cargo workspace drift check script"
+  );
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-cargo-workspace-drift-check",
+    "full test includes cargo workspace drift check"
+  );
 
   const smokeSource = readFileSync(path.join(process.cwd(), "scripts/smoke-cloudflare-preview.mjs"), "utf8");
   assertIncludes(smokeSource, "/api/nockchain/rust-atlas", "Cloudflare smoke includes rust atlas API");
@@ -162,6 +206,7 @@ async function main() {
   assertIncludes(readme, "Nockchain Rust Workspace Atlas", "README documents Rust atlas");
   assertIncludes(readme, "36 upstream workspace members", "README documents Rust workspace coverage");
   assertIncludes(readme, "/api/nockchain/rust-atlas", "README documents Rust atlas endpoint");
+  assertIncludes(readme, "check:nockchain-cargo-workspace-drift", "README documents Cargo workspace drift command");
 }
 
 function loadTypeScriptModule(relativePath) {

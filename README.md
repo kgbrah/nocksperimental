@@ -265,6 +265,8 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
 
+Run `npm run check:nockchain-cargo-workspace-drift -- --json` to compare the pinned `Cargo.toml` manifest hash, resolver, workspace member set, and workspace member hash against upstream `nockchain/nockchain` master before trusting crate-level Rust assumptions.
+
 ## Nockchain Rust Source Guide
 
 The Rust source guide anchors the crate atlas to exact current upstream files, symbols, line ranges, cargo gates, receipt fields, and forbidden fields. It covers node startup, mining key configuration, libp2p catch-up and gossip suppression, NockApp poke/peek, PMA and snapshot safety, NockStack frame checks, wallet commands and transaction planning, public API/gRPC wire conversion, bridge withdrawal runtime, sequencer journal construction, bridge-dev opt-in scenarios, and nockup scaffolding.

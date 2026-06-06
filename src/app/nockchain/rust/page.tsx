@@ -33,6 +33,9 @@ const highlightedCrateNames = [
 ];
 const highlightedWatchThemes = ["#127 bridge: add end-to-end withdrawal execution", "PMA dynamic growth"] as const;
 const highlightedNextUses = ["Attach crate-level provenance", "Use bridge-dev scenarios"] as const;
+const highlightedWorkspaceDriftCommand = "npm run check:nockchain-cargo-workspace-drift -- --json";
+const highlightedCargoManifestSourceUrl =
+  "https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml";
 
 export default function NockchainRustAtlasPage() {
   const atlas = createNockchainRustAtlas();
@@ -46,6 +49,13 @@ export default function NockchainRustAtlasPage() {
   const primaryNextUses = atlas.nocksperimentalNextUses.filter((use) =>
     highlightedNextUses.some((highlight) => use.includes(highlight))
   );
+  const workspaceDriftCommand = atlas.workspace.driftCheck.command || highlightedWorkspaceDriftCommand;
+  const primaryWorkspaceDriftSources = [
+    highlightedCargoManifestSourceUrl,
+    ...atlas.workspace.driftCheck.sourceUrls.filter(
+      (sourceUrl) => sourceUrl !== highlightedCargoManifestSourceUrl
+    )
+  ];
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -146,6 +156,31 @@ export default function NockchainRustAtlasPage() {
               label="nonWorkspaceTrackedCrates"
               value={atlas.workspace.coverage.nonWorkspaceTrackedCrates.join(", ")}
             />
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#EAF7E7] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <GitBranch size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Workspace Drift Check</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+            {atlas.workspace.driftCheck.interpretation}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <Callout label="command" value={workspaceDriftCommand} />
+            <Callout label="manifestSha256" value={atlas.workspace.manifest.sha256} />
+            <Callout label="workspaceMemberHash" value={atlas.workspace.workspaceMemberHash} />
+            <Callout label="manifestBytes" value={atlas.workspace.manifest.bytes.toString()} />
+            <Callout label="compareFields" value={atlas.workspace.driftCheck.compareFields.join(", ")} />
+            <Callout label="testCommand" value={atlas.workspace.driftCheck.testCommand} />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {primaryWorkspaceDriftSources.map((sourceUrl) => (
+              <Callout key={sourceUrl} label="source" value={sourceUrl} />
+            ))}
           </div>
         </article>
       </section>

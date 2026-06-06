@@ -25,6 +25,13 @@ function main() {
   assertIncludes(page, "Nockchain Rust Atlas", "Rust page title");
   assertIncludes(page, "Rust workspace", "Rust page explains workspace");
   assertIncludes(page, "Workspace Coverage", "Rust page renders workspace coverage");
+  assertIncludes(page, "Workspace Drift Check", "Rust page renders workspace drift check");
+  assertIncludes(page, "npm run check:nockchain-cargo-workspace-drift -- --json", "Rust page renders workspace drift command");
+  assertIncludes(
+    page,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml",
+    "Rust page renders raw Cargo source"
+  );
   assertIncludes(page, "trackedWorkspaceMemberCount", "Rust page renders tracked workspace count");
   assertIncludes(page, "missingWorkspaceMembers", "Rust page renders missing workspace members");
   assertIncludes(page, "cargo check -p nockchain", "Rust page renders nockchain check");

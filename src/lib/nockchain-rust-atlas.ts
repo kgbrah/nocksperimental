@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -90,6 +91,24 @@ const workspaceMembers = [
 ] as const;
 
 const nonWorkspaceTrackedCrates = ["crates/chaff"] as const;
+
+const cargoManifest = {
+  path: "Cargo.toml",
+  rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml",
+  htmlUrl: "https://github.com/nockchain/nockchain/blob/master/Cargo.toml",
+  sha256: "a31885eb2d77adfb4d8583a52a62b8f05289087af1c4b10af616b6376b0773f0",
+  bytes: 9781
+} as const;
+
+const workspaceDriftCheck = {
+  command: "npm run check:nockchain-cargo-workspace-drift -- --json",
+  script: "scripts/check-nockchain-cargo-workspace-drift.mjs",
+  testCommand: "npm run test:nockchain-cargo-workspace-drift-check",
+  sourceUrls: [cargoManifest.rawUrl, cargoManifest.htmlUrl],
+  compareFields: ["resolver", "members", "manifestSha256", "workspaceMemberHash"],
+  interpretation:
+    "Compares pinned Nockchain Cargo.toml workspace members, resolver, manifest hash, and workspace member hash against upstream master before Rust crate assumptions become receipt authority."
+} as const;
 
 const crateDetails = [
   {
@@ -426,6 +445,9 @@ export function createNockchainRustAtlas() {
       language: upstream.workspace.language,
       resolver: upstream.workspace.resolver,
       memberCount: workspaceMembers.length,
+      manifest: cargoManifest,
+      workspaceMemberHash: createWorkspaceMemberHash(workspaceMembers),
+      driftCheck: workspaceDriftCheck,
       coverage: {
         trackedWorkspaceMemberCount: trackedWorkspaceMembers.length,
         trackedWorkspaceMembers,
@@ -468,4 +490,8 @@ export function createNockchainRustAtlas() {
       checkpoint: `${registryCanonicalBaseUrl}/api/registry/checkpoint`
     }
   };
+}
+
+function createWorkspaceMemberHash(members: readonly string[]) {
+  return `sha256:${createHash("sha256").update(JSON.stringify([...members].sort())).digest("hex")}`;
 }

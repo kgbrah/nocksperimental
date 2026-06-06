@@ -534,6 +534,13 @@ export function createRegistryCheckpoint() {
         nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount ===
           nockchainRustAtlas.workspace.memberCount &&
         nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers.length === 0,
+      nockchainRustWorkspaceDriftCheckAvailable:
+        nockchainRustAtlas.workspace.manifest.path === "Cargo.toml" &&
+        nockchainRustAtlas.workspace.manifest.sha256 ===
+          "a31885eb2d77adfb4d8583a52a62b8f05289087af1c4b10af616b6376b0773f0" &&
+        nockchainRustAtlas.workspace.workspaceMemberHash.startsWith("sha256:") &&
+        nockchainRustAtlas.workspace.driftCheck.command ===
+          "npm run check:nockchain-cargo-workspace-drift -- --json",
       nockchainRustSourceGuideAvailable:
         nockchainRustSourceGuide.sourceDomains.length >= 10 &&
         nockchainRustSourceGuide.sourceAnchors.length >= 15 &&
@@ -879,10 +886,17 @@ export function createRegistryCheckpoint() {
       validationGates: nockchainRustAtlas.workspace.validationGates,
       watchThemes: nockchainRustAtlas.watchThemes,
       workspaceMemberCount: nockchainRustAtlas.workspace.memberCount,
+      workspaceMemberHash: nockchainRustAtlas.workspace.workspaceMemberHash,
+      manifest: nockchainRustAtlas.workspace.manifest,
       trackedWorkspaceMemberCount:
         nockchainRustAtlas.workspace.coverage.trackedWorkspaceMemberCount,
       missingWorkspaceMembers: nockchainRustAtlas.workspace.coverage.missingWorkspaceMembers,
-      nonWorkspaceTrackedCrates: nockchainRustAtlas.workspace.coverage.nonWorkspaceTrackedCrates
+      nonWorkspaceTrackedCrates: nockchainRustAtlas.workspace.coverage.nonWorkspaceTrackedCrates,
+      driftCheck: {
+        command: nockchainRustAtlas.workspace.driftCheck.command,
+        sourceUrls: nockchainRustAtlas.workspace.driftCheck.sourceUrls,
+        compareFields: nockchainRustAtlas.workspace.driftCheck.compareFields
+      }
     },
     nockchainRustSourceGuide: {
       domainCount: nockchainRustSourceGuide.sourceDomains.length,
