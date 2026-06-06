@@ -348,6 +348,8 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
+
 ## Nockchain PR Radar
 
 The PR radar tracks currently open upstream Nockchain pull requests and open issues as early-warning signals before they become canonical behavior. Current snapshot: 35 open PRs and 1 open non-PR issue. It classifies Nockup manifest rendering, AI PoW puzzles, benchmark work, wallet blob/memo metadata, offline wallet signing, NockApp state export, PMA snapshot/event-log work, runtime stack-frame safety, JAM cue hardening, P2P gossip bounds, gRPC message sizing, stack-size behavior, install-path fixes, extension hooks, template pinning, x402 agentic-payment specs, parser work, Hoon app surfaces, and height-bound validation by target Nocksperimental surface, receipt impact, and verification command.

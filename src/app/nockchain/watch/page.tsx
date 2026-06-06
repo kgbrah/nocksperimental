@@ -28,6 +28,7 @@ const priorityChangeClassIds = [
   "libp2p-sync-mining"
 ] as const;
 const protocolClassificationTarget = "nockchainProtocolTrace";
+const highlightedAggregateDriftCommand = "npm run check:nockchain-upstream-drift -- --json";
 
 export default function NockchainWatchPage() {
   const board = createNockchainWatchBoard();
@@ -51,6 +52,8 @@ export default function NockchainWatchPage() {
       changeClass.id === "protocol-consensus" &&
       changeClass.targetSurfaces.includes(protocolClassificationTarget)
   );
+  const aggregateDriftCommand =
+    board.monitor.aggregateDriftCheck.command || highlightedAggregateDriftCommand;
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -161,6 +164,31 @@ export default function NockchainWatchPage() {
               <div className="border border-[#0B0B0B] bg-white p-3" key={item}>
                 <p className="text-sm leading-6 text-[#4A4A4A]">{item}</p>
               </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#E5F3FF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Aggregate Drift Check</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+            {board.monitor.aggregateDriftCheck.interpretation}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="command" value={aggregateDriftCommand} />
+            <Callout label="testCommand" value={board.monitor.aggregateDriftCheck.testCommand} />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {board.monitor.aggregateDriftCheck.checks.map((check) => (
+              <Callout
+                key={check.id}
+                label={check.id}
+                value={`${check.command} -> ${check.targetSurface}`}
+              />
             ))}
           </div>
         </article>

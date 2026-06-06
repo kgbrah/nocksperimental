@@ -119,6 +119,16 @@ async function main() {
     "monitor-zorp-and-nockchain-sources",
     "monitor automation id"
   );
+  assertEqual(
+    body.monitor.aggregateDriftCheck.command,
+    "npm run check:nockchain-upstream-drift -- --json",
+    "aggregate drift command"
+  );
+  assertIncludes(
+    body.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+    "cargo-workspace",
+    "aggregate drift includes cargo workspace"
+  );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor cadence");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp/nockchain", "legacy redirect monitor source");
@@ -162,6 +172,16 @@ async function main() {
     "checkpoint watch classification check"
   );
   assertEqual(
+    checkpointBody.checks.nockchainWatchAggregateDriftCheckAvailable,
+    true,
+    "checkpoint watch aggregate drift check"
+  );
+  assertEqual(
+    checkpointBody.nockchainWatch.aggregateDriftCheck.command,
+    "npm run check:nockchain-upstream-drift -- --json",
+    "checkpoint aggregate drift command"
+  );
+  assertEqual(
     checkpointBody.links.nockchainWatch,
     "https://nocksperimental.com/api/nockchain/watch",
     "checkpoint watch link"
@@ -175,6 +195,8 @@ async function main() {
   assertIncludes(page, "state-jam-drive-inventory", "watch page renders state-jam item");
   assertIncludes(page, "zorp-nockapp-archived-update", "watch page renders Zorp nockapp item");
   assertIncludes(page, "Change Classification Contract", "watch page renders classification contract");
+  assertIncludes(page, "Aggregate Drift Check", "watch page renders aggregate drift check");
+  assertIncludes(page, "npm run check:nockchain-upstream-drift -- --json", "watch page renders aggregate command");
   assertIncludes(page, "protocol-consensus", "watch page renders protocol class");
   assertIncludes(page, "nockchainProtocolTrace", "watch page renders protocol target");
   assertIncludes(page, "recommendedNocksperimentalUpdates", "watch page renders required update field");
@@ -188,7 +210,17 @@ async function main() {
     "node scripts/test-nockchain-watch.mjs",
     "package watch test script"
   );
+  assertEqual(
+    packageJson.scripts["check:nockchain-upstream-drift"],
+    "node scripts/check-nockchain-upstream-drift.mjs",
+    "package aggregate drift check script"
+  );
   assertIncludes(packageJson.scripts.test, "npm run test:nockchain-watch", "full test includes watch test");
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-upstream-drift-check",
+    "full test includes aggregate drift test"
+  );
 
   const smokeSource = readText("scripts/smoke-cloudflare-preview.mjs");
   assertIncludes(smokeSource, "/api/nockchain/watch", "Cloudflare smoke includes watch API");
@@ -197,6 +229,7 @@ async function main() {
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Upstream Watch", "README documents watch board");
   assertIncludes(readme, "change classification contract", "README documents classification contract");
+  assertIncludes(readme, "check:nockchain-upstream-drift", "README documents aggregate drift command");
   assertIncludes(readme, "/api/nockchain/watch", "README documents watch endpoint");
   assertIncludes(readme, "/nockchain/watch", "README documents watch page");
 }

@@ -48,6 +48,41 @@ const sources = [
   }
 ] as const;
 
+const aggregateDriftCheck = {
+  command: "npm run check:nockchain-upstream-drift -- --json",
+  script: "scripts/check-nockchain-upstream-drift.mjs",
+  testCommand: "npm run test:nockchain-upstream-drift-check",
+  checks: [
+    {
+      id: "docs",
+      command: "npm run check:nockchain-docs-drift -- --json",
+      targetSurface: "nockchainKnowledgeSpine"
+    },
+    {
+      id: "cargo-workspace",
+      command: "npm run check:nockchain-cargo-workspace-drift -- --json",
+      targetSurface: "nockchainRustAtlas"
+    },
+    {
+      id: "release-assets",
+      command: "npm run check:nockchain-release-assets-drift -- --json",
+      targetSurface: "nockchainReleaseAssets"
+    },
+    {
+      id: "pr-radar",
+      command: "npm run check:nockchain-pr-radar-drift -- --json",
+      targetSurface: "nockchainPrRadar"
+    },
+    {
+      id: "zorp-org",
+      command: "npm run check:zorp-org-drift -- --json",
+      targetSurface: "zorpUpstream"
+    }
+  ],
+  interpretation:
+    "Runs the Nockchain docs, Cargo workspace, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
+} as const;
+
 const watchQueue = [
   {
     id: "bridge-withdrawal-execution",
@@ -371,6 +406,7 @@ export function createNockchainWatchBoard() {
       "Resolve zorp-corp/nockchain to nockchain/nockchain before treating a source as current protocol authority.",
       "Treat zorp-corp/nockapp metadata changes as lineage review until a non-archived canonical repo changes.",
       "Inventory the Zorp state-jam Drive folder as metadata only before trusting bootstrap artifacts.",
+      "Run npm run check:nockchain-upstream-drift -- --json before treating the watch board as current.",
       "Promote new Nockchain commit, release, protocol-doc, PMA, libp2p, wallet, or fakenet changes into the relevant atlas before issuing receipts.",
       "Keep the monitor cadence and watched source list visible in registry checkpoints so stale assumptions are easy to spot."
     ],
@@ -380,7 +416,8 @@ export function createNockchainWatchBoard() {
       automationName: zorp.monitor.automationName,
       interval: zorp.monitor.interval,
       watchedSources: zorp.monitor.watchedSources,
-      highSignalChanges: zorp.monitor.highSignalChanges
+      highSignalChanges: zorp.monitor.highSignalChanges,
+      aggregateDriftCheck
     },
     links: {
       upstream: upstream.canonicalUrl,

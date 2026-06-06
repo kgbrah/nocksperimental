@@ -342,7 +342,7 @@ export function createRegistryCheckpoint() {
       receiptContract: nockchainApiSourceTrace.receiptContract,
       localVerification: nockchainApiSourceTrace.localVerification
     }),
-    nockchainWatch: createSha256Root({
+      nockchainWatch: createSha256Root({
       observedAt: nockchainWatch.observedAt,
       status: nockchainWatch.status,
       sources: nockchainWatch.sources,
@@ -351,6 +351,7 @@ export function createRegistryCheckpoint() {
       drift: nockchainWatch.drift,
       changeClassificationContract: nockchainWatch.changeClassificationContract,
       watchQueue: nockchainWatch.watchQueue,
+      aggregateDriftCheck: nockchainWatch.monitor.aggregateDriftCheck,
       monitor: nockchainWatch.monitor
     }),
     nockchainPrRadar: createSha256Root({
@@ -610,6 +611,13 @@ export function createRegistryCheckpoint() {
         ) &&
         nockchainWatch.changeClassificationContract.requiredEvidenceFields.includes(
           "recommendedNocksperimentalUpdates"
+        ),
+      nockchainWatchAggregateDriftCheckAvailable:
+        nockchainWatch.monitor.aggregateDriftCheck.command ===
+          "npm run check:nockchain-upstream-drift -- --json" &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 5 &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.some(
+          (check) => check.id === "cargo-workspace"
         ),
       nockchainPrRadarAvailable:
         nockchainPrRadar.pullRequests.length === 35 &&
@@ -986,7 +994,14 @@ export function createRegistryCheckpoint() {
       commitMatchesPinned: nockchainWatch.drift.commitMatchesPinned,
       releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned,
       latestCommitReleased: nockchainWatch.drift.latestCommitReleased,
-      defaultBranchAheadOfRelease: nockchainWatch.drift.defaultBranchAheadOfRelease
+      defaultBranchAheadOfRelease: nockchainWatch.drift.defaultBranchAheadOfRelease,
+      aggregateDriftCheck: {
+        command: nockchainWatch.monitor.aggregateDriftCheck.command,
+        checkIds: nockchainWatch.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+        targetSurfaces: nockchainWatch.monitor.aggregateDriftCheck.checks.map(
+          (check) => check.targetSurface
+        )
+      }
     },
     nockchainPrRadar: {
       observedAt: nockchainPrRadar.observedAt,
