@@ -46,8 +46,8 @@ async function main() {
   assertEqual(passing.status, 0, "matching fixture exit status");
   const passingBody = JSON.parse(passing.stdout);
   assertEqual(passingBody.status, "in-sync", "matching fixture status");
-  assertEqual(passingBody.summary.totalChecks, 5, "matching total check count");
-  assertEqual(passingBody.summary.inSyncChecks, 5, "matching in-sync check count");
+  assertEqual(passingBody.summary.totalChecks, 6, "matching total check count");
+  assertEqual(passingBody.summary.inSyncChecks, 6, "matching in-sync check count");
   assertEqual(passingBody.summary.reviewNeededChecks, 0, "matching review-needed check count");
   assertEqual(passingBody.summary.failedChecks, 0, "matching failed check count");
   assertIncludes(
@@ -59,6 +59,11 @@ async function main() {
     passingBody.requiredCommands,
     "npm run check:nockchain-cargo-workspace-drift -- --json",
     "aggregate includes Cargo workspace drift command"
+  );
+  assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-cargo-manifests-drift -- --json",
+    "aggregate includes Cargo manifests drift command"
   );
   assertIncludes(
     passingBody.requiredCommands,
@@ -87,6 +92,11 @@ async function main() {
   );
   assertIncludes(
     passingBody.sourceUrls,
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-wallet/Cargo.toml",
+    "aggregate includes Cargo crate manifest source"
+  );
+  assertIncludes(
+    passingBody.sourceUrls,
     "https://api.github.com/repos/nockchain/nockchain/releases/latest",
     "aggregate includes release API source"
   );
@@ -110,7 +120,7 @@ async function main() {
   assertEqual(drift.status, 1, "drift fixture exit status");
   const driftBody = JSON.parse(drift.stdout);
   assertEqual(driftBody.status, "review-needed", "drift fixture status");
-  assertEqual(driftBody.summary.inSyncChecks, 4, "drift fixture in-sync count");
+  assertEqual(driftBody.summary.inSyncChecks, 5, "drift fixture in-sync count");
   assertEqual(driftBody.summary.reviewNeededChecks, 1, "drift fixture review-needed count");
   assertIncludes(driftBody.drift.reviewNeededCheckIds, "pr-radar", "aggregate detects PR radar drift");
   assertIncludes(
@@ -136,6 +146,11 @@ async function main() {
     board.monitor.aggregateDriftCheck.checks.map((check) => check.id),
     "cargo-workspace",
     "watch aggregate includes cargo workspace check"
+  );
+  assertIncludes(
+    board.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+    "cargo-manifests",
+    "watch aggregate includes cargo manifests check"
   );
   assertIncludes(
     board.monitor.aggregateDriftCheck.checks.map((check) => check.id),
@@ -174,6 +189,11 @@ async function main() {
     checkpointBody.nockchainWatch.aggregateDriftCheck.checkIds,
     "cargo-workspace",
     "checkpoint aggregate drift check IDs"
+  );
+  assertIncludes(
+    checkpointBody.nockchainWatch.aggregateDriftCheck.checkIds,
+    "cargo-manifests",
+    "checkpoint aggregate drift manifest check ID"
   );
 
   const watchTest = readText("scripts/test-nockchain-watch.mjs");
@@ -219,6 +239,11 @@ function fixtureChecks() {
       id: "cargo-workspace",
       sourceUrls: ["https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml"],
       snapshot: { localWorkspaceMemberCount: 36, githubWorkspaceMemberCount: 36 }
+    },
+    {
+      id: "cargo-manifests",
+      sourceUrls: ["https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-wallet/Cargo.toml"],
+      snapshot: { localManifestCount: 36, githubManifestCount: 36 }
     },
     {
       id: "release-assets",

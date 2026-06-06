@@ -542,6 +542,15 @@ export function createRegistryCheckpoint() {
         nockchainRustAtlas.workspace.workspaceMemberHash.startsWith("sha256:") &&
         nockchainRustAtlas.workspace.driftCheck.command ===
           "npm run check:nockchain-cargo-workspace-drift -- --json",
+      nockchainCargoManifestDriftCheckAvailable:
+        nockchainCargoSurface.workspace.manifestSnapshots.length ===
+          nockchainCargoSurface.workspace.memberCount &&
+        nockchainCargoSurface.workspace.manifestCatalogHash.startsWith("sha256:") &&
+        nockchainCargoSurface.workspace.manifestDriftCheck.command ===
+          "npm run check:nockchain-cargo-manifests-drift -- --json" &&
+        nockchainCargoSurface.workspace.manifestDriftCheck.compareFields.includes(
+          "manifestCatalogHash"
+        ),
       nockchainRustSourceGuideAvailable:
         nockchainRustSourceGuide.sourceDomains.length >= 10 &&
         nockchainRustSourceGuide.sourceAnchors.length >= 15 &&
@@ -615,9 +624,12 @@ export function createRegistryCheckpoint() {
       nockchainWatchAggregateDriftCheckAvailable:
         nockchainWatch.monitor.aggregateDriftCheck.command ===
           "npm run check:nockchain-upstream-drift -- --json" &&
-        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 5 &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 6 &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "cargo-workspace"
+        ) &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.some(
+          (check) => check.id === "cargo-manifests"
         ),
       nockchainPrRadarAvailable:
         nockchainPrRadar.pullRequests.length === 35 &&
@@ -1105,6 +1117,9 @@ export function createRegistryCheckpoint() {
       generatedAt: nockchainCargoSurface.generatedAt,
       crateCount: nockchainCargoSurface.crates.length,
       targetCount: nockchainCargoSurface.targetSummary.targetCount,
+      manifestCount: nockchainCargoSurface.workspace.manifestSnapshots.length,
+      manifestCatalogHash: nockchainCargoSurface.workspace.manifestCatalogHash,
+      manifestDriftCommand: nockchainCargoSurface.workspace.manifestDriftCheck.command,
       binaryCrates: nockchainCargoSurface.targetSummary.binaryCrates,
       libraryCrates: nockchainCargoSurface.targetSummary.libraryCrates,
       benchmarkTargets: nockchainCargoSurface.targetSummary.benchmarkTargets,

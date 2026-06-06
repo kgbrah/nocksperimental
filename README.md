@@ -265,7 +265,7 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
 
-Run `npm run check:nockchain-cargo-workspace-drift -- --json` to compare the pinned `Cargo.toml` manifest hash, resolver, workspace member set, and workspace member hash against upstream `nockchain/nockchain` master before trusting crate-level Rust assumptions.
+Run `npm run check:nockchain-cargo-workspace-drift -- --json` to compare the pinned root `Cargo.toml` manifest hash, resolver, workspace member set, and workspace member hash against upstream `nockchain/nockchain` master before trusting crate-level Rust assumptions.
 
 ## Nockchain Rust Source Guide
 
@@ -278,12 +278,14 @@ Use it when a fakenet, NockApp, wallet, bridge, VESL, or nockup receipt needs ex
 
 ## Nockchain Cargo Surface
 
-The Cargo surface turns upstream manifests and source entrypoints into a Rust target map for Nocksperimental. It tracks high-signal crates such as `nockchain`, `nockchain-wallet`, `nockchain-api`, `nockapp`, `nockup`, `nockchain-libp2p-io`, `wallet-tx-builder`, `nockchain-bridge-sequencer`, and `nockvm`; their binary/library/bench targets; dependency pins; source focus paths; and crate-scoped cargo checks.
+The Cargo surface turns upstream manifests and source entrypoints into a Rust target map for Nocksperimental. It tracks high-signal crates such as `nockchain`, `nockchain-wallet`, `nockchain-api`, `nockapp`, `nockup`, `nockchain-libp2p-io`, `wallet-tx-builder`, `nockchain-bridge-sequencer`, and `nockvm`; all 36 pinned crate `Cargo.toml` SHA-256 and byte-count snapshots; their binary/library/bench targets; dependency pins; source focus paths; and crate-scoped cargo checks.
 
 - `/api/nockchain/cargo-surface`
 - `/nockchain/cargo-surface`
 
 Use it when translating an upstream Rust change into the exact binary, library, benchmark, or source file that needs verification. The current surface records that `cargo 1.96.0` and `cargo metadata --no-deps --format-version 1` are available when `$HOME/.cargo/bin` is on `PATH`, while full crate checks may still fetch or build upstream dependencies.
+
+Run `npm run check:nockchain-cargo-manifests-drift -- --json` to compare every pinned crate manifest path, SHA-256 hash, byte count, and aggregate manifest catalog hash against upstream `nockchain/nockchain` master before treating crate targets, dependency surfaces, or feature flags as current evidence.
 
 ## Nockchain Hoon Kernel Atlas
 
@@ -348,7 +350,7 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
 
 ## Nockchain PR Radar
 

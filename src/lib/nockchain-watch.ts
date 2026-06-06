@@ -64,6 +64,11 @@ const aggregateDriftCheck = {
       targetSurface: "nockchainRustAtlas"
     },
     {
+      id: "cargo-manifests",
+      command: "npm run check:nockchain-cargo-manifests-drift -- --json",
+      targetSurface: "nockchainCargoSurface"
+    },
+    {
       id: "release-assets",
       command: "npm run check:nockchain-release-assets-drift -- --json",
       targetSurface: "nockchainReleaseAssets"
@@ -80,7 +85,7 @@ const aggregateDriftCheck = {
     }
   ],
   interpretation:
-    "Runs the Nockchain docs, Cargo workspace, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
+    "Runs the Nockchain docs, Cargo workspace, crate manifest, release asset, PR radar, and Zorp org drift checks as one monitor report before treating watch-board evidence as current."
 } as const;
 
 const watchQueue = [
@@ -271,11 +276,12 @@ const changeClassificationContract = {
       id: "rust-workspace",
       escalation: "high",
       sourceAuthority: "canonical-nockchain-workspace",
-      sourceSignals: ["Cargo.toml workspace members", "crate READMEs", "validation gates"],
-      targetSurfaces: ["nockchainRustAtlas", "nockchainDocsAtlas", "validationGates"],
+      sourceSignals: ["Cargo.toml workspace members", "crate Cargo.toml manifests", "crate READMEs", "validation gates"],
+      targetSurfaces: ["nockchainRustAtlas", "nockchainCargoSurface", "nockchainDocsAtlas", "validationGates"],
       receiptRisk: "Crate ownership drift changes which source files and cargo checks support an evidence claim.",
       recommendedNocksperimentalUpdates: [
         "refresh Rust crate groups",
+        "refresh crate manifest hashes",
         "update validation gates",
         "map new crates to operator-facing risks"
       ]
@@ -396,7 +402,8 @@ export function createNockchainWatchBoard() {
         "zorp-corp/nockapp archived repo updated metadata",
         "Zorp state-jam Drive folder requires metadata inventory before trust",
         "wallet/API command surfaces need review when upstream README flags change",
-        "Rust workspace ownership should be refreshed when Cargo membership changes"
+        "Rust workspace ownership should be refreshed when Cargo membership changes",
+        "Crate manifest hashes should be refreshed when upstream Cargo.toml dependencies, targets, or features change"
       ]
     },
     changeClassificationContract,

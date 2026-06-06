@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -43,6 +44,250 @@ const workspaceManifestPaths = [
   "crates/wallet-tx-builder/Cargo.toml",
   "crates/zkvm-jetpack/Cargo.toml"
 ] as const;
+
+const crateManifestSnapshots = [
+  {
+    path: "crates/bridge/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/bridge/Cargo.toml",
+    sha256: "5936471456fb077e81f145717eff805c24b72533820a33a502fbf62c740d6833",
+    bytes: 2171
+  },
+  {
+    path: "crates/bridge-dev/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/bridge-dev/Cargo.toml",
+    sha256: "26daee1c5a2565552ebff4d72611aa0382208edd14d90b3e76326e9fe3982334",
+    bytes: 991
+  },
+  {
+    path: "crates/equix-latency/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/equix-latency/Cargo.toml",
+    sha256: "d15b62ee9be0800e5abc54249aad829150e2359abf96cf1613bf0bccbef0781e",
+    bytes: 152
+  },
+  {
+    path: "crates/habit/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/habit/Cargo.toml",
+    sha256: "6b4a3416b75aa4b83e625dbd69b109dd0a13d6a0d16fbdc430cf85a9580315fe",
+    bytes: 178
+  },
+  {
+    path: "crates/hoon/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/hoon/Cargo.toml",
+    sha256: "15e421eea32c7de5b406ed7b246f046c312d3f2400430c509d4609e0e1ae778d",
+    bytes: 319
+  },
+  {
+    path: "crates/hoonc/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/hoonc/Cargo.toml",
+    sha256: "c7ed6870fb4e21ed8d290b1e1beea6c2e486bdcfdbd2a925963ab07a794f2679",
+    bytes: 943
+  },
+  {
+    path: "crates/kernels/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/Cargo.toml",
+    sha256: "c0ca41d888b512fa0e44135e27cbf6406b9679b6cf00eac58ae087bc371472e9",
+    bytes: 218
+  },
+  {
+    path: "crates/kernels/bridge/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/bridge/Cargo.toml",
+    sha256: "07cf056b4b91b24fe663edf3452a7f3682d2add63d264ce642a6034b6c78b209",
+    bytes: 135
+  },
+  {
+    path: "crates/kernels/dumb/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/dumb/Cargo.toml",
+    sha256: "6e37d18b9d8f09c859534e7749598a28637141436c120327a1b6db25cde89f60",
+    bytes: 133
+  },
+  {
+    path: "crates/kernels/miner/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/miner/Cargo.toml",
+    sha256: "d0b88004d141a8c4a3aef848a8ae44398b16eb20c3712a27d1c9607d7e393eb1",
+    bytes: 134
+  },
+  {
+    path: "crates/kernels/nockchain-peek/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/nockchain-peek/Cargo.toml",
+    sha256: "9b1af1095b35904b87712c7d9b330323f95cf3b60e7807818eeb685e105090b1",
+    bytes: 143
+  },
+  {
+    path: "crates/kernels/wallet/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/kernels/wallet/Cargo.toml",
+    sha256: "a72f087632b2535b8bfef15adf853426349e5e117b218c6de26ed7490557ccb7",
+    bytes: 135
+  },
+  {
+    path: "crates/nockapp/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockapp/Cargo.toml",
+    sha256: "606cfca0d12b1741165c56b63a789ba0456ce5fb38ffdcb9d270509e9e2ca442",
+    bytes: 2474
+  },
+  {
+    path: "crates/nockapp-grpc/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockapp-grpc/Cargo.toml",
+    sha256: "4effabb8d3b40f84c59481146afc1108f52d7f4871b6ec7542685972577d0f22",
+    bytes: 1545
+  },
+  {
+    path: "crates/nockapp-grpc-proto/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockapp-grpc-proto/Cargo.toml",
+    sha256: "23ba0b7f571bc69f9617e83fadeb1bbcda18f925a791ac8f06615696209d600a",
+    bytes: 689
+  },
+  {
+    path: "crates/nockchain/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain/Cargo.toml",
+    sha256: "1eb966321bec38e0c3d4ffa052d75a14c0a3328b4dee6706fb38fab80a5a1b27",
+    bytes: 1488
+  },
+  {
+    path: "crates/nockchain-api/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-api/Cargo.toml",
+    sha256: "c1a47b0ab4890a208e82edf9210eb2c2c94fb2c951c90edd22f2482bf7d77da6",
+    bytes: 964
+  },
+  {
+    path: "crates/nockchain-bridge-sequencer/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-bridge-sequencer/Cargo.toml",
+    sha256: "a7506330525a3d3d6220968dfa61761ed9a21e1b0e12a305314b12e58a552908",
+    bytes: 551
+  },
+  {
+    path: "crates/nockchain-e2e/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-e2e/Cargo.toml",
+    sha256: "48a233c888d7ef9fb11d2c00c04bef2a81ccbbf4cb8f9a2a8cd65394b78c4d02",
+    bytes: 747
+  },
+  {
+    path: "crates/nockchain-explorer-tui/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-explorer-tui/Cargo.toml",
+    sha256: "9a8be4ebfaf35e60b7f30d8bf747bf98f55399280e34c6704620673c7ad4c035",
+    bytes: 727
+  },
+  {
+    path: "crates/nockchain-libp2p-io/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-libp2p-io/Cargo.toml",
+    sha256: "6bd30a9547e2cb55f45d3d0cadd32236ffd9b377026b46e67ad8100060095982",
+    bytes: 1737
+  },
+  {
+    path: "crates/nockchain-math/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-math/Cargo.toml",
+    sha256: "ca200009b1d002a2bb442eee5b7a0a9e723c21f76a124df28c78d7835a742298",
+    bytes: 611
+  },
+  {
+    path: "crates/nockchain-peek/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-peek/Cargo.toml",
+    sha256: "b40ed55c4b807ef0f825004861cc60738fa14b61417bfb2bbed15743a8aeda1f",
+    bytes: 453
+  },
+  {
+    path: "crates/nockchain-testkit/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-testkit/Cargo.toml",
+    sha256: "0127c88c3a323751ef25724936acdbf255f0058c4a4035ad59464981dc7bc6bd",
+    bytes: 240
+  },
+  {
+    path: "crates/nockchain-types/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-types/Cargo.toml",
+    sha256: "8a7b0121856aa52db8e5487ace5737db0f92c86bb892cc4461e2e88566c35402",
+    bytes: 712
+  },
+  {
+    path: "crates/nockchain-wallet/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-wallet/Cargo.toml",
+    sha256: "2792027e73adef88737cedbe3ffbe093d64f070580151d3823406051346fc32b",
+    bytes: 1035
+  },
+  {
+    path: "crates/nockup/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockup/Cargo.toml",
+    sha256: "d345fd3075bd55ead97b0cb931f445b6d44d5e6a1398f4698c0320067e7540ce",
+    bytes: 1695
+  },
+  {
+    path: "crates/nockvm/rust/ibig/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/ibig/Cargo.toml",
+    sha256: "8e6e527d153966ee89dc93a83664af6fca1b58a6d08aed6e552e1630e092fad7",
+    bytes: 1313
+  },
+  {
+    path: "crates/nockvm/rust/murmur3/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/murmur3/Cargo.toml",
+    sha256: "a17c09073bce2b79494bfecbc4a4810fa01ce42b32bba1459c27b68506dc544b",
+    bytes: 453
+  },
+  {
+    path: "crates/nockvm/rust/nockvm/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/nockvm/Cargo.toml",
+    sha256: "8bfa272e3bbd136ad978f3635255e200cdfb7b70bfd8f1151ea69219af8113c7",
+    bytes: 1820
+  },
+  {
+    path: "crates/nockvm/rust/nockvm_macros/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/nockvm_macros/Cargo.toml",
+    sha256: "09bb5f6304f23a673f570362fec59070db368c0fb941f65721e1f0d40ee0453b",
+    bytes: 183
+  },
+  {
+    path: "crates/noun-serde/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/noun-serde/Cargo.toml",
+    sha256: "eaf779f7611ed656dc4dd62866e4b7285e5d5f93bacf7a61ea69737c7b920292",
+    bytes: 267
+  },
+  {
+    path: "crates/noun-serde-derive/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/noun-serde-derive/Cargo.toml",
+    sha256: "137e39730b08607af971287654d46a290e9c3d19f8f2eac7b3aad52d782f3003",
+    bytes: 415
+  },
+  {
+    path: "crates/raw-tx-checker/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/raw-tx-checker/Cargo.toml",
+    sha256: "34f23c76be01a880fa30ed3cd198c565e891324bb44a00d81b434c18a7121abf",
+    bytes: 404
+  },
+  {
+    path: "crates/wallet-tx-builder/Cargo.toml",
+    rawUrl:
+      "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/wallet-tx-builder/Cargo.toml",
+    sha256: "92c5b9de43b158c934be3882a14054ae97fc742534cb97b7a4400cadc183f1f7",
+    bytes: 336
+  },
+  {
+    path: "crates/zkvm-jetpack/Cargo.toml",
+    rawUrl: "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/zkvm-jetpack/Cargo.toml",
+    sha256: "d8236dc7d6d8b349e32d6f8a9c0bf5c7def67a0e24e6bcb9812e257b4be65b7e",
+    bytes: 646
+  }
+] as const;
+
+const crateManifestDriftCheck = {
+  command: "npm run check:nockchain-cargo-manifests-drift -- --json",
+  script: "scripts/check-nockchain-cargo-manifests-drift.mjs",
+  testCommand: "npm run test:nockchain-cargo-manifests-drift-check",
+  sourceUrls: [
+    "https://raw.githubusercontent.com/nockchain/nockchain/master/Cargo.toml",
+    "https://github.com/nockchain/nockchain/tree/master/crates"
+  ],
+  compareFields: ["manifestPaths", "manifestSha256", "manifestBytes", "manifestCatalogHash"],
+  interpretation:
+    "Compares every pinned Nockchain crate Cargo.toml hash and byte count against upstream master before crate-level roles, dependencies, targets, or evidence contracts become receipt authority."
+} as const;
 
 const cargoCrates = [
   {
@@ -364,7 +609,10 @@ export function createNockchainCargoSurface() {
       rootManifest: "Cargo.toml",
       resolver: upstream.workspace.resolver,
       memberCount: workspaceManifestPaths.length,
-      manifestPaths: workspaceManifestPaths
+      manifestPaths: workspaceManifestPaths,
+      manifestSnapshots: crateManifestSnapshots,
+      manifestCatalogHash: createManifestCatalogHash(crateManifestSnapshots),
+      manifestDriftCheck: crateManifestDriftCheck
     },
     workspaceDependencyHighlights: {
       libp2p: {
@@ -415,6 +663,7 @@ export function createNockchainCargoSurface() {
     evidenceContract: {
       requiredFields: [
         "manifestPath",
+        "manifestSha256",
         "targetKind",
         "sourceFocus",
         "primaryCheck",
@@ -448,4 +697,18 @@ export function createNockchainCargoSurface() {
       checkpoint: `${registryCanonicalBaseUrl}/api/registry/checkpoint`
     }
   };
+}
+
+function createManifestCatalogHash(
+  manifests: readonly { path: string; sha256: string; bytes: number }[]
+) {
+  const normalized = manifests
+    .map((manifest) => ({
+      path: manifest.path,
+      sha256: manifest.sha256,
+      bytes: manifest.bytes
+    }))
+    .sort((left, right) => left.path.localeCompare(right.path));
+
+  return `sha256:${createHash("sha256").update(JSON.stringify(normalized)).digest("hex")}`;
 }

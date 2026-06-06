@@ -21,6 +21,13 @@ const aggregateChecks = [
     npmScript: "check:nockchain-cargo-workspace-drift"
   },
   {
+    id: "cargo-manifests",
+    label: "Crate Cargo manifests",
+    domain: "rust-crate-manifests",
+    command: "npm run check:nockchain-cargo-manifests-drift -- --json",
+    npmScript: "check:nockchain-cargo-manifests-drift"
+  },
+  {
     id: "release-assets",
     label: "Latest release assets",
     domain: "release-build",
@@ -182,7 +189,7 @@ function createAggregateReport(checkResults) {
     status,
     observedAt: new Date().toISOString(),
     interpretation:
-      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, release, PR radar, and lineage assumptions current.",
+      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, release, PR radar, and lineage assumptions current.",
     requiredCommands: aggregateChecks.map((check) => check.command),
     sourceUrls: unique(checkResults.flatMap((check) => check.sourceUrls)),
     summary: {

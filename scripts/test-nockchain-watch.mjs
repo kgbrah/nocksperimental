@@ -129,6 +129,11 @@ async function main() {
     "cargo-workspace",
     "aggregate drift includes cargo workspace"
   );
+  assertIncludes(
+    body.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+    "cargo-manifests",
+    "aggregate drift includes cargo manifests"
+  );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor cadence");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp/nockchain", "legacy redirect monitor source");

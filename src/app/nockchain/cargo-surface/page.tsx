@@ -26,6 +26,7 @@ const highlightedHelperTargets = ["nockapp-chkjam-to-state-jam"];
 const highlightedAvailableTooling = "cargo 1.96.0";
 const highlightedLocalLimitation = "$HOME/.cargo/bin must be present on PATH";
 const highlightedForbiddenFields = ["rawPmaSlab", "walletSeedPhrase"];
+const highlightedManifestDriftCommand = "npm run check:nockchain-cargo-manifests-drift -- --json";
 
 export default function NockchainCargoSurfacePage() {
   const surface = createNockchainCargoSurface();
@@ -55,6 +56,8 @@ export default function NockchainCargoSurfacePage() {
   const remainingForbiddenFields = surface.evidenceContract.forbiddenFields.filter(
     (field) => !(highlightedForbiddenFields as readonly string[]).includes(field)
   );
+  const manifestDriftCommand =
+    surface.workspace.manifestDriftCheck.command || highlightedManifestDriftCommand;
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -104,10 +107,11 @@ export default function NockchainCargoSurfacePage() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-4 lg:px-8">
+      <section className="mx-auto grid max-w-6xl gap-4 px-5 py-8 md:grid-cols-5 lg:px-8">
         <Metric label="Crates" value={surface.targetSummary.crateCount.toString()} />
         <Metric label="Targets" value={surface.targetSummary.targetCount.toString()} />
         <Metric label="Workspace" value={`${surface.workspace.memberCount} members`} />
+        <Metric label="Manifests" value={surface.workspace.manifestSnapshots.length.toString()} />
         <Metric label="Commit" value={surface.upstream.commit.shortSha} />
       </section>
 
@@ -127,6 +131,22 @@ export default function NockchainCargoSurfacePage() {
                 .join(", ")}
             />
             <Callout label="helperTargets" value={helperTargetLabels.join(", ")} />
+          </div>
+        </article>
+
+        <article className="border border-[#0B0B0B] bg-[#EAF7FF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <FileCode2 size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Manifest Drift Check</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            <Callout label="command" value={manifestDriftCommand} />
+            <Callout label="script" value={surface.workspace.manifestDriftCheck.script} />
+            <Callout label="manifestCatalogHash" value={surface.workspace.manifestCatalogHash} />
+            <Callout
+              label="compareFields"
+              value={surface.workspace.manifestDriftCheck.compareFields.join(", ")}
+            />
           </div>
         </article>
 
