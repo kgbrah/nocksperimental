@@ -501,6 +501,131 @@ const zorpMonitorReviewContract = {
   ]
 } as const;
 
+const zorpCollaborationFlywheel = {
+  cycleId: "zorp-monitor-to-fixture-flywheel",
+  purpose:
+    "Turn Zorp and canonical Nockchain upstream changes into reviewed Nocksperimental product slices, fixtures, receipts, and ecosystem collaboration notes.",
+  cadence: "six-hour monitor plus manual source-authority review before product changes",
+  requiredEvidenceFields: [
+    "upstreamSourceUrl",
+    "observedAt",
+    "sourceAuthority",
+    "repoFullName",
+    "commitShaOrArtifactHash",
+    "affectedPaths",
+    "reviewDecision",
+    "nocksperimentalSurface",
+    "verificationCommand",
+    "collaborationNoteUrl"
+  ],
+  forbiddenFields: [
+    "rawStateJam",
+    "rawPmaSlab",
+    "walletSeedPhrase",
+    "privateSigningKey",
+    "tenderlyAccessKey",
+    "r2TestToken"
+  ],
+  phases: [
+    {
+      id: "observe-upstream",
+      label: "Observe upstream",
+      inputSources: [
+        "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+        "https://api.github.com/repos/nockchain/nockchain",
+        zorpStateJamDriveFolderUrl
+      ],
+      output: "zorpMonitorFinding",
+      targetSurfaces: ["zorpMonitorRunbook", "nockchainWatch"],
+      operatorAction:
+        "Capture source URL, pushed/updated timestamp, commit or artifact identity, and whether the source is canonical, lineage, authoring, or state-artifact provenance."
+    },
+    {
+      id: "classify-authority",
+      label: "Classify authority",
+      inputSources: ["zorpMonitorFinding", "sourceAuthority.decisionRules"],
+      output: "sourceAuthorityDecision",
+      targetSurfaces: ["zorpUpstream", "nockchainKnowledgeSpine"],
+      operatorAction:
+        "Apply the source-authority matrix before changing tests or receipts, with canonical Nockchain outranking Zorp lineage repos for protocol claims."
+    },
+    {
+      id: "route-product-slice",
+      label: "Route product slice",
+      inputSources: ["sourceAuthorityDecision", "repositoryWatchMatrix"],
+      output: "nocksperimentalSurfacePlan",
+      targetSurfaces: ["nockchainImpactQueue", "nockchainRustSourceGuide", "nockupValidation"],
+      operatorAction:
+        "Choose the smallest evidence surface that should change: watch board, Rust/source atlas, fakenet evidence, state-jam registry, nockup validation, or docs."
+    },
+    {
+      id: "verify-receipts",
+      label: "Verify receipts",
+      inputSources: ["nocksperimentalSurfacePlan", "targeted test command"],
+      output: "verificationEvidence",
+      targetSurfaces: ["registryCheckpoint", "verificationIndex"],
+      operatorAction:
+        "Run the targeted test, registry checkpoint check, lint/build gates when code changed, and keep raw keys or state artifacts out of public payloads."
+    },
+    {
+      id: "share-collab-note",
+      label: "Share collaboration note",
+      inputSources: ["verificationEvidence", "docs/research/zorp-nockchain.md"],
+      output: "collaborationBrief",
+      targetSurfaces: ["docsResearch", "ecosystemAlignment", "veslEvidenceBridge"],
+      operatorAction:
+        "Summarize what changed, what Nocksperimental learned, and what Zorp/Nockchain collaborators could reuse without leaking private artifacts."
+    }
+  ],
+  sourceRoutes: [
+    {
+      source: "nockchain/nockchain",
+      routeId: "canonical-runtime-refresh",
+      authority: "canonical-protocol-authority",
+      targetSurfaces: [
+        "nockchainWatch",
+        "nockchainProtocolTrace",
+        "nockchainRustSourceGuide",
+        "registryCheckpoint"
+      ],
+      collaborationUse:
+        "Update current protocol, release, runtime, fakenet, mining, wallet, bridge, PMA, and receipt assumptions."
+    },
+    {
+      source: "zorp-corp/jock-lang",
+      routeId: "authoring-fixture-review",
+      authority: "lineage-and-authoring-signal",
+      targetSurfaces: ["nockupValidation", "generatedLabReports", "fixtureDocs"],
+      collaborationUse:
+        "Review higher-level Nock authoring patterns that could become reusable NockApp fixtures."
+    },
+    {
+      source: "zorp-corp/nockapp",
+      routeId: "lineage-language-review",
+      authority: "lineage-and-authoring-signal",
+      targetSurfaces: ["nockchainNockappAtlas", "nockchainNockappSourceTrace", "docsResearch"],
+      collaborationUse:
+        "Preserve historical poke, peek, pure state-machine, and persistence vocabulary without using archived code as current authority."
+    },
+    {
+      source: "zorp-corp/sword",
+      routeId: "pma-runtime-vocabulary-review",
+      authority: "lineage-and-authoring-signal",
+      targetSurfaces: ["stateJamRegistry", "nockchainPmaSourceTrace", "nockchainRuntimeSafety"],
+      collaborationUse:
+        "Translate runtime persistence lineage into better PMA and state-jam explanation while validating behavior against current Nockchain."
+    },
+    {
+      source: zorpStateJamDriveFolderUrl,
+      routeId: "state-jam-provenance-inventory",
+      authority: "state-artifact-provenance",
+      targetSurfaces: ["stateJamRegistry", "localFakenetEvidence", "nockchainOperationsAtlas"],
+      collaborationUse:
+        "Inventory state-jam metadata for reproducible fakenet/bootstrap work without storing raw artifacts."
+    }
+  ]
+} as const;
+
 export function createZorpUpstreamMap() {
   const nockchain = nockchainUpstreamIntelligence;
 
@@ -601,6 +726,7 @@ export function createZorpUpstreamMap() {
     repositories: zorpRepositories,
     layers: zorpLayers,
     sourceNotes: zorpSourceNotes,
+    collaborationFlywheel: zorpCollaborationFlywheel,
     monitor: {
       active: true,
       automationName: zorpMonitorAutomationName,

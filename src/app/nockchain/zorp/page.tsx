@@ -57,6 +57,26 @@ const monitorReviewClassOrder: readonly string[] = [
   "state-artifact-provenance",
   "low-signal-tooling"
 ];
+const collaborationPhaseOrder: readonly string[] = [
+  "observe-upstream",
+  "classify-authority",
+  "route-product-slice",
+  "verify-receipts",
+  "share-collab-note"
+];
+const highlightedFlywheelId = "zorp-monitor-to-fixture-flywheel";
+const highlightedCollaborationEvidenceFields: readonly string[] = [
+  "reviewDecision",
+  "collaborationNoteUrl"
+];
+const highlightedCollaborationForbiddenField = "rawStateJam";
+const sourceRouteOrder: readonly string[] = [
+  "canonical-runtime-refresh",
+  "authoring-fixture-review",
+  "lineage-language-review",
+  "pma-runtime-vocabulary-review",
+  "state-jam-provenance-inventory"
+];
 const highlightedReviewEvidenceField = "nocksperimentalSurface";
 const highlightedWatchMatrixTrigger = "nockchain release/build tag change";
 const highlightedWatchMatrixAction = "Refresh upstream commit";
@@ -117,6 +137,22 @@ export default function ZorpIntelligencePage() {
     .concat(
       zorp.monitorReviewContract.classes.filter(
         (entry) => !monitorReviewClassOrder.includes(entry.id)
+      )
+    );
+  const orderedCollaborationPhases = collaborationPhaseOrder
+    .map((id) => zorp.collaborationFlywheel.phases.find((phase) => phase.id === id))
+    .filter((phase): phase is NonNullable<typeof phase> => Boolean(phase))
+    .concat(
+      zorp.collaborationFlywheel.phases.filter(
+        (phase) => !collaborationPhaseOrder.includes(phase.id)
+      )
+    );
+  const orderedSourceRoutes = sourceRouteOrder
+    .map((id) => zorp.collaborationFlywheel.sourceRoutes.find((route) => route.routeId === id))
+    .filter((route): route is NonNullable<typeof route> => Boolean(route))
+    .concat(
+      zorp.collaborationFlywheel.sourceRoutes.filter(
+        (route) => !sourceRouteOrder.includes(route.routeId)
       )
     );
 
@@ -381,6 +417,69 @@ export default function ZorpIntelligencePage() {
                   value={reviewClass.targetSurfaces.join(", ")}
                 />
                 <Callout label="requiredAction" value={reviewClass.requiredAction} />
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Collaboration Flywheel</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="cycleId" value={zorp.collaborationFlywheel.cycleId} />
+            <Callout label="cadence" value={zorp.collaborationFlywheel.cadence} />
+            <Callout label="highlightedFlywheelId" value={highlightedFlywheelId} />
+            <Callout
+              label="highlightedEvidenceFields"
+              value={highlightedCollaborationEvidenceFields.join(", ")}
+            />
+            <Callout
+              label="highlightedForbiddenField"
+              value={highlightedCollaborationForbiddenField}
+            />
+            <Callout
+              label="requiredEvidenceFields"
+              value={zorp.collaborationFlywheel.requiredEvidenceFields.join(", ")}
+            />
+            <Callout
+              label="forbiddenFields"
+              value={zorp.collaborationFlywheel.forbiddenFields.join(", ")}
+            />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-[#4A4A4A]">
+            {zorp.collaborationFlywheel.purpose}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-5">
+            {orderedCollaborationPhases.map((phase) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={phase.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {phase.id}
+                </p>
+                <h3 className="mt-1 font-semibold">{phase.label}</h3>
+                <Callout label="output" value={phase.output} />
+                <Callout label="targetSurfaces" value={phase.targetSurfaces.join(", ")} />
+                <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+                  {phase.operatorAction}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {orderedSourceRoutes.map((route) => (
+              <div className="border border-[#0B0B0B] bg-[#F5F5F5] p-3" key={route.routeId}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {route.routeId}
+                </p>
+                <h3 className="mt-1 break-all font-semibold">{route.source}</h3>
+                <Callout label="authority" value={route.authority} />
+                <Callout label="targetSurfaces" value={route.targetSurfaces.join(", ")} />
+                <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+                  {route.collaborationUse}
+                </p>
               </div>
             ))}
           </div>

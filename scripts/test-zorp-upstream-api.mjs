@@ -198,6 +198,47 @@ async function main() {
 
   assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
   assertEqual(body.sourceNotes.length, 3, "Zorp README-backed source note count");
+  assertEqual(
+    body.collaborationFlywheel.cycleId,
+    "zorp-monitor-to-fixture-flywheel",
+    "Zorp collaboration flywheel id"
+  );
+  assertEqual(body.collaborationFlywheel.phases.length, 5, "Zorp collaboration phase count");
+  assertIncludes(
+    body.collaborationFlywheel.requiredEvidenceFields,
+    "reviewDecision",
+    "Zorp collaboration review decision field"
+  );
+  assertIncludes(
+    body.collaborationFlywheel.requiredEvidenceFields,
+    "collaborationNoteUrl",
+    "Zorp collaboration note field"
+  );
+  assertIncludes(
+    body.collaborationFlywheel.forbiddenFields,
+    "rawStateJam",
+    "Zorp collaboration forbids raw state jams"
+  );
+  assertIncludes(
+    body.collaborationFlywheel.forbiddenFields,
+    "privateSigningKey",
+    "Zorp collaboration forbids signing keys"
+  );
+  assertFlywheelPhase(body, "observe-upstream", "zorpMonitorFinding", "zorpMonitorRunbook");
+  assertFlywheelPhase(body, "classify-authority", "sourceAuthorityDecision", "zorpUpstream");
+  assertFlywheelPhase(body, "route-product-slice", "nocksperimentalSurfacePlan", "nockchainImpactQueue");
+  assertFlywheelPhase(body, "verify-receipts", "verificationEvidence", "registryCheckpoint");
+  assertFlywheelPhase(body, "share-collab-note", "collaborationBrief", "docsResearch");
+  assertSourceRoute(body, "nockchain/nockchain", "canonical-runtime-refresh", "nockchainWatch");
+  assertSourceRoute(body, "zorp-corp/jock-lang", "authoring-fixture-review", "nockupValidation");
+  assertSourceRoute(body, "zorp-corp/nockapp", "lineage-language-review", "nockchainNockappAtlas");
+  assertSourceRoute(body, "zorp-corp/sword", "pma-runtime-vocabulary-review", "stateJamRegistry");
+  assertSourceRoute(
+    body,
+    "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw",
+    "state-jam-provenance-inventory",
+    "localFakenetEvidence"
+  );
   const jockSourceNote = findSourceNote(body, "jock-language-preview");
   assertEqual(jockSourceNote.repository, "zorp-corp/jock-lang", "Jock source note repository");
   assertEqual(jockSourceNote.sourcePath, "README.md", "Jock source note path");
@@ -329,6 +370,8 @@ async function main() {
   assertEqual(checkpointBody.counts.zorpRepositories, 10, "checkpoint Zorp repo count");
   assertEqual(checkpointBody.counts.zorpWatchMatrixEntries, 5, "checkpoint Zorp watch matrix count");
   assertEqual(checkpointBody.counts.zorpMonitorReviewClasses, 5, "checkpoint Zorp review class count");
+  assertEqual(checkpointBody.counts.zorpCollaborationPhases, 5, "checkpoint Zorp collaboration phase count");
+  assertEqual(checkpointBody.counts.zorpSourceRoutes, 5, "checkpoint Zorp source route count");
   assertStartsWith(checkpointBody.roots.zorpUpstream, "sha256:", "checkpoint Zorp root");
   assertEqual(
     checkpointBody.checks.zorpWatchMatrixAvailable,
@@ -339,6 +382,11 @@ async function main() {
     checkpointBody.checks.zorpMonitorReviewContractAvailable,
     true,
     "checkpoint Zorp review contract check"
+  );
+  assertEqual(
+    checkpointBody.checks.zorpCollaborationFlywheelAvailable,
+    true,
+    "checkpoint Zorp collaboration flywheel check"
   );
   assertIncludes(
     checkpointBody.zorpUpstream.watchMatrixEntryIds,
@@ -369,6 +417,21 @@ async function main() {
     checkpointBody.zorpUpstream.monitorReviewClassIds,
     "state-artifact-provenance",
     "checkpoint Zorp review state class"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.collaborationPhaseIds,
+    "share-collab-note",
+    "checkpoint Zorp collaboration share phase"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.sourceRouteIds,
+    "authoring-fixture-review",
+    "checkpoint Zorp source route authoring"
+  );
+  assertIncludes(
+    checkpointBody.zorpUpstream.collaborationForbiddenFields,
+    "rawStateJam",
+    "checkpoint Zorp collaboration forbidden raw state field"
   );
   assertEqual(
     checkpointBody.links.zorpUpstream,
@@ -437,6 +500,30 @@ function assertMonitorReviewClass(body, id, escalation, targetSurface) {
 
   assertEqual(reviewClass.escalation, escalation, `${id} escalation`);
   assertIncludes(reviewClass.targetSurfaces, targetSurface, `${id} target surface`);
+}
+
+function assertFlywheelPhase(body, id, output, targetSurface) {
+  const phase = body.collaborationFlywheel.phases.find((candidate) => candidate.id === id);
+
+  if (!phase) {
+    throw new Error(`Missing Zorp collaboration flywheel phase: ${id}`);
+  }
+
+  assertEqual(phase.output, output, `${id} output`);
+  assertIncludes(phase.targetSurfaces, targetSurface, `${id} target surface`);
+}
+
+function assertSourceRoute(body, source, routeId, targetSurface) {
+  const route = body.collaborationFlywheel.sourceRoutes.find(
+    (candidate) => candidate.source === source
+  );
+
+  if (!route) {
+    throw new Error(`Missing Zorp collaboration source route: ${source}`);
+  }
+
+  assertEqual(route.routeId, routeId, `${source} route id`);
+  assertIncludes(route.targetSurfaces, targetSurface, `${source} target surface`);
 }
 
 function loadTypeScriptModule(relativePath) {

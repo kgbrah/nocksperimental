@@ -23,6 +23,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain NockApp runtime atlas for poke/peek, PMA, gRPC, Nockup, Zorp lineage, and receipt-boundary interpretation.
 - Nockchain upstream watch board for commit/release drift, Zorp lineage, state-jam, wallet/API, fakenet, and Rust workspace review signals.
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
+- Zorp collaboration flywheel for routing upstream findings through source authority, product-slice selection, receipt verification, and reusable ecosystem notes.
 - Zorp Monitor Runbook for converting recurring Zorp/Nockchain monitor output into receipt-safe findings, source-authority classes, routed product updates, and verification commands.
 - Nockchain Public API Source Trace for public gRPC enablement, endpoint posture, tx acceptance, block explorer cache, metrics, and receipt fields.
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
@@ -190,6 +191,8 @@ Use it when interpreting whether a source is current protocol authority, histori
 The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, a monitor review contract, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, and archived `zorp-corp/sword` so Jock authoring, NockApp poke/peek lineage, and Sword persistence history can inform fixtures without outranking current Nockchain protocol authority.
+
+The same API now exposes a collaboration flywheel named `zorp-monitor-to-fixture-flywheel`: observe upstream, classify authority, route a product slice, verify receipts, then share a collaboration note. Source routes such as `canonical-runtime-refresh`, `authoring-fixture-review`, and `state-jam-provenance-inventory` make it explicit which Nocksperimental surface should respond to each Zorp/Nockchain signal while keeping `rawStateJam`, `rawPmaSlab`, wallet seeds, signing keys, Tenderly keys, and R2 tokens out of public evidence.
 
 ## Zorp Monitor Runbook
 

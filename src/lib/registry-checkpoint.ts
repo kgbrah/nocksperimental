@@ -101,6 +101,8 @@ export function createRegistryCheckpoint() {
     zorpRepositories: zorpUpstream.repositories.length,
     zorpWatchMatrixEntries: zorpUpstream.repositoryWatchMatrix.length,
     zorpMonitorReviewClasses: zorpUpstream.monitorReviewContract.classes.length,
+    zorpCollaborationPhases: zorpUpstream.collaborationFlywheel.phases.length,
+    zorpSourceRoutes: zorpUpstream.collaborationFlywheel.sourceRoutes.length,
     zorpMonitorRunbookClasses: zorpMonitorRunbook.monitorClasses.length,
     zorpMonitorRunbookRouteMatrixEntries: zorpMonitorRunbook.routeMatrix.length,
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
@@ -225,6 +227,7 @@ export function createRegistryCheckpoint() {
       layers: zorpUpstream.layers,
       repositoryWatchMatrix: zorpUpstream.repositoryWatchMatrix,
       monitorReviewContract: zorpUpstream.monitorReviewContract,
+      collaborationFlywheel: zorpUpstream.collaborationFlywheel,
       monitor: zorpUpstream.monitor
     }),
     nockchainDocsAtlas: createSha256Root({
@@ -734,6 +737,23 @@ export function createRegistryCheckpoint() {
         zorpUpstream.monitorReviewContract.requiredEvidenceFields.includes(
           "nocksperimentalSurface"
         ),
+      zorpCollaborationFlywheelAvailable:
+        zorpUpstream.collaborationFlywheel.cycleId === "zorp-monitor-to-fixture-flywheel" &&
+        zorpUpstream.collaborationFlywheel.phases.length === 5 &&
+        zorpUpstream.collaborationFlywheel.phases.some(
+          (phase) =>
+            phase.id === "share-collab-note" &&
+            phase.output === "collaborationBrief" &&
+            phase.targetSurfaces.includes("docsResearch")
+        ) &&
+        zorpUpstream.collaborationFlywheel.sourceRoutes.some(
+          (route) =>
+            route.routeId === "authoring-fixture-review" &&
+            route.source === "zorp-corp/jock-lang" &&
+            route.targetSurfaces.includes("nockupValidation")
+        ) &&
+        zorpUpstream.collaborationFlywheel.requiredEvidenceFields.includes("reviewDecision") &&
+        zorpUpstream.collaborationFlywheel.forbiddenFields.includes("rawStateJam"),
       publicBadgesAvailable: badgeEmbeds.length > 0
     },
     chain: {
@@ -796,6 +816,11 @@ export function createRegistryCheckpoint() {
       ],
       watchMatrixEntryIds: zorpUpstream.repositoryWatchMatrix.map((entry) => entry.id),
       monitorReviewClassIds: zorpUpstream.monitorReviewContract.classes.map((entry) => entry.id),
+      collaborationPhaseIds: zorpUpstream.collaborationFlywheel.phases.map((phase) => phase.id),
+      sourceRouteIds: zorpUpstream.collaborationFlywheel.sourceRoutes.map(
+        (route) => route.routeId
+      ),
+      collaborationForbiddenFields: zorpUpstream.collaborationFlywheel.forbiddenFields,
       monitor: {
         active: zorpUpstream.monitor.active,
         interval: zorpUpstream.monitor.interval

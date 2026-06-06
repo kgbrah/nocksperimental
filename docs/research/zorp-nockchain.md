@@ -87,6 +87,28 @@ High-signal changes to watch:
 - `jock-lang` compiler/runtime changes that affect NockApp or `hoonc`
 - new or renamed state-jam artifacts in Drive
 
+## Collaboration Flywheel
+
+Nocksperimental should treat Zorp monitoring as a collaboration flywheel, not just a passive watch list:
+
+1. `observe-upstream`: capture GitHub org/repo metadata, canonical Nockchain release or commit metadata, and state-jam Drive metadata as a `zorpMonitorFinding`.
+2. `classify-authority`: apply the source-authority matrix before changing receipts, tests, or docs.
+3. `route-product-slice`: pick the Nocksperimental surface that should move: watch board, Rust/source atlas, fakenet evidence, state-jam registry, nockup validation, generated fixture docs, or ecosystem notes.
+4. `verify-receipts`: run the targeted test and checkpoint/lint/build gates that prove the change is reflected in public evidence without exposing raw state or secrets.
+5. `share-collab-note`: summarize the reusable learning for Zorp/Nockchain collaborators and adjacent projects such as VESL.
+
+Initial source routes:
+
+| Source | Route | Primary surfaces |
+| --- | --- | --- |
+| `nockchain/nockchain` | `canonical-runtime-refresh` | `nockchainWatch`, `nockchainProtocolTrace`, `nockchainRustSourceGuide`, `registryCheckpoint` |
+| `zorp-corp/jock-lang` | `authoring-fixture-review` | `nockupValidation`, `generatedLabReports`, `fixtureDocs` |
+| `zorp-corp/nockapp` | `lineage-language-review` | `nockchainNockappAtlas`, `nockchainNockappSourceTrace`, `docsResearch` |
+| `zorp-corp/sword` | `pma-runtime-vocabulary-review` | `stateJamRegistry`, `nockchainPmaSourceTrace`, `nockchainRuntimeSafety` |
+| Zorp State Jam Drive folder | `state-jam-provenance-inventory` | `stateJamRegistry`, `localFakenetEvidence`, `nockchainOperationsAtlas` |
+
+Every flywheel record should include `upstreamSourceUrl`, `observedAt`, `sourceAuthority`, `repoFullName`, `commitShaOrArtifactHash`, `affectedPaths`, `reviewDecision`, `nocksperimentalSurface`, `verificationCommand`, and `collaborationNoteUrl` when available. It must not publish raw state jams, PMA slabs, wallet seed phrases, private signing keys, Tenderly access keys, or R2 test tokens.
+
 ## Product Implications
 
 Short term:

@@ -118,6 +118,17 @@ async function main() {
   assertIncludes(page, "state-artifact-provenance", "Zorp page renders state artifact review class");
   assertIncludes(page, "nocksperimentalSurface", "Zorp page renders review evidence field");
   assertIncludes(page, "targetSurfaces", "Zorp page labels review target surfaces");
+  assertIncludes(page, "Collaboration Flywheel", "Zorp page renders collaboration flywheel");
+  assertIncludes(page, "zorp-monitor-to-fixture-flywheel", "Zorp page renders flywheel id");
+  assertIncludes(page, "observe-upstream", "Zorp page renders observe phase");
+  assertIncludes(page, "route-product-slice", "Zorp page renders product routing phase");
+  assertIncludes(page, "share-collab-note", "Zorp page renders collab note phase");
+  assertIncludes(page, "reviewDecision", "Zorp page renders flywheel evidence field");
+  assertIncludes(page, "collaborationNoteUrl", "Zorp page renders collaboration note evidence field");
+  assertIncludes(page, "rawStateJam", "Zorp page renders flywheel forbidden raw state field");
+  assertIncludes(page, "canonical-runtime-refresh", "Zorp page renders canonical source route");
+  assertIncludes(page, "authoring-fixture-review", "Zorp page renders Jock source route");
+  assertIncludes(page, "state-jam-provenance-inventory", "Zorp page renders state-jam source route");
   assertIncludes(page, 'href="/api/nockchain/zorp"', "Zorp page links API");
   assertIncludes(page, 'href="/nockchain"', "Zorp page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/zorp"', "Nockchain page links Zorp page");
@@ -126,6 +137,8 @@ async function main() {
   assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
   assertIncludes(readme, "README-backed source notes", "README documents Zorp source notes");
   assertIncludes(readme, "monitor review contract", "README documents Zorp monitor review contract");
+  assertIncludes(readme, "collaboration flywheel", "README documents Zorp collaboration flywheel");
+  assertIncludes(readme, "authoring-fixture-review", "README documents Zorp authoring route");
   assertEqual(
     packageJson.scripts["test:zorp-intelligence-page"],
     "node scripts/test-zorp-intelligence-page.mjs",
