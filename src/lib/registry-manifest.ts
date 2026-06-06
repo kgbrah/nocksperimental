@@ -96,6 +96,11 @@ export const registryEndpoints = [
     description: "Nockchain NockVM runtime safety trace"
   },
   {
+    id: "nockchain-testkit-e2e",
+    path: "/api/nockchain/testkit-e2e",
+    description: "Nockchain testkit and E2E source trace"
+  },
+  {
     id: "nockchain-rust-atlas",
     path: "/api/nockchain/rust-atlas",
     description: "Nockchain Rust workspace atlas"
@@ -368,6 +373,7 @@ export function createWellKnownRegistryManifest() {
       nockchainStateJams: endpointUrl("nockchain-state-jams"),
       nockchainPmaSourceTrace: endpointUrl("nockchain-pma-source-trace"),
       nockchainRuntimeSafety: endpointUrl("nockchain-runtime-safety"),
+      nockchainTestkitE2e: endpointUrl("nockchain-testkit-e2e"),
       nockchainRustAtlas: endpointUrl("nockchain-rust-atlas"),
       nockchainRustSourceGuide: endpointUrl("nockchain-rust-source-guide"),
       nockchainNockAppAtlas: endpointUrl("nockchain-nockapp-atlas"),
@@ -425,6 +431,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-state-jam-provenance",
       "nockchain-pma-source-trace",
       "nockchain-runtime-safety",
+      "nockchain-testkit-e2e",
       "nockchain-rust-workspace-atlas",
       "nockchain-rust-source-guide",
       "nockchain-nockapp-runtime-atlas",

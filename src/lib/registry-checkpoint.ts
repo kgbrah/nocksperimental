@@ -20,6 +20,7 @@ import { createNockchainRustAtlas } from "@/lib/nockchain-rust-atlas";
 import { createNockchainRustSourceGuide } from "@/lib/nockchain-rust-source-guide";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
+import { createNockchainTestkitE2eTrace } from "@/lib/nockchain-testkit-e2e-trace";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -64,6 +65,7 @@ export function createRegistryCheckpoint() {
   const nockchainPmaSourceTrace = createNockchainPmaSourceTrace();
   const nockchainRuntimeSafety = createNockchainRuntimeSafetyTrace();
   const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
+  const nockchainTestkitE2e = createNockchainTestkitE2eTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
   const generatedReportEvidence = generatedReports.reports.map((report) => ({
@@ -130,6 +132,8 @@ export function createRegistryCheckpoint() {
     nockchainRuntimeSafetyAnchors: nockchainRuntimeSafety.sourceAnchors.length,
     nockchainRuntimeSafetyClasses: nockchainRuntimeSafety.runtimeSafetyClasses.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
+    nockchainTestkitE2eAnchors: nockchainTestkitE2e.sourceAnchors.length,
+    nockchainTestkitE2eCapabilities: nockchainTestkitE2e.scenarioCapabilities.length,
     stateJamSources: stateJamRegistry.sources.length,
     pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
   };
@@ -345,6 +349,14 @@ export function createRegistryCheckpoint() {
       receiptContract: nockchainRuntimeSafety.receiptContract,
       operatorTriage: nockchainRuntimeSafety.operatorTriage,
       localVerification: nockchainRuntimeSafety.localVerification
+    }),
+    nockchainTestkitE2e: createSha256Root({
+      generatedAt: nockchainTestkitE2e.generatedAt,
+      upstream: nockchainTestkitE2e.upstream,
+      sourceAnchors: nockchainTestkitE2e.sourceAnchors,
+      scenarioCapabilities: nockchainTestkitE2e.scenarioCapabilities,
+      receiptContract: nockchainTestkitE2e.receiptContract,
+      localVerification: nockchainTestkitE2e.localVerification
     }),
     nockchainSyncGossipTrace: createSha256Root({
       generatedAt: nockchainSyncGossipTrace.generatedAt,
@@ -578,6 +590,14 @@ export function createRegistryCheckpoint() {
         nockchainRuntimeSafety.receiptContract.forbiddenFields.includes("rawStackMemory") &&
         nockchainRuntimeSafety.localVerification.recommendedCommands.includes(
           "cargo check -p nockvm"
+        ),
+      nockchainTestkitE2eAvailable:
+        nockchainTestkitE2e.sourceAnchors.length >= 11 &&
+        nockchainTestkitE2e.scenarioCapabilities.length >= 8 &&
+        nockchainTestkitE2e.receiptContract.requiredFields.includes("stepRecords") &&
+        nockchainTestkitE2e.receiptContract.forbiddenFields.includes("rawStateJam") &&
+        nockchainTestkitE2e.localVerification.recommendedCommands.includes(
+          "cargo check -p nockchain-e2e"
         ),
       noRawStateJamArtifactsStored:
         stateJamRegistry.policy.rawArtifactStorage === "forbidden" &&
@@ -844,6 +864,18 @@ export function createRegistryCheckpoint() {
       operatorTriageIds: nockchainRuntimeSafety.operatorTriage.map((item) => item.id),
       localVerificationStatus: nockchainRuntimeSafety.localVerification.status
     },
+    nockchainTestkitE2e: {
+      generatedAt: nockchainTestkitE2e.generatedAt,
+      anchorCount: nockchainTestkitE2e.sourceAnchors.length,
+      scenarioCapabilityCount: nockchainTestkitE2e.scenarioCapabilities.length,
+      sourceAnchors: nockchainTestkitE2e.sourceAnchors.map((anchor) => anchor.id),
+      scenarioCapabilityIds: nockchainTestkitE2e.scenarioCapabilities.map(
+        (capability) => capability.id
+      ),
+      receiptFields: nockchainTestkitE2e.receiptContract.requiredFields,
+      forbiddenFields: nockchainTestkitE2e.receiptContract.forbiddenFields,
+      localVerificationStatus: nockchainTestkitE2e.localVerification.status
+    },
     nockchainBridgeTrace: {
       sourceCount: nockchainBridgeTrace.sourceAnchors.length,
       sourceIds: nockchainBridgeTrace.sourceAnchors.map((source) => source.id),
@@ -935,6 +967,7 @@ export function createRegistryCheckpoint() {
       nockchainImpactQueue: `${registryCanonicalBaseUrl}/api/nockchain/impact`,
       nockchainPmaSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/pma`,
       nockchainRuntimeSafety: `${registryCanonicalBaseUrl}/api/nockchain/runtime-safety`,
+      nockchainTestkitE2e: `${registryCanonicalBaseUrl}/api/nockchain/testkit-e2e`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,

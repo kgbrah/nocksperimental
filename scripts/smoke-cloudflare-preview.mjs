@@ -59,6 +59,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/pma`, 200, "Nockchain PMA durability source trace");
     await expectStatus(`${baseUrl}/api/nockchain/runtime-safety`, 200, "Nockchain NockVM runtime safety trace");
+    await expectStatus(`${baseUrl}/api/nockchain/testkit-e2e`, 200, "Nockchain testkit and E2E source trace");
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/rust-source`, 200, "Nockchain Rust source guide API");
     await expectStatus(`${baseUrl}/api/nockchain/nockapp-atlas`, 200, "Nockchain NockApp runtime atlas API");
@@ -101,6 +102,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
     await expectStatus(`${baseUrl}/nockchain/pma`, 200, "Nockchain PMA source trace page");
     await expectStatus(`${baseUrl}/nockchain/runtime-safety`, 200, "Nockchain runtime safety page");
+    await expectStatus(`${baseUrl}/nockchain/testkit-e2e`, 200, "Nockchain testkit/E2E page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/rust/source`, 200, "Nockchain Rust source guide page");
     await expectStatus(`${baseUrl}/nockchain/nockapp`, 200, "Nockchain NockApp atlas page");

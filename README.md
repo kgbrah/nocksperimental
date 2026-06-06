@@ -25,6 +25,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Zorp monitor review contract for classifying org, legacy redirect, authoring, lineage, and state-jam findings before they become receipt or runbook changes.
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
 - Nockchain Runtime Safety Trace for NockStack frame checks, jam/cue bounds, noun-space provenance, HAMT traversal, PMA offset bounds, and support-bundle fields.
+- Nockchain Testkit/E2E Trace for upstream YAML scenarios, fakenet node orchestration, gRPC readiness, transaction lifecycle assertions, report JSON, and receipt-safe test evidence.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
@@ -214,6 +215,15 @@ The runtime safety trace pins NockVM failure triage to exact upstream source anc
 - `/nockchain/runtime-safety`
 
 Use it when a fakenet run, state-jam restore, malformed cue payload, PMA offset read, or NockVM panic needs a receipt-safe explanation before it becomes a test assumption or operator runbook change.
+
+## Nockchain Testkit/E2E Trace
+
+The testkit/E2E trace pins upstream scenario testing to exact source anchors for `nockchain-testkit` YAML schema types, E2E runner lifecycle, process/Docker node orchestration, fakenet CLI args, gRPC readiness and transaction checks, private mining controls, report JSON, gen2 peer-speedup reports, and upgrade/partition scenarios. It is built for anyone connecting their own fakenet: publish `scenarioName`, `scenarioSeed`, `runId`, `nodeMode`, `fakenetPhase`, `stepRecords`, `assertOutcomes`, `finalHeights`, `finalBlockIds`, and `artifactHash`, while keeping wallet seeds, private spend keys, raw wallet exports, raw PMA slabs, raw state jams, raw logs, and raw transaction payloads out of public evidence.
+
+- `/api/nockchain/testkit-e2e`
+- `/nockchain/testkit-e2e`
+
+Use it when a Nockup validation run, Launch Evidence case, VESL bridge proof, BYO fakenet submission, or support bundle needs to cite the exact upstream scenario vocabulary behind a test result.
 
 ## Nockchain Rust Workspace Atlas
 
