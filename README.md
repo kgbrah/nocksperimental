@@ -26,6 +26,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain PMA source trace for metadata trailers, growth recovery, verified snapshots, event-log replay, and raw-state artifact boundaries.
 - Nockchain Runtime Safety Trace for NockStack frame checks, jam/cue bounds, noun-space provenance, HAMT traversal, PMA offset bounds, and support-bundle fields.
 - Nockchain Testkit/E2E Trace for upstream YAML scenarios, fakenet node orchestration, gRPC readiness, transaction lifecycle assertions, report JSON, and receipt-safe test evidence.
+- Nockchain Nockup Source Trace for scaffold manifests, template cache, toolchain channels, dependency resolution, registry install paths, lockfiles, and untrusted-code warnings.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
@@ -224,6 +225,15 @@ The testkit/E2E trace pins upstream scenario testing to exact source anchors for
 - `/nockchain/testkit-e2e`
 
 Use it when a Nockup validation run, Launch Evidence case, VESL bridge proof, BYO fakenet submission, or support bundle needs to cite the exact upstream scenario vocabulary behind a test result.
+
+## Nockchain Nockup Source Trace
+
+The Nockup source trace pins scaffold and dependency behavior to exact upstream files for `crates/nockup`: the experimental README contract, manifest schema, project init flow, template and manifest cache refresh, toolchain channel manifest download, resolver graph, registry `install_path`, package symlink installation, package cache index, and git fetcher. It is built for scaffold receipts: publish `nockupCommit`, `nockchainBuild`, `templateName`, `templateCommit`, `manifestHash`, `dependencySpecs`, `resolvedPackageCommits`, `installPathMap`, `lockfileHash`, `cacheChannel`, and `validationStatus`, while keeping raw template archives, git checkouts, `nockapp.toml`, Hoon source, compiled jams, GPG private keys, wallet seeds, and private spend keys out of public evidence.
+
+- `/api/nockchain/nockup/source`
+- `/nockchain/nockup/source`
+
+Use it when Nockup-generated apps become Launch Evidence, VESL bridge, BYO fakenet, or NockApp test subjects and the receipt needs to preserve scaffold/template/dependency provenance without redistributing source artifacts.
 
 ## Nockchain Rust Workspace Atlas
 

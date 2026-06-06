@@ -70,6 +70,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/pr-radar`, 200, "Nockchain open PR radar");
     await expectStatus(`${baseUrl}/api/nockchain/impact`, 200, "Nockchain upstream impact queue");
     await expectStatus(`${baseUrl}/api/nockchain/sync-gossip`, 200, "Nockchain sync/gossip source trace");
+    await expectStatus(`${baseUrl}/api/nockchain/nockup/source`, 200, "Nockchain Nockup source trace");
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
     await expectStatus(
@@ -113,6 +114,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/pr-radar`, 200, "Nockchain PR radar page");
     await expectStatus(`${baseUrl}/nockchain/impact`, 200, "Nockchain impact queue page");
     await expectStatus(`${baseUrl}/nockchain/sync-gossip`, 200, "Nockchain sync/gossip page");
+    await expectStatus(`${baseUrl}/nockchain/nockup/source`, 200, "Nockchain Nockup source page");
     await expectStatus(`${baseUrl}/workspaces`, 200, "workspaces page");
     await expectStatus(`${baseUrl}/api/workspaces`, 200, "workspaces API");
     await expectStatus(

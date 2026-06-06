@@ -161,6 +161,11 @@ export const registryEndpoints = [
     description: "List persisted Nockup validation receipts"
   },
   {
+    id: "nockchain-nockup-source-trace",
+    path: "/api/nockchain/nockup/source",
+    description: "Nockchain Nockup source trace"
+  },
+  {
     id: "local-fakenet-readiness",
     path: "/api/fakenet",
     description: "Local fakenet readiness summary"
@@ -386,6 +391,7 @@ export function createWellKnownRegistryManifest() {
       nockchainSyncGossipTrace: endpointUrl("nockchain-sync-gossip-trace"),
       nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
       nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
+      nockchainNockupSourceTrace: endpointUrl("nockchain-nockup-source-trace"),
       checkpoint: endpointUrl("registry-checkpoint"),
       verification: endpointUrl("verification-index"),
       fakenet: endpointUrl("local-fakenet-readiness"),
@@ -444,6 +450,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-sync-gossip-trace",
       "nockup-validation-submit",
       "nockup-validation-receipts",
+      "nockchain-nockup-source-trace",
       "bring-your-own-fakenet",
       "local-fakenet-evidence",
       "fakenet-evidence-submit",

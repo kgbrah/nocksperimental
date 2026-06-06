@@ -9,6 +9,7 @@ import { createNockchainHoonKernelAtlas } from "@/lib/nockchain-hoon-kernels";
 import { createNockchainKnowledgeSpine } from "@/lib/nockchain-knowledge-spine";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
+import { createNockchainNockupSourceTrace } from "@/lib/nockchain-nockup-source-trace";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainImpactQueue } from "@/lib/nockchain-impact-queue";
 import { createNockchainPmaSourceTrace } from "@/lib/nockchain-pma-source-trace";
@@ -57,6 +58,7 @@ export function createRegistryCheckpoint() {
   const nockchainRustSourceGuide = createNockchainRustSourceGuide();
   const nockchainNockAppAtlas = createNockchainNockAppAtlas();
   const nockchainNockAppSourceTrace = createNockchainNockAppSourceTrace();
+  const nockchainNockupSourceTrace = createNockchainNockupSourceTrace();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
@@ -116,6 +118,8 @@ export function createRegistryCheckpoint() {
     nockchainNockAppProbeTemplates: nockchainNockAppAtlas.probeTemplates.length,
     nockchainNockAppSourceAnchors: nockchainNockAppSourceTrace.sourceAnchors.length,
     nockchainNockAppRuntimeFlowSteps: nockchainNockAppSourceTrace.runtimeFlow.length,
+    nockchainNockupSourceAnchors: nockchainNockupSourceTrace.sourceAnchors.length,
+    nockchainNockupSourceCapabilities: nockchainNockupSourceTrace.nockupCapabilities.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainPublicApiEvidenceSurfaces:
@@ -282,6 +286,15 @@ export function createRegistryCheckpoint() {
       pendingWatchItems: nockchainNockAppSourceTrace.pendingWatchItems,
       zorpMonitorContext: nockchainNockAppSourceTrace.zorpMonitorContext,
       stateArtifactPolicy: nockchainNockAppSourceTrace.stateArtifactPolicy
+    }),
+    nockchainNockupSourceTrace: createSha256Root({
+      generatedAt: nockchainNockupSourceTrace.generatedAt,
+      upstream: nockchainNockupSourceTrace.upstream,
+      sourceAnchors: nockchainNockupSourceTrace.sourceAnchors,
+      nockupCapabilities: nockchainNockupSourceTrace.nockupCapabilities,
+      receiptContract: nockchainNockupSourceTrace.receiptContract,
+      upstreamWatch: nockchainNockupSourceTrace.upstreamWatch,
+      localVerification: nockchainNockupSourceTrace.localVerification
     }),
     nockchainOperationsAtlas: createSha256Root({
       generatedAt: nockchainOperationsAtlas.generatedAt,
@@ -486,6 +499,14 @@ export function createRegistryCheckpoint() {
           "receiptFieldMapping"
         ) &&
         nockchainNockAppSourceTrace.sourceTraceContract.forbiddenFields.includes("rawEventLog"),
+      nockchainNockupSourceTraceAvailable:
+        nockchainNockupSourceTrace.sourceAnchors.length >= 10 &&
+        nockchainNockupSourceTrace.nockupCapabilities.length >= 7 &&
+        nockchainNockupSourceTrace.receiptContract.requiredFields.includes("templateCommit") &&
+        nockchainNockupSourceTrace.receiptContract.forbiddenFields.includes("rawCompiledJam") &&
+        nockchainNockupSourceTrace.localVerification.recommendedCommands.includes(
+          "cargo check -p nockup"
+        ),
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
         nockchainOperationsAtlas.scriptSources.length > 0,
@@ -772,6 +793,19 @@ export function createRegistryCheckpoint() {
       zorpStateJamArtifactPolicy:
         nockchainNockAppSourceTrace.zorpMonitorContext.stateJamDrive.artifactPolicy
     },
+    nockchainNockupSourceTrace: {
+      generatedAt: nockchainNockupSourceTrace.generatedAt,
+      anchorCount: nockchainNockupSourceTrace.sourceAnchors.length,
+      nockupCapabilityCount: nockchainNockupSourceTrace.nockupCapabilities.length,
+      sourceAnchors: nockchainNockupSourceTrace.sourceAnchors.map((anchor) => anchor.id),
+      nockupCapabilityIds: nockchainNockupSourceTrace.nockupCapabilities.map(
+        (capability) => capability.id
+      ),
+      receiptFields: nockchainNockupSourceTrace.receiptContract.requiredFields,
+      forbiddenFields: nockchainNockupSourceTrace.receiptContract.forbiddenFields,
+      watchedPullRequests: nockchainNockupSourceTrace.upstreamWatch.openPullRequests,
+      localVerificationStatus: nockchainNockupSourceTrace.localVerification.status
+    },
     nockchainOperationsAtlas: {
       scenarioCount: nockchainOperationsAtlas.triageScenarios.length,
       scriptSourceCount: nockchainOperationsAtlas.scriptSources.length,
@@ -969,6 +1003,7 @@ export function createRegistryCheckpoint() {
       nockchainRuntimeSafety: `${registryCanonicalBaseUrl}/api/nockchain/runtime-safety`,
       nockchainTestkitE2e: `${registryCanonicalBaseUrl}/api/nockchain/testkit-e2e`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
+      nockchainNockupSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockup/source`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
       fakenetEvidenceVerifier: `${registryCanonicalBaseUrl}/api/fakenet/evidence/verify`

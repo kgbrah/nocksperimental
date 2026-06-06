@@ -29,6 +29,8 @@ Zorp is the developer lineage behind the current Nockchain stack. The public Zor
 
 ## Fresh Snapshot
 
+As of the 2026-06-06 scan, the public `zorp-corp` organization has 10 repositories. The highest-signal sources for Nocksperimental are `zorp-corp/jock-lang`, `zorp-corp/nockapp`, `zorp-corp/sword`, `zorp-corp/knock`, and `zorp-corp/sppark`. `jock-lang` is the only active core authoring repo in that set; `nockapp` and `sword` are archived but still important lineage for NockApp state-machine language, poke/peek vocabulary, and runtime persistence history.
+
 As of this scan, the latest default-branch commit in `nockchain/nockchain` is `33ba97b1e206`, "bridge: add end-to-end withdrawal execution (#127)", committed 2026-06-05. That is directly relevant to bridge, settlement, VESL, and x402-adjacent receipts: the latest public build release now includes withdrawal assembly, signing, sequencer authorization, submission, confirmation polling, and journal persistence surfaces.
 
 The latest public build release for Nockchain is `build-33ba97b1e206dd89b15c61b72b7802caf2136c18`, published 2026-06-06. The earlier `5d022ced5504` commit remains important for behind-tip gossip suppression and local mining/sync symptoms, but monitoring should explicitly distinguish current release state from older source signals rather than assuming only one update channel.
