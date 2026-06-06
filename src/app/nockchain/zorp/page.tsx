@@ -40,7 +40,9 @@ const watchMatrixEntryOrder: readonly string[] = [
 const sourceNoteOrder: readonly string[] = [
   "jock-language-preview",
   "nockapp-poke-peek-lineage",
-  "sword-persistence-lineage"
+  "sword-persistence-lineage",
+  "knock-formal-semantics",
+  "sppark-proof-primitives"
 ];
 const sourceSignalOrder: readonly string[] = [
   "jock-compiles-to-nock",
@@ -48,7 +50,11 @@ const sourceSignalOrder: readonly string[] = [
   "pure-functional-state-machines",
   "poke-peek-interface",
   "automatic-persistence-lineage",
-  "archived-runtime-reference"
+  "archived-runtime-reference",
+  "k-framework-nock-semantics",
+  "symbolic-proof-examples",
+  "zero-knowledge-performance-primitives",
+  "msm-ntt-accelerator-templates"
 ];
 const monitorReviewClassOrder: readonly string[] = [
   "canonical-nockchain",

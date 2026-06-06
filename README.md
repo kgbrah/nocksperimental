@@ -198,7 +198,7 @@ The Zorp intelligence page renders the same map as an operator brief: priority r
 
 Run `npm run check:zorp-org-drift -- --json` to compare the pinned Zorp org repository inventory against the live GitHub org API; the check treats Zorp repos as lineage/authoring signals, keeps the State Jam Drive folder metadata-only, and reports the impacted review class, source route, target surface, receipt field, and verification command for any repo drift.
 
-It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, and archived `zorp-corp/sword` so Jock authoring, NockApp poke/peek lineage, and Sword persistence history can inform fixtures without outranking current Nockchain protocol authority.
+It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, archived `zorp-corp/sword`, `zorp-corp/knock`, and `zorp-corp/sppark` so Jock authoring, NockApp poke/peek lineage, Sword persistence history, Knock formal semantics, and sppark proof primitives can inform fixtures or benchmark thinking without outranking current Nockchain protocol authority.
 
 The same API now exposes a collaboration flywheel named `zorp-monitor-to-fixture-flywheel`: observe upstream, classify authority, route a product slice, verify receipts, then share a collaboration note. Source routes such as `canonical-runtime-refresh`, `authoring-fixture-review`, and `state-jam-provenance-inventory` make it explicit which Nocksperimental surface should respond to each Zorp/Nockchain signal while keeping `rawStateJam`, `rawPmaSlab`, wallet seeds, signing keys, Tenderly keys, and R2 tokens out of public evidence.
 

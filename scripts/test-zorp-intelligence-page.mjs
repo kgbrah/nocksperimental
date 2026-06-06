@@ -124,6 +124,14 @@ async function main() {
   assertIncludes(page, "pure-functional-state-machines", "Zorp page renders NockApp source signal");
   assertIncludes(page, "sword-persistence-lineage", "Zorp page renders Sword source note");
   assertIncludes(page, "automatic-persistence-lineage", "Zorp page renders Sword source signal");
+  assertIncludes(page, "knock-formal-semantics", "Zorp page renders Knock source note");
+  assertIncludes(page, "k-framework-nock-semantics", "Zorp page renders Knock source signal");
+  assertIncludes(page, "sppark-proof-primitives", "Zorp page renders sppark source note");
+  assertIncludes(
+    page,
+    "zero-knowledge-performance-primitives",
+    "Zorp page renders sppark source signal"
+  );
   assertIncludes(page, "Monitor Review Contract", "Zorp page renders monitor review contract");
   assertIncludes(page, "canonical-nockchain", "Zorp page renders canonical Nockchain review class");
   assertIncludes(page, "zorp-authoring", "Zorp page renders Zorp authoring review class");
@@ -148,6 +156,8 @@ async function main() {
   assertIncludes(readme, "legacy `zorp-corp/nockchain` redirect", "README documents legacy redirect");
   assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
   assertIncludes(readme, "README-backed source notes", "README documents Zorp source notes");
+  assertIncludes(readme, "Knock formal semantics", "README documents Knock source note");
+  assertIncludes(readme, "sppark proof primitives", "README documents sppark source note");
   assertIncludes(readme, "monitor review contract", "README documents Zorp monitor review contract");
   assertIncludes(readme, "collaboration flywheel", "README documents Zorp collaboration flywheel");
   assertIncludes(readme, "authoring-fixture-review", "README documents Zorp authoring route");

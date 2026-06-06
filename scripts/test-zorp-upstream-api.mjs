@@ -218,7 +218,7 @@ async function main() {
   assertMonitorReviewClass(body, "low-signal-tooling", "defer", "docsResearch");
 
   assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
-  assertEqual(body.sourceNotes.length, 3, "Zorp README-backed source note count");
+  assertEqual(body.sourceNotes.length, 5, "Zorp README-backed source note count");
   assertEqual(
     body.collaborationFlywheel.cycleId,
     "zorp-monitor-to-fixture-flywheel",
@@ -267,6 +267,43 @@ async function main() {
     jockSourceNote.sourceSha,
     "c07a67bbf4f1352c3fafb6af6063a0bbc1641e50",
     "Jock README source SHA"
+  );
+  const knockSourceNote = findSourceNote(body, "knock-formal-semantics");
+  assertEqual(knockSourceNote.repository, "zorp-corp/knock", "Knock source note repository");
+  assertEqual(knockSourceNote.sourcePath, "README.md", "Knock source note path");
+  assertEqual(
+    knockSourceNote.sourceSha,
+    "e57ee1ff7fa7fbd7f0e7f85191dab5213be6938d",
+    "Knock README source SHA"
+  );
+  assertIncludes(
+    knockSourceNote.sourceSignals,
+    "k-framework-nock-semantics",
+    "Knock source note records K semantics"
+  );
+  assertIncludes(
+    knockSourceNote.targetSurfaces,
+    "nockchainKnowledgeSpine",
+    "Knock source note targets knowledge spine"
+  );
+
+  const spparkSourceNote = findSourceNote(body, "sppark-proof-primitives");
+  assertEqual(spparkSourceNote.repository, "zorp-corp/sppark", "sppark source note repository");
+  assertEqual(spparkSourceNote.sourcePath, "README.md", "sppark source note path");
+  assertEqual(
+    spparkSourceNote.sourceSha,
+    "ca1648796550751efcfab335e5c12ecc35e3c1af",
+    "sppark README source SHA"
+  );
+  assertIncludes(
+    spparkSourceNote.sourceSignals,
+    "zero-knowledge-performance-primitives",
+    "sppark source note records proof primitives"
+  );
+  assertIncludes(
+    spparkSourceNote.targetSurfaces,
+    "trustComputeBenchmarks",
+    "sppark source note targets compute benchmarks"
   );
   assertIncludes(jockSourceNote.sourceSignals, "jock-compiles-to-nock", "Jock compiles to Nock signal");
   assertIncludes(jockSourceNote.targetSurfaces, "nockupValidation", "Jock note targets nockup validation");

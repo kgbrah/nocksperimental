@@ -279,6 +279,38 @@ const zorpSourceNotes = [
     targetSurfaces: ["stateJamRegistry", "nockchainNockappAtlas", "nockchainWatch"],
     interpretation:
       "Sword is runtime persistence lineage. It can improve PMA/state-jam vocabulary, but current durability, recovery, and PMA behavior must come from the Nockchain monorepo."
+  },
+  {
+    id: "knock-formal-semantics",
+    repository: "zorp-corp/knock",
+    sourcePath: "README.md",
+    sourceUrl: "https://github.com/zorp-corp/knock/blob/master/README.md",
+    sourceSha: "e57ee1ff7fa7fbd7f0e7f85191dab5213be6938d",
+    sourceSignals: [
+      "k-framework-nock-semantics",
+      "nock-vm-formal-evaluation",
+      "symbolic-proof-examples",
+      "forked-formal-semantics-reference"
+    ],
+    targetSurfaces: ["nockchainKnowledgeSpine", "nockchainProtocolTrace", "docsResearch"],
+    interpretation:
+      "Knock is a K Framework implementation of the Nock virtual machine with run/prove examples. Use it as formal-semantics context for Nock reasoning, never as current Nockchain protocol authority."
+  },
+  {
+    id: "sppark-proof-primitives",
+    repository: "zorp-corp/sppark",
+    sourcePath: "README.md",
+    sourceUrl: "https://github.com/zorp-corp/sppark/blob/main/README.md",
+    sourceSha: "ca1648796550751efcfab335e5c12ecc35e3c1af",
+    sourceSignals: [
+      "zero-knowledge-performance-primitives",
+      "msm-ntt-accelerator-templates",
+      "cuda-rust-ffi-performance-context",
+      "forked-proof-tooling-reference"
+    ],
+    targetSurfaces: ["trustComputeBenchmarks", "nockchainImpactQueue", "docsResearch"],
+    interpretation:
+      "sppark is proof-performance tooling for SNARK/STARK primitives such as MSM and NTT. Treat the Zorp fork as proof-adjacent ecosystem signal until canonical Nockchain or bridge code consumes it directly."
   }
 ] as const;
 
