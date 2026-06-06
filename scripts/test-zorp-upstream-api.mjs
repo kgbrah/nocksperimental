@@ -197,6 +197,46 @@ async function main() {
   assertMonitorReviewClass(body, "low-signal-tooling", "defer", "docsResearch");
 
   assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
+  assertEqual(body.sourceNotes.length, 3, "Zorp README-backed source note count");
+  const jockSourceNote = findSourceNote(body, "jock-language-preview");
+  assertEqual(jockSourceNote.repository, "zorp-corp/jock-lang", "Jock source note repository");
+  assertEqual(jockSourceNote.sourcePath, "README.md", "Jock source note path");
+  assertEqual(
+    jockSourceNote.sourceSha,
+    "c07a67bbf4f1352c3fafb6af6063a0bbc1641e50",
+    "Jock README source SHA"
+  );
+  assertIncludes(jockSourceNote.sourceSignals, "jock-compiles-to-nock", "Jock compiles to Nock signal");
+  assertIncludes(jockSourceNote.targetSurfaces, "nockupValidation", "Jock note targets nockup validation");
+  assertIncludes(
+    jockSourceNote.interpretation,
+    "developer preview language",
+    "Jock note interpretation"
+  );
+
+  const nockappSourceNote = findSourceNote(body, "nockapp-poke-peek-lineage");
+  assertEqual(nockappSourceNote.repository, "zorp-corp/nockapp", "NockApp source note repository");
+  assertIncludes(
+    nockappSourceNote.sourceSignals,
+    "pure-functional-state-machines",
+    "NockApp pure state machine signal"
+  );
+  assertIncludes(nockappSourceNote.sourceSignals, "poke-peek-interface", "NockApp poke/peek signal");
+  assertIncludes(
+    nockappSourceNote.interpretation,
+    "archived lineage",
+    "NockApp note interpretation"
+  );
+
+  const swordSourceNote = findSourceNote(body, "sword-persistence-lineage");
+  assertEqual(swordSourceNote.repository, "zorp-corp/sword", "Sword source note repository");
+  assertIncludes(
+    swordSourceNote.sourceSignals,
+    "automatic-persistence-lineage",
+    "Sword persistence signal"
+  );
+  assertIncludes(swordSourceNote.targetSurfaces, "stateJamRegistry", "Sword note targets state jams");
+
   const canonicalRuntime = findWatchMatrixEntry(body, "canonical-runtime");
   assertEqual(canonicalRuntime.escalation, "immediate", "canonical runtime escalation");
   assertIncludes(
@@ -376,6 +416,16 @@ function findWatchMatrixEntry(body, id) {
   }
 
   return entry;
+}
+
+function findSourceNote(body, id) {
+  const note = body.sourceNotes.find((candidate) => candidate.id === id);
+
+  if (!note) {
+    throw new Error(`Missing source note: ${id}`);
+  }
+
+  return note;
 }
 
 function assertMonitorReviewClass(body, id, escalation, targetSurface) {

@@ -219,6 +219,56 @@ const zorpLayers = [
   }
 ] as const;
 
+const zorpSourceNotes = [
+  {
+    id: "jock-language-preview",
+    repository: "zorp-corp/jock-lang",
+    sourcePath: "README.md",
+    sourceUrl: "https://github.com/zorp-corp/jock-lang/blob/master/README.md",
+    sourceSha: "c07a67bbf4f1352c3fafb6af6063a0bbc1641e50",
+    sourceSignals: [
+      "jock-compiles-to-nock",
+      "hoon-compiler-dependency",
+      "nockapp-architecture-dependency",
+      "developer-preview-language"
+    ],
+    targetSurfaces: ["nockupValidation", "generatedLabReports", "fixtureDocs"],
+    interpretation:
+      "Jock is a developer preview language for producing Nock programs. Treat it as an authoring and fixture-design signal, then verify any executable behavior against canonical Nockchain and NockApp sources."
+  },
+  {
+    id: "nockapp-poke-peek-lineage",
+    repository: "zorp-corp/nockapp",
+    sourcePath: "README.md",
+    sourceUrl: "https://github.com/zorp-corp/nockapp/blob/master/README.md",
+    sourceSha: "bf9f4503ad4b50e76d89caa882115bab952d5a00",
+    sourceSignals: [
+      "pure-functional-state-machines",
+      "automatic-persistence",
+      "poke-peek-interface",
+      "choo-hoon-compiler-lineage"
+    ],
+    targetSurfaces: ["nockchainNockappAtlas", "nockchainNockappSourceTrace", "fixtureDocs"],
+    interpretation:
+      "The archived NockApp repo is archived lineage for pure state machines, persistence, and the poke/peek interface. Use it to explain concepts while current operational claims stay anchored to nockchain/nockchain."
+  },
+  {
+    id: "sword-persistence-lineage",
+    repository: "zorp-corp/sword",
+    sourcePath: "README.md",
+    sourceUrl: "https://github.com/zorp-corp/sword/blob/master/README.md",
+    sourceSha: "9756a661f674c502e12a9140c3f865901fab02a6",
+    sourceSignals: [
+      "automatic-persistence-lineage",
+      "nock-runtime-history",
+      "archived-runtime-reference"
+    ],
+    targetSurfaces: ["stateJamRegistry", "nockchainNockappAtlas", "nockchainWatch"],
+    interpretation:
+      "Sword is runtime persistence lineage. It can improve PMA/state-jam vocabulary, but current durability, recovery, and PMA behavior must come from the Nockchain monorepo."
+  }
+] as const;
+
 const zorpMonitorBrief = {
   generatedAt: "2026-06-06T05:04:00.000Z",
   snapshot: {
@@ -550,6 +600,7 @@ export function createZorpUpstreamMap() {
     },
     repositories: zorpRepositories,
     layers: zorpLayers,
+    sourceNotes: zorpSourceNotes,
     monitor: {
       active: true,
       automationName: zorpMonitorAutomationName,

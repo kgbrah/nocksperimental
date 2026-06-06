@@ -105,6 +105,13 @@ async function main() {
   assertIncludes(page, "low-signal-tooling", "Zorp page renders low-signal tooling matrix entry");
   assertIncludes(page, "nockchain release/build tag change", "Zorp page renders canonical runtime trigger");
   assertIncludes(page, "Refresh upstream commit", "Zorp page renders matrix action");
+  assertIncludes(page, "Source Notes", "Zorp page renders README-backed source notes");
+  assertIncludes(page, "jock-language-preview", "Zorp page renders Jock source note");
+  assertIncludes(page, "jock-compiles-to-nock", "Zorp page renders Jock source signal");
+  assertIncludes(page, "nockapp-poke-peek-lineage", "Zorp page renders NockApp source note");
+  assertIncludes(page, "pure-functional-state-machines", "Zorp page renders NockApp source signal");
+  assertIncludes(page, "sword-persistence-lineage", "Zorp page renders Sword source note");
+  assertIncludes(page, "automatic-persistence-lineage", "Zorp page renders Sword source signal");
   assertIncludes(page, "Monitor Review Contract", "Zorp page renders monitor review contract");
   assertIncludes(page, "canonical-nockchain", "Zorp page renders canonical Nockchain review class");
   assertIncludes(page, "zorp-authoring", "Zorp page renders Zorp authoring review class");
@@ -117,6 +124,7 @@ async function main() {
   assertIncludes(readme, "/nockchain/zorp", "README documents Zorp page");
   assertIncludes(readme, "legacy `zorp-corp/nockchain` redirect", "README documents legacy redirect");
   assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
+  assertIncludes(readme, "README-backed source notes", "README documents Zorp source notes");
   assertIncludes(readme, "monitor review contract", "README documents Zorp monitor review contract");
   assertEqual(
     packageJson.scripts["test:zorp-intelligence-page"],

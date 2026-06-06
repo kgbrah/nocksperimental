@@ -37,6 +37,19 @@ const watchMatrixEntryOrder: readonly string[] = [
   "proof-and-semantics",
   "low-signal-tooling"
 ];
+const sourceNoteOrder: readonly string[] = [
+  "jock-language-preview",
+  "nockapp-poke-peek-lineage",
+  "sword-persistence-lineage"
+];
+const sourceSignalOrder: readonly string[] = [
+  "jock-compiles-to-nock",
+  "developer-preview-language",
+  "pure-functional-state-machines",
+  "poke-peek-interface",
+  "automatic-persistence-lineage",
+  "archived-runtime-reference"
+];
 const monitorReviewClassOrder: readonly string[] = [
   "canonical-nockchain",
   "zorp-authoring",
@@ -94,6 +107,10 @@ export default function ZorpIntelligencePage() {
     .map((id) => zorp.repositoryWatchMatrix.find((entry) => entry.id === id))
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
     .concat(zorp.repositoryWatchMatrix.filter((entry) => !watchMatrixEntryOrder.includes(entry.id)));
+  const orderedSourceNotes = sourceNoteOrder
+    .map((id) => zorp.sourceNotes.find((note) => note.id === id))
+    .filter((note): note is NonNullable<typeof note> => Boolean(note))
+    .concat(zorp.sourceNotes.filter((note) => !sourceNoteOrder.includes(note.id)));
   const orderedMonitorReviewClasses = monitorReviewClassOrder
     .map((id) => zorp.monitorReviewContract.classes.find((entry) => entry.id === id))
     .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
@@ -210,6 +227,37 @@ export default function ZorpIntelligencePage() {
             {orderedPrioritySources.map((repo) => (
               <Callout key={repo} label="source" value={repo} />
             ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <GitBranch size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Source Notes</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {orderedSourceNotes.map((note) => {
+              const noteSourceSignals: readonly string[] = note.sourceSignals;
+              const orderedSourceSignals = sourceSignalOrder
+                .filter((signal) => noteSourceSignals.includes(signal))
+                .concat(noteSourceSignals.filter((signal) => !sourceSignalOrder.includes(signal)));
+
+              return (
+                <div className="border border-[#0B0B0B] bg-white p-3" key={note.id}>
+                  <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                    {note.id}
+                  </p>
+                  <h3 className="mt-1 font-semibold">{note.repository}</h3>
+                  <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{note.interpretation}</p>
+                  <Callout label="sourcePath" value={note.sourcePath} />
+                  <Callout label="sourceSha" value={note.sourceSha} />
+                  <Callout label="sourceSignals" value={orderedSourceSignals.join(", ")} />
+                  <Callout label="targetSurfaces" value={note.targetSurfaces.join(", ")} />
+                </div>
+              );
+            })}
           </div>
         </article>
       </section>
