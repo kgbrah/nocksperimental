@@ -263,7 +263,9 @@ export default function NockchainBridgeSourcePage() {
           <div className="mt-4 grid gap-3">
             <Callout label="bridgeTrace" value={trace.links.bridgeTrace} />
             <Callout label="rustAtlas" value={trace.links.rustAtlas} />
+            <Callout label="sourceDriftCheck" value={trace.sourceDriftCheck.command} />
             <Callout label="bridgePr127" value={trace.links.bridgePr127} />
+            <Callout label="bridgeDevScenarios" value={trace.links.bridgeDevScenarios} />
             <Callout label="bridgeDocs" value={trace.links.bridgeDocs} />
           </div>
         </article>

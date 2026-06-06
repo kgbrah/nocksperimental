@@ -186,6 +186,7 @@ export function createRegistryCheckpoint() {
       executionFlow: nockchainBridgeSourceTrace.executionFlow,
       sourceTraceContract: nockchainBridgeSourceTrace.sourceTraceContract,
       externalScenarioEvidenceContract: nockchainBridgeSourceTrace.externalScenarioEvidenceContract,
+      sourceDriftCheck: nockchainBridgeSourceTrace.sourceDriftCheck,
       receiptFieldMapping: nockchainBridgeSourceTrace.receiptFieldMapping,
       upstreamSignals: nockchainBridgeSourceTrace.upstreamSignals,
       operatorInvariants: nockchainBridgeSourceTrace.operatorInvariants
@@ -478,6 +479,11 @@ export function createRegistryCheckpoint() {
         ) &&
         nockchainBridgeSourceTrace.externalScenarioEvidenceContract.forbiddenFields.includes(
           "r2TestToken"
+        ) &&
+        nockchainBridgeSourceTrace.sourceDriftCheck.command ===
+          "npm run check:nockchain-bridge-source-drift -- --json" &&
+        nockchainBridgeSourceTrace.sourceDriftCheck.sourceAnchorIds.includes(
+          "bridge-dev-withdrawal-scenarios"
         ),
       nockchainCargoSurfaceAvailable:
         nockchainCargoSurface.crates.length === 9 &&
@@ -643,12 +649,15 @@ export function createRegistryCheckpoint() {
       nockchainWatchAggregateDriftCheckAvailable:
         nockchainWatch.monitor.aggregateDriftCheck.command ===
           "npm run check:nockchain-upstream-drift -- --json" &&
-        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 6 &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 7 &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "cargo-workspace"
         ) &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "cargo-manifests"
+        ) &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.some(
+          (check) => check.id === "bridge-source"
         ),
       nockchainPrRadarAvailable:
         nockchainPrRadar.pullRequests.length === 35 &&
@@ -1129,6 +1138,8 @@ export function createRegistryCheckpoint() {
       forbiddenFields: nockchainBridgeSourceTrace.sourceTraceContract.forbiddenFields,
       externalScenarioCommand: nockchainBridgeSourceTrace.externalScenarioEvidenceContract.command,
       externalScenarioIds: nockchainBridgeSourceTrace.externalScenarioEvidenceContract.scenarioIds,
+      sourceDriftCommand: nockchainBridgeSourceTrace.sourceDriftCheck.command,
+      sourceDriftAnchorIds: nockchainBridgeSourceTrace.sourceDriftCheck.sourceAnchorIds,
       upstreamSignalPrs: nockchainBridgeSourceTrace.upstreamSignals.map(
         (signal) => signal.prNumber
       ),

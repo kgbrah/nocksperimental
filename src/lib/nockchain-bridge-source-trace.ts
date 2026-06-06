@@ -515,6 +515,30 @@ const externalScenarioEvidenceContract = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-bridge-source-drift -- --json",
+  script: "scripts/check-nockchain-bridge-source-drift.mjs",
+  testCommand: "npm run test:nockchain-bridge-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols",
+    "externalScenarioContract"
+  ],
+  targetSurfaces: [
+    "nockchainBridgeSourceTrace",
+    "nockchainRustSourceGuide",
+    "veslEvidenceBridge",
+    "launchEvidence",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned bridge source files and bridge-dev scenario fixtures against current upstream master before bridge receipts rely on these source anchors."
+} as const;
+
 const sourceTraceContract = {
   requiredFields: [
     "nockchainCommit",
@@ -624,6 +648,7 @@ export function createNockchainBridgeSourceTrace() {
     executionFlow,
     sourceTraceContract,
     externalScenarioEvidenceContract,
+    sourceDriftCheck,
     receiptFieldMapping: {
       receiptFields,
       lifecycleFields: [

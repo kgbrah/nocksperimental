@@ -134,6 +134,11 @@ async function main() {
     "cargo-manifests",
     "aggregate drift includes cargo manifests"
   );
+  assertIncludes(
+    body.monitor.aggregateDriftCheck.checks.map((check) => check.id),
+    "bridge-source",
+    "aggregate drift includes bridge source"
+  );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor cadence");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp/nockchain", "legacy redirect monitor source");
@@ -225,6 +230,11 @@ async function main() {
     packageJson.scripts.test,
     "npm run test:nockchain-upstream-drift-check",
     "full test includes aggregate drift test"
+  );
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-bridge-source-drift-check",
+    "full test includes bridge source drift test"
   );
 
   const smokeSource = readText("scripts/smoke-cloudflare-preview.mjs");

@@ -172,6 +172,8 @@ The bridge source trace pins the latest bridge withdrawal execution path to exac
 
 Use it when a bridge, VESL, x402, Launch Evidence, or support-bundle receipt needs to cite the exact Rust boundary behind a withdrawal state without storing raw transaction jams, authorized raw transactions, Tenderly credentials, R2 tokens, sequencer journal signing keys, object-store secrets, or bridge node private keys.
 
+Run `npm run check:nockchain-bridge-source-drift -- --json` to compare the pinned bridge source anchors and `bridge-dev` scenario fixtures against current upstream `nockchain/nockchain` master before relying on bridge withdrawal source evidence.
+
 ## Nockchain Release Asset Manifest
 
 The release asset manifest records metadata for the current Nockchain build release: binary tarballs for `nockchain`, `nockchain-wallet`, `nockup`, `hoon`, `hoonc`, plus `nockchain-manifest.toml`. It groups assets by tool and platform, preserves BLAKE3 and SHA1 hashes from the upstream manifest, and makes local fakenet, wallet, and Nockup receipts cite the exact upstream binary source without storing downloaded artifacts.
@@ -350,7 +352,7 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, release asset, PR radar, and Zorp org drift checks into one monitor report before treating the watch board as current.
 
 ## Nockchain PR Radar
 
