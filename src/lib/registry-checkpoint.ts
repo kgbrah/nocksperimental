@@ -80,6 +80,7 @@ export function createRegistryCheckpoint() {
     nockchainPublicApiEvidenceSurfaces:
       nockchainWalletAtlas.publicApiEvidenceContract.surfaces.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
+    nockchainWatchChangeClasses: nockchainWatch.changeClassificationContract.classes.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
     pmaSafetySourceDocs: stateJamRegistry.pmaSafety.sourceDocs.length
@@ -188,6 +189,7 @@ export function createRegistryCheckpoint() {
       pinned: nockchainWatch.pinned,
       observed: nockchainWatch.observed,
       drift: nockchainWatch.drift,
+      changeClassificationContract: nockchainWatch.changeClassificationContract,
       watchQueue: nockchainWatch.watchQueue,
       monitor: nockchainWatch.monitor
     }),
@@ -259,6 +261,17 @@ export function createRegistryCheckpoint() {
         nockchainWatch.status === "in-sync" &&
         nockchainWatch.drift.commitMatchesPinned &&
         nockchainWatch.drift.releaseMatchesPinned,
+      nockchainWatchChangeClassificationAvailable:
+        nockchainWatch.changeClassificationContract.classes.length >= 8 &&
+        nockchainWatch.changeClassificationContract.classes.some(
+          (changeClass) =>
+            changeClass.id === "protocol-consensus" &&
+            changeClass.escalation === "immediate" &&
+            changeClass.targetSurfaces.includes("nockchainProtocolTrace")
+        ) &&
+        nockchainWatch.changeClassificationContract.requiredEvidenceFields.includes(
+          "recommendedNocksperimentalUpdates"
+        ),
       nockchainSyncGossipTraceAvailable:
         nockchainSyncGossipTrace.sourceAnchors.length > 0 &&
         nockchainSyncGossipTrace.triageScenarios.length > 0 &&
@@ -401,6 +414,9 @@ export function createRegistryCheckpoint() {
         .filter((item) => item.severity === "high")
         .map((item) => item.id),
       sourceIds: nockchainWatch.sources.map((source) => source.id),
+      changeClassIds: nockchainWatch.changeClassificationContract.classes.map(
+        (changeClass) => changeClass.id
+      ),
       commitMatchesPinned: nockchainWatch.drift.commitMatchesPinned,
       releaseMatchesPinned: nockchainWatch.drift.releaseMatchesPinned,
       latestCommitReleased: nockchainWatch.drift.latestCommitReleased,

@@ -20,6 +20,14 @@ const priorityWatchIds = [
   "zorp-nockapp-archived-update"
 ] as const;
 
+const priorityChangeClassIds = [
+  "protocol-consensus",
+  "release-build",
+  "pma-state-jam",
+  "libp2p-sync-mining"
+] as const;
+const protocolClassificationTarget = "nockchainProtocolTrace";
+
 export default function NockchainWatchPage() {
   const board = createNockchainWatchBoard();
   const priorityItems = priorityWatchIds
@@ -27,6 +35,20 @@ export default function NockchainWatchPage() {
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
   const remainingItems = board.watchQueue.filter(
     (item) => !priorityWatchIds.includes(item.id as (typeof priorityWatchIds)[number])
+  );
+  const priorityChangeClasses = priorityChangeClassIds
+    .map((id) =>
+      board.changeClassificationContract.classes.find((changeClass) => changeClass.id === id)
+    )
+    .filter((changeClass): changeClass is NonNullable<typeof changeClass> => Boolean(changeClass));
+  const remainingChangeClasses = board.changeClassificationContract.classes.filter(
+    (changeClass) =>
+      !priorityChangeClassIds.includes(changeClass.id as (typeof priorityChangeClassIds)[number])
+  );
+  const protocolClass = board.changeClassificationContract.classes.find(
+    (changeClass) =>
+      changeClass.id === "protocol-consensus" &&
+      changeClass.targetSurfaces.includes(protocolClassificationTarget)
   );
 
   return (
@@ -136,6 +158,59 @@ export default function NockchainWatchPage() {
         </article>
       </section>
 
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-8 lg:grid-cols-[1fr_1fr] lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Change Classification Contract</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            <Callout
+              label="sourcePolicy"
+              value={board.changeClassificationContract.sourcePolicy}
+            />
+            <Callout
+              label="reviewOutputContract"
+              value={board.changeClassificationContract.reviewOutputContract.join(" ")}
+            />
+            <Callout
+              label="requiredEvidenceFields"
+              value={board.changeClassificationContract.requiredEvidenceFields.join(", ")}
+            />
+            <Callout
+              label="protocolTarget"
+              value={protocolClass?.targetSurfaces.join(", ") ?? protocolClassificationTarget}
+            />
+          </div>
+        </article>
+
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Classification Rules</h2>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {priorityChangeClasses.map((changeClass) => (
+              <ChangeClassCard changeClass={changeClass} key={changeClass.id} />
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5">
+          <div className="flex items-center gap-2">
+            <BellRing size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Additional Classifications</h2>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {remainingChangeClasses.map((changeClass) => (
+              <ChangeClassCard changeClass={changeClass} key={changeClass.id} />
+            ))}
+          </div>
+        </article>
+      </section>
+
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-10 lg:grid-cols-[1fr_1fr] lg:px-8">
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
@@ -171,6 +246,37 @@ export default function NockchainWatchPage() {
         </article>
       </section>
     </main>
+  );
+}
+
+function ChangeClassCard({
+  changeClass
+}: {
+  changeClass: ReturnType<
+    typeof createNockchainWatchBoard
+  >["changeClassificationContract"]["classes"][number];
+}) {
+  return (
+    <div className="border border-[#0B0B0B] bg-white p-3">
+      <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+        {changeClass.id}
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2 text-xs">
+        <span className="border border-[#0B0B0B] px-2 py-1 font-mono uppercase">
+          {changeClass.escalation}
+        </span>
+        <span className="border border-[#0B0B0B] bg-[#FFF7D6] px-2 py-1 font-mono uppercase">
+          {changeClass.sourceAuthority}
+        </span>
+      </div>
+      <Callout label="sourceSignals" value={changeClass.sourceSignals.join(", ")} />
+      <Callout label="targetSurfaces" value={changeClass.targetSurfaces.join(", ")} />
+      <Callout label="receiptRisk" value={changeClass.receiptRisk} />
+      <Callout
+        label="recommendedNocksperimentalUpdates"
+        value={changeClass.recommendedNocksperimentalUpdates.join(", ")}
+      />
+    </div>
   );
 }
 

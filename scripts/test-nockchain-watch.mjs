@@ -57,6 +57,40 @@ async function main() {
   assertWatchItem(body, "wallet-api-command-drift", "wallet-api", "medium");
   assertWatchItem(body, "rust-workspace-drift", "rust-workspace", "medium");
 
+  assertEqual(
+    body.changeClassificationContract.sourcePolicy,
+    "source-authority-matrix",
+    "change classification source policy"
+  );
+  assertEqual(
+    body.changeClassificationContract.classes.length,
+    8,
+    "change classification class count"
+  );
+  assertChangeClass(body, "protocol-consensus", "immediate", "nockchainProtocolTrace");
+  assertChangeClass(body, "release-build", "immediate", "nockchainReleaseAssets");
+  assertChangeClass(body, "pma-state-jam", "immediate", "stateJamRegistry");
+  assertChangeClass(body, "libp2p-sync-mining", "high", "nockchainSyncGossipTrace");
+  assertChangeClass(body, "wallet-api", "high", "nockchainWalletAtlas");
+  assertChangeClass(body, "rust-workspace", "high", "nockchainRustAtlas");
+  assertChangeClass(body, "zorp-lineage", "medium", "zorpUpstream");
+  assertChangeClass(body, "fixture-authoring", "medium", "nockupValidation");
+  assertIncludes(
+    body.changeClassificationContract.requiredEvidenceFields,
+    "upstreamSourceUrl",
+    "classification evidence source URL"
+  );
+  assertIncludes(
+    body.changeClassificationContract.requiredEvidenceFields,
+    "recommendedNocksperimentalUpdates",
+    "classification update field"
+  );
+  assertIncludes(
+    body.changeClassificationContract.reviewOutputContract,
+    "Every monitor run must classify changed upstream items before recommending code, docs, receipt, or operator-runbook updates.",
+    "review output contract"
+  );
+
   assertIncludes(body.operatorChecklist, "Compare live GitHub commit and release against the pinned Nocksperimental upstream snapshot before interpreting fakenet failures.", "drift checklist");
   assertIncludes(body.operatorChecklist, "Treat zorp-corp/nockapp metadata changes as lineage review until a non-archived canonical repo changes.", "nockapp checklist");
   assertIncludes(body.operatorChecklist, "Inventory the Zorp state-jam Drive folder as metadata only before trusting bootstrap artifacts.", "state-jam checklist");
@@ -95,8 +129,18 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertEqual(checkpointBody.counts.nockchainWatchItems, body.watchQueue.length, "checkpoint watch count");
+  assertEqual(
+    checkpointBody.counts.nockchainWatchChangeClasses,
+    body.changeClassificationContract.classes.length,
+    "checkpoint watch change class count"
+  );
   assertStartsWith(checkpointBody.roots.nockchainWatch, "sha256:", "checkpoint watch root");
   assertEqual(checkpointBody.checks.nockchainWatchInSync, true, "checkpoint watch in sync");
+  assertEqual(
+    checkpointBody.checks.nockchainWatchChangeClassificationAvailable,
+    true,
+    "checkpoint watch classification check"
+  );
   assertEqual(
     checkpointBody.links.nockchainWatch,
     "https://nocksperimental.com/api/nockchain/watch",
@@ -110,6 +154,10 @@ async function main() {
   assertIncludes(page, "libp2p-behind-tip-gossip", "watch page renders libp2p item");
   assertIncludes(page, "state-jam-drive-inventory", "watch page renders state-jam item");
   assertIncludes(page, "zorp-nockapp-archived-update", "watch page renders Zorp nockapp item");
+  assertIncludes(page, "Change Classification Contract", "watch page renders classification contract");
+  assertIncludes(page, "protocol-consensus", "watch page renders protocol class");
+  assertIncludes(page, "nockchainProtocolTrace", "watch page renders protocol target");
+  assertIncludes(page, "recommendedNocksperimentalUpdates", "watch page renders required update field");
   assertIncludes(page, 'href="/api/nockchain/watch"', "watch page links API");
   assertIncludes(page, 'href="/nockchain"', "watch page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/watch"', "Nockchain page links watch page");
@@ -128,6 +176,7 @@ async function main() {
 
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Upstream Watch", "README documents watch board");
+  assertIncludes(readme, "change classification contract", "README documents classification contract");
   assertIncludes(readme, "/api/nockchain/watch", "README documents watch endpoint");
   assertIncludes(readme, "/nockchain/watch", "README documents watch page");
 }
@@ -151,6 +200,19 @@ function assertWatchItem(body, id, domain, severity) {
 
   assertEqual(item.domain, domain, `${id} domain`);
   assertEqual(item.severity, severity, `${id} severity`);
+}
+
+function assertChangeClass(body, id, escalation, targetSurface) {
+  const changeClass = body.changeClassificationContract.classes.find(
+    (candidate) => candidate.id === id
+  );
+
+  if (!changeClass) {
+    throw new Error(`Missing change class: ${id}`);
+  }
+
+  assertEqual(changeClass.escalation, escalation, `${id} escalation`);
+  assertIncludes(changeClass.targetSurfaces, targetSurface, `${id} target surface`);
 }
 
 function loadTypeScriptModule(relativePath) {

@@ -194,7 +194,7 @@ Use it when a balance, reward, or transaction test needs to say which wallet com
 
 ## Nockchain Upstream Watch
 
-The upstream watch board records the live GitHub API sources and the current observed Nockchain/Zorp snapshot used to decide whether Nocksperimental assumptions need review. It separates canonical Nockchain commit/release drift from Zorp lineage updates, state-jam Drive inventory, wallet/API command drift, fakenet mining symptoms, and Rust workspace ownership changes.
+The upstream watch board records the live GitHub API sources and the current observed Nockchain/Zorp snapshot used to decide whether Nocksperimental assumptions need review. It separates canonical Nockchain commit/release drift from Zorp lineage updates, state-jam Drive inventory, wallet/API command drift, fakenet mining symptoms, and Rust workspace ownership changes. Its change classification contract maps each upstream signal class to the Nocksperimental atlas, receipt, test, or operator-runbook surface that must be refreshed before new evidence is trusted.
 
 - `/nockchain/watch`
 - `/api/nockchain/watch`

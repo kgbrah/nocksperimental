@@ -131,6 +131,143 @@ const watchQueue = [
   }
 ] as const;
 
+const changeClassificationContract = {
+  sourcePolicy: "source-authority-matrix",
+  reviewOutputContract: [
+    "Every monitor run must classify changed upstream items before recommending code, docs, receipt, or operator-runbook updates.",
+    "Canonical Nockchain protocol and release changes outrank Zorp lineage or fixture-authoring signals.",
+    "State-jam and PMA artifacts must stay metadata-only until filename, hash, size, network, height or event boundary, and producing build are recorded.",
+    "Receipt-impacting changes must name the Nocksperimental surface that needs a follow-up test before evidence is trusted."
+  ],
+  requiredEvidenceFields: [
+    "upstreamSourceUrl",
+    "observedAt",
+    "changeClassId",
+    "sourceAuthority",
+    "upstreamCommitOrArtifactId",
+    "affectedPaths",
+    "receiptRisk",
+    "operatorAction",
+    "recommendedNocksperimentalUpdates",
+    "verificationCommand"
+  ],
+  classes: [
+    {
+      id: "protocol-consensus",
+      escalation: "immediate",
+      sourceAuthority: "canonical-nockchain-tier-0",
+      sourceSignals: ["PROTOCOL.md", "changelog/protocol/*.md", "hoon/apps/dumbnet"],
+      targetSurfaces: ["nockchainProtocolTrace", "registryCheckpoint", "receiptProvenance"],
+      receiptRisk: "Consensus semantics can invalidate block, transaction, balance, or bridge evidence assumptions.",
+      recommendedNocksperimentalUpdates: [
+        "refresh protocol trace source anchors",
+        "update registry checkpoint status-drift fields",
+        "add or revise receipt provenance tests"
+      ]
+    },
+    {
+      id: "release-build",
+      escalation: "immediate",
+      sourceAuthority: "canonical-nockchain-release",
+      sourceSignals: ["GitHub release tag", "release assets", "release manifest hashes"],
+      targetSurfaces: ["nockchainReleaseAssets", "nockchainBridgeTrace", "registryCheckpoint"],
+      receiptRisk: "A new build changes which binary, manifest, and commit hash a receipt can cite.",
+      recommendedNocksperimentalUpdates: [
+        "refresh release asset manifest",
+        "record commit/build provenance",
+        "smoke release-dependent pages and APIs"
+      ]
+    },
+    {
+      id: "pma-state-jam",
+      escalation: "immediate",
+      sourceAuthority: "zorp-state-jam-metadata",
+      sourceSignals: ["State Jam Drive artifact", "PMA docs", "checkpoint bootstrap notes"],
+      targetSurfaces: ["stateJamRegistry", "nockchainOperationsAtlas", "localFakenetEvidence"],
+      receiptRisk: "Bootstrap artifacts can change local state, replay boundaries, and support-bundle safety.",
+      recommendedNocksperimentalUpdates: [
+        "inventory metadata without storing raw artifacts",
+        "update PMA safety guidance",
+        "require artifact provenance in fakenet support bundles"
+      ]
+    },
+    {
+      id: "libp2p-sync-mining",
+      escalation: "high",
+      sourceAuthority: "canonical-nockchain-runtime",
+      sourceSignals: ["catch_up.rs", "p2p_state.rs", "driver.rs", "fakenet scripts"],
+      targetSurfaces: [
+        "nockchainSyncGossipTrace",
+        "nockchainOperationsAtlas",
+        "localFakenetReadiness",
+        "fakenetEvidence"
+      ],
+      receiptRisk: "Peer, route-table, tip, and block-commitment symptoms can be misread when sync behavior changes.",
+      recommendedNocksperimentalUpdates: [
+        "refresh sync/gossip trace",
+        "update fakenet diagnostics",
+        "capture peer and tip status in evidence receipts"
+      ]
+    },
+    {
+      id: "wallet-api",
+      escalation: "high",
+      sourceAuthority: "canonical-nockchain-tier-1",
+      sourceSignals: [
+        "crates/nockchain-wallet/README.md",
+        "crates/nockchain-api/README.md",
+        "public/private gRPC flags"
+      ],
+      targetSurfaces: ["nockchainWalletAtlas", "localFakenetCommands", "balanceEvidence"],
+      receiptRisk: "Balance and transaction evidence can confuse endpoint mode, watched keys, note visibility, or API cache state.",
+      recommendedNocksperimentalUpdates: [
+        "refresh wallet command atlas",
+        "refresh public API evidence contract",
+        "rerun balance and transaction evidence tests"
+      ]
+    },
+    {
+      id: "rust-workspace",
+      escalation: "high",
+      sourceAuthority: "canonical-nockchain-workspace",
+      sourceSignals: ["Cargo.toml workspace members", "crate READMEs", "validation gates"],
+      targetSurfaces: ["nockchainRustAtlas", "nockchainDocsAtlas", "validationGates"],
+      receiptRisk: "Crate ownership drift changes which source files and cargo checks support an evidence claim.",
+      recommendedNocksperimentalUpdates: [
+        "refresh Rust crate groups",
+        "update validation gates",
+        "map new crates to operator-facing risks"
+      ]
+    },
+    {
+      id: "zorp-lineage",
+      escalation: "medium",
+      sourceAuthority: "zorp-public-repo-lineage",
+      sourceSignals: ["zorp-corp/nockapp", "zorp-corp/sword", "zorp-corp/knock"],
+      targetSurfaces: ["zorpUpstream", "nockchainWatch", "docsResearch"],
+      receiptRisk: "Lineage updates can explain semantics but should not override canonical protocol sources.",
+      recommendedNocksperimentalUpdates: [
+        "update Zorp source-authority notes",
+        "separate lineage findings from canonical protocol claims",
+        "refresh collaboration notes when useful"
+      ]
+    },
+    {
+      id: "fixture-authoring",
+      escalation: "medium",
+      sourceAuthority: "zorp-authoring-signal",
+      sourceSignals: ["zorp-corp/jock-lang", "nockup templates", "example apps"],
+      targetSurfaces: ["nockupValidation", "generatedLabReports", "fixtureDocs"],
+      receiptRisk: "Authoring-tool changes can alter how fixtures are generated, validated, or explained.",
+      recommendedNocksperimentalUpdates: [
+        "refresh fixture authoring assumptions",
+        "add nockup validation scenarios",
+        "document reusable test patterns"
+      ]
+    }
+  ]
+} as const;
+
 export function createNockchainWatchBoard() {
   const upstream = nockchainUpstreamIntelligence;
   const zorp = createZorpUpstreamMap();
@@ -219,6 +356,7 @@ export function createNockchainWatchBoard() {
         "Rust workspace ownership should be refreshed when Cargo membership changes"
       ]
     },
+    changeClassificationContract,
     watchQueue,
     operatorChecklist: [
       "Compare live GitHub commit and release against the pinned Nocksperimental upstream snapshot before interpreting fakenet failures.",
