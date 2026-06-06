@@ -84,6 +84,13 @@ export default function NockchainKnowledgeSpinePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/cargo-surface"
+              >
+                <Code2 size={16} aria-hidden="true" />
+                Cargo Surface
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/nockchain/pr-radar"
               >
                 <GitPullRequest size={16} aria-hidden="true" />

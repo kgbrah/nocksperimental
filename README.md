@@ -13,6 +13,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Local fakenet adapter for health, balance, chain metadata, command kit, diagnostics, support bundles, and evidence capsules.
 - Nockchain upstream intelligence for protocol docs authority, Rust crate mapping, releases, and operational watch items.
 - Nockchain knowledge spine for exact upstream doc fingerprints, Rust workspace-member identity, coverage mapping, and monitoring rules.
+- Nockchain Cargo surface for high-signal Rust manifests, binary/library targets, benchmark surfaces, source entrypoints, and crate-scoped checks.
 - Nockchain protocol authority trace for protocol index/spec lifecycle, activation status, consensus-critical posture, and receipt fields.
 - Nockchain bridge withdrawal trace for Base burn, Hoon kernel, Rust runtime, sequencer authorization, confirmation, and release-lag evidence.
 - Nockchain state-jam provenance registry for Zorp state-jam/checkpoint metadata without storing raw PMA or state artifacts.
@@ -197,6 +198,15 @@ The Rust workspace atlas breaks the upstream Nockchain monorepo into crate group
 - `/api/nockchain/rust-atlas`
 
 Use it when deciding which upstream crate should anchor a test assumption, which cargo gate belongs in a receipt, or which watch item should become the next Nocksperimental product slice.
+
+## Nockchain Cargo Surface
+
+The Cargo surface turns upstream manifests and source entrypoints into a Rust target map for Nocksperimental. It tracks high-signal crates such as `nockchain`, `nockchain-wallet`, `nockchain-api`, `nockapp`, `nockup`, `nockchain-libp2p-io`, `wallet-tx-builder`, `nockchain-bridge-sequencer`, and `nockvm`; their binary/library/bench targets; dependency pins; source focus paths; and crate-scoped cargo checks.
+
+- `/api/nockchain/cargo-surface`
+- `/nockchain/cargo-surface`
+
+Use it when translating an upstream Rust change into the exact binary, library, benchmark, or source file that needs verification. The current surface is manifest/source-backed because the local WSL environment does not have `cargo` installed; it records that limitation beside the verification matrix.
 
 ## Nockchain NockApp Runtime Atlas
 

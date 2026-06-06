@@ -49,6 +49,7 @@ async function main() {
     await expectNockchainUpstream(`${baseUrl}/api/nockchain/upstream`);
     await expectStatus(`${baseUrl}/api/nockchain/docs-atlas`, 200, "Nockchain docs and protocol atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/knowledge-spine`, 200, "Nockchain knowledge spine integrity map");
+    await expectStatus(`${baseUrl}/api/nockchain/cargo-surface`, 200, "Nockchain Cargo manifest and target surface");
     await expectStatus(`${baseUrl}/api/nockchain/protocol`, 200, "Nockchain protocol authority trace");
     await expectStatus(`${baseUrl}/api/nockchain/bridge`, 200, "Nockchain bridge withdrawal trace");
     await expectStatus(`${baseUrl}/api/nockchain/bridge-source`, 200, "Nockchain bridge source trace");
@@ -85,6 +86,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/registry/checkpoint`, 200, "registry checkpoint API");
     await expectStatus(`${baseUrl}/nockchain`, 200, "Nockchain evidence page");
     await expectStatus(`${baseUrl}/nockchain/knowledge-spine`, 200, "Nockchain knowledge spine page");
+    await expectStatus(`${baseUrl}/nockchain/cargo-surface`, 200, "Nockchain Cargo surface page");
     await expectStatus(`${baseUrl}/nockchain/protocol`, 200, "Nockchain protocol page");
     await expectStatus(`${baseUrl}/nockchain/bridge`, 200, "Nockchain bridge page");
     await expectStatus(`${baseUrl}/nockchain/bridge/source`, 200, "Nockchain bridge source trace page");
