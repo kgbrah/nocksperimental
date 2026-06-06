@@ -190,13 +190,15 @@ Use it when interpreting whether a source is current protocol authority, histori
 
 The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, a monitor review contract, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
+Run `npm run check:zorp-org-drift -- --json` to compare the pinned Zorp org repository inventory against the live GitHub org API; the check treats Zorp repos as lineage/authoring signals and keeps the State Jam Drive folder metadata-only.
+
 It also carries README-backed source notes for `zorp-corp/jock-lang`, archived `zorp-corp/nockapp`, and archived `zorp-corp/sword` so Jock authoring, NockApp poke/peek lineage, and Sword persistence history can inform fixtures without outranking current Nockchain protocol authority.
 
 The same API now exposes a collaboration flywheel named `zorp-monitor-to-fixture-flywheel`: observe upstream, classify authority, route a product slice, verify receipts, then share a collaboration note. Source routes such as `canonical-runtime-refresh`, `authoring-fixture-review`, and `state-jam-provenance-inventory` make it explicit which Nocksperimental surface should respond to each Zorp/Nockchain signal while keeping `rawStateJam`, `rawPmaSlab`, wallet seeds, signing keys, Tenderly keys, and R2 tokens out of public evidence.
 
 ## Zorp Monitor Runbook
 
-The Zorp monitor runbook turns recurring checks of `zorp-corp`, the legacy `zorp-corp/nockchain` redirect, canonical `nockchain/nockchain`, and the Zorp state-jam Drive folder into a receipt-safe finding contract. It names the active monitor automation, superseded watch jobs, watched sources, classification flow, source-authority classes, route matrix, forbidden raw artifact fields, and the local snapshot command `node scripts/run-zorp-monitor-snapshot.mjs --json`.
+The Zorp monitor runbook turns recurring checks of `zorp-corp`, the legacy `zorp-corp/nockchain` redirect, canonical `nockchain/nockchain`, and the Zorp state-jam Drive folder into a receipt-safe finding contract. It names the active monitor automation, superseded watch jobs, watched sources, classification flow, source-authority classes, route matrix, forbidden raw artifact fields, the local snapshot command `node scripts/run-zorp-monitor-snapshot.mjs --json`, and the drift command `npm run check:zorp-org-drift -- --json`.
 
 - `/api/nockchain/zorp/monitor`
 - `/nockchain/zorp/monitor`

@@ -85,7 +85,7 @@ async function main() {
   assertEqual(body.sourceAuthority.zorpOrg.publicRepoCount, 10, "Zorp source authority repo count");
   assertEqual(
     body.sourceAuthority.zorpOrg.repositoryInventoryUrl,
-    "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+    "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public",
     "Zorp source authority inventory URL"
   );
   assertIncludes(
@@ -121,18 +121,39 @@ async function main() {
 
   const jock = findRepo(body, "jock-lang");
   assertEqual(jock.archived, false, "jock-lang active status");
+  assertEqual(jock.defaultBranch, "master", "jock-lang default branch");
   assertEqual(jock.primarySignal, "language-authoring", "jock-lang primary signal");
   assertIncludes(jock.nocksperimentalUse, "high-level Nock application authoring", "jock-lang relevance");
 
   const nockapp = findRepo(body, "nockapp");
   assertEqual(nockapp.archived, true, "nockapp archive status");
+  assertEqual(nockapp.defaultBranch, "master", "nockapp default branch");
   assertEqual(nockapp.primarySignal, "nockapp-lineage", "nockapp lineage signal");
   assertIncludes(nockapp.nocksperimentalUse, "NockApp runtime lineage", "nockapp relevance");
 
   const sword = findRepo(body, "sword");
   assertEqual(sword.archived, true, "sword archive status");
+  assertEqual(sword.defaultBranch, "master", "sword default branch");
   assertEqual(sword.primarySignal, "runtime-lineage", "sword runtime signal");
   assertIncludes(sword.nocksperimentalUse, "runtime persistence", "sword relevance");
+
+  assertEqual(
+    body.driftCheck.command,
+    "npm run check:zorp-org-drift -- --json",
+    "Zorp drift check command"
+  );
+  assertEqual(
+    body.driftCheck.testCommand,
+    "npm run test:zorp-org-drift-check",
+    "Zorp drift check test command"
+  );
+  assertIncludes(body.driftCheck.compareFields, "updatedAt", "Zorp drift check compares updatedAt");
+  assertIncludes(body.driftCheck.compareFields, "defaultBranch", "Zorp drift check compares default branch");
+  assertIncludes(
+    body.driftCheck.sourceUrls,
+    "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public",
+    "Zorp drift check GitHub API source"
+  );
 
   assertIncludes(body.layers.map((layer) => layer.id), "protocol-runtime", "protocol layer");
   assertIncludes(body.layers.map((layer) => layer.id), "language-authoring", "language layer");

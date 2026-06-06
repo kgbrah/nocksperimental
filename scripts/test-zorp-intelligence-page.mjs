@@ -97,6 +97,18 @@ async function main() {
     "Zorp page renders legacy redirect risk flag"
   );
   assertIncludes(page, "state-jam-folder-is-metadata-only", "Zorp page renders state-jam risk flag");
+  assertIncludes(page, "Drift Check", "Zorp page renders drift check");
+  assertIncludes(
+    page,
+    "npm run check:zorp-org-drift -- --json",
+    "Zorp page renders drift check command"
+  );
+  assertIncludes(
+    page,
+    "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public",
+    "Zorp page renders GitHub org API source"
+  );
+  assertIncludes(page, "defaultBranch", "Zorp page renders drift compare fields");
   assertIncludes(page, "Watch Matrix", "Zorp page renders watch matrix");
   assertIncludes(page, "canonical-runtime", "Zorp page renders canonical runtime matrix entry");
   assertIncludes(page, "authoring-fixtures", "Zorp page renders authoring fixtures matrix entry");

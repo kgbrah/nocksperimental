@@ -109,6 +109,11 @@ async function main() {
   );
   assertIncludes(
     body.monitorRunTemplates.map((template) => template.id),
+    "zorp-org-drift-check",
+    "Zorp org drift monitor template"
+  );
+  assertIncludes(
+    body.monitorRunTemplates.map((template) => template.id),
     "canonical-nockchain-release",
     "canonical release monitor template"
   );
@@ -121,6 +126,11 @@ async function main() {
     body.localVerification.recommendedCommands,
     "node scripts/run-zorp-monitor-snapshot.mjs --json",
     "local snapshot command"
+  );
+  assertIncludes(
+    body.localVerification.recommendedCommands,
+    "npm run check:zorp-org-drift -- --json",
+    "local Zorp org drift command"
   );
 
   assertFile("scripts/run-zorp-monitor-snapshot.mjs");

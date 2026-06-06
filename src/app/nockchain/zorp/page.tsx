@@ -80,6 +80,10 @@ const sourceRouteOrder: readonly string[] = [
 const highlightedReviewEvidenceField = "nocksperimentalSurface";
 const highlightedWatchMatrixTrigger = "nockchain release/build tag change";
 const highlightedWatchMatrixAction = "Refresh upstream commit";
+const highlightedZorpDriftCommand = "npm run check:zorp-org-drift -- --json";
+const highlightedZorpDriftSourceUrl =
+  "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public";
+const highlightedZorpDriftCompareField = "defaultBranch";
 
 export default function ZorpIntelligencePage() {
   const zorp = createZorpUpstreamMap();
@@ -270,6 +274,33 @@ export default function ZorpIntelligencePage() {
             {orderedPrioritySources.map((repo) => (
               <Callout key={repo} label="source" value={repo} />
             ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <ListChecks size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Drift Check</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+            {zorp.driftCheck.interpretation}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="command" value={highlightedZorpDriftCommand} />
+            <Callout label="testCommand" value={zorp.driftCheck.testCommand} />
+            <Callout
+              label="sourceUrls"
+              value={[
+                highlightedZorpDriftSourceUrl,
+                ...zorp.driftCheck.sourceUrls.filter(
+                  (sourceUrl) => sourceUrl !== highlightedZorpDriftSourceUrl
+                )
+              ].join(", ")}
+            />
+            <Callout label="highlightedCompareField" value={highlightedZorpDriftCompareField} />
+            <Callout label="compareFields" value={zorp.driftCheck.compareFields.join(", ")} />
           </div>
         </article>
       </section>

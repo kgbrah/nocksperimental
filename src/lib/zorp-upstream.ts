@@ -8,6 +8,9 @@ import { zorpStateJamDriveFolderUrl } from "@/lib/nockchain-state-jams";
 
 const zorpNockchainLegacyUrl = "https://github.com/zorp-corp/nockchain";
 const canonicalNockchainUrl = "https://github.com/nockchain/nockchain";
+const zorpGithubUrl = "https://github.com/zorp-corp";
+const zorpOrgApiUrl =
+  "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public";
 const zorpMonitorAutomationId = "monitor-zorp-and-nockchain-sources";
 const zorpMonitorAutomationName = "Monitor Zorp and Nockchain Sources";
 
@@ -19,6 +22,7 @@ const zorpRepositories = [
     archived: true,
     fork: false,
     language: "hoon",
+    defaultBranch: "master",
     description: "A toolkit for simple functional applications with automatic persistence.",
     updatedAt: "2026-06-05T18:09:10Z",
     pushedAt: "2025-04-10T15:31:01Z",
@@ -35,6 +39,7 @@ const zorpRepositories = [
     archived: false,
     fork: false,
     language: "hoon",
+    defaultBranch: "master",
     description: "A simple scripting language that compiles to Nock.",
     updatedAt: "2026-04-05T19:51:30Z",
     pushedAt: "2026-03-12T02:29:17Z",
@@ -51,6 +56,7 @@ const zorpRepositories = [
     archived: true,
     fork: false,
     language: "Rust",
+    defaultBranch: "master",
     description: "A modern Nock runtime with automatic persistence.",
     updatedAt: "2026-02-19T13:42:24Z",
     pushedAt: "2025-01-29T02:09:46Z",
@@ -67,6 +73,7 @@ const zorpRepositories = [
     archived: false,
     fork: true,
     language: null,
+    defaultBranch: "master",
     description: "Nock semantics in K",
     updatedAt: "2025-12-09T12:01:03Z",
     pushedAt: "2023-04-01T21:27:32Z",
@@ -83,6 +90,7 @@ const zorpRepositories = [
     archived: false,
     fork: true,
     language: null,
+    defaultBranch: "main",
     description: "Zero-knowledge template library",
     updatedAt: "2025-06-23T22:02:02Z",
     pushedAt: "2025-06-06T10:32:46Z",
@@ -99,6 +107,7 @@ const zorpRepositories = [
     archived: false,
     fork: true,
     language: null,
+    defaultBranch: "main",
     description: "GitHub Action to configure Bazel",
     updatedAt: "2025-05-02T01:30:09Z",
     pushedAt: "2025-04-28T00:44:58Z",
@@ -115,6 +124,7 @@ const zorpRepositories = [
     archived: false,
     fork: true,
     language: null,
+    defaultBranch: "main",
     description: "A GitHub action to create a pull request for changes to your repository in the actions workspace",
     updatedAt: "2025-04-30T18:08:29Z",
     pushedAt: "2025-04-29T12:41:35Z",
@@ -131,6 +141,7 @@ const zorpRepositories = [
     archived: false,
     fork: false,
     language: "hoon",
+    defaultBranch: "master",
     description: null,
     updatedAt: "2024-08-24T00:26:03Z",
     pushedAt: "2024-05-31T12:31:35Z",
@@ -147,6 +158,7 @@ const zorpRepositories = [
     archived: false,
     fork: false,
     language: "TypeScript",
+    defaultBranch: "master",
     description: null,
     updatedAt: "2024-08-13T15:29:04Z",
     pushedAt: "2024-08-13T13:51:30Z",
@@ -163,6 +175,7 @@ const zorpRepositories = [
     archived: false,
     fork: false,
     language: "JavaScript",
+    defaultBranch: "master",
     description: null,
     updatedAt: "2024-08-13T15:28:44Z",
     pushedAt: "2024-08-13T14:23:16Z",
@@ -305,6 +318,28 @@ const zorpMonitorBrief = {
   ],
   interpretation:
     "Zorp is useful as Nockchain lineage, language-authoring signal, and state-artifact provenance. Current protocol and operational authority stays with nockchain/nockchain and its Tier 0 docs."
+} as const;
+
+const zorpOrgDriftCheck = {
+  command: "npm run check:zorp-org-drift -- --json",
+  script: "scripts/check-zorp-org-drift.mjs",
+  testCommand: "npm run test:zorp-org-drift-check",
+  sourceUrls: [zorpGithubUrl, zorpOrgApiUrl, zorpStateJamDriveFolderUrl],
+  compareFields: [
+    "name",
+    "url",
+    "description",
+    "archived",
+    "fork",
+    "language",
+    "updatedAt",
+    "pushedAt",
+    "stars",
+    "openIssues",
+    "defaultBranch"
+  ],
+  interpretation:
+    "Compares the pinned Zorp org repository inventory against GitHub metadata while preserving the State Jam folder as metadata-only provenance."
 } as const;
 
 const repositoryWatchMatrix = [
@@ -531,7 +566,7 @@ const zorpCollaborationFlywheel = {
       id: "observe-upstream",
       label: "Observe upstream",
       inputSources: [
-        "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+        zorpOrgApiUrl,
         "https://api.github.com/repos/nockchain/nockchain",
         zorpStateJamDriveFolderUrl
       ],
@@ -685,8 +720,8 @@ export function createZorpUpstreamMap() {
       zorpOrg: {
         sourceRole: "lineage-and-authoring-signal",
         organization: "zorp-corp",
-        url: "https://github.com/zorp-corp",
-        repositoryInventoryUrl: "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+        url: zorpGithubUrl,
+        repositoryInventoryUrl: zorpOrgApiUrl,
         publicRepoCount: zorpRepositories.length,
         primaryRepos: [
           "zorp-corp/jock-lang",
@@ -724,6 +759,7 @@ export function createZorpUpstreamMap() {
       requiredMetadata: nockchain.safety.stateArtifacts.metadataToTrack
     },
     repositories: zorpRepositories,
+    driftCheck: zorpOrgDriftCheck,
     layers: zorpLayers,
     sourceNotes: zorpSourceNotes,
     collaborationFlywheel: zorpCollaborationFlywheel,

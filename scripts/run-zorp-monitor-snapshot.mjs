@@ -13,7 +13,7 @@ main().catch((error) => {
 
 async function main() {
   const [zorpRepos, nockchainRepo, nockchainCommit, nockchainRelease] = await Promise.all([
-    fetchJson("https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated"),
+    fetchJson("https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated&type=public"),
     fetchJson("https://api.github.com/repos/nockchain/nockchain"),
     fetchJson("https://api.github.com/repos/nockchain/nockchain/commits/master"),
     fetchJson("https://api.github.com/repos/nockchain/nockchain/releases/latest")

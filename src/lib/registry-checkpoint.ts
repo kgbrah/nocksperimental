@@ -224,6 +224,7 @@ export function createRegistryCheckpoint() {
       sourceAuthority: zorpUpstream.sourceAuthority,
       stateJamDrive: zorpUpstream.stateJamDrive,
       repositories: zorpUpstream.repositories,
+      driftCheck: zorpUpstream.driftCheck,
       layers: zorpUpstream.layers,
       repositoryWatchMatrix: zorpUpstream.repositoryWatchMatrix,
       monitorReviewContract: zorpUpstream.monitorReviewContract,
@@ -720,6 +721,9 @@ export function createRegistryCheckpoint() {
         ) &&
         zorpMonitorRunbook.localVerification.recommendedCommands.includes(
           "node scripts/run-zorp-monitor-snapshot.mjs --json"
+        ) &&
+        zorpMonitorRunbook.localVerification.recommendedCommands.includes(
+          "npm run check:zorp-org-drift -- --json"
         ),
       zorpMonitorReviewContractAvailable:
         zorpUpstream.monitorReviewContract.classes.length === 5 &&
@@ -825,6 +829,11 @@ export function createRegistryCheckpoint() {
       monitor: {
         active: zorpUpstream.monitor.active,
         interval: zorpUpstream.monitor.interval
+      },
+      driftCheck: {
+        command: zorpUpstream.driftCheck.command,
+        compareFields: zorpUpstream.driftCheck.compareFields,
+        sourceUrls: zorpUpstream.driftCheck.sourceUrls
       }
     },
     nockchainDocsAtlas: {

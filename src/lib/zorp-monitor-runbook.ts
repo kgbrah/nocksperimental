@@ -184,6 +184,13 @@ const monitorRunTemplates = [
     rawArtifactPolicy: "metadata-only"
   },
   {
+    id: "zorp-org-drift-check",
+    sourceId: "zorp-github-org",
+    requiredEvidence: ["repoFullName", "updatedAt", "pushedAt", "defaultBranch", "driftField", "operatorAction"],
+    defaultDecision: "human-review",
+    rawArtifactPolicy: "metadata-only"
+  },
+  {
     id: "canonical-nockchain-release",
     sourceId: "canonical-nockchain-repository",
     requiredEvidence: ["commitSha", "releaseTag", "publishedAt", "affectedPaths", "targetSurfaces"],
@@ -203,6 +210,7 @@ const localVerification = {
   status: "monitor-runbook-defined",
   recommendedCommands: [
     "node scripts/run-zorp-monitor-snapshot.mjs --json",
+    "npm run check:zorp-org-drift -- --json",
     "npm run test:zorp-monitor-runbook-api",
     "npm run test:zorp-monitor-runbook-page",
     "npm run test:nockchain-watch",
