@@ -156,6 +156,11 @@ export const registryEndpoints = [
     description: "Nockchain sync/gossip source trace"
   },
   {
+    id: "nockchain-mining-source-trace",
+    path: "/api/nockchain/mining-source",
+    description: "Nockchain mining and PoW source trace"
+  },
+  {
     id: "nockup-validation-submit",
     path: "/api/nockchain/nockup/submit",
     description: "Submit Nockup scaffold validation evidence"
@@ -395,6 +400,7 @@ export function createWellKnownRegistryManifest() {
       nockchainPrRadar: endpointUrl("nockchain-pr-radar"),
       nockchainImpactQueue: endpointUrl("nockchain-impact-queue"),
       nockchainSyncGossipTrace: endpointUrl("nockchain-sync-gossip-trace"),
+      nockchainMiningSourceTrace: endpointUrl("nockchain-mining-source-trace"),
       nockupValidationSubmit: endpointUrl("nockup-validation-submit"),
       nockupValidationReceipts: endpointUrl("nockup-validation-receipts"),
       nockchainNockupSourceTrace: endpointUrl("nockchain-nockup-source-trace"),
@@ -455,6 +461,7 @@ export function createWellKnownRegistryManifest() {
       "nockchain-pr-radar",
       "nockchain-impact-queue",
       "nockchain-sync-gossip-trace",
+      "nockchain-mining-source-trace",
       "nockup-validation-submit",
       "nockup-validation-receipts",
       "nockchain-nockup-source-trace",

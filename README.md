@@ -29,6 +29,7 @@ The product thesis is simple: serious NockApps need deterministic local testing,
 - Nockchain Testkit/E2E Trace for upstream YAML scenarios, fakenet node orchestration, gRPC readiness, transaction lifecycle assertions, report JSON, and receipt-safe test evidence.
 - Nockchain Nockup Source Trace for scaffold manifests, template cache, toolchain channels, dependency resolution, registry install paths, lockfiles, and untrusted-code warnings.
 - Nockchain sync/gossip source trace for behind-tip gossip suppression, wrong-commitment triage, and fakenet receipt fields.
+- Nockchain Mining/PoW Source Trace for fakenet miner commands, candidate block refresh, miner-kernel proof checks, network PoW separation, and receipt-safe mining diagnostics.
 - VESL evidence bridge for lifecycle receipts from `vesl-test`, `vesl-hull`, and fakenet settlement probes.
 - Launch Evidence cases for paid launch-readiness review across lab, fakenet, VESL, workspace upload, nockup, and state-export evidence.
 - Generated report history with provenance, evidence, and public verification endpoints.
@@ -352,6 +353,15 @@ The sync/gossip trace turns the latest Nockchain `nockchain-libp2p-io` source ch
 - `/api/nockchain/sync-gossip`
 
 Use it when a local fakenet, user-connected fakenet, or state-jam-backed test needs to decide whether a symptom is connectivity failure, stale state, or intentional behind-tip gossip suppression before publishing Nocksperimental evidence.
+
+## Nockchain Mining/PoW Source Trace
+
+The mining/PoW source trace anchors upstream fakenet miner scripts, CLI flags, fakenet difficulty constants, mining driver wires, candidate block refresh, miner Hoon proof checks, structured miner traces, and libp2p request/gossip PoW separation. It is built for local and bring-your-own fakenets: publish `miningPkh`, `fakenetPowLen`, `candidatePowLen`, `candidateHeader`, `minedBlockDigest`, `routeTableSize`, and `connectedPeerCount`, while keeping raw miner jams, raw candidate nouns, raw PoW proofs, raw PMA/state artifacts, wallet seed phrases, and private spend keys out of public evidence.
+
+- `/nockchain/mining/source`
+- `/api/nockchain/mining-source`
+
+Use it when diagnosing wrong block commitments, empty routing tables, quiet fakenet miners, stale candidate work, or confusion between libp2p anti-spam PoW and block-mining proof.
 
 ## Nockup Validation Receipts
 

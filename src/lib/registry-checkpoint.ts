@@ -23,6 +23,7 @@ import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createNockchainSyncGossipTrace } from "@/lib/nockchain-sync-gossip-trace";
 import { createNockchainTestkitE2eTrace } from "@/lib/nockchain-testkit-e2e-trace";
 import { createNockchainApiSourceTrace } from "@/lib/nockchain-api-source-trace";
+import { createNockchainMiningSourceTrace } from "@/lib/nockchain-mining-source-trace";
 import { createNockchainWalletAtlas } from "@/lib/nockchain-wallet-atlas";
 import { createNockchainWatchBoard } from "@/lib/nockchain-watch";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
@@ -69,6 +70,7 @@ export function createRegistryCheckpoint() {
   const nockchainPmaSourceTrace = createNockchainPmaSourceTrace();
   const nockchainRuntimeSafety = createNockchainRuntimeSafetyTrace();
   const nockchainSyncGossipTrace = createNockchainSyncGossipTrace();
+  const nockchainMiningSourceTrace = createNockchainMiningSourceTrace();
   const nockchainTestkitE2e = createNockchainTestkitE2eTrace();
   const stateJamRegistry = createNockchainStateJamRegistry();
   const zorpUpstream = createZorpUpstreamMap();
@@ -140,6 +142,8 @@ export function createRegistryCheckpoint() {
     nockchainRuntimeSafetyAnchors: nockchainRuntimeSafety.sourceAnchors.length,
     nockchainRuntimeSafetyClasses: nockchainRuntimeSafety.runtimeSafetyClasses.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
+    nockchainMiningSourceAnchors: nockchainMiningSourceTrace.sourceAnchors.length,
+    nockchainMiningSourceCapabilities: nockchainMiningSourceTrace.miningCapabilities.length,
     nockchainTestkitE2eAnchors: nockchainTestkitE2e.sourceAnchors.length,
     nockchainTestkitE2eCapabilities: nockchainTestkitE2e.scenarioCapabilities.length,
     stateJamSources: stateJamRegistry.sources.length,
@@ -393,6 +397,16 @@ export function createRegistryCheckpoint() {
       receiptFields: nockchainSyncGossipTrace.receiptFields,
       localVerification: nockchainSyncGossipTrace.localVerification
     }),
+    nockchainMiningSourceTrace: createSha256Root({
+      generatedAt: nockchainMiningSourceTrace.generatedAt,
+      upstream: nockchainMiningSourceTrace.upstream,
+      sourceAnchors: nockchainMiningSourceTrace.sourceAnchors,
+      miningCapabilities: nockchainMiningSourceTrace.miningCapabilities,
+      operationalModes: nockchainMiningSourceTrace.operationalModes,
+      diagnosticScenarios: nockchainMiningSourceTrace.diagnosticScenarios,
+      receiptContract: nockchainMiningSourceTrace.receiptContract,
+      localVerification: nockchainMiningSourceTrace.localVerification
+    }),
     trustUpdates: trustUpdateChainSummary.latestRoot
   };
   const checkpoint = {
@@ -623,6 +637,15 @@ export function createRegistryCheckpoint() {
         nockchainSyncGossipTrace.sourceAnchors.length > 0 &&
         nockchainSyncGossipTrace.triageScenarios.length > 0 &&
         Boolean(nockchainSyncGossipTrace.localVerification.status),
+      nockchainMiningSourceTraceAvailable:
+        nockchainMiningSourceTrace.sourceAnchors.length >= 13 &&
+        nockchainMiningSourceTrace.miningCapabilities.length >= 9 &&
+        nockchainMiningSourceTrace.receiptContract.requiredFields.includes("miningPkh") &&
+        nockchainMiningSourceTrace.receiptContract.requiredFields.includes("candidatePowLen") &&
+        nockchainMiningSourceTrace.receiptContract.forbiddenFields.includes("rawPowProof") &&
+        nockchainMiningSourceTrace.localVerification.recommendedCommands.includes(
+          "cargo check -p nockchain"
+        ),
       nockchainPmaSourceTraceAvailable:
         nockchainPmaSourceTrace.sourceAnchors.length >= 6 &&
         nockchainPmaSourceTrace.durabilityFlow.length >= 5 &&
@@ -1007,6 +1030,24 @@ export function createRegistryCheckpoint() {
       sourceAnchorIds: nockchainSyncGossipTrace.sourceAnchors.map((anchor) => anchor.id),
       localVerificationStatus: nockchainSyncGossipTrace.localVerification.status
     },
+    nockchainMiningSourceTrace: {
+      generatedAt: nockchainMiningSourceTrace.generatedAt,
+      anchorCount: nockchainMiningSourceTrace.sourceAnchors.length,
+      miningCapabilityCount: nockchainMiningSourceTrace.miningCapabilities.length,
+      operationalModeCount: nockchainMiningSourceTrace.operationalModes.length,
+      diagnosticScenarioCount: nockchainMiningSourceTrace.diagnosticScenarios.length,
+      sourceAnchors: nockchainMiningSourceTrace.sourceAnchors.map((anchor) => anchor.id),
+      miningCapabilityIds: nockchainMiningSourceTrace.miningCapabilities.map(
+        (capability) => capability.id
+      ),
+      operationalModeIds: nockchainMiningSourceTrace.operationalModes.map((mode) => mode.id),
+      diagnosticScenarioIds: nockchainMiningSourceTrace.diagnosticScenarios.map(
+        (scenario) => scenario.id
+      ),
+      receiptFields: nockchainMiningSourceTrace.receiptContract.requiredFields,
+      forbiddenFields: nockchainMiningSourceTrace.receiptContract.forbiddenFields,
+      localVerificationStatus: nockchainMiningSourceTrace.localVerification.status
+    },
     badges: {
       verified: resolvedBadges.filter((badge) => badge.currentStatus === "verified").length,
       revoked: resolvedBadges.filter((badge) => badge.currentStatus === "revoked").length,
@@ -1041,6 +1082,7 @@ export function createRegistryCheckpoint() {
       nockchainRuntimeSafety: `${registryCanonicalBaseUrl}/api/nockchain/runtime-safety`,
       nockchainTestkitE2e: `${registryCanonicalBaseUrl}/api/nockchain/testkit-e2e`,
       nockchainSyncGossipTrace: `${registryCanonicalBaseUrl}/api/nockchain/sync-gossip`,
+      nockchainMiningSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/mining-source`,
       nockchainNockupSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockup/source`,
       stateJams: `${registryCanonicalBaseUrl}/api/nockchain/state-jams`,
       fakenetEvidence: `${registryCanonicalBaseUrl}/api/fakenet/evidence`,
