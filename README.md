@@ -188,6 +188,15 @@ The NockApp runtime atlas turns current `nockchain/nockchain` NockApp crates, Zo
 
 Use it when a NockApp test needs to say whether evidence came from a state-changing poke, a read-only peek, a private endpoint probe, a Nockup fixture build/run, or a state-export/state-jam context without storing raw PMA, event logs, state jams, wallet secrets, or API tokens.
 
+## Nockchain NockApp Source Trace
+
+The NockApp source trace anchors the runtime atlas to exact upstream files, symbols, and line ranges in the current `nockchain/nockchain` build. It maps `NockApp`, `IOAction`, poke/effect broadcast, peek results, wire representation, exported state, checkpoint bootstrap, event logs, private/public gRPC, and PMA regression tests into receipt fields while keeping Zorp repos and the Drive state-jam folder as monitored lineage and metadata-only provenance.
+
+- `/nockchain/nockapp/source`
+- `/api/nockchain/nockapp-source`
+
+Use it when a NockApp, fakenet, Nockup, or state-jam-backed test needs to explain which upstream source boundary supports a receipt without storing raw PMA slabs, event logs, checkpoints, state jams, export jams, or key material.
+
 ## Nockchain Operations Atlas
 
 The operations atlas turns current upstream scripts and local diagnostics into a practical Nockchain runbook for fakenet, mining, peer discovery, block commitments, wallet checks, and PMA/state-jam safety. It keeps wrong-commitment, empty-routing-table, no-peers, behind-tip gossip suppression, gRPC, wallet, and state-artifact scenarios tied to Nockchain build/release provenance.

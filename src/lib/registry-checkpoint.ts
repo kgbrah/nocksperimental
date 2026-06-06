@@ -4,6 +4,7 @@ import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence"
 import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
+import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
 import { createNockchainOperationsAtlas } from "@/lib/nockchain-operations-atlas";
 import { createNockchainProtocolTrace } from "@/lib/nockchain-protocol-trace";
 import { createNockchainReleaseAssets } from "@/lib/nockchain-release-assets";
@@ -40,6 +41,7 @@ export function createRegistryCheckpoint() {
   const nockchainProtocolTrace = createNockchainProtocolTrace();
   const nockchainRustAtlas = createNockchainRustAtlas();
   const nockchainNockAppAtlas = createNockchainNockAppAtlas();
+  const nockchainNockAppSourceTrace = createNockchainNockAppSourceTrace();
   const nockchainOperationsAtlas = createNockchainOperationsAtlas();
   const nockchainWalletAtlas = createNockchainWalletAtlas();
   const nockchainWatch = createNockchainWatchBoard();
@@ -81,6 +83,8 @@ export function createRegistryCheckpoint() {
     nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
     nockchainNockAppRuntimeBoundaries: nockchainNockAppAtlas.runtimeBoundaries.length,
     nockchainNockAppProbeTemplates: nockchainNockAppAtlas.probeTemplates.length,
+    nockchainNockAppSourceAnchors: nockchainNockAppSourceTrace.sourceAnchors.length,
+    nockchainNockAppRuntimeFlowSteps: nockchainNockAppSourceTrace.runtimeFlow.length,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
     nockchainPublicApiEvidenceSurfaces:
@@ -179,6 +183,17 @@ export function createRegistryCheckpoint() {
       receiptContract: nockchainNockAppAtlas.receiptContract,
       safety: nockchainNockAppAtlas.safety
     }),
+    nockchainNockAppSourceTrace: createSha256Root({
+      generatedAt: nockchainNockAppSourceTrace.generatedAt,
+      upstream: nockchainNockAppSourceTrace.upstream,
+      sourceAnchors: nockchainNockAppSourceTrace.sourceAnchors,
+      runtimeFlow: nockchainNockAppSourceTrace.runtimeFlow,
+      sourceTraceContract: nockchainNockAppSourceTrace.sourceTraceContract,
+      receiptFieldMapping: nockchainNockAppSourceTrace.receiptFieldMapping,
+      pendingWatchItems: nockchainNockAppSourceTrace.pendingWatchItems,
+      zorpMonitorContext: nockchainNockAppSourceTrace.zorpMonitorContext,
+      stateArtifactPolicy: nockchainNockAppSourceTrace.stateArtifactPolicy
+    }),
     nockchainOperationsAtlas: createSha256Root({
       generatedAt: nockchainOperationsAtlas.generatedAt,
       upstream: nockchainOperationsAtlas.upstream,
@@ -274,6 +289,13 @@ export function createRegistryCheckpoint() {
         nockchainNockAppAtlas.probeTemplates.length >= 4 &&
         nockchainNockAppAtlas.receiptContract.requiredFields.includes("stateJamFingerprint") &&
         nockchainNockAppAtlas.receiptContract.forbiddenFields.includes("rawPmaSlab"),
+      nockchainNockAppSourceTraceAvailable:
+        nockchainNockAppSourceTrace.sourceAnchors.length === 12 &&
+        nockchainNockAppSourceTrace.runtimeFlow.length === 6 &&
+        nockchainNockAppSourceTrace.sourceTraceContract.requiredFields.includes(
+          "receiptFieldMapping"
+        ) &&
+        nockchainNockAppSourceTrace.sourceTraceContract.forbiddenFields.includes("rawEventLog"),
       nockchainOperationsAtlasAvailable:
         nockchainOperationsAtlas.triageScenarios.length > 0 &&
         nockchainOperationsAtlas.scriptSources.length > 0,
@@ -433,6 +455,19 @@ export function createRegistryCheckpoint() {
       canonicalSources: nockchainNockAppAtlas.sourceAuthority.canonical.sources,
       lineageSources: nockchainNockAppAtlas.sourceAuthority.lineage.sources
     },
+    nockchainNockAppSourceTrace: {
+      anchorCount: nockchainNockAppSourceTrace.sourceAnchors.length,
+      runtimeFlowStepCount: nockchainNockAppSourceTrace.runtimeFlow.length,
+      anchorIds: nockchainNockAppSourceTrace.sourceAnchors.map((anchor) => anchor.id),
+      flowStepIds: nockchainNockAppSourceTrace.runtimeFlow.map((step) => step.id),
+      receiptFields: nockchainNockAppSourceTrace.receiptFieldMapping.receiptFields,
+      forbiddenFields: nockchainNockAppSourceTrace.sourceTraceContract.forbiddenFields,
+      watchedPullRequests: nockchainNockAppSourceTrace.pendingWatchItems.map(
+        (item) => item.prNumber
+      ),
+      zorpStateJamArtifactPolicy:
+        nockchainNockAppSourceTrace.zorpMonitorContext.stateJamDrive.artifactPolicy
+    },
     nockchainOperationsAtlas: {
       scenarioCount: nockchainOperationsAtlas.triageScenarios.length,
       scriptSourceCount: nockchainOperationsAtlas.scriptSources.length,
@@ -512,6 +547,7 @@ export function createRegistryCheckpoint() {
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,
       nockchainRustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       nockchainNockAppAtlas: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-atlas`,
+      nockchainNockAppSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-source`,
       nockchainOperationsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/operations`,
       nockchainWalletAtlas: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,
       nockchainWatch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,

@@ -239,6 +239,7 @@ export function createNockchainNockAppAtlas() {
     ],
     links: {
       page: `${registryCanonicalBaseUrl}/nockchain/nockapp`,
+      sourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/nockapp-source`,
       upstream: `${registryCanonicalBaseUrl}/api/nockchain/upstream`,
       zorp: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       rustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,

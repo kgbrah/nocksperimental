@@ -55,6 +55,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
     await expectStatus(`${baseUrl}/api/nockchain/rust-atlas`, 200, "Nockchain Rust workspace atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/nockapp-atlas`, 200, "Nockchain NockApp runtime atlas API");
+    await expectStatus(`${baseUrl}/api/nockchain/nockapp-source`, 200, "Nockchain NockApp source trace API");
     await expectStatus(`${baseUrl}/api/nockchain/operations`, 200, "Nockchain operations atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/wallet`, 200, "Nockchain wallet/API atlas");
     await expectStatus(`${baseUrl}/api/nockchain/watch`, 200, "Nockchain upstream watch board");
@@ -87,6 +88,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/nockapp`, 200, "Nockchain NockApp atlas page");
+    await expectStatus(`${baseUrl}/nockchain/nockapp/source`, 200, "Nockchain NockApp source trace page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
     await expectStatus(`${baseUrl}/nockchain/wallet`, 200, "Nockchain wallet page");
     await expectStatus(`${baseUrl}/nockchain/watch`, 200, "Nockchain watch page");

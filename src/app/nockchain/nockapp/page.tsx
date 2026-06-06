@@ -75,6 +75,13 @@ export default function NockchainNockAppPage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/nockapp/source"
+              >
+                <ListChecks size={16} aria-hidden="true" />
+                Source Trace
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/nockchain/zorp"
               >
                 <GitBranch size={16} aria-hidden="true" />
@@ -226,6 +233,7 @@ export default function NockchainNockAppPage() {
           </div>
           <div className="mt-4 grid gap-3">
             <Callout label="upstream" value={atlas.links.upstream} />
+            <Callout label="sourceTrace" value={atlas.links.sourceTrace} />
             <Callout label="rustAtlas" value={atlas.links.rustAtlas} />
             <Callout label="stateJams" value={atlas.links.stateJams} />
             <Callout label="nockupReceipts" value={atlas.links.nockupReceipts} />
