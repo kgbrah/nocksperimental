@@ -63,6 +63,47 @@ async function main() {
   assertIncludes(body.balanceEvidenceContract.requiredFields, "endpointMode", "balance contract endpoint mode");
   assertIncludes(body.balanceEvidenceContract.requiredFields, "outputHash", "balance contract hash");
   assertIncludes(body.balanceEvidenceContract.requiredFields, "nockchainBuild", "balance contract build");
+  assertEqual(
+    body.publicApiEvidenceContract.sourceDoc,
+    "crates/nockchain-api/README.md",
+    "public API evidence source doc"
+  );
+  assertIncludes(
+    body.publicApiEvidenceContract.services,
+    "NockchainService",
+    "public API NockchainService"
+  );
+  assertIncludes(
+    body.publicApiEvidenceContract.services,
+    "NockchainBlockService",
+    "public API NockchainBlockService"
+  );
+  assertContractSurface(body, "transaction-acceptance", "accepted does not prove block inclusion");
+  assertContractSurface(body, "block-explorer-cache", "GetBlocks");
+  assertContractSurface(body, "block-explorer-cache", "pending transactions are only reported as pending");
+  assertContractSurface(body, "block-explorer-cache", "newest up to 1024 blocks");
+  assertContractSurface(body, "block-explorer-cache", "short-lived stale data can appear after a reorg");
+  assertContractSurface(body, "observability", "nockchain_public_grpc.*");
+  assertIncludes(
+    body.publicApiEvidenceContract.requiredReceiptFields,
+    "cacheWarmupState",
+    "public API receipt cache warmup field"
+  );
+  assertIncludes(
+    body.publicApiEvidenceContract.requiredReceiptFields,
+    "heaviestChainFreshness",
+    "public API receipt freshness field"
+  );
+  assertIncludes(
+    body.publicApiEvidenceContract.interpretationRules,
+    "Treat tx-accepted as node acceptance, not block inclusion.",
+    "public API tx accepted interpretation"
+  );
+  assertIncludes(
+    body.publicApiEvidenceContract.interpretationRules,
+    "Treat empty or missing explorer pages during warm-up as inconclusive until cache state and heaviest-chain freshness are recorded.",
+    "public API cache warm-up interpretation"
+  );
   assertIncludes(body.safety.doNotStore, "seed phrases", "seed safety");
   assertIncludes(body.safety.doNotStore, "private keys", "private key safety");
   assertIncludes(body.safety.doNotStore, "keys.export", "exported key safety");
@@ -103,8 +144,28 @@ async function main() {
   const checkpoint = await loadTypeScriptModule("src/app/api/registry/checkpoint/route.ts").GET();
   const checkpointBody = await checkpoint.json();
   assertGreaterThan(checkpointBody.counts.nockchainWalletCommands, 5, "checkpoint wallet command count");
+  assertEqual(
+    checkpointBody.counts.nockchainPublicApiEvidenceSurfaces,
+    3,
+    "checkpoint public API evidence surface count"
+  );
   assertStartsWith(checkpointBody.roots.nockchainWalletAtlas, "sha256:", "checkpoint wallet root");
   assertEqual(checkpointBody.checks.nockchainWalletAtlasAvailable, true, "checkpoint wallet guard");
+  assertEqual(
+    checkpointBody.checks.nockchainPublicApiEvidenceContractAvailable,
+    true,
+    "checkpoint public API evidence contract guard"
+  );
+  assertIncludes(
+    checkpointBody.nockchainWalletAtlas.publicApiEvidenceSurfaceIds,
+    "block-explorer-cache",
+    "checkpoint public API cache surface"
+  );
+  assertIncludes(
+    checkpointBody.nockchainWalletAtlas.publicApiEvidenceSurfaceIds,
+    "transaction-acceptance",
+    "checkpoint public API tx surface"
+  );
   assertEqual(
     checkpointBody.links.nockchainWalletAtlas,
     "https://nocksperimental.com/api/nockchain/wallet",
@@ -119,6 +180,11 @@ async function main() {
   assertIncludes(page, "list-notes-by-address", "wallet page renders address notes");
   assertIncludes(page, "watch-only", "wallet page renders watch-only");
   assertIncludes(page, "public API exposure", "wallet page renders public risk");
+  assertIncludes(page, "Public API Evidence Contract", "wallet page renders public API evidence contract");
+  assertIncludes(page, "blockExplorerCacheSurfaceId", "wallet page pins block explorer cache surface");
+  assertIncludes(page, "transactionAcceptanceSurfaceId", "wallet page pins transaction acceptance surface");
+  assertIncludes(page, "nockchain_public_grpc.*", "wallet page renders public API metrics");
+  assertIncludes(page, "accepted does not prove block inclusion", "wallet page renders tx accepted caveat");
   assertIncludes(page, "seed phrases", "wallet page renders secret safety");
   assertIncludes(page, 'href="/api/nockchain/wallet"', "wallet page links API");
   assertIncludes(page, 'href="/nockchain"', "wallet page links parent");
@@ -138,6 +204,7 @@ async function main() {
 
   const readme = readText("README.md");
   assertIncludes(readme, "Nockchain Wallet/API Atlas", "README documents wallet atlas");
+  assertIncludes(readme, "public API evidence contract", "README documents public API evidence contract");
   assertIncludes(readme, "/api/nockchain/wallet", "README documents wallet endpoint");
   assertIncludes(readme, "/nockchain/wallet", "README documents wallet page");
 }
@@ -270,6 +337,27 @@ function assertScenario(body, id, expectedText) {
 
   assertIncludes(
     [scenario.title, scenario.symptom, scenario.interpretation, ...(scenario.checks ?? [])].join("\n"),
+    expectedText,
+    `${id} expected text`
+  );
+}
+
+function assertContractSurface(body, id, expectedText) {
+  const surface = body.publicApiEvidenceContract.surfaces.find((candidate) => candidate.id === id);
+
+  if (!surface) {
+    throw new Error(`Missing public API evidence surface: ${id}`);
+  }
+
+  assertIncludes(
+    [
+      surface.label,
+      surface.evidenceMeaning,
+      ...(surface.endpoints ?? []),
+      ...(surface.limits ?? []),
+      ...(surface.observability ?? []),
+      ...(surface.notProofOf ?? [])
+    ].join("\n"),
     expectedText,
     `${id} expected text`
   );

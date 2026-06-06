@@ -77,6 +77,8 @@ export function createRegistryCheckpoint() {
     nockchainRustWorkspaceMembers: nockchainRustAtlas.workspace.memberCount,
     nockchainOperationsScenarios: nockchainOperationsAtlas.triageScenarios.length,
     nockchainWalletCommands: nockchainWalletAtlas.walletCommands.length,
+    nockchainPublicApiEvidenceSurfaces:
+      nockchainWalletAtlas.publicApiEvidenceContract.surfaces.length,
     nockchainWatchItems: nockchainWatch.watchQueue.length,
     nockchainSyncGossipAnchors: nockchainSyncGossipTrace.sourceAnchors.length,
     stateJamSources: stateJamRegistry.sources.length,
@@ -173,6 +175,7 @@ export function createRegistryCheckpoint() {
       upstream: nockchainWalletAtlas.upstream,
       walletCommands: nockchainWalletAtlas.walletCommands,
       endpointModes: nockchainWalletAtlas.endpointModes,
+      publicApiEvidenceContract: nockchainWalletAtlas.publicApiEvidenceContract,
       localFakenetProfile: nockchainWalletAtlas.localFakenetProfile,
       balanceEvidenceContract: nockchainWalletAtlas.balanceEvidenceContract,
       safety: nockchainWalletAtlas.safety,
@@ -242,6 +245,16 @@ export function createRegistryCheckpoint() {
       nockchainWalletAtlasAvailable:
         nockchainWalletAtlas.walletCommands.length > 0 &&
         nockchainWalletAtlas.endpointModes.length > 0,
+      nockchainPublicApiEvidenceContractAvailable:
+        nockchainWalletAtlas.publicApiEvidenceContract.surfaces.some(
+          (surface) =>
+            surface.id === "block-explorer-cache" &&
+            surface.endpoints?.includes("GetBlocks") &&
+            surface.limits?.some((limit) => limit.includes("newest up to 1024 blocks"))
+        ) &&
+        nockchainWalletAtlas.publicApiEvidenceContract.interpretationRules.includes(
+          "Treat tx-accepted as node acceptance, not block inclusion."
+        ),
       nockchainWatchInSync:
         nockchainWatch.status === "in-sync" &&
         nockchainWatch.drift.commitMatchesPinned &&
@@ -376,6 +389,8 @@ export function createRegistryCheckpoint() {
       scenarioCount: nockchainWalletAtlas.triageScenarios.length,
       commandIds: nockchainWalletAtlas.walletCommands.map((command) => command.id),
       endpointModeIds: nockchainWalletAtlas.endpointModes.map((mode) => mode.id),
+      publicApiEvidenceSurfaceIds:
+        nockchainWalletAtlas.publicApiEvidenceContract.surfaces.map((surface) => surface.id),
       localWalletAddress: nockchainWalletAtlas.localFakenetProfile.walletAddress
     },
     nockchainWatch: {

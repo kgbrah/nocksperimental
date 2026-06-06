@@ -161,6 +161,68 @@ const triageScenarios = [
   }
 ] as const;
 
+const publicApiEvidenceContract = {
+  sourceDoc: "crates/nockchain-api/README.md",
+  services: ["NockchainService", "NockchainBlockService"],
+  surfaces: [
+    {
+      id: "transaction-acceptance",
+      label: "Transaction acceptance",
+      evidenceMeaning:
+        "The public API node reports that it accepted the transaction request.",
+      endpoints: ["tx-accepted"],
+      notProofOf: ["block inclusion", "mempool residency", "final settlement"],
+      limits: ["accepted does not prove block inclusion"]
+    },
+    {
+      id: "block-explorer-cache",
+      label: "Block explorer cache",
+      evidenceMeaning:
+        "Explorer-style responses are cache-backed views of the reported heaviest chain.",
+      endpoints: ["GetBlocks", "GetTransactionBlock", "GetTransactionDetails"],
+      limits: [
+        "does not stream mempool contents",
+        "pending transactions are only reported as pending",
+        "newest up to 1024 blocks become available first during cache warm-up",
+        "older heights backfill after the first cache range",
+        "short-lived stale data can appear after a reorg"
+      ]
+    },
+    {
+      id: "observability",
+      label: "Public API observability",
+      evidenceMeaning:
+        "API evidence should include cache and heaviest-chain freshness signals when available.",
+      observability: [
+        "nockchain_public_grpc.*",
+        "cache timings",
+        "heaviest-chain freshness",
+        "RPC success/error counts"
+      ],
+      limits: ["metrics prove service health context, not consensus finality"]
+    }
+  ],
+  requiredReceiptFields: [
+    "publicApiEndpoint",
+    "apiSurface",
+    "txId",
+    "acceptedAt",
+    "inclusionBlock",
+    "cacheWarmupState",
+    "heaviestChainFreshness",
+    "reorgWindow",
+    "metricsSnapshot",
+    "nockchainCommit",
+    "nockchainBuild"
+  ],
+  interpretationRules: [
+    "Treat tx-accepted as node acceptance, not block inclusion.",
+    "Treat pending transaction responses as pending status, not mempool streaming.",
+    "Treat empty or missing explorer pages during warm-up as inconclusive until cache state and heaviest-chain freshness are recorded.",
+    "Treat explorer results near reorg windows as provisional unless independently confirmed."
+  ]
+} as const;
+
 export function createNockchainWalletAtlas() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -184,6 +246,7 @@ export function createNockchainWalletAtlas() {
     },
     walletCommands,
     endpointModes,
+    publicApiEvidenceContract,
     localFakenetProfile: {
       walletAddress: localFakenetWalletAddress,
       endpoint: localFakenetEndpoint,

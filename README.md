@@ -185,7 +185,7 @@ Use it when deciding whether a fakenet symptom is a sync, peer, state-artifact, 
 
 ## Nockchain Wallet/API Atlas
 
-The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats local `fakenock --balance` as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context.
+The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats local `fakenock --balance` as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context. Its public API evidence contract distinguishes node acceptance from block inclusion, cache warm-up from missing data, and reorg-window staleness from final explorer evidence.
 
 - `/nockchain/wallet`
 - `/api/nockchain/wallet`

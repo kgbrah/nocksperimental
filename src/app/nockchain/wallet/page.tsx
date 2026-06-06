@@ -22,6 +22,10 @@ const priorityScenarioIds = [
   "public-api-exposure-risk"
 ];
 const secretSafetyAnchors = ["seed phrases", "private keys", "keys.export"];
+const blockExplorerCacheSurfaceId = "block-explorer-cache";
+const transactionAcceptanceSurfaceId = "transaction-acceptance";
+const publicApiMetricAnchor = "nockchain_public_grpc.*";
+const transactionAcceptanceCaveat = "accepted does not prove block inclusion";
 
 export default function NockchainWalletPage() {
   const atlas = createNockchainWalletAtlas();
@@ -37,6 +41,13 @@ export default function NockchainWalletPage() {
   const remainingScenarios = atlas.triageScenarios.filter(
     (scenario) => !priorityScenarioIds.includes(scenario.id)
   );
+  const publicApiSurfaces = [
+    blockExplorerCacheSurfaceId,
+    transactionAcceptanceSurfaceId,
+    "observability"
+  ]
+    .map((id) => atlas.publicApiEvidenceContract.surfaces.find((surface) => surface.id === id))
+    .filter((surface): surface is NonNullable<typeof surface> => Boolean(surface));
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -143,6 +154,63 @@ export default function NockchainWalletPage() {
             <Callout label="conversion" value={atlas.balanceEvidenceContract.conversion} />
             <Callout label="requiredFields" value={atlas.balanceEvidenceContract.requiredFields.join(", ")} />
             <Callout label="receiptRule" value={atlas.balanceEvidenceContract.receiptRule} />
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#E7F7FF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <RadioTower size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Public API Evidence Contract</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#22313A]">
+            Public API evidence is useful, but transaction acceptance, explorer cache
+            responses, cache warm-up, metrics, and reorg windows must be recorded
+            before treating a response as comparable test evidence.
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            <Callout label="sourceDoc" value={atlas.publicApiEvidenceContract.sourceDoc} />
+            <Callout label="services" value={atlas.publicApiEvidenceContract.services.join(", ")} />
+            <Callout label="metric" value={publicApiMetricAnchor} />
+            <Callout label="txCaveat" value={transactionAcceptanceCaveat} />
+            <Callout
+              label="requiredFields"
+              value={atlas.publicApiEvidenceContract.requiredReceiptFields.join(", ")}
+            />
+            <Callout
+              label="rules"
+              value={atlas.publicApiEvidenceContract.interpretationRules.join(", ")}
+            />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
+            {publicApiSurfaces.map((surface) => (
+              <div className="border border-[#0B0B0B] bg-white p-3" key={surface.id}>
+                <p className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
+                  {surface.id}
+                </p>
+                <h3 className="mt-1 font-semibold">{surface.label}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">
+                  {surface.evidenceMeaning}
+                </p>
+                <Callout
+                  label="endpoints"
+                  value={"endpoints" in surface ? surface.endpoints?.join(", ") ?? "none" : "none"}
+                />
+                <Callout
+                  label="limits"
+                  value={"limits" in surface ? surface.limits?.join(", ") ?? "none" : "none"}
+                />
+                <Callout
+                  label="observability"
+                  value={
+                    "observability" in surface
+                      ? surface.observability?.join(", ") ?? "none"
+                      : "none"
+                  }
+                />
+              </div>
+            ))}
           </div>
         </article>
       </section>
