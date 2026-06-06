@@ -139,6 +139,15 @@ The bridge withdrawal trace follows the latest released bridge work from Base bu
 
 Use it when a VESL, x402, fakenet, or bridge-settlement receipt depends on withdrawal proposal hashes, sequencer authorization state, blockchain constants, journal mirroring, or confirmed inclusion.
 
+## Nockchain Bridge Source Trace
+
+The bridge source trace pins the latest bridge withdrawal execution path to exact upstream Rust files, symbols, and line ranges. It maps runtime loop activation, kernel poke/peek seams, withdrawal execution effects, proposal assembly, sequencer authorization, public Nockchain submission, confirmation polling, orphan retry, durable sequencer store state, and append-only journal records into receipt fields. It preserves the key operational distinction that peer-canonical is not submit-ready, submitted is advisory, and confirmation requires observed block inclusion plus depth.
+
+- `/nockchain/bridge/source`
+- `/api/nockchain/bridge-source`
+
+Use it when a bridge, VESL, x402, Launch Evidence, or support-bundle receipt needs to cite the exact Rust boundary behind a withdrawal state without storing raw transaction jams, authorized raw transactions, sequencer journal signing keys, object-store secrets, or bridge node private keys.
+
 ## Nockchain Release Asset Manifest
 
 The release asset manifest records metadata for the current Nockchain build release: binary tarballs for `nockchain`, `nockchain-wallet`, `nockup`, `hoon`, `hoonc`, plus `nockchain-manifest.toml`. It groups assets by tool and platform, preserves BLAKE3 and SHA1 hashes from the upstream manifest, and makes local fakenet, wallet, and Nockup receipts cite the exact upstream binary source without storing downloaded artifacts.
@@ -150,14 +159,14 @@ Use it when a test run depends on a downloaded Nockchain binary, wallet build, N
 
 ## Zorp/Nockchain Upstream Map
 
-The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos. It also exposes a source-authority matrix so receipts can distinguish canonical protocol authority, Zorp lineage/authoring signals, and metadata-only state-jam provenance.
+The Zorp upstream map keeps the Zorp organization, canonical Nockchain repo, the legacy `zorp-corp/nockchain` redirect, and the Zorp state-jam Drive folder in the same machine-readable view. It classifies public Zorp repos by signal layer: Jock language authoring, NockApp lineage, Sword runtime lineage, formal Nock semantics, proof tooling, and lower-signal CI/tooling repos. It also exposes a source-authority matrix so receipts can distinguish canonical protocol authority, Zorp lineage/authoring signals, and metadata-only state-jam provenance.
 
 - `/api/nockchain/zorp`
 - `/nockchain/zorp`
 
 Use it when interpreting whether a source is current protocol authority, historical lineage, state-jam provenance, or future product signal for Nocksperimental receipts.
 
-The Zorp intelligence page renders the same map as an operator brief: priority repos, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
+The Zorp intelligence page renders the same map as an operator brief: priority repos, canonical relocation, lineage risk flags, state-jam metadata boundaries, a repository watch matrix, and concrete actions for turning Zorp/Nockchain changes into receipt or test assumptions.
 
 ## Nockchain State-Jam Provenance
 
@@ -451,7 +460,7 @@ curl https://nocksperimental.com/.well-known/nocksperimental.json
 - `docs/trust-signals.md` documents trust registry primitives.
 - `docs/workspaces.md` covers private workspace evidence and upload-token flows.
 - `docs/deployment.md` covers Cloudflare deployment details.
-- `docs/research/zorp-nockchain.md` tracks Zorp/Nockchain repo and state-jam interpretation.
+- `docs/research/zorp-nockchain.md` tracks Zorp/Nockchain repo, legacy redirect, monitor, and state-jam interpretation.
 - `docs/research/nockchain-rust-architecture.md` tracks Nockchain's Rust workspace, docs authority model, and Nocksperimental product implications.
 
 ## Roadmap

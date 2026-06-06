@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
+import { createNockchainBridgeSourceTrace } from "@/lib/nockchain-bridge-source-trace";
 import { createNockchainDocsAtlas } from "@/lib/nockchain-docs-atlas";
 import { createNockchainNockAppAtlas } from "@/lib/nockchain-nockapp-atlas";
 import { createNockchainNockAppSourceTrace } from "@/lib/nockchain-nockapp-source-trace";
@@ -36,6 +37,7 @@ export function createRegistryCheckpoint() {
   const generatedReports = loadGeneratedLabReports();
   const localFakenetEvidence = createLocalFakenetEvidenceCapsule();
   const nockchainBridgeTrace = createNockchainBridgeTrace();
+  const nockchainBridgeSourceTrace = createNockchainBridgeSourceTrace();
   const nockchainReleaseAssets = createNockchainReleaseAssets();
   const nockchainDocsAtlas = createNockchainDocsAtlas();
   const nockchainProtocolTrace = createNockchainProtocolTrace();
@@ -75,6 +77,8 @@ export function createRegistryCheckpoint() {
     nockchainBridgeSources: nockchainBridgeTrace.sourceAnchors.length,
     nockchainBridgeSequencerLifecycleStates:
       nockchainBridgeTrace.sequencerOperationalContract.lifecycleStates.length,
+    nockchainBridgeSourceAnchors: nockchainBridgeSourceTrace.sourceAnchors.length,
+    nockchainBridgeExecutionFlowSteps: nockchainBridgeSourceTrace.executionFlow.length,
     nockchainReleaseAssets: nockchainReleaseAssets.assets.length,
     nockchainReleaseManifestTargets: nockchainReleaseAssets.manifest.targets.length,
     nockchainProtocolSpecs: nockchainDocsAtlas.protocolSpecs.specs.length,
@@ -118,6 +122,16 @@ export function createRegistryCheckpoint() {
       safetyInvariants: nockchainBridgeTrace.safetyInvariants,
       receiptFields: nockchainBridgeTrace.receiptFields,
       sequencerOperationalContract: nockchainBridgeTrace.sequencerOperationalContract
+    }),
+    nockchainBridgeSourceTrace: createSha256Root({
+      generatedAt: nockchainBridgeSourceTrace.generatedAt,
+      upstream: nockchainBridgeSourceTrace.upstream,
+      sourceAnchors: nockchainBridgeSourceTrace.sourceAnchors,
+      executionFlow: nockchainBridgeSourceTrace.executionFlow,
+      sourceTraceContract: nockchainBridgeSourceTrace.sourceTraceContract,
+      receiptFieldMapping: nockchainBridgeSourceTrace.receiptFieldMapping,
+      upstreamSignals: nockchainBridgeSourceTrace.upstreamSignals,
+      operatorInvariants: nockchainBridgeSourceTrace.operatorInvariants
     }),
     nockchainReleaseAssets: createSha256Root({
       generatedAt: nockchainReleaseAssets.generatedAt,
@@ -263,6 +277,15 @@ export function createRegistryCheckpoint() {
         ) &&
         nockchainBridgeTrace.sequencerOperationalContract.journal.envVars.includes(
           "WITHDRAWAL_SEQUENCER_JOURNAL_SIGNING_KEY"
+        ),
+      nockchainBridgeSourceTraceAvailable:
+        nockchainBridgeSourceTrace.sourceAnchors.length === 12 &&
+        nockchainBridgeSourceTrace.executionFlow.length === 8 &&
+        nockchainBridgeSourceTrace.sourceTraceContract.requiredFields.includes(
+          "confirmationEvidence"
+        ) &&
+        nockchainBridgeSourceTrace.sourceTraceContract.forbiddenFields.includes(
+          "sequencerJournalSigningKey"
         ),
       nockchainReleaseAssetsAvailable:
         nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
@@ -512,6 +535,18 @@ export function createRegistryCheckpoint() {
       defaultBranchAheadOfRelease: nockchainBridgeTrace.releaseDrift.defaultBranchAheadOfRelease,
       receiptFields: nockchainBridgeTrace.receiptFields
     },
+    nockchainBridgeSourceTrace: {
+      anchorCount: nockchainBridgeSourceTrace.sourceAnchors.length,
+      executionFlowStepCount: nockchainBridgeSourceTrace.executionFlow.length,
+      anchorIds: nockchainBridgeSourceTrace.sourceAnchors.map((anchor) => anchor.id),
+      flowStepIds: nockchainBridgeSourceTrace.executionFlow.map((step) => step.id),
+      receiptFields: nockchainBridgeSourceTrace.receiptFieldMapping.receiptFields,
+      forbiddenFields: nockchainBridgeSourceTrace.sourceTraceContract.forbiddenFields,
+      upstreamSignalPrs: nockchainBridgeSourceTrace.upstreamSignals.map(
+        (signal) => signal.prNumber
+      ),
+      operatorInvariants: nockchainBridgeSourceTrace.operatorInvariants
+    },
     nockchainReleaseAssets: {
       assetCount: nockchainReleaseAssets.assets.length,
       groupCount: nockchainReleaseAssets.assetGroups.length,
@@ -542,6 +577,7 @@ export function createRegistryCheckpoint() {
       generatedReports: `${registryCanonicalBaseUrl}/api/reports/generated`,
       zorpUpstream: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
       nockchainBridgeTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge`,
+      nockchainBridgeSourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge-source`,
       nockchainReleaseAssets: `${registryCanonicalBaseUrl}/api/nockchain/release-assets`,
       nockchainDocsAtlas: `${registryCanonicalBaseUrl}/api/nockchain/docs-atlas`,
       nockchainProtocolTrace: `${registryCanonicalBaseUrl}/api/nockchain/protocol`,

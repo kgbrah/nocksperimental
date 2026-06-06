@@ -24,7 +24,7 @@ async function main() {
   assertEqual(body.service, "nocksperimental", "service name");
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/zorp", "canonical URL");
-  assertEqual(body.scannedAt, "2026-06-05T20:15:00.000Z", "scan timestamp");
+  assertEqual(body.scannedAt, "2026-06-06T05:04:00.000Z", "scan timestamp");
 
   assertEqual(body.organization.slug, "zorp-corp", "Zorp organization slug");
   assertEqual(body.organization.publicRepoCount, 10, "Zorp public repo count");
@@ -33,6 +33,23 @@ async function main() {
 
   assertEqual(body.nockchain.repository.fullName, "nockchain/nockchain", "canonical Nockchain repo");
   assertEqual(body.nockchain.repository.defaultBranch, "master", "canonical default branch");
+  assertIncludes(
+    body.nockchain.repository.legacyUrls,
+    "https://github.com/zorp-corp/nockchain",
+    "canonical repo records legacy Zorp URL"
+  );
+  assertEqual(
+    body.nockchain.canonicalRelocation.legacyUrl,
+    "https://github.com/zorp-corp/nockchain",
+    "canonical relocation legacy URL"
+  );
+  assertEqual(
+    body.nockchain.canonicalRelocation.canonicalUrl,
+    "https://github.com/nockchain/nockchain",
+    "canonical relocation target"
+  );
+  assertEqual(body.nockchain.canonicalRelocation.observedRedirect, true, "canonical redirect observed");
+  assertEqual(body.nockchain.canonicalRelocation.currentOwner, "nockchain", "canonical owner");
   assertEqual(body.nockchain.latestCommit.shortSha, "33ba97b1e206", "Nockchain latest commit");
   assertEqual(
     body.nockchain.latestRelease.tag,
@@ -49,6 +66,11 @@ async function main() {
     "nockchain/nockchain",
     "protocol authority repository"
   );
+  assertEqual(
+    body.sourceAuthority.protocol.legacyUrl,
+    "https://github.com/zorp-corp/nockchain",
+    "protocol authority legacy URL"
+  );
   assertIncludes(
     body.sourceAuthority.protocol.authorityDocs,
     "PROTOCOL.md",
@@ -60,6 +82,12 @@ async function main() {
     "Zorp source authority role"
   );
   assertEqual(body.sourceAuthority.zorpOrg.organization, "zorp-corp", "Zorp source authority org");
+  assertEqual(body.sourceAuthority.zorpOrg.publicRepoCount, 10, "Zorp source authority repo count");
+  assertEqual(
+    body.sourceAuthority.zorpOrg.repositoryInventoryUrl,
+    "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+    "Zorp source authority inventory URL"
+  );
   assertIncludes(
     body.sourceAuthority.zorpOrg.primaryRepos,
     "zorp-corp/jock-lang",
@@ -79,6 +107,11 @@ async function main() {
     body.sourceAuthority.decisionRules,
     "Use nockchain/nockchain Tier 0 docs for protocol claims.",
     "source authority protocol rule"
+  );
+  assertIncludes(
+    body.sourceAuthority.decisionRules,
+    "Treat zorp-corp/nockchain as a legacy redirect to nockchain/nockchain.",
+    "source authority redirect rule"
   );
   assertIncludes(
     body.sourceAuthority.decisionRules,
@@ -117,13 +150,23 @@ async function main() {
   assertEqual(body.monitor.active, true, "monitor active");
   assertEqual(
     body.monitor.automationId,
-    "watch-zorp-nockchain-repos-and-state-jams",
+    "monitor-zorp-and-nockchain-sources",
     "monitor automation id"
   );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor interval");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
+  assertIncludes(
+    body.monitor.watchedSources,
+    "https://github.com/zorp-corp/nockchain",
+    "legacy Nockchain redirect monitor source"
+  );
   assertIncludes(body.monitor.watchedSources, "https://github.com/nockchain/nockchain", "Nockchain monitor source");
   assertIncludes(body.monitor.watchedSources, body.stateJamDrive.url, "Drive monitor source");
+  assertIncludes(
+    body.monitor.highSignalChanges,
+    "zorp-corp/nockchain redirect or ownership metadata changes",
+    "legacy redirect monitor signal"
+  );
   assertIncludes(body.monitor.highSignalChanges, "Jock language/compiler changes", "Jock monitor signal");
 
   assertEqual(body.repositoryWatchMatrix.length, 5, "Zorp repository watch matrix entry count");
@@ -262,6 +305,7 @@ async function main() {
 
   const research = readFileSync(path.join(process.cwd(), "docs/research/zorp-nockchain.md"), "utf8");
   assertIncludes(research, "state-jam folder, not a VESL folder", "research doc corrects Drive folder");
+  assertIncludes(research, "legacy https://github.com/zorp-corp/nockchain URL redirects", "research doc records legacy redirect");
   assertIncludes(research, "zorp-corp/jock-lang", "research doc tracks jock-lang");
   assertIncludes(research, "Source Authority Matrix", "research doc explains source authority matrix");
 }

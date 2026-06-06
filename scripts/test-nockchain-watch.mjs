@@ -25,6 +25,7 @@ async function main() {
   assertEqual(body.subject, "nocksperimental.com", "subject");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/nockchain/watch", "canonical URL");
   assertEqual(body.status, "in-sync", "watch drift status");
+  assertEqual(body.observedAt, "2026-06-06T05:04:00.000Z", "watch observed timestamp");
   assertEqual(body.pinned.nockchain.commit.shortSha, "33ba97b1e206", "pinned commit");
   assertEqual(body.observed.nockchain.commit.shortSha, "33ba97b1e206", "observed commit");
   assertEqual(
@@ -39,6 +40,11 @@ async function main() {
   assertEqual(body.drift.zorpStateJamFolderClassified, true, "state-jam folder classification");
   assertIncludes(
     body.drift.requiredReviewSignals,
+    "zorp-corp/nockchain redirects to the canonical nockchain/nockchain repository",
+    "legacy redirect review signal"
+  );
+  assertIncludes(
+    body.drift.requiredReviewSignals,
     "bridge withdrawal execution is now represented by the latest public build release",
     "bridge release catch-up signal"
   );
@@ -47,7 +53,19 @@ async function main() {
   assertSource(body, "github-nockchain-commit", "https://api.github.com/repos/nockchain/nockchain/commits/master");
   assertSource(body, "github-nockchain-release", "https://api.github.com/repos/nockchain/nockchain/releases/latest");
   assertSource(body, "github-zorp-repos", "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated");
+  assertSource(body, "github-zorp-nockchain-legacy-redirect", "https://github.com/zorp-corp/nockchain");
   assertSource(body, "zorp-state-jam-drive", "https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw");
+
+  assertEqual(
+    body.observed.zorp.canonicalRelocation.canonicalUrl,
+    "https://github.com/nockchain/nockchain",
+    "observed canonical relocation target"
+  );
+  assertEqual(
+    body.observed.zorp.canonicalRelocation.legacyUrl,
+    "https://github.com/zorp-corp/nockchain",
+    "observed canonical relocation source"
+  );
 
   assertWatchItem(body, "bridge-withdrawal-execution", "bridge-withdrawals", "high");
   assertWatchItem(body, "libp2p-behind-tip-gossip", "fakenet-mining", "high");
@@ -92,16 +110,18 @@ async function main() {
   );
 
   assertIncludes(body.operatorChecklist, "Compare live GitHub commit and release against the pinned Nocksperimental upstream snapshot before interpreting fakenet failures.", "drift checklist");
+  assertIncludes(body.operatorChecklist, "Resolve zorp-corp/nockchain to nockchain/nockchain before treating a source as current protocol authority.", "redirect checklist");
   assertIncludes(body.operatorChecklist, "Treat zorp-corp/nockapp metadata changes as lineage review until a non-archived canonical repo changes.", "nockapp checklist");
   assertIncludes(body.operatorChecklist, "Inventory the Zorp state-jam Drive folder as metadata only before trusting bootstrap artifacts.", "state-jam checklist");
 
   assertEqual(
     body.monitor.automationId,
-    "watch-zorp-nockchain-repos-and-state-jams",
+    "monitor-zorp-and-nockchain-sources",
     "monitor automation id"
   );
   assertEqual(body.monitor.interval, "FREQ=HOURLY;INTERVAL=6", "monitor cadence");
   assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp", "Zorp monitor source");
+  assertIncludes(body.monitor.watchedSources, "https://github.com/zorp-corp/nockchain", "legacy redirect monitor source");
   assertIncludes(body.monitor.watchedSources, "https://github.com/nockchain/nockchain", "Nockchain monitor source");
   assertIncludes(body.monitor.watchedSources, body.sources.find((source) => source.id === "zorp-state-jam-drive").url, "Drive monitor source");
 

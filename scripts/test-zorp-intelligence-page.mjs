@@ -20,16 +20,36 @@ async function main() {
   const body = await response.json();
 
   assertEqual(response.status, 200, "Zorp upstream status");
-  assertEqual(body.monitorBrief.generatedAt, "2026-06-05T23:58:00.000Z", "monitor brief timestamp");
+  assertEqual(body.monitorBrief.generatedAt, "2026-06-06T05:04:00.000Z", "monitor brief timestamp");
   assertEqual(body.monitorBrief.snapshot.publicRepoCount, 10, "monitor brief repo count");
   assertEqual(body.monitorBrief.snapshot.activeCoreRepos, 1, "monitor brief active core repos");
   assertEqual(body.monitorBrief.snapshot.archivedLineageRepos, 2, "monitor brief archived lineage repos");
+  assertEqual(
+    body.nockchain.canonicalRelocation.legacyUrl,
+    "https://github.com/zorp-corp/nockchain",
+    "monitor brief legacy Nockchain URL"
+  );
+  assertEqual(
+    body.nockchain.canonicalRelocation.canonicalUrl,
+    "https://github.com/nockchain/nockchain",
+    "monitor brief canonical Nockchain URL"
+  );
   assertIncludes(body.monitorBrief.priorityRepos, "zorp-corp/jock-lang", "priority tracks Jock");
   assertIncludes(body.monitorBrief.priorityRepos, "zorp-corp/nockapp", "priority tracks NockApp lineage");
   assertIncludes(body.monitorBrief.priorityRepos, "zorp-corp/sword", "priority tracks Sword lineage");
   assertIncludes(body.monitorBrief.priorityRepos, "nockchain/nockchain", "priority tracks canonical Nockchain");
   assertIncludes(body.monitorBrief.riskFlags, "legacy-repos-are-lineage-not-authority", "lineage risk flag");
+  assertIncludes(
+    body.monitorBrief.riskFlags,
+    "zorp-corp-nockchain-redirects-to-canonical-nockchain-org",
+    "legacy redirect risk flag"
+  );
   assertIncludes(body.monitorBrief.riskFlags, "state-jam-folder-is-metadata-only", "state-jam risk flag");
+  assertIncludes(
+    body.monitorBrief.operatorActions,
+    "Treat zorp-corp/nockchain as a legacy URL that redirects to nockchain/nockchain before making protocol claims.",
+    "monitor brief redirect action"
+  );
   assertIncludes(
     body.monitorBrief.operatorActions,
     "Promote Nockchain release, protocol-doc, fakenet, PMA, wallet, or libp2p changes into receipt fields before relying on test output.",
@@ -56,6 +76,14 @@ async function main() {
   assertIncludes(page, "canonical-protocol-authority", "Zorp page renders protocol authority role");
   assertIncludes(page, "lineage-and-authoring-signal", "Zorp page renders Zorp authority role");
   assertIncludes(page, "state-artifact-provenance", "Zorp page renders state artifact authority role");
+  assertIncludes(
+    page,
+    "zorp-corp/nockchain redirects to nockchain/nockchain",
+    "Zorp page renders canonical relocation"
+  );
+  assertIncludes(page, "canonicalRelocation", "Zorp page labels canonical relocation");
+  assertIncludes(page, "legacyUrl", "Zorp page renders legacy URL field");
+  assertIncludes(page, "canonicalUrl", "Zorp page renders canonical URL field");
   assertIncludes(page, "Monitor Brief", "Zorp page renders monitor brief");
   assertIncludes(page, "zorp-corp/jock-lang", "Zorp page renders Jock priority");
   assertIncludes(page, "zorp-corp/nockapp", "Zorp page renders NockApp lineage priority");
@@ -63,6 +91,11 @@ async function main() {
   assertIncludes(page, "nockchain/nockchain", "Zorp page renders canonical Nockchain priority");
   assertIncludes(page, "state-jam folder, not a VESL folder", "Zorp page preserves Drive correction");
   assertIncludes(page, "legacy-repos-are-lineage-not-authority", "Zorp page renders lineage risk flag");
+  assertIncludes(
+    page,
+    "zorp-corp-nockchain-redirects-to-canonical-nockchain-org",
+    "Zorp page renders legacy redirect risk flag"
+  );
   assertIncludes(page, "state-jam-folder-is-metadata-only", "Zorp page renders state-jam risk flag");
   assertIncludes(page, "Watch Matrix", "Zorp page renders watch matrix");
   assertIncludes(page, "canonical-runtime", "Zorp page renders canonical runtime matrix entry");
@@ -76,6 +109,7 @@ async function main() {
   assertIncludes(page, 'href="/nockchain"', "Zorp page links parent");
   assertIncludes(nockchainPage, 'href="/nockchain/zorp"', "Nockchain page links Zorp page");
   assertIncludes(readme, "/nockchain/zorp", "README documents Zorp page");
+  assertIncludes(readme, "legacy `zorp-corp/nockchain` redirect", "README documents legacy redirect");
   assertIncludes(readme, "source-authority matrix", "README documents Zorp source authority");
   assertEqual(
     packageJson.scripts["test:zorp-intelligence-page"],

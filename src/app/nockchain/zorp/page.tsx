@@ -13,6 +13,7 @@ import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 export const dynamic = "force-dynamic";
 
 const driveFolderCorrection = "state-jam folder, not a VESL folder";
+const canonicalRelocationLabel = "zorp-corp/nockchain redirects to nockchain/nockchain";
 const prioritySourceOrder: readonly string[] = [
   "zorp-corp/jock-lang",
   "zorp-corp/nockapp",
@@ -21,6 +22,7 @@ const prioritySourceOrder: readonly string[] = [
 ];
 const riskFlagOrder: readonly string[] = [
   "legacy-repos-are-lineage-not-authority",
+  "zorp-corp-nockchain-redirects-to-canonical-nockchain-org",
   "state-jam-folder-is-metadata-only"
 ];
 const sourceAuthorityRoleOrder: readonly string[] = [
@@ -153,6 +155,15 @@ export default function ZorpIntelligencePage() {
             ))}
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="canonicalRelocation" value={canonicalRelocationLabel} />
+            <Callout
+              label="legacyUrl"
+              value={zorp.nockchain.canonicalRelocation.legacyUrl}
+            />
+            <Callout
+              label="canonicalUrl"
+              value={zorp.nockchain.canonicalRelocation.canonicalUrl}
+            />
             {zorp.sourceAuthority.decisionRules.map((rule) => (
               <Callout key={rule} label="decisionRule" value={rule} />
             ))}

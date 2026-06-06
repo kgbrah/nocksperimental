@@ -7,7 +7,7 @@ import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 import { createNockchainStateJamRegistry } from "@/lib/nockchain-state-jams";
 import { createZorpUpstreamMap } from "@/lib/zorp-upstream";
 
-const observedAt = "2026-06-05T23:59:00.000Z";
+const observedAt = "2026-06-06T05:04:00.000Z";
 
 const sources = [
   {
@@ -27,6 +27,12 @@ const sources = [
     kind: "github-api",
     url: "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
     use: "Zorp public repository inventory and updated/pushed timestamps."
+  },
+  {
+    id: "github-zorp-nockchain-legacy-redirect",
+    kind: "github-url",
+    url: "https://github.com/zorp-corp/nockchain",
+    use: "Legacy Nockchain URL that resolves to the canonical nockchain/nockchain repository."
   },
   {
     id: "zorp-state-jam-drive",
@@ -314,6 +320,7 @@ export function createNockchainWatchBoard() {
         publicRepoCount: zorp.repositories.length,
         latestOrgUpdateAt: zorp.monitorBrief.snapshot.latestOrgUpdateAt,
         priorityRepos: zorp.monitorBrief.priorityRepos,
+        canonicalRelocation: zorp.nockchain.canonicalRelocation,
         nockapp: nockapp
           ? {
               fullName: nockapp.fullName,
@@ -348,6 +355,7 @@ export function createNockchainWatchBoard() {
       zorpStateJamFolderClassified,
       requiresHumanReview: watchQueue.some((item) => item.severity === "high"),
       requiredReviewSignals: [
+        "zorp-corp/nockchain redirects to the canonical nockchain/nockchain repository",
         "bridge withdrawal execution is now represented by the latest public build release",
         "libp2p behind-tip gossip suppression affects fakenet mining interpretation",
         "zorp-corp/nockapp archived repo updated metadata",
@@ -360,6 +368,7 @@ export function createNockchainWatchBoard() {
     watchQueue,
     operatorChecklist: [
       "Compare live GitHub commit and release against the pinned Nocksperimental upstream snapshot before interpreting fakenet failures.",
+      "Resolve zorp-corp/nockchain to nockchain/nockchain before treating a source as current protocol authority.",
       "Treat zorp-corp/nockapp metadata changes as lineage review until a non-archived canonical repo changes.",
       "Inventory the Zorp state-jam Drive folder as metadata only before trusting bootstrap artifacts.",
       "Promote new Nockchain commit, release, protocol-doc, PMA, libp2p, wallet, or fakenet changes into the relevant atlas before issuing receipts.",

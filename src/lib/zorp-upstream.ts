@@ -6,6 +6,11 @@ import {
 import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 import { zorpStateJamDriveFolderUrl } from "@/lib/nockchain-state-jams";
 
+const zorpNockchainLegacyUrl = "https://github.com/zorp-corp/nockchain";
+const canonicalNockchainUrl = "https://github.com/nockchain/nockchain";
+const zorpMonitorAutomationId = "monitor-zorp-and-nockchain-sources";
+const zorpMonitorAutomationName = "Monitor Zorp and Nockchain Sources";
+
 const zorpRepositories = [
   {
     name: "nockapp",
@@ -215,7 +220,7 @@ const zorpLayers = [
 ] as const;
 
 const zorpMonitorBrief = {
-  generatedAt: "2026-06-05T23:58:00.000Z",
+  generatedAt: "2026-06-06T05:04:00.000Z",
   snapshot: {
     publicRepoCount: zorpRepositories.length,
     activeCoreRepos: zorpRepositories.filter(
@@ -237,10 +242,12 @@ const zorpMonitorBrief = {
   ],
   riskFlags: [
     "legacy-repos-are-lineage-not-authority",
+    "zorp-corp-nockchain-redirects-to-canonical-nockchain-org",
     "state-jam-folder-is-metadata-only",
     "forked-tooling-is-low-signal-until-used-by-nockchain"
   ],
   operatorActions: [
+    "Treat zorp-corp/nockchain as a legacy URL that redirects to nockchain/nockchain before making protocol claims.",
     "Promote Nockchain release, protocol-doc, fakenet, PMA, wallet, or libp2p changes into receipt fields before relying on test output.",
     "Treat zorp-corp/jock-lang changes as fixture-authoring signals and zorp-corp/nockapp or zorp-corp/sword changes as historical context.",
     "Inventory Drive state-jam artifacts by source URL, filename, size, hash, network, height or event boundary, and producing Nockchain build before trusting them.",
@@ -353,7 +360,7 @@ export function createZorpUpstreamMap() {
     service: registryServiceName,
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/nockchain/zorp`,
-    scannedAt: "2026-06-05T20:15:00.000Z",
+    scannedAt: "2026-06-06T05:04:00.000Z",
     organization: {
       slug: "zorp-corp",
       name: "Zorp Corp",
@@ -369,7 +376,16 @@ export function createZorpUpstreamMap() {
         fullName: nockchain.repository.fullName,
         defaultBranch: nockchain.repository.defaultBranch,
         url: nockchain.repository.url,
-        lineageOrg: "https://github.com/zorp-corp"
+        lineageOrg: "https://github.com/zorp-corp",
+        legacyUrls: [zorpNockchainLegacyUrl]
+      },
+      canonicalRelocation: {
+        legacyUrl: zorpNockchainLegacyUrl,
+        canonicalUrl: canonicalNockchainUrl,
+        observedRedirect: true,
+        currentOwner: "nockchain",
+        interpretation:
+          "Zorp developed the lineage and the old zorp-corp/nockchain URL now resolves to the canonical Nockchain organization repository."
       },
       latestCommit: nockchain.latestCommit,
       latestRelease: nockchain.latestRelease,
@@ -381,6 +397,7 @@ export function createZorpUpstreamMap() {
         sourceRole: "canonical-protocol-authority",
         repository: nockchain.repository.fullName,
         url: nockchain.repository.url,
+        legacyUrl: zorpNockchainLegacyUrl,
         authorityDocs: [
           "START_HERE.md",
           "PROTOCOL.md",
@@ -389,12 +406,14 @@ export function createZorpUpstreamMap() {
           "DECISIONS/README.md"
         ],
         interpretation:
-          "Use the canonical Nockchain monorepo and Tier 0 docs for protocol, runtime, wallet, fakenet, PMA, and release claims."
+          "Use the canonical Nockchain monorepo and Tier 0 docs for protocol, runtime, wallet, fakenet, PMA, and release claims. Treat zorp-corp/nockchain as a legacy redirect, not a separate current repo."
       },
       zorpOrg: {
         sourceRole: "lineage-and-authoring-signal",
         organization: "zorp-corp",
         url: "https://github.com/zorp-corp",
+        repositoryInventoryUrl: "https://api.github.com/orgs/zorp-corp/repos?per_page=100&sort=updated",
+        publicRepoCount: zorpRepositories.length,
         primaryRepos: [
           "zorp-corp/jock-lang",
           "zorp-corp/nockapp",
@@ -415,6 +434,7 @@ export function createZorpUpstreamMap() {
       },
       decisionRules: [
         "Use nockchain/nockchain Tier 0 docs for protocol claims.",
+        "Treat zorp-corp/nockchain as a legacy redirect to nockchain/nockchain.",
         "Use Zorp repos for lineage, authoring, fixture, and ecosystem-direction signals.",
         "Use the Drive folder only as metadata-backed state-jam provenance, not as VESL evidence.",
         "Promote a source into receipts only after recording repo, commit/build, artifact identity, and network context."
@@ -433,16 +453,18 @@ export function createZorpUpstreamMap() {
     layers: zorpLayers,
     monitor: {
       active: true,
-      automationName: "Watch Zorp/Nockchain state jams and repos",
-      automationId: "watch-zorp-nockchain-repos-and-state-jams",
+      automationName: zorpMonitorAutomationName,
+      automationId: zorpMonitorAutomationId,
       interval: "FREQ=HOURLY;INTERVAL=6",
       watchedSources: [
         zorpStateJamDriveFolderUrl,
         "https://github.com/zorp-corp",
+        zorpNockchainLegacyUrl,
         "https://github.com/nockchain/nockchain"
       ],
       highSignalChanges: [
         "Nockchain releases, build tags, stable-build tags, and default-branch commits",
+        "zorp-corp/nockchain redirect or ownership metadata changes",
         "Tier 0 doc changes in START_HERE.md, PROTOCOL.md, ARCHITECTURE.md, WORKFLOWS.md, and DECISIONS/README.md",
         "PMA/state-jam/checkpoint migration or decode changes",
         "fakenet, mining, libp2p sync, route-table, peer, wallet, and API changes",

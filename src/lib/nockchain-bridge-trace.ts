@@ -353,6 +353,7 @@ export function createNockchainBridgeTrace() {
       commit: upstream.latestCommit.url,
       release: upstream.latestRelease.url,
       bridgePage: `${registryCanonicalBaseUrl}/nockchain/bridge`,
+      sourceTrace: `${registryCanonicalBaseUrl}/api/nockchain/bridge-source`,
       watch: `${registryCanonicalBaseUrl}/api/nockchain/watch`,
       rustAtlas: `${registryCanonicalBaseUrl}/api/nockchain/rust-atlas`,
       wallet: `${registryCanonicalBaseUrl}/api/nockchain/wallet`,

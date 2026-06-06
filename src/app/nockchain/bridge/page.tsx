@@ -77,6 +77,13 @@ export default function NockchainBridgePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/bridge/source"
+              >
+                <ListChecks size={16} aria-hidden="true" />
+                Source Trace
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/api/nockchain/watch"
               >
                 <RadioTower size={16} aria-hidden="true" />

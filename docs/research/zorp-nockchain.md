@@ -6,13 +6,14 @@ Updated: 2026-06-06
 
 The Google Drive folder at https://drive.google.com/drive/folders/1aEYZwmg4isTuYXWFn9gKPl92-pYndwUw is a Zorp/Nockchain state-jam folder, not a VESL folder. Treat it as chain/runtime bootstrap material and keep it conceptually separate from VESL evidence bridge work.
 
-Zorp is the developer lineage behind the current Nockchain stack. The public Zorp organization is at https://github.com/zorp-corp. The Nockchain repository now resolves canonically to https://github.com/nockchain/nockchain.
+Zorp is the developer lineage behind the current Nockchain stack. The public Zorp organization is at https://github.com/zorp-corp. The legacy https://github.com/zorp-corp/nockchain URL redirects to the canonical https://github.com/nockchain/nockchain repository, so receipts should record the canonical repo for protocol claims and the Zorp org for lineage/ecosystem signals.
 
 ## Source Authority Matrix
 
 | Source | Role | How Nocksperimental should use it |
 | --- | --- | --- |
 | `nockchain/nockchain` | canonical-protocol-authority | Source of truth for protocol, runtime, wallet, fakenet, PMA, releases, and Tier 0 docs. |
+| `zorp-corp/nockchain` | legacy-redirect | Historical Zorp URL that resolves to `nockchain/nockchain`; monitor it as an alias, not a second authority. |
 | `zorp-corp` public repos | lineage-and-authoring-signal | Lineage and ecosystem signal for Jock authoring, NockApp history, Sword persistence history, formal semantics, and proof-adjacent work. |
 | Zorp State Jam Drive folder | state-artifact-provenance | Metadata-only provenance source for state-jam/checkpoint artifacts; not VESL evidence and not raw data to commit or redistribute. |
 
@@ -67,10 +68,11 @@ This also argues for letting users connect their own fakenets. A useful test res
 
 ## Monitor Scope
 
-The active Codex automation `watch-zorp-nockchain-repos-and-state-jams` is named "Watch Zorp/Nockchain state jams and repos". It runs every six hours and checks:
+The active Codex automation `monitor-zorp-and-nockchain-sources` is named "Monitor Zorp and Nockchain Sources". It runs every six hours and checks:
 
 - the Drive state-jam folder
 - https://github.com/zorp-corp
+- the legacy https://github.com/zorp-corp/nockchain redirect
 - https://github.com/nockchain/nockchain
 
 High-signal changes to watch:

@@ -50,6 +50,7 @@ async function main() {
     await expectStatus(`${baseUrl}/api/nockchain/docs-atlas`, 200, "Nockchain docs and protocol atlas API");
     await expectStatus(`${baseUrl}/api/nockchain/protocol`, 200, "Nockchain protocol authority trace");
     await expectStatus(`${baseUrl}/api/nockchain/bridge`, 200, "Nockchain bridge withdrawal trace");
+    await expectStatus(`${baseUrl}/api/nockchain/bridge-source`, 200, "Nockchain bridge source trace");
     await expectStatus(`${baseUrl}/api/nockchain/release-assets`, 200, "Nockchain release asset manifest");
     await expectStatus(`${baseUrl}/api/nockchain/zorp`, 200, "Zorp/Nockchain upstream map API");
     await expectStatus(`${baseUrl}/api/nockchain/state-jams`, 200, "Nockchain state-jam provenance API");
@@ -83,6 +84,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain`, 200, "Nockchain evidence page");
     await expectStatus(`${baseUrl}/nockchain/protocol`, 200, "Nockchain protocol page");
     await expectStatus(`${baseUrl}/nockchain/bridge`, 200, "Nockchain bridge page");
+    await expectStatus(`${baseUrl}/nockchain/bridge/source`, 200, "Nockchain bridge source trace page");
     await expectStatus(`${baseUrl}/nockchain/releases`, 200, "Nockchain release assets page");
     await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
     await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
