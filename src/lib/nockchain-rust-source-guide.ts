@@ -84,6 +84,13 @@ const sourceDomains = [
       "Explain sequencer journals, submission state, and VESL bridge evidence while excluding signing keys."
   },
   {
+    id: "bridge-dev-scenarios",
+    label: "Bridge-dev scenarios",
+    crateNames: ["bridge-dev"],
+    nocksperimentalUse:
+      "Use opt-in bridge development scenarios as implementation fixtures while keeping Tenderly, R2, and signing secrets out of public receipts."
+  },
+  {
     id: "nockup-scaffold",
     label: "Nockup scaffold",
     crateNames: ["nockup"],
@@ -115,6 +122,9 @@ const sourceTraceContract = {
     "privateSpendKey",
     "sequencerJournalSigningKey",
     "objectStoreSecret",
+    "tenderlyAccessKey",
+    "tenderlyTestPrivateKey",
+    "r2TestToken",
     "bridgeNodePrivateKey"
   ],
   reviewRules: [
@@ -380,6 +390,60 @@ const sourceAnchors = [
       "Sequencer evidence can cite journal entry metadata and submission state while keeping signing material private."
   },
   {
+    id: "bridge-dev-scenario-readme",
+    domainId: "bridge-dev-scenarios",
+    crateName: "bridge-dev",
+    sourcePath: "crates/bridge-dev/tests/README.md",
+    symbol: "bridge-dev Scenario Tests",
+    lineRange: "L1-L58",
+    cargoGate: "cargo test -p bridge-dev --test scenarios -- --ignored --test-threads=1",
+    receiptFields: [
+      "bridgeDevScenarioName",
+      "releaseBinarySet",
+      "bridgeDevTestRunRoot",
+      "bridgeDevPortOffset",
+      "tenderlyVnetId",
+      "r2JournalReplay"
+    ],
+    forbiddenFields: [
+      "tenderlyAccessKey",
+      "tenderlyTestPrivateKey",
+      "r2TestToken",
+      "objectStoreSecret"
+    ],
+    targetSurfaces: ["nockchainBridgeSourceTrace", "nockchainTestkitE2e", "localFakenetEvidence"],
+    interpretation:
+      "The bridge-dev scenarios are opt-in fixture evidence that provisions remote state; receipts should record scenario metadata and environment posture, not credentials or raw remote artifacts."
+  },
+  {
+    id: "bridge-dev-withdrawal-scenarios",
+    domainId: "bridge-dev-scenarios",
+    crateName: "bridge-dev",
+    sourcePath: "crates/bridge-dev/tests/scenarios.rs",
+    symbol:
+      "withdrawal_happy_path_reaches_executed / withdrawal_sequencer_rebuilds_from_r2_after_sqlite_wipe",
+    lineRange: "L955-L1084",
+    cargoGate: "cargo test -p bridge-dev --test scenarios -- --ignored --test-threads=1",
+    receiptFields: [
+      "bridgeDevWithdrawalPhase",
+      "stableProposalHash",
+      "authorizedTransactionArtifact",
+      "executedWithdrawalId",
+      "sequencerR2Recovery",
+      "bridgeProcessRestart"
+    ],
+    forbiddenFields: [
+      "r2TestToken",
+      "tenderlyAccessKey",
+      "tenderlyTestPrivateKey",
+      "rawTransactionJam",
+      "sequencerJournalSigningKey"
+    ],
+    targetSurfaces: ["nockchainBridgeSourceTrace", "veslEvidenceBridge", "nockchainRustSourceGuide"],
+    interpretation:
+      "Withdrawal scenario tests are implementation fixtures for happy-path, restart, R2 replay, downtime, and degraded-node behavior; public evidence should cite stable artifacts and phases without replaying secrets."
+  },
+  {
     id: "nockup-main",
     domainId: "nockup-scaffold",
     crateName: "nockup",
@@ -437,6 +501,12 @@ const learningPath = [
       "Map withdrawal lifecycle evidence into bridge and VESL receipts without leaking raw transactions or signing keys."
   },
   {
+    domainId: "bridge-dev-scenarios",
+    anchorIds: ["bridge-dev-scenario-readme", "bridge-dev-withdrawal-scenarios"],
+    objective:
+      "Use bridge-dev opt-in scenarios to learn withdrawal execution and recovery behavior while preserving test-secret boundaries."
+  },
+  {
     domainId: "nockup-scaffold",
     anchorIds: ["nockup-main"],
     objective:
@@ -486,6 +556,7 @@ export function createNockchainRustSourceGuide() {
       "Use this guide when a receipt needs exact Rust source evidence, not just crate-level provenance.",
       "Refresh anchors when the upstream commit, release, source line range, or open issue watch changes.",
       "Pair every source anchor with a cargo gate and forbidden-field guard before accepting user-connected fakenet evidence.",
+      "Treat bridge-dev scenarios as implementation fixtures; do not turn Tenderly or R2-backed test artifacts into public receipt payloads.",
       "Treat source URLs as implementation proof and Tier 0 docs as protocol authority."
     ],
     links: {

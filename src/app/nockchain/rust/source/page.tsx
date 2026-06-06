@@ -26,6 +26,7 @@ const highlightedDomainOrder: readonly string[] = [
   "public-api-grpc",
   "bridge-withdrawal",
   "bridge-sequencer",
+  "bridge-dev-scenarios",
   "nockup-scaffold"
 ];
 const highlightedAnchorOrder: readonly string[] = [
@@ -37,12 +38,16 @@ const highlightedAnchorOrder: readonly string[] = [
   "nockstack-frame-safety",
   "wallet-cli-commands",
   "wallet-tx-planner",
-  "bridge-sequencer-journal"
+  "bridge-sequencer-journal",
+  "bridge-dev-scenario-readme",
+  "bridge-dev-withdrawal-scenarios"
 ];
 const highlightedForbiddenFields: readonly string[] = [
   "rawPmaSlab",
   "walletSeedPhrase",
-  "sequencerJournalSigningKey"
+  "sequencerJournalSigningKey",
+  "tenderlyAccessKey",
+  "r2TestToken"
 ];
 
 export default function NockchainRustSourceGuidePage() {

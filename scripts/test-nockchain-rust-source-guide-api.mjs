@@ -44,6 +44,7 @@ async function main() {
     "public-api-grpc",
     "bridge-withdrawal",
     "bridge-sequencer",
+    "bridge-dev-scenarios",
     "nockup-scaffold"
   ]) {
     assertIncludes(body.sourceDomains.map((domain) => domain.id), domainId, `${domainId} source domain`);
@@ -183,6 +184,26 @@ async function main() {
     forbiddenField: "sequencerJournalSigningKey",
     targetSurface: "veslEvidenceBridge"
   });
+  assertAnchor(body, "bridge-dev-scenario-readme", {
+    domainId: "bridge-dev-scenarios",
+    crateName: "bridge-dev",
+    sourcePath: "crates/bridge-dev/tests/README.md",
+    symbol: "bridge-dev Scenario Tests",
+    lineRange: "L1-L58",
+    receiptField: "bridgeDevScenarioName",
+    forbiddenField: "tenderlyAccessKey",
+    targetSurface: "nockchainBridgeSourceTrace"
+  });
+  assertAnchor(body, "bridge-dev-withdrawal-scenarios", {
+    domainId: "bridge-dev-scenarios",
+    crateName: "bridge-dev",
+    sourcePath: "crates/bridge-dev/tests/scenarios.rs",
+    symbol: "withdrawal_happy_path_reaches_executed / withdrawal_sequencer_rebuilds_from_r2_after_sqlite_wipe",
+    lineRange: "L955-L1084",
+    receiptField: "bridgeDevWithdrawalPhase",
+    forbiddenField: "r2TestToken",
+    targetSurface: "nockchainBridgeSourceTrace"
+  });
   assertAnchor(body, "nockup-main", {
     domainId: "nockup-scaffold",
     crateName: "nockup",
@@ -203,9 +224,12 @@ async function main() {
     "sequencerJournalSigningKey",
     "contract forbids sequencer signing key"
   );
+  assertIncludes(body.sourceTraceContract.forbiddenFields, "tenderlyAccessKey", "contract forbids Tenderly access key");
+  assertIncludes(body.sourceTraceContract.forbiddenFields, "r2TestToken", "contract forbids R2 test token");
   assertIncludes(body.learningPath.map((step) => step.domainId), "node-runtime", "learning path starts with node");
   assertIncludes(body.learningPath.map((step) => step.domainId), "wallet-cli", "learning path includes wallet");
   assertIncludes(body.learningPath.map((step) => step.domainId), "pma-durability", "learning path includes PMA");
+  assertIncludes(body.learningPath.map((step) => step.domainId), "bridge-dev-scenarios", "learning path includes bridge-dev scenarios");
   assertEqual(body.links.rustAtlas, "https://nocksperimental.com/api/nockchain/rust-atlas", "rust atlas link");
   assertEqual(body.links.repository, "https://github.com/nockchain/nockchain", "repository link");
 
@@ -253,6 +277,11 @@ async function main() {
     checkpointBody.nockchainRustSourceGuide.anchorIds,
     "nockstack-frame-safety",
     "checkpoint rust source anchor IDs"
+  );
+  assertIncludes(
+    checkpointBody.nockchainRustSourceGuide.anchorIds,
+    "bridge-dev-withdrawal-scenarios",
+    "checkpoint rust source bridge-dev anchor IDs"
   );
   assertEqual(
     checkpointBody.links.nockchainRustSourceGuide,

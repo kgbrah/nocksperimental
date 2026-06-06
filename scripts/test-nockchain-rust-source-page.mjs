@@ -36,6 +36,7 @@ function main() {
   assertIncludes(page, "wallet-cli", "Rust source page renders wallet domain");
   assertIncludes(page, "bridge-withdrawal", "Rust source page renders bridge withdrawal domain");
   assertIncludes(page, "bridge-sequencer", "Rust source page renders bridge sequencer domain");
+  assertIncludes(page, "bridge-dev-scenarios", "Rust source page renders bridge-dev scenario domain");
   assertIncludes(page, "nockup-scaffold", "Rust source page renders nockup domain");
   assertIncludes(page, "nockchain-node-main", "Rust source page renders node main anchor");
   assertIncludes(page, "libp2p-catch-up-signal", "Rust source page renders catch-up anchor");
@@ -46,9 +47,13 @@ function main() {
   assertIncludes(page, "wallet-cli-commands", "Rust source page renders wallet commands anchor");
   assertIncludes(page, "wallet-tx-planner", "Rust source page renders wallet planner anchor");
   assertIncludes(page, "bridge-sequencer-journal", "Rust source page renders bridge sequencer anchor");
+  assertIncludes(page, "bridge-dev-scenario-readme", "Rust source page renders bridge-dev README anchor");
+  assertIncludes(page, "bridge-dev-withdrawal-scenarios", "Rust source page renders bridge-dev withdrawal anchor");
   assertIncludes(page, "rawPmaSlab", "Rust source page renders forbidden PMA field");
   assertIncludes(page, "walletSeedPhrase", "Rust source page renders forbidden wallet seed");
   assertIncludes(page, "sequencerJournalSigningKey", "Rust source page renders forbidden sequencer key");
+  assertIncludes(page, "tenderlyAccessKey", "Rust source page renders forbidden Tenderly key");
+  assertIncludes(page, "r2TestToken", "Rust source page renders forbidden R2 token");
   assertIncludes(page, 'href="/api/nockchain/rust-source"', "Rust source page links API");
   assertIncludes(page, 'href="/nockchain/rust"', "Rust source page links Rust atlas");
   assertIncludes(page, 'href="/nockchain"', "Rust source page links parent");
@@ -56,6 +61,7 @@ function main() {
   assertIncludes(nockchainPage, 'href="/nockchain/rust/source"', "Nockchain page links Rust source guide");
   assertIncludes(readme, "/nockchain/rust/source", "README documents Rust source page");
   assertIncludes(readme, "/api/nockchain/rust-source", "README documents Rust source API");
+  assertIncludes(readme, "bridge-dev opt-in scenarios", "README documents bridge-dev Rust source guide boundary");
   assertEqual(
     packageJson.scripts["test:nockchain-rust-source-page"],
     "node scripts/test-nockchain-rust-source-page.mjs",

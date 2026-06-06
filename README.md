@@ -258,7 +258,7 @@ Use it when deciding which upstream crate should anchor a test assumption, which
 
 ## Nockchain Rust Source Guide
 
-The Rust source guide anchors the crate atlas to exact current upstream files, symbols, line ranges, cargo gates, receipt fields, and forbidden fields. It covers node startup, mining key configuration, libp2p catch-up and gossip suppression, NockApp poke/peek, PMA and snapshot safety, NockStack frame checks, wallet commands and transaction planning, public API/gRPC wire conversion, bridge withdrawal runtime, sequencer journal construction, and nockup scaffolding.
+The Rust source guide anchors the crate atlas to exact current upstream files, symbols, line ranges, cargo gates, receipt fields, and forbidden fields. It covers node startup, mining key configuration, libp2p catch-up and gossip suppression, NockApp poke/peek, PMA and snapshot safety, NockStack frame checks, wallet commands and transaction planning, public API/gRPC wire conversion, bridge withdrawal runtime, sequencer journal construction, bridge-dev opt-in scenarios, and nockup scaffolding.
 
 - `/nockchain/rust/source`
 - `/api/nockchain/rust-source`
