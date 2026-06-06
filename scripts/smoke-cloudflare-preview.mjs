@@ -83,6 +83,7 @@ async function main() {
     await expectStatus(`${baseUrl}/nockchain/bridge`, 200, "Nockchain bridge page");
     await expectStatus(`${baseUrl}/nockchain/releases`, 200, "Nockchain release assets page");
     await expectStatus(`${baseUrl}/nockchain/zorp`, 200, "Zorp intelligence page");
+    await expectStatus(`${baseUrl}/nockchain/state-jams`, 200, "Nockchain state-jams page");
     await expectStatus(`${baseUrl}/nockchain/rust`, 200, "Nockchain Rust atlas page");
     await expectStatus(`${baseUrl}/nockchain/operations`, 200, "Nockchain operations page");
     await expectStatus(`${baseUrl}/nockchain/wallet`, 200, "Nockchain wallet page");

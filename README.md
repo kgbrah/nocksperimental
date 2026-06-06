@@ -163,8 +163,11 @@ The Zorp intelligence page renders the same map as an operator brief: priority r
 The state-jam provenance endpoint tracks metadata requirements and watched sources for Nockchain state-jam/checkpoint artifacts, including the Zorp state-jam Drive folder. It is intentionally metadata-only: Nocksperimental records source identity, required hashes, network/height/build context, PMA boot and recovery safety, and safety policy, but does not store or redistribute raw PMA slabs, event logs, checkpoints, state jams, wallet exports, seed phrases, or private keys.
 
 - `/api/nockchain/state-jams`
+- `/nockchain/state-jams`
 
 Use it when a fakenet receipt or bootstrap workflow needs to explain which state-jam source was considered, what provenance is still missing, and which Nockchain build/protocol context should be attached before trusting the artifact.
+
+The state-jams page renders the same registry for operators: Zorp Drive folder classification, metadata-only policy, PMA boot and recovery safety, required provenance fields, verification questions, and the raw artifact denylist.
 
 ## Nockchain Rust Workspace Atlas
 
