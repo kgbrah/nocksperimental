@@ -215,6 +215,7 @@ export function createRegistryCheckpoint() {
       manifest: nockchainReleaseAssets.manifest,
       assets: nockchainReleaseAssets.assets,
       assetGroups: nockchainReleaseAssets.assetGroups,
+      driftCheck: nockchainReleaseAssets.driftCheck,
       provenance: nockchainReleaseAssets.provenance
     }),
     zorpUpstream: createSha256Root({
@@ -496,7 +497,9 @@ export function createRegistryCheckpoint() {
       nockchainReleaseAssetsAvailable:
         nockchainReleaseAssets.release.assetCount === nockchainReleaseAssets.assets.length &&
         nockchainReleaseAssets.release.manifestPresent &&
-        nockchainReleaseAssets.release.commitMatchesTag,
+        nockchainReleaseAssets.release.commitMatchesTag &&
+        nockchainReleaseAssets.driftCheck.command ===
+          "npm run check:nockchain-release-assets-drift -- --json",
       nockchainReleaseManifestHashesAvailable:
         nockchainReleaseAssets.manifest.coverage.hashedAssetCount ===
           nockchainReleaseAssets.manifest.targets.length &&
@@ -1085,6 +1088,11 @@ export function createRegistryCheckpoint() {
       manifestPresent: nockchainReleaseAssets.release.manifestPresent,
       manifestTargetCount: nockchainReleaseAssets.manifest.targets.length,
       hashCoverage: nockchainReleaseAssets.manifest.coverage,
+      driftCheck: {
+        command: nockchainReleaseAssets.driftCheck.command,
+        sourceUrls: nockchainReleaseAssets.driftCheck.sourceUrls,
+        compareFields: nockchainReleaseAssets.driftCheck.compareFields
+      },
       receiptFields: nockchainReleaseAssets.provenance.requiredReceiptFields
     },
     nockchainSyncGossipTrace: {

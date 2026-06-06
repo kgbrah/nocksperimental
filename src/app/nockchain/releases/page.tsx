@@ -8,6 +8,10 @@ const featuredAssetNames = [
   "nockchain-manifest.toml",
   "nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz"
 ] as const;
+const highlightedReleaseAssetDriftCommand =
+  "npm run check:nockchain-release-assets-drift -- --json";
+const highlightedReleaseAssetDriftSourceUrl =
+  "https://api.github.com/repos/nockchain/nockchain/releases/latest";
 
 export default function NockchainReleaseAssetsPage() {
   const manifest = createNockchainReleaseAssets();
@@ -98,6 +102,33 @@ export default function NockchainReleaseAssetsPage() {
             {featuredAssets.map((asset) => (
               <Callout key={asset.name} label={asset.name} value={asset.downloadUrl} />
             ))}
+          </div>
+        </article>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+        <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+          <div className="flex items-center gap-2">
+            <PackageCheck size={18} aria-hidden="true" />
+            <h2 className="text-xl font-semibold">Drift Check</h2>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+            {manifest.driftCheck.interpretation}
+          </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <Callout label="command" value={highlightedReleaseAssetDriftCommand} />
+            <Callout label="testCommand" value={manifest.driftCheck.testCommand} />
+            <Callout
+              label="sourceUrls"
+              value={[
+                highlightedReleaseAssetDriftSourceUrl,
+                ...manifest.driftCheck.sourceUrls.filter(
+                  (sourceUrl) => sourceUrl !== highlightedReleaseAssetDriftSourceUrl
+                )
+              ].join(", ")}
+            />
+            <Callout label="compareFields" value={manifest.driftCheck.compareFields.join(", ")} />
+            <Callout label="sourceArchivePolicy" value={manifest.driftCheck.sourceArchivePolicy} />
           </div>
         </article>
       </section>

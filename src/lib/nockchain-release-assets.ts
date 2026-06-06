@@ -7,24 +7,26 @@ import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 
 const releaseTag = "build-33ba97b1e206dd89b15c61b72b7802caf2136c18";
 const releaseBaseUrl = `https://github.com/nockchain/nockchain/releases/download/${releaseTag}`;
+const releaseLatestApiUrl = "https://api.github.com/repos/nockchain/nockchain/releases/latest";
+const releaseLatestUrl = "https://github.com/nockchain/nockchain/releases/latest";
 
 const releaseAssets = [
   ["hoon-aarch64-apple-darwin.tar.gz", "hoon", "aarch64-apple-darwin", 4467255, "2026-06-06T00:17:54Z"],
-  ["hoon-aarch64-unknown-linux-gnu.tar.gz", "hoon", "aarch64-unknown-linux-gnu", 15341867, "2026-06-06T00:31:43Z"],
-  ["hoon-x86_64-unknown-linux-gnu.tar.gz", "hoon", "x86_64-unknown-linux-gnu", 16720491, "2026-06-06T00:23:33Z"],
+  ["hoon-aarch64-unknown-linux-gnu.tar.gz", "hoon", "aarch64-unknown-linux-gnu", 15341867, "2026-06-06T00:31:44Z"],
+  ["hoon-x86_64-unknown-linux-gnu.tar.gz", "hoon", "x86_64-unknown-linux-gnu", 16720491, "2026-06-06T00:23:35Z"],
   ["hoonc-aarch64-apple-darwin.tar.gz", "hoonc", "aarch64-apple-darwin", 3995865, "2026-06-06T00:17:54Z"],
-  ["hoonc-aarch64-unknown-linux-gnu.tar.gz", "hoonc", "aarch64-unknown-linux-gnu", 13565880, "2026-06-06T00:31:43Z"],
-  ["hoonc-x86_64-unknown-linux-gnu.tar.gz", "hoonc", "x86_64-unknown-linux-gnu", 14890482, "2026-06-06T00:23:33Z"],
-  ["nockchain-aarch64-apple-darwin.tar.gz", "nockchain", "aarch64-apple-darwin", 22652042, "2026-06-06T00:17:54Z"],
-  ["nockchain-aarch64-unknown-linux-gnu.tar.gz", "nockchain", "aarch64-unknown-linux-gnu", 51191654, "2026-06-06T00:31:43Z"],
+  ["hoonc-aarch64-unknown-linux-gnu.tar.gz", "hoonc", "aarch64-unknown-linux-gnu", 13565880, "2026-06-06T00:31:44Z"],
+  ["hoonc-x86_64-unknown-linux-gnu.tar.gz", "hoonc", "x86_64-unknown-linux-gnu", 14890482, "2026-06-06T00:23:34Z"],
+  ["nockchain-aarch64-apple-darwin.tar.gz", "nockchain", "aarch64-apple-darwin", 22652042, "2026-06-06T00:17:55Z"],
+  ["nockchain-aarch64-unknown-linux-gnu.tar.gz", "nockchain", "aarch64-unknown-linux-gnu", 51191654, "2026-06-06T00:31:46Z"],
   ["nockchain-manifest.toml", "manifest", "all", 6686, "2026-06-06T00:32:48Z"],
-  ["nockchain-wallet-aarch64-apple-darwin.tar.gz", "nockchain-wallet", "aarch64-apple-darwin", 14179867, "2026-06-06T00:17:54Z"],
-  ["nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz", "nockchain-wallet", "aarch64-unknown-linux-gnu", 31816862, "2026-06-06T00:31:43Z"],
-  ["nockchain-wallet-x86_64-unknown-linux-gnu.tar.gz", "nockchain-wallet", "x86_64-unknown-linux-gnu", 33675114, "2026-06-06T00:23:33Z"],
-  ["nockchain-x86_64-unknown-linux-gnu.tar.gz", "nockchain", "x86_64-unknown-linux-gnu", 52807818, "2026-06-06T00:23:33Z"],
+  ["nockchain-wallet-aarch64-apple-darwin.tar.gz", "nockchain-wallet", "aarch64-apple-darwin", 14179867, "2026-06-06T00:17:55Z"],
+  ["nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz", "nockchain-wallet", "aarch64-unknown-linux-gnu", 31816862, "2026-06-06T00:31:45Z"],
+  ["nockchain-wallet-x86_64-unknown-linux-gnu.tar.gz", "nockchain-wallet", "x86_64-unknown-linux-gnu", 33675114, "2026-06-06T00:23:34Z"],
+  ["nockchain-x86_64-unknown-linux-gnu.tar.gz", "nockchain", "x86_64-unknown-linux-gnu", 52807818, "2026-06-06T00:23:35Z"],
   ["nockup-aarch64-apple-darwin.tar.gz", "nockup", "aarch64-apple-darwin", 3086800, "2026-06-06T00:17:54Z"],
-  ["nockup-aarch64-unknown-linux-gnu.tar.gz", "nockup", "aarch64-unknown-linux-gnu", 10936679, "2026-06-06T00:31:43Z"],
-  ["nockup-x86_64-unknown-linux-gnu.tar.gz", "nockup", "x86_64-unknown-linux-gnu", 11382286, "2026-06-06T00:23:33Z"]
+  ["nockup-aarch64-unknown-linux-gnu.tar.gz", "nockup", "aarch64-unknown-linux-gnu", 10936679, "2026-06-06T00:31:44Z"],
+  ["nockup-x86_64-unknown-linux-gnu.tar.gz", "nockup", "x86_64-unknown-linux-gnu", 11382286, "2026-06-06T00:23:34Z"]
 ] as const;
 
 const manifestHashes: Record<string, { hashBlake3: string; hashSha1: string }> = {
@@ -89,6 +91,18 @@ const manifestHashes: Record<string, { hashBlake3: string; hashSha1: string }> =
     hashSha1: "d7e2fcf6199f2948f62c3d6ba87a854afa843091"
   }
 };
+
+const releaseAssetDriftCheck = {
+  command: "npm run check:nockchain-release-assets-drift -- --json",
+  script: "scripts/check-nockchain-release-assets-drift.mjs",
+  testCommand: "npm run test:nockchain-release-assets-drift-check",
+  sourceUrls: [releaseLatestApiUrl, releaseLatestUrl],
+  compareFields: ["tag", "publishedAt", "targetCommitish", "name", "size", "updatedAt", "downloadUrl"],
+  sourceArchivePolicy:
+    "GitHub release HTML includes generated source archives in its asset count; this check compares uploaded release assets from the GitHub release API.",
+  interpretation:
+    "Detects stale uploaded release asset metadata before Nocksperimental receipts cite downloaded Nockchain, wallet, Nockup, Hoon, or HoonC binaries."
+} as const;
 
 function releaseCommitSha() {
   return releaseTag.replace(/^build-/, "");
@@ -215,6 +229,7 @@ export function createNockchainReleaseAssets() {
     },
     assets,
     assetGroups: groupAssets(assets),
+    driftCheck: releaseAssetDriftCheck,
     provenance: {
       source:
         "GitHub release asset metadata for nockchain/nockchain; Nocksperimental records metadata and URLs, not downloaded artifacts.",

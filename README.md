@@ -177,6 +177,8 @@ The release asset manifest records metadata for the current Nockchain build rele
 - `/nockchain/releases`
 - `/api/nockchain/release-assets`
 
+Run `npm run check:nockchain-release-assets-drift -- --json` to compare the pinned uploaded asset metadata against the live GitHub latest-release API. GitHub's release page may show two extra generated source archives; Nocksperimental tracks the uploaded release assets used for binary/build provenance.
+
 Use it when a test run depends on a downloaded Nockchain binary, wallet build, Nockup build, Hoon toolchain, or release manifest.
 
 ## Zorp/Nockchain Upstream Map

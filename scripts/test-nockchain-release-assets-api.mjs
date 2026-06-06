@@ -59,6 +59,23 @@ async function main() {
   assertIncludes(body.release.platformTriples, "aarch64-apple-darwin", "mac arm64 platform");
   assertIncludes(body.release.platformTriples, "aarch64-unknown-linux-gnu", "linux arm64 platform");
   assertIncludes(body.release.platformTriples, "x86_64-unknown-linux-gnu", "linux x64 platform");
+  assertEqual(
+    body.driftCheck.command,
+    "npm run check:nockchain-release-assets-drift -- --json",
+    "release asset drift check command"
+  );
+  assertEqual(
+    body.driftCheck.testCommand,
+    "npm run test:nockchain-release-assets-drift-check",
+    "release asset drift check test command"
+  );
+  assertIncludes(body.driftCheck.compareFields, "updatedAt", "release asset drift updatedAt field");
+  assertIncludes(body.driftCheck.sourceUrls, "https://github.com/nockchain/nockchain/releases/latest", "release asset drift GitHub page");
+  assertIncludes(
+    body.driftCheck.sourceArchivePolicy,
+    "generated source archives",
+    "release asset drift source archive policy"
+  );
 
   assertToolGroup(body, "nockchain", 3);
   assertToolGroup(body, "nockchain-wallet", 3);
@@ -173,6 +190,17 @@ async function main() {
 
   assertIncludes(page, "createNockchainReleaseAssets", "release page uses manifest");
   assertIncludes(page, "Nockchain Release Assets", "release page title");
+  assertIncludes(page, "Drift Check", "release page renders drift check");
+  assertIncludes(
+    page,
+    "npm run check:nockchain-release-assets-drift -- --json",
+    "release page renders drift check command"
+  );
+  assertIncludes(
+    page,
+    "https://api.github.com/repos/nockchain/nockchain/releases/latest",
+    "release page renders latest release API source"
+  );
   assertIncludes(page, "nockchain-manifest.toml", "release page renders manifest asset");
   assertIncludes(page, "nockchain-wallet-aarch64-unknown-linux-gnu.tar.gz", "release page renders wallet asset");
   assertIncludes(page, "hash_blake3", "release page renders BLAKE3 label");
@@ -185,7 +213,17 @@ async function main() {
     "node scripts/test-nockchain-release-assets-api.mjs",
     "package release assets test script"
   );
+  assertEqual(
+    packageJson.scripts["check:nockchain-release-assets-drift"],
+    "node scripts/check-nockchain-release-assets-drift.mjs",
+    "package release assets drift script"
+  );
   assertIncludes(packageJson.scripts.test, "npm run test:nockchain-release-assets", "full test includes release assets");
+  assertIncludes(
+    packageJson.scripts.test,
+    "npm run test:nockchain-release-assets-drift-check",
+    "full test includes release assets drift check"
+  );
   assertIncludes(smokeScript, "/api/nockchain/release-assets", "Cloudflare smoke includes release assets API");
   assertIncludes(smokeScript, "/nockchain/releases", "Cloudflare smoke includes release assets page");
   assertIncludes(readme, "Nockchain Release Asset Manifest", "README documents release assets");
