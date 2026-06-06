@@ -88,6 +88,8 @@ curl -G https://nocksperimental.com/api/fakenet/connect \
   --data-urlencode networkId=local-fakenet
 ```
 
+Each connection profile includes an API safety contract that separates private gRPC runbooks, hosted public HTTP(S) manifest probes, and raw public gRPC endpoints, with required receipt fields for endpoint mode, access control, probe location, upstream commit/build, and output hashes.
+
 After running the generated commands beside the fakenet node, POST the generated report JSON back for a persisted verification receipt:
 
 ```bash

@@ -3,9 +3,20 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 
 type EndpointVisibility = "private" | "public";
 type FakenetConnectionMode = "local-runbook" | "hosted-http-candidate" | "remote-runbook" | "invalid";
+type FakenetApiEndpointMode =
+  | "private-grpc"
+  | "public-http-manifest"
+  | "public-grpc-client-side"
+  | "invalid";
+type HostedProbePolicy =
+  | "blocked-private-or-loopback"
+  | "allowed-public-http-only"
+  | "blocked-public-grpc-client-side"
+  | "blocked-invalid-endpoint";
 
 type FakenetConnectionInput = {
   endpoint?: string | null;
@@ -76,6 +87,40 @@ const testDefinitions = [
   }
 ];
 
+const apiSafetySourceDocs = [
+  {
+    path: "crates/nockchain-api/README.md",
+    authority: "Tier 1 scoped authority for public API runtime and deployment risk",
+    interpretation:
+      "nockchain-api is the public-facing NockApp gRPC API binary and carries a different risk surface than private node gRPC."
+  },
+  {
+    path: "crates/nockchain-wallet/README.md",
+    authority: "Tier 1 scoped authority for wallet endpoint selection",
+    interpretation:
+      "Wallet commands can target either the default public API or a private local API selected with --client private."
+  },
+  {
+    path: "PROTOCOL.md",
+    authority: "Tier 0 protocol authority",
+    interpretation:
+      "Endpoint output is evidence context, not protocol authority; protocol claims still defer to Tier 0 docs."
+  }
+] as const;
+
+const apiSafetyRequiredReceiptFields = [
+  "endpoint",
+  "endpointMode",
+  "walletAddress",
+  "networkId",
+  "nockchainCommit",
+  "nockchainBuild",
+  "accessControl",
+  "probeLocation",
+  "syncContext",
+  "outputHash"
+] as const;
+
 export function createFakenetConnectionProfile(input: FakenetConnectionInput = {}) {
   const endpointInput = cleanInput(input.endpoint) || defaultEndpoint;
   const walletAddress = cleanInput(input.walletAddress) || defaultWalletAddress;
@@ -126,6 +171,7 @@ export function createFakenetConnectionProfile(input: FakenetConnectionInput = {
       walletAddress,
       networkId
     },
+    apiSafety: createApiSafety(mode, parsedEndpoint),
     safety: createSafety(mode, parsedEndpoint),
     testFunctions,
     commands: {
@@ -147,6 +193,88 @@ export function createFakenetConnectionProfile(input: FakenetConnectionInput = {
     },
     errors: endpoint.errors
   };
+}
+
+function createApiSafety(mode: FakenetConnectionMode, endpoint: ParsedEndpoint | null) {
+  const endpointMode = apiEndpointMode(mode, endpoint);
+  const hostedProbePolicy = apiHostedProbePolicy(endpointMode);
+  const upstream = nockchainUpstreamIntelligence;
+
+  return {
+    source: "nockchain-api-safety-contract",
+    upstream: {
+      repository: upstream.repository.fullName,
+      commit: upstream.latestCommit,
+      release: upstream.latestRelease
+    },
+    sourceDocs: apiSafetySourceDocs,
+    endpointMode,
+    hostedProbePolicy,
+    requiredReceiptFields: apiSafetyRequiredReceiptFields,
+    publicExposure: {
+      riskFlags: [
+        "alpha-testing-grade-api",
+        "no-auth-no-rate-limit-public-grpc",
+        "public-bind-is-operator-risk",
+        "explorer-cache-warmup-and-reorg-staleness"
+      ],
+      trustedControls: ["VPN", "SSH tunnel", "mTLS proxy", "private network"],
+      interpretation:
+        "Public nockchain-api exposure is an expert-operated testbed surface, not a hardened public service."
+    },
+    privateApi: {
+      walletClientFlag: "--client private",
+      defaultEndpoint: defaultEndpoint,
+      operationalRequirements: [
+        "nockchain instance running locally",
+        "private gRPC listener reachable from the command runner",
+        "same fakenet network and state source used by the evidence run"
+      ]
+    },
+    observabilitySignals: [
+      "nockchain_public_grpc.* gnort metrics",
+      "heaviest-chain freshness",
+      "RPC success/error counts",
+      "cache warm-up and reorg windows"
+    ],
+    interpretation:
+      "Hosted nocksperimental checks only probe public HTTP(S) manifests. Private, loopback, Tailscale, and raw public gRPC endpoints require a client-side runbook."
+  };
+}
+
+function apiEndpointMode(
+  mode: FakenetConnectionMode,
+  endpoint: ParsedEndpoint | null
+): FakenetApiEndpointMode {
+  if (!endpoint || mode === "invalid") {
+    return "invalid";
+  }
+
+  if (endpoint.visibility === "private") {
+    return "private-grpc";
+  }
+
+  if (mode === "hosted-http-candidate") {
+    return "public-http-manifest";
+  }
+
+  return "public-grpc-client-side";
+}
+
+function apiHostedProbePolicy(endpointMode: FakenetApiEndpointMode): HostedProbePolicy {
+  if (endpointMode === "private-grpc") {
+    return "blocked-private-or-loopback";
+  }
+
+  if (endpointMode === "public-http-manifest") {
+    return "allowed-public-http-only";
+  }
+
+  if (endpointMode === "public-grpc-client-side") {
+    return "blocked-public-grpc-client-side";
+  }
+
+  return "blocked-invalid-endpoint";
 }
 
 export function parseFakenetConnectionSearchParams(searchParams: URLSearchParams) {

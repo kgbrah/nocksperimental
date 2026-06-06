@@ -40,6 +40,42 @@ async function main() {
   assertEqual(localProfile.safety.canProbeFromHosted, false, "private endpoints are not hosted-probed");
   assertEqual(localProfile.safety.requiresClientSideRun, true, "private endpoints require client run");
   assertIncludes(localProfile.safety.notes.join("\n"), "private or loopback", "private endpoint safety note");
+  assertEqual(localProfile.apiSafety.endpointMode, "private-grpc", "local API safety endpoint mode");
+  assertEqual(
+    localProfile.apiSafety.hostedProbePolicy,
+    "blocked-private-or-loopback",
+    "local hosted probe policy"
+  );
+  assertIncludes(
+    localProfile.apiSafety.sourceDocs.map((source) => source.path),
+    "crates/nockchain-api/README.md",
+    "API safety includes nockchain-api README"
+  );
+  assertIncludes(
+    localProfile.apiSafety.sourceDocs.map((source) => source.path),
+    "crates/nockchain-wallet/README.md",
+    "API safety includes wallet README"
+  );
+  assertIncludes(
+    localProfile.apiSafety.requiredReceiptFields,
+    "accessControl",
+    "API safety receipt access-control field"
+  );
+  assertIncludes(
+    localProfile.apiSafety.requiredReceiptFields,
+    "probeLocation",
+    "API safety receipt probe location field"
+  );
+  assertIncludes(
+    localProfile.apiSafety.privateApi.operationalRequirements,
+    "nockchain instance running locally",
+    "private API local node requirement"
+  );
+  assertIncludes(
+    localProfile.apiSafety.publicExposure.riskFlags,
+    "no-auth-no-rate-limit-public-grpc",
+    "public API risk flag"
+  );
   assertTestFunction(localProfile, "health", "npm run lab:local");
   assertTestFunction(localProfile, "balance", "npm run lab:local:balance");
   assertTestFunction(localProfile, "chain", "npm run lab:local:chain");
@@ -74,6 +110,55 @@ async function main() {
   assertEqual(publicProfile.connection.endpoint.visibility, "public", "public endpoint visibility");
   assertEqual(publicProfile.safety.canProbeFromHosted, true, "public HTTPS endpoints can be hosted-probed");
   assertIncludes(publicProfile.safety.notes.join("\n"), "HTTP(S)", "public endpoint safety note");
+  assertEqual(
+    publicProfile.apiSafety.endpointMode,
+    "public-http-manifest",
+    "public HTTPS API safety endpoint mode"
+  );
+  assertEqual(
+    publicProfile.apiSafety.hostedProbePolicy,
+    "allowed-public-http-only",
+    "public HTTPS hosted probe policy"
+  );
+  assertIncludes(
+    publicProfile.apiSafety.publicExposure.trustedControls,
+    "mTLS proxy",
+    "public API trusted mTLS control"
+  );
+  assertIncludes(
+    publicProfile.apiSafety.observabilitySignals,
+    "nockchain_public_grpc.* gnort metrics",
+    "public API observability signal"
+  );
+
+  const publicGrpcResponse = await POST(
+    new Request("https://nocksperimental.com/api/fakenet/connect", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        endpoint: "grpcs://public-node.example.com:5555",
+        walletAddress,
+        networkId: "public-grpc-devnet",
+        label: "Public gRPC fakenet"
+      })
+    })
+  );
+  const publicGrpcProfile = await publicGrpcResponse.json();
+
+  assertEqual(publicGrpcResponse.status, 200, "public gRPC profile status");
+  assertEqual(publicGrpcProfile.mode, "remote-runbook", "public gRPC profile mode");
+  assertEqual(
+    publicGrpcProfile.apiSafety.endpointMode,
+    "public-grpc-client-side",
+    "public gRPC API safety endpoint mode"
+  );
+  assertEqual(
+    publicGrpcProfile.apiSafety.hostedProbePolicy,
+    "blocked-public-grpc-client-side",
+    "public gRPC hosted probe policy"
+  );
 
   const invalidResponse = await POST(
     new Request("https://nocksperimental.com/api/fakenet/connect", {
@@ -117,6 +202,11 @@ async function main() {
 
   const fakenetPageSource = readFileSync(path.join(process.cwd(), "src/app/fakenet/page.tsx"), "utf8");
   assertIncludes(fakenetPageSource, "Bring Your Own Fakenet", "fakenet page has BYO section");
+  assertIncludes(fakenetPageSource, "API Safety Contract", "fakenet page renders API safety contract");
+  assertIncludes(fakenetPageSource, "hostedProbePolicy", "fakenet page renders hosted probe policy");
+  assertIncludes(fakenetPageSource, "public gRPC service", "fakenet page renders public API risk language");
+  assertIncludes(fakenetPageSource, "accessControl", "fakenet page renders API safety receipt field");
+  assertIncludes(fakenetPageSource, "nockchain-api", "fakenet page references nockchain-api");
   assertIncludes(fakenetPageSource, 'action="/api/fakenet/connect"', "fakenet page posts to connect API");
   assertIncludes(fakenetPageSource, 'name="endpoint"', "fakenet page endpoint input");
   assertIncludes(fakenetPageSource, 'name="walletAddress"', "fakenet page wallet input");
@@ -137,6 +227,7 @@ async function main() {
 
   const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
   assertIncludes(readme, "Bring your own fakenet", "README documents BYO fakenet");
+  assertIncludes(readme, "API safety contract", "README documents BYO fakenet API safety contract");
 }
 
 function loadTypeScriptModule(relativePath) {

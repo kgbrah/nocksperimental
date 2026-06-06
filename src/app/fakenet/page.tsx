@@ -23,6 +23,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
+const highlightedApiSafetyField = "accessControl";
+
 export default function FakenetReadinessPage() {
   const readiness = createLocalFakenetReadiness();
   const commandKit = createLocalFakenetCommandKit();
@@ -31,6 +33,10 @@ export default function FakenetReadinessPage() {
   const supportBundle = createLocalFakenetSupportBundle();
   const supportBundleMarkdown = createLocalFakenetSupportBundleMarkdown();
   const connectionTemplate = createFakenetConnectionProfile();
+  const apiSafetyField =
+    connectionTemplate.apiSafety.requiredReceiptFields.find(
+      (field) => field === highlightedApiSafetyField
+    ) ?? connectionTemplate.apiSafety.requiredReceiptFields[0];
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -167,6 +173,26 @@ export default function FakenetReadinessPage() {
                 </p>
               </div>
             ))}
+          </div>
+          <div className="mt-5 border border-[#0B0B0B] bg-[#FFF7D6] p-3">
+            <div className="flex items-center gap-2">
+              <TriangleAlert size={16} aria-hidden="true" />
+              <h3 className="text-base font-semibold">API Safety Contract</h3>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-[#2F2A14]">
+              The public gRPC service exposure follows nockchain-api alpha guidance; private
+              and raw gRPC endpoints stay on client-side runbooks, while hosted checks
+              only probe public HTTP(S) manifests.
+            </p>
+            <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <Callout label="endpointMode" value={connectionTemplate.apiSafety.endpointMode} />
+              <Callout
+                label="hostedProbePolicy"
+                value={connectionTemplate.apiSafety.hostedProbePolicy}
+              />
+              <Callout label="sourceDoc" value="crates/nockchain-api/README.md" />
+              <Callout label="receiptField" value={apiSafetyField} />
+            </div>
           </div>
           <div className="mt-5 border border-[#0B0B0B] bg-white p-3">
             <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
