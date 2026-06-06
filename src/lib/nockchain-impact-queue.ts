@@ -60,6 +60,8 @@ export function createNockchainImpactQueue() {
   const watchById = (id: string) => watch.watchQueue.find((item) => item.id === id);
   const stateJamSource = stateJams.sources[0];
   const jockRepo = zorp.repositories.find((repo) => repo.fullName === "zorp-corp/jock-lang");
+  const knockSourceNote = zorp.sourceNotes.find((note) => note.id === "knock-formal-semantics");
+  const spparkSourceNote = zorp.sourceNotes.find((note) => note.id === "sppark-proof-primitives");
   const unsortedImpactItems: NockchainImpactItem[] = [
     {
       id: "bridge-withdrawal-release",
@@ -207,22 +209,40 @@ export function createNockchainImpactQueue() {
       label: "Nockchain benchmarking and AI PoW puzzle",
       priority: "high",
       sourceType: "open-pr",
-      sourceIds: ["pr:126", "pr:124"],
+      sourceIds: ["pr:126", "pr:124", "repo:zorp-corp/knock", "repo:zorp-corp/sppark"],
       sourceUrls: [
         prByNumber(126)?.url ?? `${upstream.repository.url}/pull/126`,
-        prByNumber(124)?.url ?? `${upstream.repository.url}/pull/124`
+        prByNumber(124)?.url ?? `${upstream.repository.url}/pull/124`,
+        knockSourceNote?.sourceUrl ?? "https://github.com/zorp-corp/knock/blob/master/README.md",
+        spparkSourceNote?.sourceUrl ?? "https://github.com/zorp-corp/sppark/blob/main/README.md"
       ],
       evidenceClass: "compute-benchmark",
       upstreamSignal:
         `${prByNumber(126)?.title ?? "nockchain-bench"}; ${prByNumber(124)?.title ?? "AI PoW Puzzle for AI Compute Network"}`,
       whyItMatters:
-        "Benchmarking and puzzle work can become compute/proof evidence surfaces without changing current Nockchain protocol behavior.",
+        "Benchmarking and puzzle work can become compute/proof evidence surfaces when interpreted with formal Nock semantics and proof-primitives lineage, without changing current Nockchain protocol behavior.",
       nocksperimentalAction:
-        "Track benchmark harnesses and AI PoW puzzle work as future compute evidence, with clear separation from canonical protocol claims.",
-      targetSurfaces: ["computeBenchmarkProfiles", "nockchainRustAtlas", "trustSignals"],
-      receiptFields: ["benchmarkHarnessCommit", "proofPuzzleSource", "computeProfileHash"],
+        "Track benchmark harnesses and AI PoW puzzle work as future compute evidence, with Knock and sppark context separated from canonical protocol claims.",
+      targetSurfaces: [
+        "computeBenchmarkProfiles",
+        "trustComputeBenchmarks",
+        "nockchainRustAtlas",
+        "nockchainKnowledgeSpine",
+        "trustSignals"
+      ],
+      receiptFields: [
+        "benchmarkHarnessCommit",
+        "proofPuzzleSource",
+        "formalSemanticsSource",
+        "proofPrimitiveSource",
+        "computeProfileHash"
+      ],
       forbiddenFields: ["rawPmaSlab", "privateSpendKey"],
-      verificationGates: ["test:compute-benchmark-detail-page", "test:nockchain-rust-atlas-api"]
+      verificationGates: [
+        "test:compute-benchmark-detail-page",
+        "test:nockchain-rust-atlas-api",
+        "test:zorp-upstream-api"
+      ]
     }
   ];
   const impactItems = [...unsortedImpactItems].sort(

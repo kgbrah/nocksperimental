@@ -80,6 +80,27 @@ async function main() {
   assertIncludes(pma.forbiddenFields, "rawPmaSlab", "PMA forbidden slab");
   assertIncludes(pma.forbiddenFields, "rawStateJam", "PMA forbidden state jam");
 
+  const benchmark = findImpactItem(body, "nockchain-benchmarking");
+  assertIncludes(benchmark.sourceIds, "pr:126", "benchmark source PR");
+  assertIncludes(benchmark.sourceIds, "pr:124", "AI PoW source PR");
+  assertIncludes(benchmark.sourceIds, "repo:zorp-corp/knock", "benchmark formal semantics source");
+  assertIncludes(benchmark.sourceIds, "repo:zorp-corp/sppark", "benchmark proof primitives source");
+  assertIncludes(
+    benchmark.sourceUrls,
+    "https://github.com/zorp-corp/knock/blob/master/README.md",
+    "benchmark Knock source URL"
+  );
+  assertIncludes(
+    benchmark.sourceUrls,
+    "https://github.com/zorp-corp/sppark/blob/main/README.md",
+    "benchmark sppark source URL"
+  );
+  assertIncludes(benchmark.targetSurfaces, "nockchainKnowledgeSpine", "benchmark semantics target");
+  assertIncludes(benchmark.targetSurfaces, "trustComputeBenchmarks", "benchmark proof target");
+  assertIncludes(benchmark.receiptFields, "formalSemanticsSource", "benchmark semantics field");
+  assertIncludes(benchmark.receiptFields, "proofPrimitiveSource", "benchmark proof field");
+  assertIncludes(benchmark.verificationGates, "test:zorp-upstream-api", "benchmark Zorp gate");
+
   assertIncludes(body.queueContract.requiredFields, "sourceIds", "contract requires source ids");
   assertIncludes(body.queueContract.requiredFields, "sourceType", "contract requires source type");
   assertIncludes(body.queueContract.requiredFields, "evidenceClass", "contract requires evidence class");

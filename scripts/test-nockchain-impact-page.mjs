@@ -33,6 +33,20 @@ function main() {
   assertIncludes(page, "fakenet-sync-gossip", "impact page renders fakenet item");
   assertIncludes(page, "zorp-jock-authoring", "impact page renders Zorp/Jock item");
   assertIncludes(page, "nockchain-benchmarking", "impact page renders benchmark item");
+  assertIncludes(page, "sourceIds", "impact page labels source IDs");
+  assertIncludes(page, "sourceUrls", "impact page labels source URLs");
+  assertIncludes(page, "repo:zorp-corp/knock", "impact page renders Knock source ID");
+  assertIncludes(page, "repo:zorp-corp/sppark", "impact page renders sppark source ID");
+  assertIncludes(
+    page,
+    "https://github.com/zorp-corp/knock/blob/master/README.md",
+    "impact page renders Knock source URL"
+  );
+  assertIncludes(
+    page,
+    "https://github.com/zorp-corp/sppark/blob/main/README.md",
+    "impact page renders sppark source URL"
+  );
   assertIncludes(page, "rawPmaSlab", "impact page renders PMA forbidden field");
   assertIncludes(page, "rawStateJam", "impact page renders state-jam forbidden field");
   assertIncludes(page, "walletSeedPhrase", "impact page renders wallet forbidden field");

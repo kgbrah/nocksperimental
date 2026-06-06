@@ -23,6 +23,11 @@ const priorityImpactIds = [
   "zorp-jock-authoring"
 ] as const;
 const highlightedForbiddenFields = ["rawPmaSlab", "rawStateJam", "walletSeedPhrase", "privateSpendKey"] as const;
+const highlightedBenchmarkSourceIds = ["repo:zorp-corp/knock", "repo:zorp-corp/sppark"] as const;
+const highlightedBenchmarkSourceUrls = [
+  "https://github.com/zorp-corp/knock/blob/master/README.md",
+  "https://github.com/zorp-corp/sppark/blob/main/README.md"
+] as const;
 
 export default function NockchainImpactPage() {
   const queue = createNockchainImpactQueue();
@@ -118,6 +123,8 @@ export default function NockchainImpactPage() {
           <div className="mt-4 grid gap-3">
             <Callout label="required" value={queue.queueContract.requiredFields.join(", ")} />
             <Callout label="forbidden" value={queue.queueContract.forbiddenFields.join(", ")} />
+            <Callout label="benchmarkSourceIds" value={highlightedBenchmarkSourceIds.join(", ")} />
+            <Callout label="benchmarkSourceUrls" value={highlightedBenchmarkSourceUrls.join(", ")} />
             {highlightedForbiddenFields.map((field) => (
               <Callout key={field} label={field} value="Forbidden in public receipts and registries." />
             ))}
@@ -163,6 +170,8 @@ function ImpactCard({
       </div>
       <h3 className="mt-3 text-lg font-semibold">{item.label}</h3>
       <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{item.whyItMatters}</p>
+      <Callout label="sourceIds" value={item.sourceIds.join(", ")} />
+      <Callout label="sourceUrls" value={item.sourceUrls.join(", ")} />
       <Callout label="upstreamSignal" value={item.upstreamSignal} />
       <Callout label="nocksperimentalAction" value={item.nocksperimentalAction} />
       <Callout label="receiptFields" value={item.receiptFields.join(", ")} />
