@@ -178,6 +178,33 @@ async function main() {
   assertEqual(invalidProfile.accepted, false, "invalid profile rejected");
   assertIncludes(invalidProfile.errors.join("\n"), "Unsupported fakenet endpoint scheme", "invalid scheme error");
 
+  // SEC (cleanInput type-confusion): a well-formed JSON object whose fields are
+  // NON-STRINGS (number/object/array/bool) must not throw a TypeError on .trim()
+  // and surface as an unauthenticated 500. cleanInput now coerces non-strings to ""
+  // so the fields fall back to defaults and the handler responds gracefully.
+  const nonStringFieldsResponse = await POST(
+    new Request("https://nocksperimental.com/api/fakenet/connect", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        endpoint: 12345,
+        walletAddress: { nested: "object" },
+        networkId: ["array"],
+        label: true
+      })
+    })
+  );
+  const nonStringProfile = await nonStringFieldsResponse.json();
+
+  assertEqual(nonStringFieldsResponse.status, 200, "non-string body fields handled gracefully (no 500/throw)");
+  assertEqual(
+    typeof nonStringProfile.connection?.endpoint?.normalized,
+    "string",
+    "non-string fields fall back to defaults and still build a profile"
+  );
+
   // SEC-G: previously-public-classified loopback/private encodings must resolve to
   // visibility "private" so the hosted probe stays blocked.
   const privateEncodings = [

@@ -379,8 +379,12 @@ export function parseFakenetConnectionSearchParams(searchParams: URLSearchParams
   });
 }
 
-function cleanInput(value: string | null | undefined) {
-  return value?.trim() ?? "";
+// Accept `unknown`: these values come from a parsed JSON body on a public,
+// unauthenticated route, so a non-string field (e.g. {"endpoint": 12345}) must
+// coerce to "" rather than throw a TypeError on .trim() and surface as a 500.
+// Mirrors the type-safe siblings in vesl-/nockup- evidence submission.
+function cleanInput(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function parseEndpoint(input: string): { value: ParsedEndpoint | null; errors: string[] } {
