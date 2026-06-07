@@ -12,9 +12,23 @@
     "reports": { "type": "array", "items": { "$ref": "#/$defs/report" } }
   },
   "$defs": {
+    "sourceAnchor": {
+      "type": "object",
+      "required": ["commit", "build"],
+      "additionalProperties": false,
+      "properties": {
+        "commit": { "type": "string" },
+        "build": { "type": "string" },
+        "workspaceMemberHash": { "type": "string" },
+        "sourceRefs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
     "case": {
       "type": "object",
-      "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectName", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId"],
+      "required": ["caseId", "workspaceSlug", "subjectSlug", "subjectName", "subjectType", "customerLane", "status", "visibility", "createdAt", "updatedAt", "requestedBy", "payment", "evidenceIds", "reportSlug", "badgeId", "sourceAnchor"],
       "additionalProperties": false,
       "properties": {
         "caseId": { "type": "string" },
@@ -42,7 +56,8 @@
         },
         "evidenceIds": { "type": "array", "items": { "type": "string" } },
         "reportSlug": { "type": "string" },
-        "badgeId": { "type": ["string", "null"] }
+        "badgeId": { "type": ["string", "null"] },
+        "sourceAnchor": { "$ref": "#/$defs/sourceAnchor" }
       }
     },
     "submission": {

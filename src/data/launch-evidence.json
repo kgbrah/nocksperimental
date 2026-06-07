@@ -16,7 +16,11 @@
       "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "founder-demo" },
       "evidenceIds": ["evidence-vesl-demo-lab-001", "evidence-vesl-demo-fakenet-001", "evidence-vesl-demo-vesl-001"],
       "reportSlug": "launch-vesl-demo-001",
-      "badgeId": null
+      "badgeId": null,
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
     },
     {
       "caseId": "case-payment-flow-prelaunch-001",
@@ -33,7 +37,11 @@
       "payment": { "status": "quoted", "rail": "manual", "amount": 2500, "currency": "USD", "reference": "manual-quote-launch-001" },
       "evidenceIds": ["evidence-payment-flow-lab-001", "evidence-payment-flow-workspace-001"],
       "reportSlug": "launch-payment-flow-001",
-      "badgeId": null
+      "badgeId": null,
+      "sourceAnchor": {
+        "commit": "5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4",
+        "build": "build-5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4"
+      }
     },
     {
       "caseId": "case-confidential-operator-launch-001",
@@ -50,7 +58,11 @@
       "payment": { "status": "invoiced", "rail": "nock", "amount": 12500, "currency": "NOCK", "reference": "private-launch-operator-001" },
       "evidenceIds": ["evidence-confidential-operator-manual-001"],
       "reportSlug": "launch-confidential-operator-001",
-      "badgeId": null
+      "badgeId": null,
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
     }
   ],
   "submissions": [

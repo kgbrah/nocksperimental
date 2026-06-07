@@ -5,6 +5,12 @@ import {
   registrySubject
 } from "@/lib/registry-manifest";
 import { privateWorkspaces } from "@/lib/report-history";
+import {
+  computeBadgeFreshness,
+  currentUpstreamAnchor,
+  type BadgeFreshness,
+  type BadgeSourceAnchor
+} from "@/lib/trust-badge-freshness";
 
 export type LaunchEvidenceSubjectType =
   | "nockapp"
@@ -59,6 +65,7 @@ export type LaunchEvidenceCase = {
   evidenceIds: string[];
   reportSlug: string;
   badgeId: string | null;
+  sourceAnchor: BadgeSourceAnchor;
 };
 
 export type LaunchEvidenceSubmission = {
@@ -106,6 +113,7 @@ export type LaunchEvidenceRegistry = {
 
 export type ResolvedLaunchEvidenceCase = LaunchEvidenceCase & {
   workspaceName: string | null;
+  freshness: BadgeFreshness;
   submissions: LaunchEvidenceSubmission[];
   report: LaunchReadinessReport;
   links: {
@@ -137,6 +145,7 @@ export function createLaunchEvidenceIndex() {
     service: registryServiceName,
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/launch-evidence`,
+    upstreamAnchor: currentUpstreamAnchor(),
     totalCases: launchEvidenceCases.length,
     totalReports: registry.reports.length,
     totals: {
@@ -147,6 +156,7 @@ export function createLaunchEvidenceIndex() {
       operator: launchEvidenceCases.filter((entry) => entry.customerLane === "operator").length,
       integrator: launchEvidenceCases.filter((entry) => entry.customerLane === "integrator").length
     },
+    freshnessSummary: summarizeFreshness(launchEvidenceCases),
     capabilities: [
       "launch-evidence-reports",
       "private-workspace-cases",
@@ -193,6 +203,8 @@ export function verifyLaunchEvidenceReport(input: LaunchEvidenceVerificationInpu
     verified,
     caseId: resolvedCase?.caseId ?? caseId,
     reportSlug: report?.reportSlug ?? null,
+    freshness: resolvedCase?.freshness ?? "unknown",
+    sourceAnchor: resolvedCase?.sourceAnchor ?? null,
     query: {
       caseId,
       reportHash,
@@ -248,6 +260,7 @@ function resolveLaunchEvidenceCase(entry: LaunchEvidenceCase): ResolvedLaunchEvi
   return {
     ...entry,
     workspaceName: workspace?.name ?? null,
+    freshness: computeBadgeFreshness(entry.sourceAnchor),
     submissions,
     report,
     links: {
@@ -261,6 +274,16 @@ function resolveLaunchEvidenceCase(entry: LaunchEvidenceCase): ResolvedLaunchEvi
       badge: entry.badgeId ? `/trust/badges/${encodePathSegment(entry.badgeId)}` : null
     }
   };
+}
+
+function summarizeFreshness(cases: ResolvedLaunchEvidenceCase[]) {
+  return cases.reduce(
+    (summary, entry) => {
+      summary[entry.freshness] += 1;
+      return summary;
+    },
+    { fresh: 0, stale: 0, unknown: 0 } as Record<BadgeFreshness, number>
+  );
 }
 
 function encodePathSegment(value: string) {

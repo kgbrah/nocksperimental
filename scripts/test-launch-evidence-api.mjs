@@ -41,6 +41,17 @@ async function main() {
   assertNonEmpty(privateCase?.report.reportHash, "private launch evidence fixture report hash");
   assertNonEmpty(privateCase?.report.snapshotRoot, "private launch evidence fixture snapshot root");
 
+  assertFreshnessSurface(index);
+
+  const verifiedFreshCase = index.cases.find(
+    (candidate) => candidate.report.summaryStatus === "verified"
+  );
+  const watchCase = index.cases.find((candidate) => candidate.report.summaryStatus === "watch");
+  assertNonEmpty(verifiedFreshCase?.caseId, "verified launch evidence case id");
+  assertNonEmpty(watchCase?.caseId, "watch launch evidence case id");
+  assertEqual(verifiedFreshCase.freshness, "fresh", "verified case pins to current commit and is fresh");
+  assertEqual(watchCase.freshness, "stale", "watch/pre-launch case pins to older commit and is stale");
+
   const foundCase = launchEvidence.launchEvidenceCaseForId(firstCase.caseId);
   assertEqual(foundCase?.caseId, firstCase.caseId, "case lookup by id");
   assertEqual(launchEvidence.launchEvidenceCaseForId("missing-launch-case"), null, "missing case lookup");
@@ -59,6 +70,13 @@ async function main() {
     snapshotRoot: firstCase.report.snapshotRoot
   });
   assertEqual(goodVerification.verified, true, "good launch evidence verification");
+  assertEqual(goodVerification.freshness, firstCase.freshness, "verification surfaces case freshness");
+  assertNonEmpty(goodVerification.sourceAnchor?.commit, "verification surfaces source anchor commit");
+  assertEqual(
+    goodVerification.sourceAnchor.commit,
+    firstCase.sourceAnchor.commit,
+    "verification source anchor matches case source anchor"
+  );
 
   const badVerification = launchEvidence.verifyLaunchEvidenceReport({
     caseId: firstCase.caseId,
@@ -380,6 +398,46 @@ function matchesSchemaType(value, type) {
 
     return typeof value === candidate;
   });
+}
+
+function assertFreshnessSurface(index) {
+  const validFreshness = new Set(["fresh", "stale", "unknown"]);
+
+  assertNonEmpty(index.upstreamAnchor?.commit, "launch evidence index upstream anchor commit");
+
+  for (const launchCase of index.cases) {
+    assertNonEmpty(
+      launchCase.sourceAnchor?.commit,
+      `launch evidence case ${launchCase.caseId} source anchor commit`
+    );
+    assertNonEmpty(
+      launchCase.sourceAnchor?.build,
+      `launch evidence case ${launchCase.caseId} source anchor build`
+    );
+
+    if (!validFreshness.has(launchCase.freshness)) {
+      throw new Error(
+        `launch evidence case ${launchCase.caseId} freshness: expected fresh|stale|unknown, got ${JSON.stringify(launchCase.freshness)}`
+      );
+    }
+  }
+
+  const summary = index.freshnessSummary;
+
+  if (!summary || typeof summary !== "object") {
+    throw new Error(`launch evidence index freshnessSummary: expected object, got ${JSON.stringify(summary)}`);
+  }
+
+  for (const key of ["fresh", "stale", "unknown"]) {
+    if (typeof summary[key] !== "number") {
+      throw new Error(`launch evidence index freshnessSummary.${key}: expected number, got ${JSON.stringify(summary[key])}`);
+    }
+  }
+
+  const summaryTotal = summary.fresh + summary.stale + summary.unknown;
+  assertEqual(summaryTotal, index.cases.length, "launch evidence freshnessSummary totals match case count");
+  assertGreaterThan(summary.fresh, 0, "launch evidence freshnessSummary fresh count");
+  assertGreaterThan(summary.stale, 0, "launch evidence freshnessSummary stale count");
 }
 
 function assertPrivateVerificationMiss(response, body, label) {

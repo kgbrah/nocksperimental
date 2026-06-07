@@ -79,6 +79,8 @@ function createUnverifiedPublicMiss(verification: LaunchEvidenceVerification): L
     verified: false,
     caseId: verification.query.caseId,
     reportSlug: null,
+    freshness: "unknown",
+    sourceAnchor: null,
     query: verification.query,
     checks: {
       caseMatched: false,

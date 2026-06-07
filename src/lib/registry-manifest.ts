@@ -306,6 +306,11 @@ export const registryEndpoints = [
     description: "Chronological trust registry event feed"
   },
   {
+    id: "trust-freshness",
+    path: "/api/trust/freshness",
+    description: "Unified trust-evidence freshness rollup"
+  },
+  {
     id: "generated-reports",
     path: "/api/reports/generated",
     description: "Generated lab report index"
@@ -446,12 +451,14 @@ export function createWellKnownRegistryManifest() {
       verifiedBadges: endpointUrl("verified-badges"),
       trustIssuerKeys: endpointUrl("trust-issuer-keys"),
       trustFeed: endpointUrl("trust-feed"),
+      trustFreshness: endpointUrl("trust-freshness"),
       trustUpdates: endpointUrl("registry-updates"),
       bazaar: endpointUrl("bazaar-directory")
     },
     capabilities: [
       "verified-badges",
       "upstream-anchored-badges",
+      "trust-freshness-rollup",
       "trust-issuer-key-discovery",
       "append-only-trust-updates",
       "registry-checkpoints",
