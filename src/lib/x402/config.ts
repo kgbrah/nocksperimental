@@ -50,6 +50,42 @@ export function resolveX402Config(env: EnvRecord = readDefaultEnv()): X402Config
   };
 }
 
+/**
+ * SSRF guard for the operator-configured facilitator URL. The facilitator is
+ * fetched server-side, so a misconfigured/compromised NOCKS_X402_FACILITATOR_URL
+ * (or one that 3xx-redirects) must not reach cloud-metadata, link-local, or
+ * internal-only hosts. Requires https; allows plain http only for an explicit
+ * loopback dev facilitator. Used by the FacilitatorVerifier before it fetches.
+ */
+export function isSafeFacilitatorUrl(rawUrl: string | null | undefined): boolean {
+  if (!rawUrl) {
+    return false;
+  }
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    return false;
+  }
+  const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  const isLoopback = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  // Block cloud-metadata, link-local, and internal-only hosts regardless of scheme.
+  if (
+    host === "metadata.google.internal" ||
+    host === "169.254.169.254" ||
+    host.startsWith("169.254.") ||
+    host.endsWith(".internal") ||
+    host.endsWith(".local")
+  ) {
+    return false;
+  }
+  if (url.protocol === "https:") {
+    return true;
+  }
+  // Plain http only for an explicit loopback dev facilitator.
+  return url.protocol === "http:" && isLoopback;
+}
+
 function readDefaultEnv(): EnvRecord {
   if (typeof process !== "undefined" && process.env) {
     return process.env as EnvRecord;

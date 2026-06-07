@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { loadTs, assertEqual, run } from "./x402-testkit.mjs";
+import { loadTs, assert, assertEqual, run } from "./x402-testkit.mjs";
 
 run("test-x402-config", async () => {
-  const { resolveX402Config, DEFAULT_PAY_TO, DEFAULT_NETWORK } = loadTs("src/lib/x402/config.ts");
+  const { resolveX402Config, DEFAULT_PAY_TO, DEFAULT_NETWORK, isSafeFacilitatorUrl } = loadTs(
+    "src/lib/x402/config.ts"
+  );
 
   const defaults = resolveX402Config({});
   assertEqual(defaults.payTo, DEFAULT_PAY_TO, "default payTo is the project wallet");
@@ -36,4 +38,17 @@ run("test-x402-config", async () => {
   const blank = resolveX402Config({ NOCKS_X402_PAY_TO: "   ", NOCKS_X402_FACILITATOR_URL: "  " });
   assertEqual(blank.payTo, DEFAULT_PAY_TO, "blank payTo falls back to default");
   assertEqual(blank.verifierMode, "stub", "blank facilitator url -> stub mode");
+
+  // SSRF guard on the operator-configured facilitator URL (used by FacilitatorVerifier).
+  assert(isSafeFacilitatorUrl("https://facilitator.example/"), "https external facilitator allowed");
+  assert(isSafeFacilitatorUrl("http://localhost:8402"), "http loopback dev facilitator allowed");
+  assert(isSafeFacilitatorUrl("http://127.0.0.1:8402"), "http 127.0.0.1 dev facilitator allowed");
+  assert(!isSafeFacilitatorUrl("http://facilitator.example/"), "plain http to a non-loopback host rejected");
+  assert(!isSafeFacilitatorUrl("https://169.254.169.254/"), "link-local address rejected even over https");
+  assert(!isSafeFacilitatorUrl("http://169.254.169.254/latest/meta-data/"), "cloud metadata endpoint rejected");
+  assert(!isSafeFacilitatorUrl("https://metadata.google.internal/"), "gcp metadata host rejected");
+  assert(!isSafeFacilitatorUrl("https://facilitator.internal/verify"), ".internal host rejected");
+  assert(!isSafeFacilitatorUrl("https://db.local"), ".local host rejected");
+  assert(!isSafeFacilitatorUrl("not a url"), "unparseable url rejected");
+  assert(!isSafeFacilitatorUrl(null), "missing url rejected");
 });

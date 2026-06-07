@@ -10,6 +10,7 @@ import type {
   VerifyResponse
 } from "@/lib/x402/types";
 import type { X402Config } from "@/lib/x402/config";
+import { isSafeFacilitatorUrl } from "@/lib/x402/config";
 import { findReceiptByNonce, recordReceipt } from "@/lib/x402/receipt-store";
 import type { X402Receipt } from "@/lib/x402/receipt-store";
 
@@ -135,6 +136,12 @@ export class FacilitatorVerifier implements Verifier {
   constructor(private readonly config: X402Config) {}
 
   async verify(payload: PaymentPayload, requirements: PaymentRequirements): Promise<VerifyOutcome> {
+    // SSRF guard: refuse to fetch a facilitator URL that points at cloud-metadata,
+    // loopback (non-dev), link-local, or internal-only hosts. Treated as unreachable
+    // so the gate fails closed (deny) rather than silently degrading to the stub.
+    if (!isSafeFacilitatorUrl(this.config.facilitatorUrl)) {
+      throw new FacilitatorUnreachableError("facilitator URL is not a safe external endpoint");
+    }
     const base = (this.config.facilitatorUrl ?? "").replace(/\/+$/, "");
 
     let response: Response;
@@ -142,7 +149,10 @@ export class FacilitatorVerifier implements Verifier {
       response = await fetch(`${base}/verify`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ payload, requirements })
+        body: JSON.stringify({ payload, requirements }),
+        // Do not follow redirects — a 3xx to an internal host would be an SSRF
+        // pivot. A redirect comes back with response.ok === false below -> deny.
+        redirect: "manual"
       });
     } catch (error) {
       throw new FacilitatorUnreachableError(`facilitator request failed: ${String(error)}`);
