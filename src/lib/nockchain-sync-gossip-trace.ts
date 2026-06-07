@@ -144,6 +144,28 @@ const receiptFields = [
   "walletEndpointMode"
 ] as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-sync-gossip-source-drift -- --json",
+  script: "scripts/check-nockchain-sync-gossip-source-drift.mjs",
+  testCommand: "npm run test:nockchain-sync-gossip-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainSyncGossipTrace",
+    "nockchainMiningSourceTrace",
+    "localFakenetEvidence",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned libp2p sync/gossip source anchors (catch-up signal, gossip suppression gate, suppression metric) against current upstream master before behind-tip / no-peers / wrong-commitment receipts rely on them."
+} as const;
+
 export function createNockchainSyncGossipTrace() {
   const upstream = nockchainUpstreamIntelligence;
   const releaseCommitSha = upstream.latestRelease.tag.replace(/^build-/, "");
@@ -174,6 +196,7 @@ export function createNockchainSyncGossipTrace() {
       currentCommitUrl: upstream.latestCommit.url
     },
     sourceAnchors,
+    sourceDriftCheck,
     behaviorInvariants,
     triageScenarios,
     receiptFields,

@@ -46,8 +46,8 @@ async function main() {
   assertEqual(passing.status, 0, "matching fixture exit status");
   const passingBody = JSON.parse(passing.stdout);
   assertEqual(passingBody.status, "in-sync", "matching fixture status");
-  assertEqual(passingBody.summary.totalChecks, 14, "matching total check count");
-  assertEqual(passingBody.summary.inSyncChecks, 14, "matching in-sync check count");
+  assertEqual(passingBody.summary.totalChecks, 15, "matching total check count");
+  assertEqual(passingBody.summary.inSyncChecks, 15, "matching in-sync check count");
   assertEqual(passingBody.summary.reviewNeededChecks, 0, "matching review-needed check count");
   assertEqual(passingBody.summary.failedChecks, 0, "matching failed check count");
   assertIncludes(
@@ -121,6 +121,11 @@ async function main() {
     "aggregate includes testkit/E2E source drift command"
   );
   assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-sync-gossip-source-drift -- --json",
+    "aggregate includes sync/gossip source drift command"
+  );
+  assertIncludes(
     passingBody.sourceUrls,
     "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md",
     "aggregate includes docs source"
@@ -170,7 +175,7 @@ async function main() {
   assertEqual(drift.status, 1, "drift fixture exit status");
   const driftBody = JSON.parse(drift.stdout);
   assertEqual(driftBody.status, "review-needed", "drift fixture status");
-  assertEqual(driftBody.summary.inSyncChecks, 13, "drift fixture in-sync count");
+  assertEqual(driftBody.summary.inSyncChecks, 14, "drift fixture in-sync count");
   assertEqual(driftBody.summary.reviewNeededChecks, 1, "drift fixture review-needed count");
   assertIncludes(driftBody.drift.reviewNeededCheckIds, "pr-radar", "aggregate detects PR radar drift");
   assertIncludes(
@@ -429,6 +434,13 @@ function fixtureChecks() {
         "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-testkit/src/scenario.rs"
       ],
       snapshot: { sourceAnchorCount: 11, sourceFileCount: 11 }
+    },
+    {
+      id: "sync-gossip-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-libp2p-io/src/catch_up.rs"
+      ],
+      snapshot: { sourceAnchorCount: 6, sourceFileCount: 5 }
     }
   ];
 }

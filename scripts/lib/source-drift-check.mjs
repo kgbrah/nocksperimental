@@ -219,7 +219,7 @@ function createDriftReport(trace, snapshot, config) {
     const githubSource = githubByPath.get(anchor.file);
     const presentSymbols = githubSource?.presentSymbols ?? [];
 
-    return anchor.symbols
+    return anchorSymbols(anchor)
       .filter((symbol) => !presentSymbols.includes(symbol))
       .map((symbol) => ({
         anchorId: anchor.id,
@@ -320,12 +320,21 @@ function sourcePaths(trace) {
   return unique(trace.sourceAnchors.map((anchor) => anchor.file));
 }
 
+// Some traces declare a single `symbol` (+ lineHint) instead of a `symbols`
+// array; tolerate both so the shared engine covers either anchor shape.
+function anchorSymbols(anchor) {
+  if (Array.isArray(anchor.symbols)) {
+    return anchor.symbols;
+  }
+  return anchor.symbol ? [anchor.symbol] : [];
+}
+
 function requiredSymbolsByPath(trace) {
   const symbolsByPath = new Map();
 
   for (const anchor of trace.sourceAnchors) {
     const symbols = symbolsByPath.get(anchor.file) ?? [];
-    symbolsByPath.set(anchor.file, unique([...symbols, ...anchor.symbols]));
+    symbolsByPath.set(anchor.file, unique([...symbols, ...anchorSymbols(anchor)]));
   }
 
   return symbolsByPath;

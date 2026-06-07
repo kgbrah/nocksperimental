@@ -368,7 +368,7 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, public API source, Nockup source, and testkit/E2E source drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, public API source, Nockup source, testkit/E2E source, and libp2p sync/gossip source drift checks into one monitor report before treating the watch board as current.
 
 ### Drift Status (public freshness snapshot)
 
@@ -411,6 +411,8 @@ The sync/gossip trace turns the latest Nockchain `nockchain-libp2p-io` source ch
 
 - `/nockchain/sync-gossip`
 - `/api/nockchain/sync-gossip`
+
+Run `npm run check:nockchain-sync-gossip-source-drift -- --json` to compare the commit-pinned libp2p sync/gossip source anchors against current upstream `nockchain/nockchain` master before behind-tip / no-peers / wrong-commitment receipts rely on them.
 
 Use it when a local fakenet, user-connected fakenet, or state-jam-backed test needs to decide whether a symptom is connectivity failure, stale state, or intentional behind-tip gossip suppression before publishing Nocksperimental evidence.
 

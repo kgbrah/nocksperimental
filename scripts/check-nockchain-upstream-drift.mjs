@@ -89,6 +89,12 @@ const aggregateChecks = [
     label: "Testkit and E2E scenario source anchors",
     domain: "testkit-e2e",
     npmScript: "check:nockchain-testkit-e2e-source-drift"
+  },
+  {
+    id: "sync-gossip-source",
+    label: "libp2p sync/gossip source anchors",
+    domain: "libp2p-sync-gossip",
+    npmScript: "check:nockchain-sync-gossip-source-drift"
   }
 ];
 
@@ -237,7 +243,7 @@ function createAggregateReport(checkResults) {
     status,
     observedAt: new Date().toISOString(),
     interpretation:
-      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge and wallet source anchors, release, PR radar, lineage, PMA and state-jam source anchors, mining and PoW source anchors, NockVM runtime-safety source anchors, public API and gRPC source anchors, Nockup scaffold source anchors, and testkit/E2E scenario source anchors assumptions current.",
+      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge and wallet source anchors, release, PR radar, lineage, PMA and state-jam source anchors, mining and PoW source anchors, NockVM runtime-safety source anchors, public API and gRPC source anchors, Nockup scaffold source anchors, testkit/E2E scenario source anchors, and libp2p sync/gossip source anchors assumptions current.",
     requiredCommands: aggregateChecks.map(checkCommand),
     sourceUrls: unique(checkResults.flatMap((check) => check.sourceUrls)),
     summary: {

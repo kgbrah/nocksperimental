@@ -122,10 +122,15 @@ const aggregateDriftCheck = {
       id: "testkit-e2e-source",
       command: "npm run check:nockchain-testkit-e2e-source-drift -- --json",
       targetSurface: "nockchainTestkitE2eTrace"
+    },
+    {
+      id: "sync-gossip-source",
+      command: "npm run check:nockchain-sync-gossip-source-drift -- --json",
+      targetSurface: "nockchainSyncGossipTrace"
     }
   ],
   interpretation:
-    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, wallet transaction source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, public API source, Nockup source, and testkit/E2E source drift checks as one monitor report before treating watch-board evidence as current."
+    "Runs the Nockchain docs, Cargo workspace, crate manifest, bridge source, wallet transaction source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, public API source, Nockup source, testkit/E2E source, and libp2p sync/gossip source drift checks as one monitor report before treating watch-board evidence as current."
 } as const;
 
 const watchQueue = [
