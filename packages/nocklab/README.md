@@ -52,7 +52,7 @@ import { defineFixture } from "nocklab";
 export default defineFixture({
   id: "my-app-v0",
   app: { name: "My App", slug: "my-app", version: "0.1.0", kernel: "my-kernel" },
-  environment: { mode: "mock-fakenet", grpcEndpoint: "127.0.0.1:5555", fakenetCommand: "fakenock --start", notes: [] },
+  environment: { mode: "mock-fakenet", grpcEndpoint: "127.0.0.1:5555", fakenetCommand: "nockchain --fakenet", notes: [] },
   initialState: { counter: 0 },
   steps: [{ id: "boot", type: "fakenet", title: "Boot" }],
   invariants: [
@@ -60,6 +60,31 @@ export default defineFixture({
   ]
 });
 ```
+
+## Running against a real node (local-fakenet)
+
+Most fixtures run in `mock-fakenet` (no infrastructure). A `local-fakenet` fixture does
+real probes: a TCP reachability check of the node's gRPC endpoint plus command-backed
+peek/poke adapters. The adapter `command.program` is whatever is on your `PATH` — on
+Nockchain that's `nockchain-wallet` (there is no `fakenock`):
+
+```jsonc
+{ "type": "peek", "id": "peek-balance", "title": "Read balance",
+  "adapter": {
+    "command": { "program": "nockchain-wallet", "args": ["show-balance", "--public-grpc-server-addr", "127.0.0.1:5555"] },
+    "timeoutMs": 20000,                 // node-backed commands are slow to boot/connect; default is 15000
+    "expect": { "stdoutIncludes": "Wallet Balance" }
+  } }
+```
+
+Node-setup gotchas worth knowing before you run a fakenet node:
+- Boot a **fresh** `--data-dir` — reusing a mainnet data dir with `--fakenet` panics
+  (`attempted to boot mainnet node with fakenet flag`).
+- On a space/quota-limited disk, add `--ephemeral` to avoid `Disk quota exceeded` from the
+  file-backed PMA.
+
+Full, verified end-to-end flow (clone → node → run) and a real-run report:
+https://github.com/kgbrah/nocksperimental/blob/main/docs/local-fakenet-guide.md
 
 ## License
 

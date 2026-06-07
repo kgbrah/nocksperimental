@@ -60,6 +60,16 @@ export interface StepExpectation {
   equals: unknown;
 }
 
+/** A command-backed peek/poke adapter (local-fakenet mode): run a program against a
+ * live node and assert on its output. The program is whatever is on PATH (e.g.
+ * `nockchain-wallet`). */
+export interface StepAdapter {
+  command: { program: string; args?: string[] };
+  /** Command timeout in milliseconds (default 15000). Raise for slow node-backed commands. */
+  timeoutMs?: number;
+  expect?: { stdoutIncludes?: string };
+}
+
 export interface LabStep {
   id: string;
   type: LabStepType;
@@ -72,7 +82,7 @@ export interface LabStep {
   operations?: Operation[];
   statePatch?: Record<string, unknown>;
   /** local-fakenet only: a command-backed poke/peek adapter. */
-  adapter?: Record<string, unknown>;
+  adapter?: StepAdapter;
 }
 
 export interface InvariantSpec {

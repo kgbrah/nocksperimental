@@ -45,6 +45,10 @@ npm run lab:local:demo
 # == npx nocklab fixtures/real-fakenet-demo.lab.json --strict
 ```
 
+Node-backed adapter commands (like `nockchain-wallet`) take several seconds to boot and
+connect, so the adapter command timeout defaults to 15s and is overridable per step via
+`adapter.timeoutMs` (the demo sets `20000`). Raise it if your node is slow to respond.
+
 The report (`.nocklab/real-fakenet-demo.report.{json,md}`) shows the TCP reachability of
 the gRPC listener and the stdout/exit-code of the `nockchain-wallet show-balance` peek
 adapter (which logs `Connected to public NockApp gRPC server endpoint=http://127.0.0.1:5555`).

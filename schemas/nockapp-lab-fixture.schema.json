@@ -257,6 +257,10 @@
         "command": {
           "$ref": "#/$defs/command"
         },
+        "timeoutMs": {
+          "type": "number",
+          "description": "Adapter command timeout in milliseconds (default 15000). Raise for slow node-backed commands."
+        },
         "expect": {
           "type": "object",
           "additionalProperties": false,

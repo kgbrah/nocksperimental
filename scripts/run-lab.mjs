@@ -793,6 +793,11 @@ function summarizeAdapterObservations(stepReports) {
 // label, so they share one implementation parameterized by `verb` ("Poke" /
 // "Peek"). The exit-code error string stays `${verb} command exited ${code}` and
 // every result field set (expectation, exitCode placement) is preserved.
+// Node-backed adapter commands (e.g. a wallet query against a live node) routinely
+// take several seconds to boot/connect, so the adapter timeout is generous by default
+// and overridable per step via step.adapter.timeoutMs.
+const DEFAULT_ADAPTER_TIMEOUT_MS = 15_000;
+
 async function probeAdapterCommand(adapterConfig, verb) {
   const checkedAt = new Date().toISOString();
   let command;
@@ -809,7 +814,11 @@ async function probeAdapterCommand(adapterConfig, verb) {
     };
   }
 
-  const result = await runCommand(command);
+  const timeoutMs =
+    Number.isFinite(adapterConfig.timeoutMs) && adapterConfig.timeoutMs > 0
+      ? adapterConfig.timeoutMs
+      : DEFAULT_ADAPTER_TIMEOUT_MS;
+  const result = await runCommand(command, timeoutMs);
   const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
   const expectation = describeCommandExpectation(adapterConfig.expect);
 

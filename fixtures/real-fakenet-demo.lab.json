@@ -48,6 +48,7 @@
           "program": "nockchain-wallet",
           "args": ["show-balance", "--public-grpc-server-addr", "127.0.0.1:5555"]
         },
+        "timeoutMs": 20000,
         "expect": {
           "stdoutIncludes": "Wallet Balance"
         }
