@@ -32,8 +32,11 @@ type VeslReceiptKvNamespace = {
   list: (options?: {
     prefix?: string;
     limit?: number;
+    cursor?: string;
   }) => Promise<{
     keys: Array<{ name: string }>;
+    list_complete?: boolean;
+    cursor?: string;
   }>;
   put: (key: string, value: string, options?: { metadata?: Record<string, unknown> }) => Promise<void>;
 };
@@ -104,20 +107,15 @@ async function getCloudflareKvNamespace() {
   return null;
 }
 
-function createKvStore(kv: VeslReceiptKvNamespace): VeslReceiptStore {
+export function createKvStore(kv: VeslReceiptKvNamespace): VeslReceiptStore {
   return {
     backend: "kv",
     async get(receiptId) {
       return readKvReceipt(kv, createReceiptKey(receiptId));
     },
     async list(limit) {
-      const listing = await kv.list({
-        prefix: receiptKeyPrefix,
-        limit: Math.min(Math.max(limit, 1), 1000)
-      });
-      const receipts = await Promise.all(
-        listing.keys.map((key) => readKvReceipt(kv, key.name))
-      );
+      const keyNames = await listAllReceiptKeys(kv);
+      const receipts = await Promise.all(keyNames.map((name) => readKvReceipt(kv, name)));
 
       return sortReceipts(receipts.filter((receipt): receipt is PersistedVeslEvidenceReceipt => Boolean(receipt))).slice(
         0,
@@ -149,6 +147,27 @@ async function readKvReceipt(kv: VeslReceiptKvNamespace, key: string) {
   }
 
   return null;
+}
+
+// KV.list returns keys in lexicographic order, but receipt ids are not chronological,
+// so fetching only `limit` keys returns an arbitrary (not most-recent) subset once more
+// than `limit` receipts exist. Enumerate the whole prefix (cursor-paginated, capped) so
+// the recency sort sees every receipt — matching the in-memory backend's behavior.
+const maxScannedReceiptKeys = 5000;
+
+async function listAllReceiptKeys(kv: VeslReceiptKvNamespace): Promise<string[]> {
+  const names: string[] = [];
+  let cursor: string | undefined;
+
+  do {
+    const page = await kv.list({ prefix: receiptKeyPrefix, limit: 1000, cursor });
+    for (const key of page.keys) {
+      names.push(key.name);
+    }
+    cursor = page.list_complete ? undefined : page.cursor;
+  } while (cursor && names.length < maxScannedReceiptKeys);
+
+  return names;
 }
 
 const memoryStore: VeslReceiptStore = {
