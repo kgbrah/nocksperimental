@@ -6,8 +6,15 @@ import { createHash } from "node:crypto";
 import net from "node:net";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
-import { scaffoldFixture, validateFixture } from "./fixture-builder.mjs";
+import {
+  INVARIANT_KINDS,
+  INVARIANT_SEVERITIES,
+  STEP_TYPES,
+  scaffoldFixture,
+  validateFixture
+} from "./fixture-builder.mjs";
 
 const rawArgs = process.argv.slice(2);
 const verb = rawArgs[0];
@@ -16,18 +23,11 @@ const args = rawArgs[0] === "run" ? rawArgs.slice(1) : rawArgs;
 const BOOLEAN_FLAGS = new Set(["--strict", "--ci", "--help"]);
 const VALUE_FLAGS = new Set(["--config", "--out", "--markdown", "--out-dir"]);
 
-// Step types handled in runStep and invariant kinds handled in evaluateInvariant.
-// Kept in sync with the fixture/pack JSON schemas and src/lib/lab-report.ts.
-const STEP_TYPES = ["fakenet", "poke", "peek", "invariant", "bridge"];
-const INVARIANT_KINDS = [
-  "numeric-min",
-  "state-equals",
-  "poke-actors-declared",
-  "supply-conservation",
-  "timeline-state",
-  "authorized-actor"
-];
-const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
+// STEP_TYPES (handled in runStep), INVARIANT_KINDS and INVARIANT_SEVERITIES
+// (handled in evaluateInvariant) are imported from fixture-builder.mjs as the
+// single source of truth, kept in sync with the fixture/pack JSON schemas and
+// src/lib/lab-report.ts. INVARIANT_REQUIRED_FIELDS stays local (the runner owns
+// the per-kind cross-field requirements).
 const PACK_DOMAINS = ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety"];
 
 // Per-kind cross-field requirements, mirroring src/lib/lab-report.ts invariantCatalog
@@ -149,7 +149,22 @@ async function runNewFixture(verbArgs) {
     throw new Error(`scaffolded fixture failed validation:\n  - ${errors.join("\n  - ")}`);
   }
 
-  const outPath = readValue("--out") ?? path.join("fixtures", `${slug}.lab.json`);
+  const explicitOut = readValue("--out");
+  const outPath = explicitOut ?? path.join("fixtures", `${slug}.lab.json`);
+
+  // Defense-in-depth: when the user did not supply an explicit --out, the path is
+  // derived from the (already slug-sanitized) slug under the repo `fixtures/`
+  // dir. Assert it actually resolves inside that dir so a future change cannot
+  // reintroduce path traversal. An explicit --out is by design an arbitrary path.
+  if (!explicitOut) {
+    const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+    const fixturesDir = path.join(repoRoot, "fixtures");
+    const resolvedOut = path.resolve(outPath);
+    if (resolvedOut !== fixturesDir && !resolvedOut.startsWith(`${fixturesDir}${path.sep}`)) {
+      throw new Error(`refusing to write fixture outside ${fixturesDir}: ${resolvedOut}`);
+    }
+  }
+
   await writeArtifact(outPath, `${JSON.stringify(fixture, null, 2)}\n`);
   process.stdout.write(`Scaffolded ${type} fixture: ${outPath}\n`);
 }
@@ -562,7 +577,7 @@ async function runStep({ step, index, state, actors, environment }) {
       observed = `actor '${step.actor ?? "missing"}' is not declared`;
     } else if (environment.mode === "local-fakenet" && step.adapter?.command) {
       const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
-      const poke = probe.ok ? await probeAdapterPoke(step.adapter) : null;
+      const poke = probe.ok ? await probeAdapterCommand(step.adapter, "Poke") : null;
       status = probe.ok && poke?.status === "pass" ? "pass" : "fail";
       expectation = step.expectation ?? poke?.expectation ?? `adapter command exits 0 for ${step.target ?? step.id}`;
       adapter = {
@@ -591,7 +606,7 @@ async function runStep({ step, index, state, actors, environment }) {
   if (step.type === "peek") {
     if (environment.mode === "local-fakenet" && step.adapter?.command) {
       const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
-      const peek = probe.ok ? await probeAdapterPeek(step.adapter) : null;
+      const peek = probe.ok ? await probeAdapterCommand(step.adapter, "Peek") : null;
       status = probe.ok && peek?.status === "pass" ? "pass" : "fail";
       expectation = step.expectation ?? peek?.expectation ?? `adapter command exits 0 for ${step.target ?? step.id}`;
       adapter = {
@@ -730,7 +745,11 @@ function summarizeAdapterObservations(stepReports) {
   });
 }
 
-async function probeAdapterPoke(adapterConfig) {
+// Poke and Peek adapter probes were byte-identical except their exit-code error
+// label, so they share one implementation parameterized by `verb` ("Poke" /
+// "Peek"). The exit-code error string stays `${verb} command exited ${code}` and
+// every result field set (expectation, exitCode placement) is preserved.
+async function probeAdapterCommand(adapterConfig, verb) {
   const checkedAt = new Date().toISOString();
   let command;
 
@@ -767,70 +786,7 @@ async function probeAdapterPoke(adapterConfig) {
       checkedAt,
       exitCode: result.code,
       expectation,
-      error: `Poke command exited ${result.code}`
-    };
-  }
-
-  const expectationResult = evaluateCommandExpectation(adapterConfig.expect, raw);
-
-  if (!expectationResult.ok) {
-    return {
-      status: "fail",
-      raw,
-      checkedAt,
-      exitCode: result.code,
-      expectation,
-      error: expectationResult.error
-    };
-  }
-
-  return {
-    status: "pass",
-    raw,
-    checkedAt,
-    exitCode: result.code,
-    expectation
-  };
-}
-
-async function probeAdapterPeek(adapterConfig) {
-  const checkedAt = new Date().toISOString();
-  let command;
-
-  try {
-    command = normalizeCommand(adapterConfig.command, "step.adapter.command");
-  } catch (error) {
-    return {
-      status: "fail",
-      raw: "",
-      checkedAt,
-      expectation: "adapter command is configured",
-      error: error.message
-    };
-  }
-
-  const result = await runCommand(command);
-  const raw = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
-  const expectation = describeCommandExpectation(adapterConfig.expect);
-
-  if (result.error) {
-    return {
-      status: "fail",
-      raw,
-      checkedAt,
-      expectation,
-      error: result.error
-    };
-  }
-
-  if (result.code !== 0) {
-    return {
-      status: "fail",
-      raw,
-      checkedAt,
-      exitCode: result.code,
-      expectation,
-      error: `Peek command exited ${result.code}`
+      error: `${verb} command exited ${result.code}`
     };
   }
 
@@ -1235,7 +1191,7 @@ function normalizeOperations(step) {
 
 function applyOperation(operation, state) {
   if (operation.kind === "increment") {
-    const current = Number(getPath(state, operation.path) ?? 0);
+    const current = numericOperand(getPath(state, operation.path), operation.path, "increment");
     setPath(state, operation.path, current + Number(operation.by));
     return;
   }
@@ -1246,8 +1202,8 @@ function applyOperation(operation, state) {
   }
 
   if (operation.kind === "transfer") {
-    const from = Number(getPath(state, operation.fromPath) ?? 0);
-    const to = Number(getPath(state, operation.toPath) ?? 0);
+    const from = numericOperand(getPath(state, operation.fromPath), operation.fromPath, "transfer");
+    const to = numericOperand(getPath(state, operation.toPath), operation.toPath, "transfer");
     const amount = Number(operation.amount);
     setPath(state, operation.fromPath, from - amount);
     setPath(state, operation.toPath, to + amount);
@@ -1262,6 +1218,23 @@ function applyOperation(operation, state) {
   }
 
   throw new Error(`Unsupported operation kind: ${operation.kind}`);
+}
+
+// Resolve the current numeric value at a path for increment/transfer. An absent
+// path keeps the legitimate default of 0; a present but non-numeric value is a
+// malformed/adversarial fixture and fails loudly rather than coercing to NaN and
+// silently corrupting state.
+function numericOperand(raw, pathExpression, kind) {
+  if (raw == null) {
+    return 0;
+  }
+  const value = Number(raw);
+  if (!Number.isFinite(value)) {
+    throw new Error(
+      `${kind} operation at ${pathExpression}: current value ${formatValue(raw)} is not numeric`
+    );
+  }
+  return value;
 }
 
 function evaluateExpectation(expect, state) {
@@ -1323,10 +1296,14 @@ function evaluateInvariant({ invariant, state, steps, actors }) {
     const balances = getPath(state, invariant.balancesPath) ?? {};
     const supply = getPath(state, invariant.supplyPath);
     const total = Object.values(balances).reduce((sum, value) => sum + Number(value), 0);
+    // Tolerate IEEE-754 rounding for fractional ledgers (0.1 + 0.2 !== 0.3).
+    // Number.isFinite(NaN) is false, so a missing/non-numeric supply still fails.
+    const numericSupply = Number(supply);
+    const passes = Number.isFinite(numericSupply) && Math.abs(total - numericSupply) <= 1e-9;
 
     return invariantResult(
       invariant,
-      total === supply,
+      passes,
       `total=${total}, supply=${supply}`,
       `${invariant.balancesPath} sum equals ${invariant.supplyPath}`
     );
@@ -1376,8 +1353,17 @@ function invariantResult(invariant, passes, observed, expected) {
   };
 }
 
+const UNSAFE_PATH_SEGMENTS = new Set(["__proto__", "prototype", "constructor"]);
+
+function assertSafeSegment(segment) {
+  if (UNSAFE_PATH_SEGMENTS.has(segment)) {
+    throw new Error(`unsafe path segment: ${segment}`);
+  }
+}
+
 function mergeState(target, patch) {
   for (const [key, value] of Object.entries(patch)) {
+    assertSafeSegment(key);
     if (isPlainObject(value) && isPlainObject(target[key])) {
       mergeState(target[key], value);
     } else {
@@ -1449,6 +1435,9 @@ function getPath(source, pathExpression) {
 
 function setPath(target, pathExpression, value) {
   const segments = String(pathExpression).split(".").filter(Boolean);
+  for (const segment of segments) {
+    assertSafeSegment(segment);
+  }
   let current = target;
 
   for (const segment of segments.slice(0, -1)) {

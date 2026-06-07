@@ -75,6 +75,14 @@ async function main() {
     "rejected fakenet receipt fails signature verification"
   );
 
+  // Production signing path (COR-A): when NOCKS_BADGE_ISSUER_SIGNING_SEED (+ key
+  // id) is set, every signer must stamp the production keyId and the published
+  // public key for that keyId must verify the signature. The dev path stamps the
+  // committed dev key and verifies against the committed registry; this asserts
+  // the env path no longer signs with an unpublished key while stamping the dev
+  // key id (the original divergence bug).
+  runProductionSigningPath();
+
   const packageJson = JSON.parse(readText("package.json"));
   assertEqual(
     packageJson.scripts["test:evidence-receipt-signing"],
@@ -133,6 +141,79 @@ function assertSignedReceipt(receipt, verifyReceiptSignature, verifyBadgeSignatu
     true,
     `${label} correct issuer key verifies`
   );
+}
+
+function runProductionSigningPath() {
+  // A distinct production seed (not a committed dev seed) and a production keyId
+  // not present in the committed registry, so the env overlay's add-key branch is
+  // exercised and verification must resolve the env-derived public key.
+  const prodSeed = "9900000000000000000000000000000000000000000000000000000000000099";
+  const prodKeyId = "nocksperimental-registry-ed25519-prod-test";
+
+  const previousSeed = process.env.NOCKS_BADGE_ISSUER_SIGNING_SEED;
+  const previousKeyId = process.env.NOCKS_BADGE_ISSUER_KEY_ID;
+
+  process.env.NOCKS_BADGE_ISSUER_SIGNING_SEED = prodSeed;
+  process.env.NOCKS_BADGE_ISSUER_KEY_ID = prodKeyId;
+
+  try {
+    const { verifyBadgeSignature, publicKeySpkiFromSeed } =
+      loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
+    const { publicKeyForKeyId } = loadTypeScriptModule("src/lib/trust-issuer-keys.ts");
+
+    const { verifyFakenetEvidenceSubmission } =
+      loadTypeScriptModule("src/lib/fakenet-evidence-submission.ts");
+    const { verifyVeslEvidenceSubmission } =
+      loadTypeScriptModule("src/lib/vesl-evidence-submission.ts");
+    const { verifyNockupValidationSubmission } =
+      loadTypeScriptModule("src/lib/nockup-validation-submission.ts");
+
+    // The published public key for the production keyId must equal the seed's SPKI.
+    assertEqual(
+      publicKeyForKeyId(prodKeyId),
+      publicKeySpkiFromSeed(prodSeed),
+      "production keyId resolves to the env seed's published public key"
+    );
+
+    const cases = [
+      ["fakenet", verifyFakenetEvidenceSubmission(createFakenetInput())],
+      ["vesl", verifyVeslEvidenceSubmission(createVeslInput())],
+      ["nockup", verifyNockupValidationSubmission(createNockupInput())]
+    ];
+
+    for (const [label, receipt] of cases) {
+      assertEqual(receipt.accepted, true, `${label} prod receipt accepted`);
+      assertEqual(
+        receipt.signature.issuerKeyId,
+        prodKeyId,
+        `${label} prod receipt stamps production keyId`
+      );
+
+      const publicKey = publicKeyForKeyId(receipt.signature.issuerKeyId);
+      assertNonEmpty(publicKey, `${label} prod receipt issuer key resolves`);
+
+      assertEqual(
+        verifyBadgeSignature({
+          payload: receiptSignedPayload(receipt, label),
+          signature: receipt.signature.signature,
+          publicKeySpkiBase64: publicKey
+        }),
+        true,
+        `${label} prod receipt verifies against published issuer key`
+      );
+    }
+  } finally {
+    restoreEnv("NOCKS_BADGE_ISSUER_SIGNING_SEED", previousSeed);
+    restoreEnv("NOCKS_BADGE_ISSUER_KEY_ID", previousKeyId);
+  }
+}
+
+function restoreEnv(name, previousValue) {
+  if (previousValue === undefined) {
+    delete process.env[name];
+  } else {
+    process.env[name] = previousValue;
+  }
 }
 
 function receiptSignedPayload(receipt, label) {

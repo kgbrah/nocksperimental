@@ -10,87 +10,79 @@ const aggregateChecks = [
     id: "docs",
     label: "Tier 0 and promoted Tier 1 docs",
     domain: "source-authority",
-    command: "npm run check:nockchain-docs-drift -- --json",
     npmScript: "check:nockchain-docs-drift"
   },
   {
     id: "cargo-workspace",
     label: "Cargo workspace manifest",
     domain: "rust-workspace",
-    command: "npm run check:nockchain-cargo-workspace-drift -- --json",
     npmScript: "check:nockchain-cargo-workspace-drift"
   },
   {
     id: "cargo-manifests",
     label: "Crate Cargo manifests",
     domain: "rust-crate-manifests",
-    command: "npm run check:nockchain-cargo-manifests-drift -- --json",
     npmScript: "check:nockchain-cargo-manifests-drift"
   },
   {
     id: "bridge-source",
     label: "Bridge source anchors and bridge-dev scenarios",
     domain: "bridge-source",
-    command: "npm run check:nockchain-bridge-source-drift -- --json",
     npmScript: "check:nockchain-bridge-source-drift"
   },
   {
     id: "wallet-source",
     label: "Wallet transaction source anchors",
     domain: "wallet-source",
-    command: "npm run check:nockchain-wallet-source-drift -- --json",
     npmScript: "check:nockchain-wallet-source-drift"
   },
   {
     id: "release-assets",
     label: "Latest release assets",
     domain: "release-build",
-    command: "npm run check:nockchain-release-assets-drift -- --json",
     npmScript: "check:nockchain-release-assets-drift"
   },
   {
     id: "pr-radar",
     label: "Open PR and issue radar",
     domain: "pre-merge-review",
-    command: "npm run check:nockchain-pr-radar-drift -- --json",
     npmScript: "check:nockchain-pr-radar-drift"
   },
   {
     id: "zorp-org",
     label: "Zorp org and state-jam lineage",
     domain: "zorp-lineage",
-    command: "npm run check:zorp-org-drift -- --json",
     npmScript: "check:zorp-org-drift"
   },
   {
     id: "pma-source",
     label: "PMA, snapshot, and event-log source anchors",
     domain: "pma-state-jam",
-    command: "npm run check:nockchain-pma-source-drift -- --json",
     npmScript: "check:nockchain-pma-source-drift"
   },
   {
     id: "mining-source",
     label: "Mining and PoW source anchors",
     domain: "mining-pow",
-    command: "npm run check:nockchain-mining-source-drift -- --json",
     npmScript: "check:nockchain-mining-source-drift"
   },
   {
     id: "runtime-safety-source",
     label: "NockVM runtime-safety source anchors",
     domain: "runtime-safety",
-    command: "npm run check:nockchain-runtime-safety-source-drift -- --json",
     npmScript: "check:nockchain-runtime-safety-source-drift"
   },
   {
     id: "api-source",
     label: "Public API and gRPC source anchors",
     domain: "public-api",
-    command: "npm run check:nockchain-api-source-drift -- --json",
     npmScript: "check:nockchain-api-source-drift"
   }
 ];
+
+// The displayed command is fully derived from the executed npmScript, so the two
+// can never drift. `npmScript` is what runLiveChecks actually invokes.
+const checkCommand = (check) => `npm run ${check.npmScript} -- --json`;
 
 main().catch((error) => {
   console.error(error);
@@ -172,7 +164,7 @@ function runLiveChecks() {
         id: check.id,
         label: check.label,
         domain: check.domain,
-        command: check.command,
+        command: checkCommand(check),
         status: "failed",
         exitCode: result.status ?? 1,
         sourceUrls: [],
@@ -210,7 +202,7 @@ function normalizeCheckResult(check, report, exitCode, stderr) {
     id: check.id,
     label: check.label,
     domain: check.domain,
-    command: check.command,
+    command: checkCommand(check),
     status: report.status === "in-sync" ? "in-sync" : "review-needed",
     exitCode,
     sourceUrls: Array.isArray(report.sourceUrls) ? report.sourceUrls : [],
@@ -233,8 +225,8 @@ function createAggregateReport(checkResults) {
     status,
     observedAt: new Date().toISOString(),
     interpretation:
-      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge and wallet source anchors, release, PR radar, and lineage assumptions current.",
-    requiredCommands: aggregateChecks.map((check) => check.command),
+      "Aggregates the Nockchain/Zorp drift checks that keep Nocksperimental's source authority, Rust workspace, crate manifests, bridge and wallet source anchors, release, PR radar, lineage, PMA and state-jam source anchors, mining and PoW source anchors, NockVM runtime-safety source anchors, and public API and gRPC source anchors assumptions current.",
+    requiredCommands: aggregateChecks.map(checkCommand),
     sourceUrls: unique(checkResults.flatMap((check) => check.sourceUrls)),
     summary: {
       totalChecks: checkResults.length,

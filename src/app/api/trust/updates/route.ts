@@ -1,8 +1,8 @@
-import { createHash, timingSafeEqual } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { NextResponse } from "next/server";
 import {
   appendTrustUpdateToLog,
+  createDevHash,
   trustUpdateChainSummary,
   trustUpdateEntries,
   trustUpdateLog,
@@ -10,33 +10,13 @@ import {
   type TrustUpdateEntry,
   validateTrustUpdateChain
 } from "@/lib/trust-update-log";
+import {
+  createTrustUpdateAuditLog,
+  readTrustUpdateAuditLog,
+  type TrustUpdateAuditEvent
+} from "@/lib/trust-update-audit-log";
+import { authenticateRegistryUpdate } from "@/lib/trust-update-registry-auth";
 import { parseJsonObjectBody } from "@/lib/parse-json-object-body";
-
-type TrustUpdateAuditEvent = {
-  sequence: number;
-  updateId: string;
-  action: string;
-  target: string;
-  actor: string;
-  keyId: string;
-  recordedAt: string;
-  previousRoot: string;
-  rootHash: string;
-  entryHash: string;
-  persisted: boolean;
-  writePath: string | null;
-  eventHash: string;
-};
-
-type TrustUpdateAuditLog = {
-  version: string;
-  source: string;
-  events: TrustUpdateAuditEvent[];
-};
-
-type RegistryUpdateAuth = {
-  keyId: string;
-};
 
 export function GET() {
   return NextResponse.json({
@@ -131,22 +111,6 @@ export async function POST(request: Request) {
   });
 }
 
-function createTrustUpdateAuditLog(): TrustUpdateAuditLog {
-  return {
-    version: "v0",
-    source: "src/app/api/trust/updates",
-    events: []
-  };
-}
-
-function readTrustUpdateAuditLog(auditPath: string): TrustUpdateAuditLog {
-  if (!existsSync(auditPath)) {
-    return createTrustUpdateAuditLog();
-  }
-
-  return JSON.parse(readFileSync(auditPath, "utf8")) as TrustUpdateAuditLog;
-}
-
 function createTrustUpdateAuditEvent(input: {
   actor: string;
   entry: TrustUpdateEntry;
@@ -174,78 +138,4 @@ function createTrustUpdateAuditEvent(input: {
     ...eventWithoutHash,
     eventHash: `sha256:${createDevHash(eventWithoutHash)}`
   };
-}
-
-function authenticateRegistryUpdate(request: Request): RegistryUpdateAuth | null {
-  const requestKey = request.headers.get("x-nocks-registry-key") ?? "";
-  const configuredKeys = parseRegistryUpdateKeys();
-
-  if (configuredKeys.length > 0) {
-    const requestKeyId = request.headers.get("x-nocks-registry-key-id") ?? "";
-    const configuredKey = configuredKeys.find((key) => key.keyId === requestKeyId);
-
-    if (configuredKey && safeCompareSecrets(configuredKey.secret, requestKey)) {
-      return { keyId: configuredKey.keyId };
-    }
-
-    return null;
-  }
-
-  const legacyKey = process.env.NOCKS_REGISTRY_UPDATE_KEY;
-  if (legacyKey && safeCompareSecrets(legacyKey, requestKey)) {
-    return { keyId: request.headers.get("x-nocks-registry-key-id") ?? "legacy" };
-  }
-
-  return null;
-}
-
-function parseRegistryUpdateKeys() {
-  return (process.env.NOCKS_REGISTRY_UPDATE_KEYS ?? "")
-    .split(",")
-    .map((entry) => {
-      const separatorIndex = entry.indexOf(":");
-
-      if (separatorIndex === -1) {
-        return null;
-      }
-
-      const keyId = entry.slice(0, separatorIndex).trim();
-      const secret = entry.slice(separatorIndex + 1).trim();
-
-      if (!keyId || !secret) {
-        return null;
-      }
-
-      return { keyId, secret };
-    })
-    .filter((entry): entry is { keyId: string; secret: string } => Boolean(entry));
-}
-
-function safeCompareSecrets(expected: string, actual: string) {
-  const expectedHash = createHash("sha256").update(expected).digest();
-  const actualHash = createHash("sha256").update(actual).digest();
-
-  return timingSafeEqual(expectedHash, actualHash);
-}
-
-function createDevHash(value: unknown) {
-  return createHash("sha256").update(canonicalStringify(value)).digest("hex");
-}
-
-function canonicalStringify(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalStringify(item)).join(",")}]`;
-  }
-
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([keyA], [keyB]) =>
-      keyA.localeCompare(keyB)
-    );
-
-    return `{${entries
-      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalStringify(item)}`)
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value);
 }

@@ -5,12 +5,12 @@ import {
   registrySubject
 } from "@/lib/registry-manifest";
 import {
-  ACTIVE_DEV_ISSUER_KEY_ID,
-  badgeIssuerSigningSeed,
-  signBadgePayload,
-  verifyBadgeSignature
-} from "@/lib/trust-badge-crypto";
-import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
+  signEvidenceReceipt,
+  verifyEvidenceReceiptSignature,
+  type EvidenceReceiptSignature
+} from "@/lib/evidence-receipt-signing";
+import { containsSecretLikeField } from "@/lib/secret-field-scrubber";
+import { stableId } from "@/lib/stable-id";
 
 type NockupValidationInput = {
   project?: {
@@ -64,7 +64,6 @@ type NockupValidationChecks = {
 
 export type NockupValidationReceipt = ReturnType<typeof verifyNockupValidationSubmission>;
 
-const secretKeyPattern = /(?:private|secret|seed|mnemonic|api[-_]?key|token|password)/i;
 const nockupWatchThemes = [
   "#125 fix(nockup): harden templates and run UX",
   "#122 feat(nockup): install_path support and nested symlink fixes",
@@ -355,24 +354,26 @@ function collectErrors(checks: NockupValidationChecks) {
   return errors;
 }
 
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  if (Array.isArray(value)) {
-    return value.some(containsSecretLikeField);
-  }
-
-  return Object.entries(value).some(([key, child]) => secretKeyPattern.test(key) || containsSecretLikeField(child));
+function latestTimestamp(commands: NockupCommandSummary[]) {
+  return latestByEpoch(commands.flatMap((command) => [command.completedAt, command.startedAt]));
 }
 
-function latestTimestamp(commands: NockupCommandSummary[]) {
-  return commands
-    .flatMap((command) => [command.completedAt, command.startedAt])
+// Returns the chronologically latest timestamp by parsed epoch (not lexicographic
+// string order, which only matches chronological order for uniform UTC "...Z"
+// strings — a tz offset or differing fractional precision could otherwise stamp a
+// non-latest timestamp into the signed generatedAt). Invalid timestamps are
+// dropped; ties keep the first occurrence; the original client string is returned
+// unchanged (no toISOString() rewrite). Empty/all-invalid input -> undefined.
+function latestByEpoch(values: Array<string | null | undefined>): string | undefined {
+  return values
     .filter((value): value is string => Boolean(value && !Number.isNaN(Date.parse(value))))
-    .sort()
-    .at(-1);
+    .reduce<string | undefined>((latest, value) => {
+      if (latest === undefined || Date.parse(value) > Date.parse(latest)) {
+        return value;
+      }
+
+      return latest;
+    }, undefined);
 }
 
 function cleanInput(value: unknown) {
@@ -389,30 +390,12 @@ function cleanTimestamp(value: unknown) {
   return input && !Number.isNaN(Date.parse(input)) ? input : null;
 }
 
-function stableId(value: string) {
-  let hash = 2166136261;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
-
 type NockupReceiptSignedPayload = {
   receiptId: string;
   generatedAt: string;
   evidenceHash: string;
   project: string;
   status: string;
-};
-
-type NockupReceiptSignature = {
-  algorithm: "ed25519";
-  issuerKeyId: string;
-  payloadDigest: string;
-  signature: string;
 };
 
 function buildNockupSignedPayload(payload: NockupReceiptSignedPayload): NockupReceiptSignedPayload {
@@ -427,34 +410,11 @@ function buildNockupSignedPayload(payload: NockupReceiptSignedPayload): NockupRe
 
 function signNockupReceipt(
   signedPayload: NockupReceiptSignedPayload | null
-): NockupReceiptSignature | null {
-  if (!signedPayload) {
-    return null;
-  }
-
-  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
-
-  return {
-    algorithm,
-    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
-    payloadDigest,
-    signature
-  };
+): EvidenceReceiptSignature | null {
+  return signEvidenceReceipt(signedPayload);
 }
 
 export function verifyNockupReceiptSignature(receipt: NockupValidationReceipt): boolean {
-  const signature = receipt.signature;
-
-  if (!signature) {
-    return false;
-  }
-
-  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
-
-  if (!publicKeySpkiBase64) {
-    return false;
-  }
-
   const signedPayload = buildNockupSignedPayload({
     receiptId: receipt.receiptId ?? "",
     generatedAt: receipt.generatedAt,
@@ -463,9 +423,5 @@ export function verifyNockupReceiptSignature(receipt: NockupValidationReceipt): 
     status: receipt.status
   });
 
-  return verifyBadgeSignature({
-    payload: signedPayload,
-    signature: signature.signature,
-    publicKeySpkiBase64
-  });
+  return verifyEvidenceReceiptSignature(receipt.signature, signedPayload);
 }

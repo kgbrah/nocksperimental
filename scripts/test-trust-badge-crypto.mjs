@@ -49,6 +49,21 @@ function main() {
     canonicalizeBadgePayload({ b: 2, a: 1 }),
     "canonicalization is order independent"
   );
+
+  // COR-E: undefined-valued keys are dropped (mirrors JSON.stringify), so an
+  // optional signed field that is unset canonicalizes identically to omitting it.
+  assertEqual(
+    canonicalizeBadgePayload({ a: 1, b: undefined, c: 3 }),
+    canonicalizeBadgePayload({ a: 1, c: 3 }),
+    "undefined-valued keys are dropped during canonicalization"
+  );
+
+  // null stays distinct from a dropped/undefined key.
+  assertEqual(
+    canonicalizeBadgePayload({ a: 1, b: null }) !== canonicalizeBadgePayload({ a: 1 }),
+    true,
+    "null is preserved (distinct from omitted undefined)"
+  );
   assertEqual(badgePayloadDigest(payload).startsWith("sha256:"), true, "digest is sha256 prefixed");
 
   // Deterministic signing (Ed25519 is deterministic per RFC 8032).

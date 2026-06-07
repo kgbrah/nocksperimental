@@ -17,8 +17,13 @@ const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(moduleDir, "..", "schemas", "nockapp-lab-fixture.schema.json");
 
 const ENVIRONMENT_MODES = ["mock-fakenet", "local-fakenet", "docker-fakenet"];
-const STEP_TYPES = ["fakenet", "poke", "peek", "invariant", "bridge"];
-const INVARIANT_KINDS = [
+
+// Step types and invariant kind/severity enums. Exported so run-lab.mjs can
+// reuse a single source of truth (the runner's runStep / evaluateInvariant rely
+// on these), avoiding the previous character-identical duplication. Kept in sync
+// with the fixture/pack JSON schemas and src/lib/lab-report.ts.
+export const STEP_TYPES = ["fakenet", "poke", "peek", "invariant", "bridge"];
+export const INVARIANT_KINDS = [
   "numeric-min",
   "state-equals",
   "poke-actors-declared",
@@ -26,12 +31,7 @@ const INVARIANT_KINDS = [
   "timeline-state",
   "authorized-actor"
 ];
-const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
-
-// Allowed key sets, honoring the schema's `additionalProperties:false` on the
-// top level and on `app`/`environment`.
-const APP_KEYS = ["name", "slug", "version", "kernel"];
-const ENVIRONMENT_KEYS = ["mode", "grpcEndpoint", "fakenetCommand", "notes"];
+export const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
 
 const DEFAULT_GRPC_ENDPOINT = "127.0.0.1:5555";
 const DEFAULT_FAKENET_COMMAND = "fakenock --start";
@@ -98,6 +98,15 @@ function defaultStep() {
 export function scaffoldFixture({ slug, type = "peek", endpoint = DEFAULT_GRPC_ENDPOINT } = {}) {
   if (!slug || typeof slug !== "string") {
     throw new Error("new-fixture requires a non-empty --slug");
+  }
+  // The slug is both interpolated into ids (id/kernel/step/invariant ids) and
+  // used to derive the default output path in run-lab.mjs. Restrict it to a safe
+  // lowercase kebab token so it cannot escape `fixtures/` via path traversal or
+  // inject unexpected characters into the generated ids.
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
+    throw new Error(
+      `new-fixture --slug must match ^[a-z0-9][a-z0-9-]*$ (lowercase letters, digits, dashes), got ${JSON.stringify(slug)}`
+    );
   }
   if (type !== "peek" && type !== "poke") {
     throw new Error(`new-fixture --type must be peek or poke, got ${JSON.stringify(type)}`);
@@ -185,6 +194,12 @@ export function validateFixture(fixture, { schema = loadSchema() } = {}) {
     return ["fixture must be a JSON object"];
   }
 
+  // Derive the allowed key sets straight from the schema's declared properties
+  // (honoring its `additionalProperties:false` on `app`/`environment`) so the
+  // allow-lists never drift from the schema.
+  const allowedAppKeys = Object.keys(schema.properties.app.properties);
+  const allowedEnvKeys = Object.keys(schema.properties.environment.properties);
+
   for (const key of schema.required) {
     if (!(key in fixture)) {
       errors.push(`missing required field: ${key}`);
@@ -197,7 +212,7 @@ export function validateFixture(fixture, { schema = loadSchema() } = {}) {
       if (!(key in fixture.app)) errors.push(`app missing required field: ${key}`);
     }
     for (const key of Object.keys(fixture.app)) {
-      if (!APP_KEYS.includes(key)) errors.push(`app has unexpected field: ${key}`);
+      if (!allowedAppKeys.includes(key)) errors.push(`app has unexpected field: ${key}`);
     }
   } else if ("app" in fixture) {
     errors.push("app must be an object");
@@ -209,7 +224,7 @@ export function validateFixture(fixture, { schema = loadSchema() } = {}) {
       if (!(key in fixture.environment)) errors.push(`environment missing required field: ${key}`);
     }
     for (const key of Object.keys(fixture.environment)) {
-      if (!ENVIRONMENT_KEYS.includes(key) && key !== "balanceCheck" && key !== "chainCheck") {
+      if (!allowedEnvKeys.includes(key)) {
         errors.push(`environment has unexpected field: ${key}`);
       }
     }

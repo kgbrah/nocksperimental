@@ -165,6 +165,38 @@ async function main() {
   assertEqual(mismatch.checks.endpointsMatched, false, "mismatch endpoint check");
   assertIncludes(mismatch.errors.join("\n"), "Report endpoints do not match", "mismatch error message");
 
+  const steplessReport = createReport({
+    reportId: "lab_local-fakenet-health-v0_stepless",
+    fixtureId: "local-fakenet-health-v0",
+    appSlug: "local-fakenet-health",
+    endpoint: "127.0.0.1:5555",
+    walletAddress,
+    status: "pass"
+  });
+  delete steplessReport.steps;
+
+  const steplessResponse = await POST(
+    new Request("https://nocksperimental.com/api/fakenet/evidence/submit", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        connection: {
+          endpoint: "127.0.0.1:5555",
+          walletAddress
+        },
+        report: steplessReport
+      })
+    })
+  );
+  const stepless = await steplessResponse.json();
+
+  assertEqual(steplessResponse.status, 400, "stepless report submission status");
+  assertEqual(stepless.accepted, false, "stepless report rejected (no crash)");
+  assertEqual(stepless.checks.reportsProvided, false, "stepless report drops out of normalized reports");
+  assertIncludes(stepless.errors.join("\n"), "No fakenet report JSON was submitted", "stepless report error message");
+
   await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/fakenet/evidence/submit");
 
   const registry = await loadTypeScriptModule("src/app/api/registry/route.ts").GET();

@@ -84,6 +84,25 @@ async function main() {
       "peek pass observed id"
     );
     assertValidIsoDate(peekPassBody.peeks.observed[0].checkedAt, "peek pass observed checkedAt");
+    assertEqual(
+      Boolean(peekPassBody.peeks.peeks[0].observation),
+      true,
+      "peek pass declared peek joins its observation"
+    );
+    assertEqual(
+      peekPassBody.peeks.peeks[0].observation.status,
+      "pass",
+      "peek pass joined observation status"
+    );
+    assertEqual(
+      peekPassBody.peeks.peeks[0].observation.target,
+      "fakenock --balance",
+      "peek pass joined observation target"
+    );
+    assertValidIsoDate(
+      peekPassBody.peeks.peeks[0].observation.checkedAt,
+      "peek pass joined observation checkedAt"
+    );
 
     process.chdir(peekFailRoot);
     const peekFailResponse = await GET();

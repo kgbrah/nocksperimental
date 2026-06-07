@@ -1,5 +1,6 @@
 import trustUpdateLogData from "@/data/trust-update-log.json";
 import { createHash } from "node:crypto";
+import { canonicalStringify } from "@/lib/canonical-stringify";
 
 export type TrustUpdateAction =
   | "registry-snapshot"
@@ -188,24 +189,6 @@ function sortTrustUpdateEntries(log: TrustUpdateLog) {
   return [...log.entries].sort((a, b) => a.sequence - b.sequence);
 }
 
-function createDevHash(value: unknown) {
+export function createDevHash(value: unknown) {
   return createHash("sha256").update(canonicalStringify(value)).digest("hex");
-}
-
-function canonicalStringify(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalStringify(item)).join(",")}]`;
-  }
-
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([keyA], [keyB]) =>
-      keyA.localeCompare(keyB)
-    );
-
-    return `{${entries
-      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalStringify(item)}`)
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value);
 }

@@ -6,12 +6,12 @@ import {
   registrySubject
 } from "@/lib/registry-manifest";
 import {
-  ACTIVE_DEV_ISSUER_KEY_ID,
-  badgeIssuerSigningSeed,
-  signBadgePayload,
-  verifyBadgeSignature
-} from "@/lib/trust-badge-crypto";
-import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
+  signEvidenceReceipt,
+  verifyEvidenceReceiptSignature,
+  type EvidenceReceiptSignature
+} from "@/lib/evidence-receipt-signing";
+import { containsSecretLikeField, redactSecretFields } from "@/lib/secret-field-scrubber";
+import { stableId } from "@/lib/stable-id";
 
 export type VeslEvidenceSubmissionInput = {
   connection?: {
@@ -72,7 +72,6 @@ type VeslReceiptChecks = {
 export type VeslEvidenceReceipt = ReturnType<typeof verifyVeslEvidenceSubmission>;
 
 const requiredEffects = ["%settle-registered", "%settle-noted"];
-const secretKeyPattern = /(?:private|secret|seed|mnemonic|api[-_]?key|token|password)/i;
 
 export function verifyVeslEvidenceSubmission(input: VeslEvidenceSubmissionInput) {
   const connection = normalizeConnection(input.connection);
@@ -369,14 +368,19 @@ function createReport({
         label: "VESL normalized evidence",
         stepId: "vesl-effects",
         stateHash: evidenceHash,
-        state: {
+        // Deep-redact the snapshot so a rejected submission carrying a
+        // secret-like key (the very thing the noSecretFields gate flags) is
+        // never echoed verbatim into the receipt body. Redaction is
+        // unconditional because secrets can nest under non-secret keys; the
+        // receipt shape (keys, stateHash, snapshotsCaptured) is preserved.
+        state: redactSecretFields({
           connection,
           verifyJam: input.verifyJam ?? null,
           effects,
           peeks,
           hull: input.hull ?? null,
           fakenet: input.fakenet ?? null
-        }
+        })
       }
     ],
     stateDiffs: [],
@@ -528,39 +532,30 @@ function collectErrors(checks: VeslReceiptChecks) {
   return errors;
 }
 
-function containsSecretLikeField(value: unknown): boolean {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  if (Array.isArray(value)) {
-    return value.some(containsSecretLikeField);
-  }
-
-  return Object.entries(value).some(([key, child]) => secretKeyPattern.test(key) || containsSecretLikeField(child));
+function latestTimestamp(effects: VeslEffectSummary[]) {
+  return latestByEpoch(effects.map((effect) => effect.observedAt));
 }
 
-function latestTimestamp(effects: VeslEffectSummary[]) {
-  return effects
-    .map((effect) => effect.observedAt)
+// Returns the chronologically latest timestamp by parsed epoch (not lexicographic
+// string order, which only matches chronological order for uniform UTC "...Z"
+// strings — a tz offset or differing fractional precision could otherwise stamp a
+// non-latest timestamp into the signed generatedAt). Invalid timestamps are
+// dropped; ties keep the first occurrence; the original client string is returned
+// unchanged (no toISOString() rewrite). Empty/all-invalid input -> undefined.
+function latestByEpoch(values: Array<string | null | undefined>): string | undefined {
+  return values
     .filter((value): value is string => Boolean(value && !Number.isNaN(Date.parse(value))))
-    .sort()
-    .at(-1);
+    .reduce<string | undefined>((latest, value) => {
+      if (latest === undefined || Date.parse(value) > Date.parse(latest)) {
+        return value;
+      }
+
+      return latest;
+    }, undefined);
 }
 
 function cleanInput(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function stableId(value: string) {
-  let hash = 2166136261;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0).toString(16).padStart(8, "0");
 }
 
 type VeslReceiptSignedPayload = {
@@ -569,13 +564,6 @@ type VeslReceiptSignedPayload = {
   evidenceHash: string;
   project: string;
   status: string;
-};
-
-type VeslReceiptSignature = {
-  algorithm: "ed25519";
-  issuerKeyId: string;
-  payloadDigest: string;
-  signature: string;
 };
 
 function buildVeslSignedPayload(payload: VeslReceiptSignedPayload): VeslReceiptSignedPayload {
@@ -590,34 +578,11 @@ function buildVeslSignedPayload(payload: VeslReceiptSignedPayload): VeslReceiptS
 
 function signVeslReceipt(
   signedPayload: VeslReceiptSignedPayload | null
-): VeslReceiptSignature | null {
-  if (!signedPayload) {
-    return null;
-  }
-
-  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
-
-  return {
-    algorithm,
-    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
-    payloadDigest,
-    signature
-  };
+): EvidenceReceiptSignature | null {
+  return signEvidenceReceipt(signedPayload);
 }
 
 export function verifyVeslReceiptSignature(receipt: VeslEvidenceReceipt): boolean {
-  const signature = receipt.signature;
-
-  if (!signature) {
-    return false;
-  }
-
-  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
-
-  if (!publicKeySpkiBase64) {
-    return false;
-  }
-
   const signedPayload = buildVeslSignedPayload({
     receiptId: receipt.receiptId ?? "",
     generatedAt: receipt.generatedAt,
@@ -626,9 +591,5 @@ export function verifyVeslReceiptSignature(receipt: VeslEvidenceReceipt): boolea
     status: receipt.status
   });
 
-  return verifyBadgeSignature({
-    payload: signedPayload,
-    signature: signature.signature,
-    publicKeySpkiBase64
-  });
+  return verifyEvidenceReceiptSignature(receipt.signature, signedPayload);
 }

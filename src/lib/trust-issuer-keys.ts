@@ -1,4 +1,5 @@
 import issuerKeyData from "@/data/trust-issuer-keys.json";
+import { issuerEnvKeyOverlay } from "@/lib/trust-badge-crypto";
 import {
   registryCanonicalBaseUrl,
   registryServiceName,
@@ -35,7 +36,47 @@ export function activeIssuerKey(): TrustIssuerKey | undefined {
   return issuerKeyForId(registry.activeKeyId) ?? issuerKeys.find((key) => key.status === "active");
 }
 
+// When a production signing seed is configured (NOCKS_BADGE_ISSUER_SIGNING_SEED),
+// overlay the public key it derives onto the committed registry so verifiers can
+// resolve the SPKI for the keyId production signatures stamp. In the dev/env-unset
+// path the committed registry is served verbatim.
+function overlaidIssuerKeys(): TrustIssuerKey[] {
+  const overlay = issuerEnvKeyOverlay();
+
+  if (!overlay) {
+    return issuerKeys;
+  }
+
+  const existing = issuerKeys.find((key) => key.keyId === overlay.keyId);
+
+  if (existing) {
+    return issuerKeys.map((key) =>
+      key.keyId === overlay.keyId ? { ...key, publicKeySpki: overlay.publicKeySpki } : key
+    );
+  }
+
+  return [
+    ...issuerKeys,
+    {
+      keyId: overlay.keyId,
+      algorithm: "ed25519",
+      publicKeySpki: overlay.publicKeySpki,
+      validFrom: new Date(0).toISOString(),
+      validUntil: null,
+      status: "active",
+      supersededBy: null
+    }
+  ];
+}
+
 export function publicKeyForKeyId(keyId: string): string | undefined {
+  return overlaidIssuerKeys().find((key) => key.keyId === keyId)?.publicKeySpki;
+}
+
+// The committed (non-overlaid) public key for a keyId — i.e. exactly what ships in
+// trust-issuer-keys.json. Used by the sign-time fail-closed guard so a production
+// seed cannot silently override a committed key's published identity.
+export function committedPublicKeyForKeyId(keyId: string): string | undefined {
   return issuerKeyForId(keyId)?.publicKeySpki;
 }
 
@@ -49,7 +90,7 @@ export function createIssuerKeyDiscovery() {
     algorithm: "ed25519" as const,
     interpretation:
       "Published Ed25519 issuer public keys for offline verification of Nocksperimental trust badges. Verification never depends on trusting this endpoint: a badge signature can be checked against the committed public key for its issuerKeyId, and retired keys still verify the badges they signed.",
-    issuerKeys: issuerKeys.map((key) => ({
+    issuerKeys: overlaidIssuerKeys().map((key) => ({
       keyId: key.keyId,
       algorithm: key.algorithm,
       publicKeySpki: key.publicKeySpki,

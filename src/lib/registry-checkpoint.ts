@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { canonicalStringify } from "@/lib/canonical-stringify";
 import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
 import { createLocalFakenetEvidenceCapsule } from "@/lib/local-fakenet-evidence";
 import { createNockchainBridgeTrace } from "@/lib/nockchain-bridge-trace";
@@ -1279,22 +1280,4 @@ export function createRegistryCheckpoint() {
 
 function createSha256Root(value: unknown) {
   return `sha256:${createHash("sha256").update(canonicalStringify(value)).digest("hex")}`;
-}
-
-function canonicalStringify(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => canonicalStringify(item)).join(",")}]`;
-  }
-
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([keyA], [keyB]) =>
-      keyA.localeCompare(keyB)
-    );
-
-    return `{${entries
-      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalStringify(item)}`)
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value);
 }

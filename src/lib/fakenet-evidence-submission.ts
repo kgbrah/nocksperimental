@@ -7,12 +7,11 @@ import {
   registrySubject
 } from "@/lib/registry-manifest";
 import {
-  ACTIVE_DEV_ISSUER_KEY_ID,
-  badgeIssuerSigningSeed,
-  signBadgePayload,
-  verifyBadgeSignature
-} from "@/lib/trust-badge-crypto";
-import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
+  signEvidenceReceipt,
+  verifyEvidenceReceiptSignature,
+  type EvidenceReceiptSignature
+} from "@/lib/evidence-receipt-signing";
+import { stableId } from "@/lib/stable-id";
 
 type FakenetEvidenceSubmissionInput = {
   connection?: {
@@ -63,11 +62,7 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
     checks.walletMatched;
   const verified = accepted && checks.noFailedReports;
   const errors = collectErrors(checks);
-  const generatedAt = summaries
-    .map((summary) => summary.generatedAt)
-    .filter(Boolean)
-    .sort()
-    .at(-1) ?? new Date(0).toISOString();
+  const generatedAt = latestByEpoch(summaries.map((summary) => summary.generatedAt)) ?? new Date(0).toISOString();
 
   const receiptId = accepted ? `fakenet_submission_${stableId(JSON.stringify({ endpoint, walletAddress, reportIds }))}` : null;
   const status = verified ? "verified" : accepted ? "attention" : "rejected";
@@ -168,7 +163,9 @@ function isReportLike(value: unknown): value is Partial<LabRunReport> {
       "reportId" in value &&
       "fixtureId" in value &&
       "environment" in value &&
-      "summary" in value
+      "summary" in value &&
+      "steps" in value &&
+      Array.isArray((value as { steps?: unknown }).steps)
   );
 }
 
@@ -270,15 +267,23 @@ function uniqueStrings(values: Array<string | null | undefined>) {
   return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
 }
 
-function stableId(value: string) {
-  let hash = 2166136261;
+// Returns the chronologically latest timestamp by parsed epoch (not lexicographic
+// string order, which only matches chronological order for uniform UTC "...Z"
+// strings — a tz offset or differing fractional precision could otherwise stamp a
+// non-latest timestamp into the signed generatedAt). Invalid timestamps are
+// dropped (fakenet previously lacked this Date.parse validity filter); ties keep
+// the first occurrence; the original string is returned unchanged. Empty/all-invalid
+// input -> undefined (caller applies the new Date(0) fallback).
+function latestByEpoch(values: Array<string | null | undefined>): string | undefined {
+  return values
+    .filter((value): value is string => Boolean(value && !Number.isNaN(Date.parse(value))))
+    .reduce<string | undefined>((latest, value) => {
+      if (latest === undefined || Date.parse(value) > Date.parse(latest)) {
+        return value;
+      }
 
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0).toString(16).padStart(8, "0");
+      return latest;
+    }, undefined);
 }
 
 type FakenetReceiptSignedPayload = {
@@ -288,13 +293,6 @@ type FakenetReceiptSignedPayload = {
   walletAddress: string;
   reportIds: string[];
   status: string;
-};
-
-type FakenetReceiptSignature = {
-  algorithm: "ed25519";
-  issuerKeyId: string;
-  payloadDigest: string;
-  signature: string;
 };
 
 function buildFakenetSignedPayload(payload: FakenetReceiptSignedPayload): FakenetReceiptSignedPayload {
@@ -310,34 +308,11 @@ function buildFakenetSignedPayload(payload: FakenetReceiptSignedPayload): Fakene
 
 function signFakenetReceipt(
   signedPayload: FakenetReceiptSignedPayload | null
-): FakenetReceiptSignature | null {
-  if (!signedPayload) {
-    return null;
-  }
-
-  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
-
-  return {
-    algorithm,
-    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
-    payloadDigest,
-    signature
-  };
+): EvidenceReceiptSignature | null {
+  return signEvidenceReceipt(signedPayload);
 }
 
 export function verifyFakenetReceiptSignature(receipt: FakenetEvidenceReceipt): boolean {
-  const signature = receipt.signature;
-
-  if (!signature) {
-    return false;
-  }
-
-  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
-
-  if (!publicKeySpkiBase64) {
-    return false;
-  }
-
   const signedPayload = buildFakenetSignedPayload({
     receiptId: receipt.receiptId ?? "",
     generatedAt: receipt.generatedAt,
@@ -347,9 +322,5 @@ export function verifyFakenetReceiptSignature(receipt: FakenetEvidenceReceipt): 
     status: receipt.status
   });
 
-  return verifyBadgeSignature({
-    payload: signedPayload,
-    signature: signature.signature,
-    publicKeySpkiBase64
-  });
+  return verifyEvidenceReceiptSignature(receipt.signature, signedPayload);
 }

@@ -4,6 +4,7 @@ import {
   registrySubject
 } from "@/lib/registry-manifest";
 import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
+import { stableId } from "@/lib/stable-id";
 
 type EndpointVisibility = "private" | "public";
 type FakenetConnectionMode = "local-runbook" | "hosted-http-candidate" | "remote-runbook" | "invalid";
@@ -275,9 +276,13 @@ export function createAvailablePeeksInventory(
     }
   }
 
+  // `observed` is already filtered to `step.type === "peek"` and there is a single
+  // declared peek category, so the declared "peek" id never matches the observed
+  // step id (e.g. "probe-local-fakenet-peek"). Associate the declared peek with the
+  // first observed peek directly instead of an id-equality join that can never match.
   const peeks = declared.map((peek) => ({
     ...peek,
-    observation: observed.find((entry) => entry.id === peek.id) ?? null
+    observation: observed[0] ?? null
   }));
 
   return { declared, observed, peeks };
@@ -489,17 +494,6 @@ function shellQuote(value: string) {
   return `'${value.replace(/'/g, "'\\''")}'`;
 }
 
-function stableId(value: string) {
-  let hash = 2166136261;
-
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
-
 function isPrivateHost(host: string) {
   const normalizedHost = host.toLowerCase().replace(/^\[|\]$/g, "");
 
@@ -513,17 +507,77 @@ function isPrivateHost(host: string) {
     return true;
   }
 
-  if (normalizedHost === "::1" || normalizedHost.startsWith("fc") || normalizedHost.startsWith("fd")) {
+  // IPv6 loopback (::1), unspecified (::), unique-local (fc00::/7 -> fc/fd) and
+  // link-local (fe80::/10 -> fe8/fe9/fea/feb). The unspecified and link-local
+  // forms were previously classified PUBLIC (probe-eligible).
+  if (
+    normalizedHost === "::1" ||
+    normalizedHost === "::" ||
+    normalizedHost.startsWith("fc") ||
+    normalizedHost.startsWith("fd") ||
+    /^fe[89ab]/.test(normalizedHost)
+  ) {
     return true;
   }
 
-  const parts = normalizedHost.split(".").map((part) => Number(part));
+  // IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1): classify the embedded IPv4 so
+  // loopback/private ranges are not leaked as public. The WHATWG URL parser
+  // compresses the dotted-quad tail into two hex groups (::ffff:7f00:1), so accept
+  // both that form and a literal dotted-quad tail.
+  if (normalizedHost.startsWith("::ffff:")) {
+    const embedded = ipv4FromMappedTail(normalizedHost.slice("::ffff:".length));
+    return embedded !== null && isPrivateIpv4(embedded);
+  }
 
-  if (parts.length !== 4 || parts.some((part) => Number.isNaN(part))) {
+  return isPrivateIpv4(normalizedHost);
+}
+
+// Resolves the embedded IPv4 of an ::ffff: mapped address tail. Accepts the
+// hex-grouped form the URL parser emits (e.g. "7f00:1" -> "127.0.0.1") as well as
+// a literal dotted-quad tail. Returns a dotted-quad string, or null when the tail
+// is not an IPv4-mapped form.
+function ipv4FromMappedTail(tail: string): string | null {
+  if (/^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test(tail)) {
+    return tail;
+  }
+
+  const groups = tail.split(":");
+
+  if (groups.length !== 2) {
+    return null;
+  }
+
+  const high = Number.parseInt(groups[0], 16);
+  const low = Number.parseInt(groups[1], 16);
+
+  if (
+    !Number.isInteger(high) ||
+    !Number.isInteger(low) ||
+    high < 0 ||
+    high > 0xffff ||
+    low < 0 ||
+    low > 0xffff ||
+    !/^[0-9a-f]{1,4}$/.test(groups[0]) ||
+    !/^[0-9a-f]{1,4}$/.test(groups[1])
+  ) {
+    return null;
+  }
+
+  return `${(high >>> 8) & 0xff}.${high & 0xff}.${(low >>> 8) & 0xff}.${low & 0xff}`;
+}
+
+// Classifies an IPv4 host as private/loopback. Accepts the canonical dotted-quad
+// form and the non-canonical numeric/short forms (e.g. 2130706433, 0x7f000001,
+// 127.1) that the grpc:// path leaves un-normalized and that previously leaked
+// as PUBLIC.
+function isPrivateIpv4(host: string): boolean {
+  const octets = canonicalIpv4Octets(host);
+
+  if (!octets) {
     return false;
   }
 
-  const [first, second] = parts;
+  const [first, second] = octets;
 
   return (
     first === 10 ||
@@ -534,4 +588,83 @@ function isPrivateHost(host: string) {
     (first === 172 && second >= 16 && second <= 31) ||
     (first === 192 && second === 168)
   );
+}
+
+// Expands an IPv4 host to its four canonical octets, accepting dotted-quad plus
+// the short/numeric forms that inet_aton-style parsers (and grpc dialers) accept:
+//   127.0.0.1   -> [127, 0, 0, 1]
+//   127.1       -> [127, 0, 0, 1]   (last part fills remaining low octets)
+//   2130706433  -> [127, 0, 0, 1]   (single 32-bit integer)
+//   0x7f000001  -> [127, 0, 0, 1]   (hex; per-part hex/octal also accepted)
+// Returns null when the host is not an IPv4 numeric form.
+function canonicalIpv4Octets(host: string): [number, number, number, number] | null {
+  if (host.length === 0) {
+    return null;
+  }
+
+  const parts = host.split(".");
+
+  if (parts.length > 4) {
+    return null;
+  }
+
+  const values: number[] = [];
+
+  for (const part of parts) {
+    const value = parseIpv4Part(part);
+
+    if (value === null) {
+      return null;
+    }
+
+    values.push(value);
+  }
+
+  // Each part except the final one must fit in a single octet; the final part
+  // fills all remaining low-order octets (classic inet_aton semantics).
+  for (let index = 0; index < values.length - 1; index += 1) {
+    if (values[index] > 255) {
+      return null;
+    }
+  }
+
+  const last = values[values.length - 1];
+  const remainingOctets = 4 - (values.length - 1);
+
+  if (last > maxUnsignedForOctets(remainingOctets)) {
+    return null;
+  }
+
+  const octets = values.slice(0, values.length - 1);
+
+  for (let shift = remainingOctets - 1; shift >= 0; shift -= 1) {
+    octets.push((last >>> (shift * 8)) & 0xff);
+  }
+
+  return octets as [number, number, number, number];
+}
+
+function parseIpv4Part(part: string): number | null {
+  if (part.length === 0) {
+    return null;
+  }
+
+  let value: number;
+
+  if (/^0x[0-9a-f]+$/.test(part)) {
+    value = Number.parseInt(part.slice(2), 16);
+  } else if (/^0[0-7]+$/.test(part)) {
+    value = Number.parseInt(part.slice(1), 8);
+  } else if (/^[0-9]+$/.test(part)) {
+    value = Number.parseInt(part, 10);
+  } else {
+    return null;
+  }
+
+  return Number.isSafeInteger(value) ? value : null;
+}
+
+function maxUnsignedForOctets(octetCount: number): number {
+  // 2 ** (8 * octetCount) - 1, computed without bit-shift overflow for 4 octets.
+  return octetCount <= 0 ? 0 : 2 ** (8 * octetCount) - 1;
 }

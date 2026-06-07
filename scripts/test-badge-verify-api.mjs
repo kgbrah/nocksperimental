@@ -38,6 +38,7 @@ async function main() {
   assertEqual(verifiedBody.checks.signatureMatched, true, "signature match check");
   assertEqual(verifiedBody.checks.issuerKeyMatched, true, "issuer key match check");
   assertEqual(verifiedBody.checks.activeVerifiedStatus, true, "active verified status check");
+  assertEqual(verifiedBody.checks.payloadBoundToBadge, true, "signed payload bound to badge check");
   assertEqual(verifiedBody.checks.notRevoked, true, "not revoked check");
   assertEqual(verifiedBody.checks.publicEmbedAvailable, true, "public embed check");
   assertEqual(verifiedBody.checks.exactIssuanceMatch, true, "exact issuance match check");
@@ -91,6 +92,11 @@ async function main() {
   assertEqual(badSignatureBody.checks.exactIssuanceMatch, false, "bad signature exact match");
   assertEqual(badSignatureBody.match, null, "bad signature match");
 
+  // COR-B: tampering a live badge field that the signature does not re-cover must
+  // fail verification via payloadBoundToBadge, even though the (untouched) signed
+  // payload copy still verifies cryptographically.
+  await assertTamperedBadgeFailsBinding();
+
   const missingIdentifier = await GET(createRequest({ signature: badgeBundle.issuance.signature }));
   const missingIdentifierBody = await missingIdentifier.json();
 
@@ -105,6 +111,48 @@ async function main() {
     "Badge issuance verifier",
     "OpenAPI badge verifier path"
   );
+}
+
+async function assertTamperedBadgeFailsBinding() {
+  const { verifyTrustBadgeIssuance } = loadTypeScriptModule("src/lib/trust-badge-verifier.ts");
+  const { resolvedBadgeForId } = loadTypeScriptModule("src/lib/trust-signals.ts");
+
+  const badge = resolvedBadgeForId("badge-payment-flow-verified");
+  const issuance = badge.issuance;
+
+  // Baseline: untampered badge verifies and is bound.
+  const baseline = verifyTrustBadgeIssuance({
+    badgeId: badge.id,
+    payloadDigest: issuance.payloadDigest,
+    signature: issuance.signature,
+    issuerKeyId: issuance.issuerKeyId
+  });
+  assertEqual(baseline.verified, true, "baseline tamper-check badge verifies");
+  assertEqual(baseline.checks.payloadBoundToBadge, true, "baseline tamper-check bound to badge");
+
+  // Tamper the live badge field WITHOUT re-signing (signedPayload copy untouched).
+  const originalReportHash = badge.evidence.reportHash;
+  badge.evidence.reportHash = "sha256:tampered-not-resigned";
+
+  try {
+    const tampered = verifyTrustBadgeIssuance({
+      badgeId: badge.id,
+      payloadDigest: issuance.payloadDigest,
+      signature: issuance.signature,
+      issuerKeyId: issuance.issuerKeyId
+    });
+
+    assertEqual(tampered.verified, false, "tampered badge does not verify");
+    assertEqual(tampered.checks.payloadBoundToBadge, false, "tampered badge not bound to signed payload");
+    // The signature still covers the untouched signedPayload copy.
+    assertEqual(
+      tampered.checks.signatureCryptographicallyValid,
+      true,
+      "tampered badge signature still cryptographically valid over signed copy"
+    );
+  } finally {
+    badge.evidence.reportHash = originalReportHash;
+  }
 }
 
 function createRequest(params) {

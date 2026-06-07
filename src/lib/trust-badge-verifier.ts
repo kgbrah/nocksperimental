@@ -53,6 +53,21 @@ export function verifyTrustBadgeIssuance({
   const freshness = badge?.freshness ?? "unknown";
   const staleWarning = freshness === "stale";
 
+  // The signature only attests issuance.signedPayload (a committed copy). Bind it
+  // to the live badge fields the verifier surfaces so a tampered badge.evidence /
+  // sourceAnchor that was not re-signed cannot verify true. Status is deliberately
+  // NOT bound here: revocation is out-of-band and covered by
+  // activeVerifiedStatus + notRevoked (a revoked badge can keep a signedPayload
+  // whose status is still "verified").
+  const payloadBoundToBadge = Boolean(
+    badge &&
+      issuance &&
+      issuance.signedPayload.reportHash === badge.evidence.reportHash &&
+      issuance.signedPayload.snapshotRoot === badge.evidence.snapshotRoot &&
+      issuance.signedPayload.sourceAnchor.commit === badge.sourceAnchor.commit &&
+      issuance.signedPayload.sourceAnchor.build === badge.sourceAnchor.build
+  );
+
   const exactIssuanceMatch = Boolean(
     badge &&
       issuance &&
@@ -60,6 +75,7 @@ export function verifyTrustBadgeIssuance({
       signatureMatched &&
       issuerKeyMatched &&
       signatureCryptographicallyValid &&
+      payloadBoundToBadge &&
       activeVerifiedStatus &&
       !badge.isRevoked
   );
@@ -86,6 +102,7 @@ export function verifyTrustBadgeIssuance({
       issuerKeyResolved,
       issuerKeyActive,
       signatureCryptographicallyValid,
+      payloadBoundToBadge,
       activeVerifiedStatus,
       notRevoked: badge ? !badge.isRevoked : false,
       upstreamFresh: freshness === "fresh",

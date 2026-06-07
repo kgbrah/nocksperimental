@@ -1,6 +1,11 @@
 import { createNockchainDriftStatus } from "@/lib/nockchain-drift-status";
-import { activeIssuerKey } from "@/lib/trust-issuer-keys";
-import { badgeIssuerSigningSeed, signBadgePayload } from "@/lib/trust-badge-crypto";
+import { committedPublicKeyForKeyId } from "@/lib/trust-issuer-keys";
+import {
+  assertIssuerSeedMatchesPublishedKey,
+  badgeIssuerSigningSeed,
+  resolveActiveIssuerKeyId,
+  signBadgePayload
+} from "@/lib/trust-badge-crypto";
 import { registryCanonicalBaseUrl, registryServiceName, registrySubject } from "@/lib/registry-manifest";
 
 // Premium, signed attestation over the current upstream drift status. Composes
@@ -10,7 +15,7 @@ import { registryCanonicalBaseUrl, registryServiceName, registrySubject } from "
 
 export function createNockchainDriftAttestation() {
   const status = createNockchainDriftStatus();
-  const key = activeIssuerKey();
+  const issuerKeyId = resolveActiveIssuerKeyId();
 
   const attestation = {
     service: registryServiceName,
@@ -22,7 +27,9 @@ export function createNockchainDriftAttestation() {
     checks: status.checks.map((check) => ({ id: check.id, status: check.status }))
   };
 
-  const seed = badgeIssuerSigningSeed(key?.keyId);
+  assertIssuerSeedMatchesPublishedKey(issuerKeyId, committedPublicKeyForKeyId(issuerKeyId));
+
+  const seed = badgeIssuerSigningSeed(issuerKeyId);
   const signed = signBadgePayload(attestation, seed);
 
   return {
@@ -34,7 +41,7 @@ export function createNockchainDriftAttestation() {
     signature: signed.signature,
     payloadDigest: signed.payloadDigest,
     algorithm: signed.algorithm,
-    issuerKeyId: key?.keyId ?? null,
+    issuerKeyId,
     freshness: status.freshness,
     links: {
       driftStatus: `${registryCanonicalBaseUrl}/api/nockchain/drift-status`,

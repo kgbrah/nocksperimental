@@ -178,6 +178,45 @@ async function main() {
   assertEqual(invalidProfile.accepted, false, "invalid profile rejected");
   assertIncludes(invalidProfile.errors.join("\n"), "Unsupported fakenet endpoint scheme", "invalid scheme error");
 
+  // SEC-G: previously-public-classified loopback/private encodings must resolve to
+  // visibility "private" so the hosted probe stays blocked.
+  const privateEncodings = [
+    { endpoint: "[::ffff:127.0.0.1]:5555", label: "IPv4-mapped IPv6 loopback" },
+    { endpoint: "[fe80::1]:5555", label: "link-local IPv6" },
+    { endpoint: "[::]:5555", label: "unspecified IPv6" },
+    { endpoint: "grpc://2130706433:5555", label: "32-bit integer IPv4 loopback" },
+    { endpoint: "grpc://0x7f000001:5555", label: "hex IPv4 loopback" },
+    { endpoint: "grpc://127.1:5555", label: "short-form IPv4 loopback" }
+  ];
+
+  for (const { endpoint, label } of privateEncodings) {
+    const response = await POST(
+      new Request("https://nocksperimental.com/api/fakenet/connect", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          endpoint,
+          walletAddress,
+          networkId: "local-devnet"
+        })
+      })
+    );
+    const profile = await response.json();
+
+    assertEqual(
+      profile.connection.endpoint.visibility,
+      "private",
+      `${label} (${endpoint}) classified as private`
+    );
+    assertEqual(
+      profile.apiSafety.hostedProbePolicy,
+      "blocked-private-or-loopback",
+      `${label} (${endpoint}) hosted probe blocked`
+    );
+  }
+
   await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/fakenet/connect");
 
   const registry = await loadTypeScriptModule("src/app/api/registry/route.ts").GET();
