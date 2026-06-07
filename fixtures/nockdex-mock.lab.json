@@ -1,0 +1,218 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "nockdex-mock-v2",
+  "app": {
+    "name": "NockDEX",
+    "slug": "nockdex",
+    "version": "0.1.0",
+    "kernel": "nockdex-kernel-v2"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock NockDEX v2: fixed supply conservation by including fees in ledger balances.",
+      "Tests order book state transitions, multi-actor trade settlement, and all invariants.",
+      "Supply conservation invariant now covers fees + trader balances = totalSupply."
+    ]
+  },
+  "actors": [
+    { "name": "trader-alice", "pkh": "alice-nockdex-mock-pkh" },
+    { "name": "trader-bob", "pkh": "bob-nockdex-mock-pkh" },
+    { "name": "trader-carol", "pkh": "carol-nockdex-mock-pkh" },
+    { "name": "dex-operator", "pkh": "dex-operator-mock-pkh" }
+  ],
+  "initialState": {
+    "orderBook": {
+      "bids": [],
+      "asks": [],
+      "nextOrderId": 0
+    },
+    "ledger": {
+      "totalSupply": 50000,
+      "balances": {
+        "trader-alice": 15000,
+        "trader-bob": 10000,
+        "trader-carol": 25000,
+        "dex-operator": 0,
+        "fees": 0
+      }
+    },
+    "trades": {
+      "settled": [],
+      "pending": 0
+    },
+    "alerts": {
+      "orderOverflow": false,
+      "insolventSettlement": false,
+      "unauthorizedCancel": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock NockDEX fakenet profile",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555"
+    },
+    {
+      "id": "alice-places-bid",
+      "type": "poke",
+      "title": "Alice places a bid order (buy 500 @ 2 NOCK each)",
+      "actor": "trader-alice",
+      "target": "/orderBook/bids",
+      "operations": [
+        { "kind": "append-event", "path": "orderBook.bids", "value": { "id": 1, "actor": "trader-alice", "side": "bid", "amount": 500, "price": 2, "status": "open" } },
+        { "kind": "set", "path": "orderBook.nextOrderId", "value": 1 }
+      ],
+      "expect": { "path": "orderBook.nextOrderId", "equals": 1 }
+    },
+    {
+      "id": "bob-places-ask",
+      "type": "poke",
+      "title": "Bob places an ask order (sell 300 @ 2 NOCK each)",
+      "actor": "trader-bob",
+      "target": "/orderBook/asks",
+      "operations": [
+        { "kind": "append-event", "path": "orderBook.asks", "value": { "id": 2, "actor": "trader-bob", "side": "ask", "amount": 300, "price": 2, "status": "open" } },
+        { "kind": "set", "path": "orderBook.nextOrderId", "value": 2 }
+      ],
+      "expect": { "path": "orderBook.nextOrderId", "equals": 2 }
+    },
+    {
+      "id": "settle-partial-match",
+      "type": "poke",
+      "title": "DEX operator matches and settles partial trade (300 @ 2, 1% fee)",
+      "actor": "dex-operator",
+      "target": "/trades/settle",
+      "operations": [
+        { "kind": "set", "path": "orderBook.asks.0.status", "value": "filled" },
+        { "kind": "set", "path": "orderBook.bids.0.amount", "value": 200 },
+        { "kind": "transfer", "fromPath": "ledger.balances.trader-alice", "toPath": "ledger.balances.trader-bob", "amount": 594 },
+        { "kind": "transfer", "fromPath": "ledger.balances.trader-alice", "toPath": "ledger.balances.fees", "amount": 6 },
+        { "kind": "append-event", "path": "trades.settled", "value": { "bidId": 1, "askId": 2, "amount": 300, "price": 2, "fee": 6 } },
+        { "kind": "set", "path": "trades.pending", "value": 0 }
+      ],
+      "expect": { "path": "orderBook.asks.0.status", "equals": "filled" }
+    },
+    {
+      "id": "carol-places-ask",
+      "type": "poke",
+      "title": "Carol places a large ask order (sell 1000 @ 2 NOCK each)",
+      "actor": "trader-carol",
+      "target": "/orderBook/asks",
+      "operations": [
+        { "kind": "append-event", "path": "orderBook.asks", "value": { "id": 3, "actor": "trader-carol", "side": "ask", "amount": 1000, "price": 2, "status": "open" } },
+        { "kind": "set", "path": "orderBook.nextOrderId", "value": 3 }
+      ],
+      "expect": { "path": "orderBook.nextOrderId", "equals": 3 }
+    },
+    {
+      "id": "settle-full-match",
+      "type": "poke",
+      "title": "DEX operator matches remaining Alice bid with Carol's ask (200 @ 2, 1% fee)",
+      "actor": "dex-operator",
+      "target": "/trades/settle",
+      "operations": [
+        { "kind": "set", "path": "orderBook.bids.0.status", "value": "filled" },
+        { "kind": "set", "path": "orderBook.asks.1.amount", "value": 800 },
+        { "kind": "transfer", "fromPath": "ledger.balances.trader-alice", "toPath": "ledger.balances.trader-carol", "amount": 396 },
+        { "kind": "transfer", "fromPath": "ledger.balances.trader-alice", "toPath": "ledger.balances.fees", "amount": 4 },
+        { "kind": "append-event", "path": "trades.settled", "value": { "bidId": 1, "askId": 3, "amount": 200, "price": 2, "fee": 4 } }
+      ],
+      "expect": { "path": "orderBook.bids.0.status", "equals": "filled" }
+    },
+    {
+      "id": "peek-orderbook",
+      "type": "peek",
+      "title": "Read order book state after trades",
+      "target": "/orderBook",
+      "expect": { "path": "orderBook.nextOrderId", "equals": 3 }
+    },
+    {
+      "id": "peek-ledger",
+      "type": "peek",
+      "title": "Read ledger balances after settlement",
+      "target": "/ledger",
+      "expect": { "path": "ledger.balances.fees", "equals": 10 }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "supply-conserved",
+      "title": "Total NOCK balances (traders + fees) equal total supply",
+      "severity": "critical",
+      "kind": "supply-conservation",
+      "balancesPath": "ledger.balances",
+      "supplyPath": "ledger.totalSupply"
+    },
+    {
+      "id": "fees-non-negative",
+      "title": "Fees collected is never negative",
+      "severity": "high",
+      "kind": "numeric-min",
+      "path": "ledger.balances.fees",
+      "min": 0
+    },
+    {
+      "id": "alice-has-funds",
+      "title": "Alice has non-negative balance after trading",
+      "severity": "critical",
+      "kind": "numeric-min",
+      "path": "ledger.balances.trader-alice",
+      "min": 0
+    },
+    {
+      "id": "final-orderbook-state",
+      "title": "Next order ID matches expected",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "orderBook.nextOrderId",
+      "equals": 3
+    },
+    {
+      "id": "all-pokes-have-actors",
+      "title": "Every poke step declares an actor",
+      "severity": "high",
+      "kind": "poke-actors-declared"
+    },
+    {
+      "id": "no-insolvent-settlement",
+      "title": "Insolvent settlement alert never fires",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.insolventSettlement",
+      "equals": false
+    },
+    {
+      "id": "fees-at-least-expected",
+      "title": "Fees collected meet 1% minimum on 2 trades (total 1000 NOCK volume)",
+      "severity": "high",
+      "kind": "numeric-min",
+      "path": "ledger.balances.fees",
+      "min": 10
+    },
+    {
+      "id": "trades-settled-count",
+      "title": "Exactly two trades in settlement log",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "trades.settled",
+      "equals": [
+        { "bidId": 1, "askId": 2, "amount": 300, "price": 2, "fee": 6 },
+        { "bidId": 1, "askId": 3, "amount": 200, "price": 2, "fee": 4 }
+      ]
+    }
+  ],
+  "alertPolicies": [
+    {
+      "id": "zero-balance-warning",
+      "title": "Any trader hits exactly zero balance",
+      "severity": "warning",
+      "condition": { "path": "ledger.balances.trader-alice", "equals": 0 },
+      "message": "Trader Alice balance depleted",
+      "clearMessage": "Alice balance restored"
+    }
+  ]
+}
