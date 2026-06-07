@@ -86,10 +86,20 @@ export class StubVerifier implements Verifier {
 
     const nowSec = Math.floor(now.getTime() / 1000);
     const skew = this.config.clockSkewSeconds;
-    if (typeof auth.validAfter === "number" && nowSec + skew < auth.validAfter) {
+    // validAfter/validBefore arrive from untrusted JSON; the declared `number` type
+    // is not enforced at runtime. Coerce numerically so a string timestamp (e.g.
+    // "946684800") cannot slip past a `typeof === "number"` guard and skip the check,
+    // and require a parseable validBefore (the expiry) so a missing/garbage expiry
+    // fails CLOSED instead of being treated as "no expiry".
+    const validAfter = toFiniteInt(auth.validAfter);
+    const validBefore = toFiniteInt(auth.validBefore);
+    if (validBefore === null) {
+      return deny(this.mode, "invalid_time", "authorization.validBefore is missing or not an integer");
+    }
+    if (validAfter !== null && nowSec + skew < validAfter) {
       return deny(this.mode, "not_yet_valid", "payment is not yet valid");
     }
-    if (typeof auth.validBefore === "number" && nowSec - skew > auth.validBefore) {
+    if (nowSec - skew > validBefore) {
       return deny(this.mode, "expired", "payment has expired");
     }
 
@@ -166,6 +176,20 @@ export class FacilitatorVerifier implements Verifier {
 
 function deny(mode: VerifierMode, code: string, message: string): VerifyOutcome {
   return { valid: false, mode, code, message };
+}
+
+// Coerce an untrusted JSON value to a finite integer (unix seconds), or null when
+// it is missing/non-numeric. Accepts numeric strings so a string-encoded timestamp
+// is still range-checked rather than silently skipped.
+function toFiniteInt(value: unknown): number | null {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.floor(value) : null;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.floor(parsed) : null;
+  }
+  return null;
 }
 
 function extractInner(payload: PaymentPayload): ExactNockchainPayload | null {

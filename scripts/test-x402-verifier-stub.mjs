@@ -65,6 +65,13 @@ run("test-x402-verifier-stub", async () => {
     [{ nonce: "n3", value: "not-a-number" }, {}, "invalid_amount"],
     [{ nonce: "n4", validBefore: 1000 }, {}, "expired"],
     [{ nonce: "n5", validAfter: 99999999999 }, {}, "not_yet_valid"],
+    // Untrusted JSON may carry string timestamps; they must still be range-checked,
+    // not skipped (a string previously bypassed the `typeof === "number"` guard).
+    [{ nonce: "n4s", validBefore: "1000" }, {}, "expired"],
+    [{ nonce: "n5s", validAfter: "99999999999" }, {}, "not_yet_valid"],
+    // A missing/garbage expiry must fail CLOSED, not be treated as "no expiry".
+    [{ nonce: "n10", validBefore: null }, {}, "invalid_time"],
+    [{ nonce: "n11", validBefore: "not-a-time" }, {}, "invalid_time"],
     [{ nonce: "" }, {}, "invalid_nonce"],
     [{ nonce: "n7" }, { x402Version: 1 }, "invalid_version"],
     [{ nonce: "n8" }, { scheme: "upto" }, "scheme_mismatch"],
