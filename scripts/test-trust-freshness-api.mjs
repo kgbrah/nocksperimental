@@ -183,7 +183,12 @@ function assertLeafModule() {
   const appDir = path.join(process.cwd(), "src/app");
   walkSourceFiles(appDir).forEach((file) => {
     const rel = path.relative(process.cwd(), file);
-    if (rel === "src/app/api/trust/freshness/route.ts") {
+    // The rollup's own route and its UI page are valid app-layer consumers; the
+    // guard's real purpose is preventing src/lib import cycles (checked above).
+    if (
+      rel === "src/app/api/trust/freshness/route.ts" ||
+      rel === "src/app/trust/freshness/page.tsx"
+    ) {
       return;
     }
     const source = readFileSync(file, "utf8");
