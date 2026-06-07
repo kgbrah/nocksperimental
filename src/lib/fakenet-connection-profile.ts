@@ -44,6 +44,47 @@ type FakenetTestFunction = {
   purpose: string;
 };
 
+type DeclaredPeek = {
+  id: string;
+  label: string;
+  purpose: string;
+  runCommand: string;
+};
+
+type ObservedPeek = {
+  id: string;
+  target: string | null;
+  status: "pass" | "fail";
+  checkedAt: string | null;
+  expectation: string | null;
+};
+
+type AvailablePeeksInventory = {
+  declared: DeclaredPeek[];
+  observed: ObservedPeek[];
+  peeks: Array<DeclaredPeek & { observation: ObservedPeek | null }>;
+};
+
+type AvailablePeeksProfile = {
+  testFunctions?: Array<{ id: string; label?: string; purpose?: string; runCommand?: string }>;
+};
+
+type AvailablePeeksReport = {
+  steps?: Array<{
+    id?: string;
+    type?: string;
+    target?: string | null;
+    expectation?: string | null;
+    adapter?: {
+      peek?: {
+        status?: "pass" | "fail";
+        checkedAt?: string | null;
+        expectation?: string | null;
+      } | null;
+    } | null;
+  }>;
+};
+
 const defaultEndpoint = "127.0.0.1:5555";
 const defaultWalletAddress =
   "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
@@ -183,6 +224,7 @@ export function createFakenetConnectionProfile(input: FakenetConnectionInput = {
       submitEvidence: `curl ${JSON.stringify(`${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`)} -H "content-type: application/json" --data @fakenet-evidence-submission.json`,
       submitProfile: `curl -G ${JSON.stringify(`${registryCanonicalBaseUrl}/api/fakenet/connect`)} --data-urlencode ${JSON.stringify(`endpoint=${endpointInput}`)} --data-urlencode ${JSON.stringify(`walletAddress=${walletAddress}`)} --data-urlencode ${JSON.stringify(`networkId=${networkId}`)}`
     },
+    availablePeeks: createAvailablePeeksInventory({ testFunctions }, []),
     links: {
       profile: profileUrl,
       evidence: evidenceUrl,
@@ -193,6 +235,52 @@ export function createFakenetConnectionProfile(input: FakenetConnectionInput = {
     },
     errors: endpoint.errors
   };
+}
+
+export function createAvailablePeeksInventory(
+  profile: AvailablePeeksProfile,
+  reports: AvailablePeeksReport[] = []
+): AvailablePeeksInventory {
+  const declared: DeclaredPeek[] = (profile.testFunctions ?? [])
+    .filter((testFunction) => testFunction.id === "peek")
+    .map((testFunction) => ({
+      id: testFunction.id,
+      label: testFunction.label ?? testFunction.id,
+      purpose: testFunction.purpose ?? "",
+      runCommand: testFunction.runCommand ?? ""
+    }));
+
+  const observed: ObservedPeek[] = [];
+
+  for (const report of reports) {
+    for (const step of report.steps ?? []) {
+      if (step.type !== "peek" || !step.adapter?.peek) {
+        continue;
+      }
+
+      const peek = step.adapter.peek;
+      const id = step.id ?? step.target ?? "peek";
+
+      if (observed.some((entry) => entry.id === id && entry.target === (step.target ?? null))) {
+        continue;
+      }
+
+      observed.push({
+        id,
+        target: step.target ?? null,
+        status: peek.status === "fail" ? "fail" : "pass",
+        checkedAt: peek.checkedAt ?? null,
+        expectation: peek.expectation ?? step.expectation ?? null
+      });
+    }
+  }
+
+  const peeks = declared.map((peek) => ({
+    ...peek,
+    observation: observed.find((entry) => entry.id === peek.id) ?? null
+  }));
+
+  return { declared, observed, peeks };
 }
 
 function createApiSafety(mode: FakenetConnectionMode, endpoint: ParsedEndpoint | null) {

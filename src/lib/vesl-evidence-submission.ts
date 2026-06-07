@@ -5,6 +5,13 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import {
+  ACTIVE_DEV_ISSUER_KEY_ID,
+  badgeIssuerSigningSeed,
+  signBadgePayload,
+  verifyBadgeSignature
+} from "@/lib/trust-badge-crypto";
+import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 
 export type VeslEvidenceSubmissionInput = {
   connection?: {
@@ -104,6 +111,12 @@ export function verifyVeslEvidenceSubmission(input: VeslEvidenceSubmissionInput)
   const generatedAt = latestTimestamp(effects) ?? new Date(0).toISOString();
   const evidenceHash = stableId(JSON.stringify({ connection, verifyJam: input.verifyJam ?? null, effects, peeks, hull: input.hull ?? null, fakenet: input.fakenet ?? null }));
   const receiptId = accepted ? `vesl_submission_${stableId(JSON.stringify({ connection, evidenceHash }))}` : null;
+  const status = verified ? "verified" : accepted ? "attention" : "rejected";
+  const signature = signVeslReceipt(
+    accepted && receiptId
+      ? buildVeslSignedPayload({ receiptId, generatedAt, evidenceHash, project: connection.project, status })
+      : null
+  );
   const report = createReport({
     connection,
     effects,
@@ -121,9 +134,10 @@ export function verifyVeslEvidenceSubmission(input: VeslEvidenceSubmissionInput)
     canonicalUrl: `${registryCanonicalBaseUrl}/api/vesl/evidence/submit`,
     accepted,
     verified,
-    status: verified ? "verified" : accepted ? "attention" : "rejected",
+    status,
     receiptId,
     generatedAt,
+    signature,
     profile: {
       project: connection.project,
       repo: connection.repo,
@@ -547,4 +561,74 @@ function stableId(value: string) {
   }
 
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+type VeslReceiptSignedPayload = {
+  receiptId: string;
+  generatedAt: string;
+  evidenceHash: string;
+  project: string;
+  status: string;
+};
+
+type VeslReceiptSignature = {
+  algorithm: "ed25519";
+  issuerKeyId: string;
+  payloadDigest: string;
+  signature: string;
+};
+
+function buildVeslSignedPayload(payload: VeslReceiptSignedPayload): VeslReceiptSignedPayload {
+  return {
+    receiptId: payload.receiptId,
+    generatedAt: payload.generatedAt,
+    evidenceHash: payload.evidenceHash,
+    project: payload.project,
+    status: payload.status
+  };
+}
+
+function signVeslReceipt(
+  signedPayload: VeslReceiptSignedPayload | null
+): VeslReceiptSignature | null {
+  if (!signedPayload) {
+    return null;
+  }
+
+  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
+
+  return {
+    algorithm,
+    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
+    payloadDigest,
+    signature
+  };
+}
+
+export function verifyVeslReceiptSignature(receipt: VeslEvidenceReceipt): boolean {
+  const signature = receipt.signature;
+
+  if (!signature) {
+    return false;
+  }
+
+  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
+
+  if (!publicKeySpkiBase64) {
+    return false;
+  }
+
+  const signedPayload = buildVeslSignedPayload({
+    receiptId: receipt.receiptId ?? "",
+    generatedAt: receipt.generatedAt,
+    evidenceHash: receipt.summary.evidenceHash,
+    project: receipt.summary.project,
+    status: receipt.status
+  });
+
+  return verifyBadgeSignature({
+    payload: signedPayload,
+    signature: signature.signature,
+    publicKeySpkiBase64
+  });
 }

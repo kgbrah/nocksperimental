@@ -18,6 +18,19 @@ The v0 catalog covers invariants that can be evaluated from fixture state alone.
 - Critical failures should fail `--strict` runner executions.
 - New invariant kinds should be added to the fixture schema, runner evaluator, API catalog, and docs together.
 
+### Required-field enforcement
+
+The runner (`scripts/run-lab.mjs`) validates each invariant's `kind` and the per-kind
+required fields above before evaluation, and rejects the run with a located error
+(for example, `invariants[0] (counter-non-negative): kind "numeric-min" requires
+numeric field "min"`). A `numeric-min` with a missing or non-numeric `min`, or an
+`authorized-actor` with an empty `actors` array, is rejected at load time instead of
+silently producing a false `fail`. The JSON schemas (`schemas/nockapp-lab-fixture.schema.json`
+and `schemas/nockapp-invariant-pack.schema.json`) encode the same per-kind requirements via
+`if`/`then` for editor and CI parity; the runtime check is the load-bearing guard, and the
+runner's table is kept in sync with `src/lib/lab-report.ts` `invariantCatalog` by
+`scripts/test-run-lab-validation.mjs`.
+
 ## Initial Packs
 
 - **NockApp starter pack:** counter floor, expected state, declared poke actors.

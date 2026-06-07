@@ -7,54 +7,190 @@ import net from "node:net";
 import path from "node:path";
 import process from "node:process";
 
+import { scaffoldFixture, validateFixture } from "./fixture-builder.mjs";
+
 const rawArgs = process.argv.slice(2);
+const verb = rawArgs[0];
 const args = rawArgs[0] === "run" ? rawArgs.slice(1) : rawArgs;
 
-if (args.length === 0 || args.includes("--help")) {
-  printHelp();
-  process.exit(args.length === 0 ? 1 : 0);
-}
+const BOOLEAN_FLAGS = new Set(["--strict", "--ci", "--help"]);
+const VALUE_FLAGS = new Set(["--config", "--out", "--markdown", "--out-dir"]);
+
+// Step types handled in runStep and invariant kinds handled in evaluateInvariant.
+// Kept in sync with the fixture/pack JSON schemas and src/lib/lab-report.ts.
+const STEP_TYPES = ["fakenet", "poke", "peek", "invariant", "bridge"];
+const INVARIANT_KINDS = [
+  "numeric-min",
+  "state-equals",
+  "poke-actors-declared",
+  "supply-conservation",
+  "timeline-state",
+  "authorized-actor"
+];
+const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
+const PACK_DOMAINS = ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety"];
+
+// Per-kind cross-field requirements, mirroring src/lib/lab-report.ts invariantCatalog
+// requiredFields. `type` "number"/"array" carry an additional type check beyond presence.
+const INVARIANT_REQUIRED_FIELDS = {
+  "numeric-min": [{ field: "min", type: "number" }, { field: "path", type: "string" }],
+  "state-equals": [{ field: "path", type: "string" }, { field: "equals", type: "present" }],
+  "timeline-state": [{ field: "path", type: "string" }, { field: "equals", type: "present" }],
+  "supply-conservation": [
+    { field: "balancesPath", type: "string" },
+    { field: "supplyPath", type: "string" }
+  ],
+  "authorized-actor": [{ field: "actors", type: "array" }, { field: "stepType", type: "string" }],
+  "poke-actors-declared": []
+};
 
 const strict = args.includes("--strict");
 const ciMode = args.includes("--ci");
-const configPath = readFlag("--config");
 
-if (configPath) {
-  const config = JSON.parse(await readFile(configPath, "utf8"));
-  const results = await runConfig(config, configPath);
-  const hasFailure = results.some((result) => result.report.summary.status === "fail");
+main().catch((error) => {
+  process.stderr.write(`nocklab: ${error?.message ?? String(error)}\n`);
+  process.exitCode = 1;
+});
 
-  if (strict && hasFailure) {
-    process.exit(1);
+async function main() {
+  if (verb === "new-fixture") {
+    await runNewFixture(rawArgs.slice(1));
+    return;
   }
-} else {
-  const fixturePath = args[0];
-  const outPath = readFlag("--out");
-  const markdownPath = readFlag("--markdown");
-  const outDir = readFlag("--out-dir");
-  const startedAt = Date.now();
-  const fixture = await loadFixture(fixturePath);
-  const report = await buildReport(fixture, startedAt);
 
-  if (outDir) {
-    await writeReportBundle(report, outDir);
+  if (args.length === 0 || args.includes("--help")) {
+    printHelp();
+    process.exitCode = args.length === 0 ? 1 : 0;
+    return;
+  }
+
+  assertKnownFlags();
+
+  const configPath = readFlag("--config");
+
+  if (configPath) {
+    let config;
+    try {
+      config = JSON.parse(await readFileOrThrow(configPath, "config"));
+    } catch (error) {
+      throw normalizeParseError(error, configPath);
+    }
+    const results = await runConfig(config, configPath);
+    const hasFailure = results.some((result) => result.report.summary.status === "fail");
+
+    if (strict && hasFailure) {
+      process.exitCode = 1;
+    }
   } else {
-    if (outPath) {
-      await writeArtifact(outPath, `${JSON.stringify(report, null, 2)}\n`);
+    const fixturePath = args[0];
+    const outPath = readFlag("--out");
+    const markdownPath = readFlag("--markdown");
+    const outDir = readFlag("--out-dir");
+    const startedAt = Date.now();
+    const fixture = await loadFixture(fixturePath);
+    const report = await buildReport(fixture, startedAt, fixturePath);
+
+    if (outDir) {
+      await writeReportBundle(report, outDir);
+    } else {
+      if (outPath) {
+        await writeArtifact(outPath, `${JSON.stringify(report, null, 2)}\n`);
+      }
+
+      if (markdownPath) {
+        await writeArtifact(markdownPath, toMarkdown(report));
+      }
+
+      if (!outPath && !markdownPath) {
+        process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+      }
     }
 
-    if (markdownPath) {
-      await writeArtifact(markdownPath, toMarkdown(report));
-    }
-
-    if (!outPath && !markdownPath) {
-      process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    if (strict && report.summary.status === "fail") {
+      process.exitCode = 1;
     }
   }
+}
 
-  if (strict && report.summary.status === "fail") {
-    process.exit(1);
+async function runNewFixture(verbArgs) {
+  const NEW_FIXTURE_VALUE_FLAGS = new Set(["--slug", "--type", "--endpoint", "--out"]);
+
+  const readValue = (flag) => {
+    const index = verbArgs.indexOf(flag);
+    if (index === -1) return null;
+    const value = verbArgs[index + 1];
+    if (value === undefined || value.startsWith("--")) {
+      throw new Error(`${flag} requires a value`);
+    }
+    return value;
+  };
+
+  for (let index = 0; index < verbArgs.length; index += 1) {
+    const token = verbArgs[index];
+    if (!token.startsWith("--")) continue;
+    if (NEW_FIXTURE_VALUE_FLAGS.has(token)) {
+      index += 1;
+      continue;
+    }
+    throw new Error(`unknown option: ${token}`);
   }
+
+  const slug = readValue("--slug");
+  if (!slug) {
+    throw new Error("new-fixture requires --slug <slug>");
+  }
+  const type = readValue("--type") ?? "peek";
+  const endpoint = readValue("--endpoint") ?? "127.0.0.1:5555";
+
+  const fixture = scaffoldFixture({ slug, type, endpoint });
+
+  const errors = validateFixture(fixture);
+  if (errors.length > 0) {
+    throw new Error(`scaffolded fixture failed validation:\n  - ${errors.join("\n  - ")}`);
+  }
+
+  const outPath = readValue("--out") ?? path.join("fixtures", `${slug}.lab.json`);
+  await writeArtifact(outPath, `${JSON.stringify(fixture, null, 2)}\n`);
+  process.stdout.write(`Scaffolded ${type} fixture: ${outPath}\n`);
+}
+
+function assertKnownFlags() {
+  for (let index = 0; index < args.length; index += 1) {
+    const token = args[index];
+
+    if (!token.startsWith("--")) {
+      continue;
+    }
+
+    if (BOOLEAN_FLAGS.has(token)) {
+      continue;
+    }
+
+    if (VALUE_FLAGS.has(token)) {
+      index += 1;
+      continue;
+    }
+
+    throw new Error(`unknown option: ${token}`);
+  }
+}
+
+async function readFileOrThrow(filePath, label) {
+  try {
+    return await readFile(filePath, "utf8");
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      throw new Error(`${label} not found: ${filePath}`);
+    }
+    throw error;
+  }
+}
+
+function normalizeParseError(error, filePath) {
+  if (error instanceof SyntaxError) {
+    return new Error(`${filePath}: ${error.message}`);
+  }
+  return error;
 }
 
 async function runConfig(config, configPath) {
@@ -70,7 +206,7 @@ async function runConfig(config, configPath) {
   for (const fixtureConfig of fixtures) {
     const fixturePath = resolveFrom(configDir, fixtureConfig.path);
     const fixture = await loadFixture(fixturePath);
-    const report = await buildReport(fixture, Date.now());
+    const report = await buildReport(fixture, Date.now(), fixturePath);
     const written = await writeReportBundle(report, reportDir, fixtureConfig.slug);
     results.push({ fixturePath, report, written });
   }
@@ -105,13 +241,24 @@ async function runConfig(config, configPath) {
 }
 
 async function loadFixture(fixturePath) {
-  const fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+  let fixture;
+  try {
+    fixture = JSON.parse(await readFileOrThrow(fixturePath, "fixture"));
+  } catch (error) {
+    throw normalizeParseError(error, fixturePath);
+  }
   const fixtureDir = path.dirname(fixturePath);
   const packs = [];
 
   for (const packPath of fixture.invariantPacks ?? []) {
     const resolvedPackPath = resolveFrom(fixtureDir, packPath);
-    const pack = JSON.parse(await readFile(resolvedPackPath, "utf8"));
+    let pack;
+    try {
+      pack = JSON.parse(await readFileOrThrow(resolvedPackPath, "pack"));
+    } catch (error) {
+      throw normalizeParseError(error, resolvedPackPath);
+    }
+    validatePack(pack, resolvedPackPath);
     packs.push({
       id: pack.id,
       name: pack.name,
@@ -149,24 +296,33 @@ async function loadFixture(fixturePath) {
 
 function readFlag(flag) {
   const index = args.indexOf(flag);
-  return index === -1 ? null : args[index + 1] ?? null;
+  if (index === -1) {
+    return null;
+  }
+  const value = args[index + 1];
+  if (value === undefined || value.startsWith("--")) {
+    throw new Error(`${flag} requires a value`);
+  }
+  return value;
 }
 
 function printHelp() {
   process.stdout.write(`Usage:
   nocklab <fixture.json> [--out report.json] [--markdown report.md] [--out-dir .nocklab] [--strict]
   nocklab run --config nocklab.config.json [--ci] [--strict]
+  nocklab new-fixture --slug <slug> [--type peek|poke] [--endpoint host:port] [--out path]
 
 Examples:
   npm run lab:sample
   npm run lab:bridge
   npm run lab:ci
   nocklab run --config nocklab.config.json --ci --strict
+  nocklab new-fixture --slug my-nockapp --type poke
 `);
 }
 
-async function buildReport(fixture, startedAt) {
-  assertFixture(fixture);
+async function buildReport(fixture, startedAt, fixturePath) {
+  assertFixture(fixture, fixturePath);
 
   const initialState = structuredClone(fixture.initialState);
   const state = structuredClone(initialState);
@@ -240,18 +396,116 @@ async function buildReport(fixture, startedAt) {
   };
 }
 
-function assertFixture(fixture) {
+function assertFixture(fixture, fixturePath) {
+  const where = fixturePath ? `${fixturePath}: ` : "";
+
   for (const key of ["id", "app", "environment", "initialState", "steps", "invariants"]) {
     if (!(key in fixture)) {
-      throw new Error(`Fixture is missing required field: ${key}`);
+      throw new Error(`${where}Fixture is missing required field: ${key}`);
     }
   }
   if (!Array.isArray(fixture.steps) || fixture.steps.length === 0) {
-    throw new Error("Fixture must define at least one step.");
+    throw new Error(`${where}Fixture must define at least one step.`);
   }
   if (!Array.isArray(fixture.invariants)) {
-    throw new Error("Fixture invariants must be an array.");
+    throw new Error(`${where}Fixture invariants must be an array.`);
   }
+
+  fixture.steps.forEach((step, index) => {
+    if (!STEP_TYPES.includes(step.type)) {
+      throw new Error(
+        `${where}steps[${index}].type ${formatValue(step.type)} is not one of ${STEP_TYPES.join("|")}`
+      );
+    }
+  });
+
+  fixture.invariants.forEach((invariant, index) => {
+    if (!INVARIANT_KINDS.includes(invariant.kind)) {
+      throw new Error(
+        `${where}invariants[${index}].kind ${formatValue(invariant.kind)} is not one of ${INVARIANT_KINDS.join("|")}`
+      );
+    }
+    validateInvariantRequiredFields(invariant, index, where);
+  });
+}
+
+function validateInvariantRequiredFields(invariant, index, where) {
+  const requirements = INVARIANT_REQUIRED_FIELDS[invariant.kind] ?? [];
+  const label = invariant.id ? ` (${invariant.id})` : "";
+
+  for (const { field, type } of requirements) {
+    const value = invariant[field];
+
+    if (type === "number") {
+      if (typeof value !== "number") {
+        throw new Error(
+          `${where}invariants[${index}]${label}: kind ${JSON.stringify(invariant.kind)} requires numeric field ${JSON.stringify(field)}`
+        );
+      }
+      continue;
+    }
+
+    if (type === "array") {
+      if (!Array.isArray(value) || value.length === 0) {
+        throw new Error(
+          `${where}invariants[${index}]${label}: kind ${JSON.stringify(invariant.kind)} requires non-empty array field ${JSON.stringify(field)}`
+        );
+      }
+      continue;
+    }
+
+    if (type === "string") {
+      if (typeof value !== "string" || value.length === 0) {
+        throw new Error(
+          `${where}invariants[${index}]${label}: kind ${JSON.stringify(invariant.kind)} requires field ${JSON.stringify(field)}`
+        );
+      }
+      continue;
+    }
+
+    // type === "present": any defined value is acceptable (e.g. equals may be any JSON value).
+    if (!(field in invariant)) {
+      throw new Error(
+        `${where}invariants[${index}]${label}: kind ${JSON.stringify(invariant.kind)} requires field ${JSON.stringify(field)}`
+      );
+    }
+  }
+}
+
+function validatePack(pack, packPath) {
+  const where = `${packPath}: `;
+
+  for (const key of ["id", "name", "version", "domain"]) {
+    if (!(key in pack)) {
+      throw new Error(`${where}pack is missing required field: ${key}`);
+    }
+  }
+
+  if (!PACK_DOMAINS.includes(pack.domain)) {
+    throw new Error(`${where}domain ${JSON.stringify(pack.domain)} is not a known domain`);
+  }
+
+  if (!Array.isArray(pack.invariants)) {
+    throw new Error(`${where}pack invariants must be an array.`);
+  }
+
+  pack.invariants.forEach((invariant, index) => {
+    for (const key of ["id", "title", "severity", "kind"]) {
+      if (!(key in invariant)) {
+        throw new Error(`${where}invariants[${index}] is missing required field: ${key}`);
+      }
+    }
+    if (!INVARIANT_SEVERITIES.includes(invariant.severity)) {
+      throw new Error(
+        `${where}invariants[${index}].severity ${formatValue(invariant.severity)} is not one of ${INVARIANT_SEVERITIES.join("|")}`
+      );
+    }
+    if (!INVARIANT_KINDS.includes(invariant.kind)) {
+      throw new Error(
+        `${where}invariants[${index}].kind ${formatValue(invariant.kind)} is not one of ${INVARIANT_KINDS.join("|")}`
+      );
+    }
+  });
 }
 
 async function runStep({ step, index, state, actors, environment }) {

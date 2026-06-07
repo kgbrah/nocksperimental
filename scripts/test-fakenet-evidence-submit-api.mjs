@@ -89,6 +89,11 @@ async function main() {
   assertEqual(receipt.checks.endpointsMatched, true, "endpoint match check");
   assertEqual(receipt.checks.walletMatched, true, "wallet match check");
   assertEqual(receipt.checks.noFailedReports, true, "no failed reports check");
+
+  const { verifyFakenetReceiptSignature } = loadTypeScriptModule("src/lib/fakenet-evidence-submission.ts");
+  assertEqual(receipt.signature.algorithm, "ed25519", "receipt signature algorithm");
+  assertEqual(verifyFakenetReceiptSignature(receipt), true, "receipt signature verifies");
+
   assertIncludes(receipt.reports.map((report) => report.reportId), healthReport.reportId, "health report receipt");
   assertIncludes(receipt.links.profile, "/api/fakenet/connect?", "receipt profile link");
   assertIncludes(receipt.links.verify, "/api/fakenet/evidence/verify?", "receipt verify link");
@@ -159,6 +164,8 @@ async function main() {
   assertEqual(mismatch.verified, false, "mismatch not verified");
   assertEqual(mismatch.checks.endpointsMatched, false, "mismatch endpoint check");
   assertIncludes(mismatch.errors.join("\n"), "Report endpoints do not match", "mismatch error message");
+
+  await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/fakenet/evidence/submit");
 
   const registry = await loadTypeScriptModule("src/app/api/registry/route.ts").GET();
   const registryBody = await registry.json();
@@ -378,6 +385,23 @@ function assertEndpoint(registryBody, id, pathName, description) {
   assertEqual(endpoint.path, pathName, `${id} path`);
   assertEqual(endpoint.description, description, `${id} description`);
   assertEqual(endpoint.url, `https://nocksperimental.com${pathName}`, `${id} URL`);
+}
+
+async function assertMalformedBodyRejected(POST, url) {
+  for (const body of ["", "not json", "null"]) {
+    const response = await POST(
+      new Request(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body
+      })
+    );
+
+    assertEqual(response.status, 400, `malformed body (${JSON.stringify(body)}) is rejected with 400`);
+
+    const payload = await response.json();
+    assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
+  }
 }
 
 function assertStartsWith(actual, expectedPrefix, label) {

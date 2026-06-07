@@ -11,6 +11,10 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import {
+  createAvailablePeeksInventory,
+  createFakenetConnectionProfile
+} from "@/lib/fakenet-connection-profile";
 
 type LocalFakenetReadinessStatus = "ready" | "degraded" | "blocked" | "missing";
 type LocalFakenetCheckStatus = "pass" | "fail" | "missing";
@@ -54,6 +58,10 @@ export function createLocalFakenetReadiness(
   const failures = collectFailures(reports, checks);
   const status = summarizeReadinessStatus(reports, checks);
   const generatedAt = latestGeneratedAt(reports);
+  const peeks = createAvailablePeeksInventory(
+    createFakenetConnectionProfile({ endpoint }),
+    reports
+  );
 
   return {
     version: "v0",
@@ -69,6 +77,7 @@ export function createLocalFakenetReadiness(
     chain: summarizeChain(chain),
     checks,
     failures,
+    peeks,
     reports: reports.map(summarizeReport)
   };
 }

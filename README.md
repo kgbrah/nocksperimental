@@ -478,6 +478,25 @@ Bundled fixture tracks include:
 - compute benchmark profile
 - local fakenet health, balance, chain, peek, and poke probes
 
+## Use it on your NockApp
+
+The lab is built to test *your* NockApp, not just the bundled fixtures. To run it against your own app, copy these into your repo:
+
+- `nocklab.config.json`
+- the relevant `fixtures/*.lab.json`
+- `.github/workflows/nocklab.yml`
+- `scripts/run-lab.mjs` (the CLI itself)
+
+Then run the canonical portable invocation:
+
+```bash
+node scripts/run-lab.mjs run --config nocklab.config.json --ci --strict
+```
+
+This is the same command the bundled `npm run lab:ci` script runs. One caveat: the bundled workflow calls `npm run lab:ci`, so an external repo must either copy that `lab:ci` package.json script too or change the workflow step to invoke `node scripts/run-lab.mjs run ...` directly. This package is `private` and not on npm, so there is no `npm install nocksperimental` or bare `nocklab` install path.
+
+See [docs/ci.md](docs/ci.md) for the full external-repo and CI guidance.
+
 ## Trust and Verification
 
 The public verification index is available at:
@@ -587,6 +606,8 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run test:x402` runs the x402 metered-trust-API suite (config, verifier, meter cycle, facilitator mode, gating, discovery).
 - `npm run check:nockchain-pr-radar-drift` compares the static Nockchain PR radar against current GitHub PR/issue metadata.
 - `npm run smoke:cloudflare` validates the OpenNext Cloudflare preview bundle.
+- `npm run preview` builds the OpenNext bundle and runs an interactive local Worker-runtime preview for a manual prod-like check.
+- `npm run upload` builds and uploads a Worker version through OpenNext without promoting it to production.
 - `npm run deploy` builds and deploys to Cloudflare Workers through OpenNext.
 
 ## x402 Metered Trust API
@@ -630,10 +651,16 @@ From WSL:
 npm run deploy
 ```
 
-From Windows PowerShell, launch the WSL deploy pipeline so OpenNext bundles the app correctly:
+From Windows PowerShell, launch the WSL deploy pipeline so OpenNext bundles the app correctly. Replace `/path/to/nocksperimental` with your checkout path, and `Ubuntu-24.04` with your installed WSL distro if different:
 
 ```powershell
-wsl -d Ubuntu-24.04 --cd /home/kg3333333/nocklab/nocksperimental -- bash -lc 'env PATH=/home/kg3333333/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin npm run deploy'
+wsl -d Ubuntu-24.04 --cd /path/to/nocksperimental -- bash -lc 'cd "$PWD" && npm run deploy'
+```
+
+If `npm` is not on the login shell `PATH`, prepend `$HOME/.local/bin` (or your toolchain's bin dir) rather than a hardcoded user path:
+
+```powershell
+wsl -d Ubuntu-24.04 --cd /path/to/nocksperimental -- bash -lc 'PATH="$HOME/.local/bin:$PATH" npm run deploy'
 ```
 
 Post-deploy smoke checks:

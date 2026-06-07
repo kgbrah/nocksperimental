@@ -3,6 +3,7 @@ import {
   createFakenetConnectionProfile,
   parseFakenetConnectionSearchParams
 } from "@/lib/fakenet-connection-profile";
+import { parseJsonObjectBody } from "@/lib/parse-json-object-body";
 
 export async function GET(request: Request = new Request("https://nocksperimental.com/api/fakenet/connect")) {
   const url = new URL(request.url);
@@ -14,19 +15,34 @@ export async function GET(request: Request = new Request("https://nocksperimenta
 }
 
 export async function POST(request: Request) {
-  const input = await parseRequestBody(request);
-  const profile = createFakenetConnectionProfile(input);
+  const parsed = await parseRequestBody(request);
+
+  if (!parsed.ok) {
+    return parsed.response;
+  }
+
+  const profile = createFakenetConnectionProfile(parsed.value);
 
   return NextResponse.json(profile, {
     status: profile.accepted ? 200 : 400
   });
 }
 
-async function parseRequestBody(request: Request) {
+type ParsedConnectionBody =
+  | { ok: true; value: Record<string, string | null | undefined> }
+  | { ok: false; response: NextResponse };
+
+async function parseRequestBody(request: Request): Promise<ParsedConnectionBody> {
   const contentType = request.headers.get("content-type") ?? "";
 
   if (contentType.includes("application/json")) {
-    return (await request.json()) as Record<string, string | null | undefined>;
+    const parsed = await parseJsonObjectBody(request);
+
+    if (!parsed.ok) {
+      return parsed;
+    }
+
+    return { ok: true, value: parsed.value as Record<string, string | null | undefined> };
   }
 
   if (
@@ -36,14 +52,17 @@ async function parseRequestBody(request: Request) {
     const formData = await request.formData();
 
     return {
-      endpoint: stringFormValue(formData.get("endpoint")),
-      walletAddress: stringFormValue(formData.get("walletAddress")),
-      networkId: stringFormValue(formData.get("networkId")),
-      label: stringFormValue(formData.get("label"))
+      ok: true,
+      value: {
+        endpoint: stringFormValue(formData.get("endpoint")),
+        walletAddress: stringFormValue(formData.get("walletAddress")),
+        networkId: stringFormValue(formData.get("networkId")),
+        label: stringFormValue(formData.get("label"))
+      }
     };
   }
 
-  return {};
+  return { ok: true, value: {} };
 }
 
 function stringFormValue(value: FormDataEntryValue | null) {

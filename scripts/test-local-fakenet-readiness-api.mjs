@@ -20,6 +20,8 @@ async function main() {
   const { GET } = loadTypeScriptModule("src/app/api/fakenet/route.ts");
   const readyRoot = await createReadinessRoot("ready");
   const blockedRoot = await createReadinessRoot("blocked");
+  const peekPassRoot = await createReadinessRoot("ready", { peek: { status: "pass" } });
+  const peekFailRoot = await createReadinessRoot("ready", { peek: { status: "fail" } });
   const missingRoot = await mkdtemp(path.join(tmpdir(), "nocklab-fakenet-missing-"));
   const originalCwd = process.cwd();
 
@@ -48,6 +50,12 @@ async function main() {
     assertEqual(readyBody.failures.length, 0, "ready failures");
     assertEqual(readyBody.reports[0].appSlug, "local-fakenet-health", "ready report ordering");
     assertValidIsoDate(readyBody.generatedAt, "ready generatedAt");
+    assertEqual(readyBody.peeks.declared.length, 1, "ready declared peek count");
+    assertEqual(readyBody.peeks.declared[0].id, "peek", "ready declared peek id");
+    assertEqual(readyBody.peeks.declared[0].label, "Peek", "ready declared peek label");
+    assertIncludes(readyBody.peeks.declared[0].runCommand, "npm run lab:local:peek", "ready declared peek run command");
+    assertEqual(readyBody.peeks.observed.length, 0, "ready observed peek count");
+    assertEqual(readyBody.peeks.peeks[0].observation, null, "ready declared peek has no observation");
 
     process.chdir(blockedRoot);
     const blockedResponse = await GET();
@@ -61,6 +69,30 @@ async function main() {
     assertEqual(blockedBody.wallet.error, "spawn fakenock ENOENT", "blocked wallet error");
     assertIncludes(blockedBody.failures.join("\n"), "balance", "blocked failures include balance");
 
+    process.chdir(peekPassRoot);
+    const peekPassResponse = await GET();
+    const peekPassBody = await peekPassResponse.json();
+
+    assertEqual(peekPassResponse.status, 200, "peek pass response status");
+    assertEqual(peekPassBody.peeks.declared.length, 1, "peek pass declared peek count");
+    assertEqual(peekPassBody.peeks.observed.length, 1, "peek pass observed peek count");
+    assertEqual(peekPassBody.peeks.observed[0].status, "pass", "peek pass observed status");
+    assertEqual(peekPassBody.peeks.observed[0].target, "fakenock --balance", "peek pass observed target");
+    assertEqual(
+      peekPassBody.peeks.observed[0].id,
+      "probe-local-fakenet-peek",
+      "peek pass observed id"
+    );
+    assertValidIsoDate(peekPassBody.peeks.observed[0].checkedAt, "peek pass observed checkedAt");
+
+    process.chdir(peekFailRoot);
+    const peekFailResponse = await GET();
+    const peekFailBody = await peekFailResponse.json();
+
+    assertEqual(peekFailResponse.status, 200, "peek fail response status");
+    assertEqual(peekFailBody.peeks.observed.length, 1, "peek fail observed peek count");
+    assertEqual(peekFailBody.peeks.observed[0].status, "fail", "peek fail observed status");
+
     process.chdir(missingRoot);
     const missingResponse = await GET();
     const missingBody = await missingResponse.json();
@@ -69,6 +101,8 @@ async function main() {
     assertEqual(missingBody.status, "missing", "missing status");
     assertEqual(missingBody.reportCount, 0, "missing report count");
     assertIncludes(missingBody.failures.join("\n"), "No local fakenet reports found", "missing failure");
+    assertEqual(missingBody.peeks.declared.length, 1, "missing declared peek count");
+    assertEqual(missingBody.peeks.observed.length, 0, "missing observed peek count");
   } finally {
     process.chdir(originalCwd);
   }
@@ -88,7 +122,8 @@ async function main() {
   );
 }
 
-async function createReadinessRoot(mode) {
+async function createReadinessRoot(mode, options = {}) {
+  const { peek } = options;
   const rootDir = await mkdtemp(path.join(tmpdir(), `nocklab-fakenet-${mode}-`));
   const reportDir = path.join(rootDir, ".nocklab");
 
@@ -171,10 +206,39 @@ async function createReadinessRoot(mode) {
     }));
   }
 
+  if (peek) {
+    await writeReport(path.join(reportDir, "local-fakenet-peek.report.json"), createReport({
+      appSlug: "local-fakenet-peek",
+      appName: "Local Fakenet Peek",
+      fixtureId: "local-fakenet-peek-v0",
+      generatedAt: "2026-06-04T10:03:00.000Z",
+      status: peek.status,
+      stepType: "peek",
+      target: "fakenock --balance",
+      observed: peek.status === "pass"
+        ? "local-fakenet adapter peek succeeded at 127.0.0.1:5555"
+        : "local-fakenet adapter peek command failed at 127.0.0.1:5555",
+      adapter: {
+        kind: "local-fakenet",
+        grpcEndpoint: "127.0.0.1:5555",
+        reachable: true,
+        latencyMs: 7,
+        checkedAt: "2026-06-04T10:03:00.010Z",
+        peek: {
+          status: peek.status,
+          raw: peek.status === "pass" ? "Fakenet wallet balance 7,012,352 NOCK" : "",
+          checkedAt: "2026-06-04T10:03:00.020Z",
+          expectation: "fakenock balance command returns wallet-balance output",
+          ...(peek.status === "fail" ? { error: "spawn fakenock ENOENT" } : {})
+        }
+      }
+    }));
+  }
+
   return rootDir;
 }
 
-function createReport({ appSlug, appName, fixtureId, generatedAt, status, observed, adapter }) {
+function createReport({ appSlug, appName, fixtureId, generatedAt, status, observed, adapter, stepType = "fakenet", target }) {
   return {
     reportId: `lab_${fixtureId}`,
     fixtureId,
@@ -213,9 +277,10 @@ function createReport({ appSlug, appName, fixtureId, generatedAt, status, observ
     steps: [
       {
         id: `probe-${appSlug}`,
-        type: "fakenet",
+        type: stepType,
         title: appName,
         status,
+        ...(target !== undefined ? { target } : {}),
         expectation: "local fakenet evidence is available",
         observed,
         adapter,

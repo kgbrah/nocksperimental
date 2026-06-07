@@ -61,6 +61,10 @@ async function main() {
   assertEqual(receipt.checks.settleNotedEffectPresent, true, "settle noted check");
   assertEqual(receipt.checks.peeksPresent, true, "peeks present check");
   assertEqual(receipt.checks.hullHealthOk, true, "hull health check");
+
+  const { verifyVeslReceiptSignature } = loadTypeScriptModule("src/lib/vesl-evidence-submission.ts");
+  assertEqual(receipt.signature.algorithm, "ed25519", "receipt signature algorithm");
+  assertEqual(verifyVeslReceiptSignature(receipt), true, "receipt signature verifies");
   assertEqual(receipt.report.app.slug, "vesl-evidence-bridge", "report app slug");
   assertEqual(receipt.report.environment.mode, "vesl-local", "report environment mode");
   assertIncludes(receipt.report.steps.map((step) => step.id), "vesl-verify-jam", "verify-jam report step");
@@ -152,6 +156,8 @@ async function main() {
     "Read persisted VESL evidence receipt",
     "OpenAPI VESL evidence receipt detail GET path"
   );
+
+  await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/vesl/evidence/submit");
 
   const packageJson = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
   assertEqual(
@@ -320,6 +326,23 @@ function assertEndpoint(registryBody, id, pathName, description) {
   assertEqual(endpoint.path, pathName, `${id} path`);
   assertEqual(endpoint.description, description, `${id} description`);
   assertEqual(endpoint.url, `https://nocksperimental.com${pathName}`, `${id} URL`);
+}
+
+async function assertMalformedBodyRejected(POST, url) {
+  for (const body of ["", "not json", "null"]) {
+    const response = await POST(
+      new Request(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body
+      })
+    );
+
+    assertEqual(response.status, 400, `malformed body (${JSON.stringify(body)}) is rejected with 400`);
+
+    const payload = await response.json();
+    assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
+  }
 }
 
 function assertStartsWith(actual, expectedPrefix, label) {

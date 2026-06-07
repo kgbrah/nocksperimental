@@ -6,6 +6,13 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import {
+  ACTIVE_DEV_ISSUER_KEY_ID,
+  badgeIssuerSigningSeed,
+  signBadgePayload,
+  verifyBadgeSignature
+} from "@/lib/trust-badge-crypto";
+import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 
 type FakenetEvidenceSubmissionInput = {
   connection?: {
@@ -63,6 +70,12 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
     .at(-1) ?? new Date(0).toISOString();
 
   const receiptId = accepted ? `fakenet_submission_${stableId(JSON.stringify({ endpoint, walletAddress, reportIds }))}` : null;
+  const status = verified ? "verified" : accepted ? "attention" : "rejected";
+  const signature = signFakenetReceipt(
+    accepted && receiptId
+      ? buildFakenetSignedPayload({ receiptId, generatedAt, endpoint, walletAddress, reportIds, status })
+      : null
+  );
 
   return {
     version: "v0",
@@ -71,9 +84,10 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
     canonicalUrl: `${registryCanonicalBaseUrl}/api/fakenet/evidence/submit`,
     accepted,
     verified,
-    status: verified ? "verified" : accepted ? "attention" : "rejected",
+    status,
     receiptId,
     generatedAt,
+    signature,
     profile: {
       connectionId: profile.connectionId,
       mode: profile.mode,
@@ -265,4 +279,77 @@ function stableId(value: string) {
   }
 
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+type FakenetReceiptSignedPayload = {
+  receiptId: string;
+  generatedAt: string;
+  endpoint: string;
+  walletAddress: string;
+  reportIds: string[];
+  status: string;
+};
+
+type FakenetReceiptSignature = {
+  algorithm: "ed25519";
+  issuerKeyId: string;
+  payloadDigest: string;
+  signature: string;
+};
+
+function buildFakenetSignedPayload(payload: FakenetReceiptSignedPayload): FakenetReceiptSignedPayload {
+  return {
+    receiptId: payload.receiptId,
+    generatedAt: payload.generatedAt,
+    endpoint: payload.endpoint,
+    walletAddress: payload.walletAddress,
+    reportIds: payload.reportIds,
+    status: payload.status
+  };
+}
+
+function signFakenetReceipt(
+  signedPayload: FakenetReceiptSignedPayload | null
+): FakenetReceiptSignature | null {
+  if (!signedPayload) {
+    return null;
+  }
+
+  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
+
+  return {
+    algorithm,
+    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
+    payloadDigest,
+    signature
+  };
+}
+
+export function verifyFakenetReceiptSignature(receipt: FakenetEvidenceReceipt): boolean {
+  const signature = receipt.signature;
+
+  if (!signature) {
+    return false;
+  }
+
+  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
+
+  if (!publicKeySpkiBase64) {
+    return false;
+  }
+
+  const signedPayload = buildFakenetSignedPayload({
+    receiptId: receipt.receiptId ?? "",
+    generatedAt: receipt.generatedAt,
+    endpoint: receipt.summary.endpoint,
+    walletAddress: receipt.summary.walletAddress,
+    reportIds: receipt.reports.map((report) => report.reportId).filter(Boolean),
+    status: receipt.status
+  });
+
+  return verifyBadgeSignature({
+    payload: signedPayload,
+    signature: signature.signature,
+    publicKeySpkiBase64
+  });
 }

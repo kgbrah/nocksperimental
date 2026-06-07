@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
@@ -65,6 +67,9 @@ async function main() {
     }
   }
 
+  // The runner rejects packs with an out-of-enum domain at load time (item 10).
+  assertRunnerRejectsBadPackDomain();
+
   // Fixtures reference the packs.
   const bridgeFixture = JSON.parse(readText("fixtures/bridge-pack.lab.json"));
   assertIncludes(bridgeFixture.invariantPacks, "../packs/bridge.invariants.json", "bridge fixture references pack");
@@ -97,6 +102,34 @@ async function main() {
     "node scripts/run-lab.mjs fixtures/pma-safety.lab.json --out .nocklab/pma-safety.report.json --markdown .nocklab/pma-safety.report.md --strict",
     "lab:pma script"
   );
+}
+
+function assertRunnerRejectsBadPackDomain() {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "nock-pack-domain-"));
+  try {
+    const pack = JSON.parse(readText("packs/bridge.invariants.json"));
+    pack.domain = "bridgez";
+    const packPath = path.join(tempDir, "case.invariants.json");
+    writeFileSync(packPath, JSON.stringify(pack, null, 2));
+
+    const fixture = JSON.parse(readText("fixtures/bridge-pack.lab.json"));
+    fixture.invariantPacks = [packPath];
+    const fixturePath = path.join(tempDir, "case.lab.json");
+    writeFileSync(fixturePath, JSON.stringify(fixture, null, 2));
+
+    const result = spawnSync(process.execPath, ["scripts/run-lab.mjs", fixturePath], {
+      encoding: "utf8",
+      cwd: process.cwd()
+    });
+    assertEqual(result.status, 1, "runner exits 1 on bad pack domain");
+    assertIncludes(
+      result.stderr ?? "",
+      `${packPath}: domain "bridgez" is not a known domain`,
+      "runner reports located bad-domain error"
+    );
+  } finally {
+    rmSync(tempDir, { force: true, recursive: true });
+  }
 }
 
 function loadTypeScriptModule(relativePath) {

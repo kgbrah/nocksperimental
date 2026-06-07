@@ -10,6 +10,7 @@ import {
   type TrustUpdateEntry,
   validateTrustUpdateChain
 } from "@/lib/trust-update-log";
+import { parseJsonObjectBody } from "@/lib/parse-json-object-body";
 
 type TrustUpdateAuditEvent = {
   sequence: number;
@@ -54,7 +55,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "unauthorized registry update" }, { status: 401 });
   }
 
-  const input = (await request.json()) as Partial<TrustUpdateAppendInput>;
+  const parsed = await parseJsonObjectBody(request);
+
+  if (!parsed.ok) {
+    return parsed.response;
+  }
+
+  const input = parsed.value as Partial<TrustUpdateAppendInput>;
   const missingField = [
     "id",
     "action",

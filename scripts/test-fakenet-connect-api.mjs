@@ -178,6 +178,8 @@ async function main() {
   assertEqual(invalidProfile.accepted, false, "invalid profile rejected");
   assertIncludes(invalidProfile.errors.join("\n"), "Unsupported fakenet endpoint scheme", "invalid scheme error");
 
+  await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/fakenet/connect");
+
   const registry = await loadTypeScriptModule("src/app/api/registry/route.ts").GET();
   const registryBody = await registry.json();
   assertEndpoint(registryBody, "bring-your-own-fakenet", "/api/fakenet/connect", "Bring your own fakenet connection profile");
@@ -325,6 +327,23 @@ function assertEndpoint(registryBody, id, pathName, description) {
   assertEqual(endpoint.path, pathName, `${id} path`);
   assertEqual(endpoint.description, description, `${id} description`);
   assertEqual(endpoint.url, `https://nocksperimental.com${pathName}`, `${id} URL`);
+}
+
+async function assertMalformedBodyRejected(POST, url) {
+  for (const body of ["", "not json", "null"]) {
+    const response = await POST(
+      new Request(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body
+      })
+    );
+
+    assertEqual(response.status, 400, `malformed body (${JSON.stringify(body)}) is rejected with 400`);
+
+    const payload = await response.json();
+    assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
+  }
 }
 
 function assertIncludes(actual, expected, label) {

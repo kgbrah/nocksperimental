@@ -54,6 +54,9 @@ async function main() {
   assertEqual(appendedEntry.signature.verificationStatus, "valid", "append API signature status");
   assertEqual(trustUpdateLog.chain.entryCount, 4, "append API does not mutate imported log");
 
+  await assertMalformedBodyRejected(POST, "test-registry-key");
+  await assertUnauthenticatedMalformedBodyStillRejected(POST);
+
   const tempDir = mkdtempSync(path.join(tmpdir(), "nock-trust-update-api-"));
   const writePath = path.join(tempDir, "trust-update-log.json");
   const auditPath = path.join(tempDir, "trust-update-audit.json");
@@ -144,6 +147,47 @@ function createRequest(payload, token, actor, keyId) {
     headers: new Headers(headers),
     json: async () => payload
   };
+}
+
+function createMalformedRequest(token, jsonImpl) {
+  const headers = token ? { "x-nocks-registry-key": token } : {};
+
+  return {
+    headers: new Headers(headers),
+    json: jsonImpl
+  };
+}
+
+async function assertMalformedBodyRejected(POST, token) {
+  const cases = [
+    {
+      label: "non-JSON body",
+      json: async () => {
+        throw new SyntaxError("Unexpected token in JSON");
+      }
+    },
+    { label: "null body", json: async () => null },
+    { label: "array body", json: async () => [] }
+  ];
+
+  for (const testCase of cases) {
+    const response = await POST(createMalformedRequest(token, testCase.json));
+
+    assertEqual(response.status, 400, `${testCase.label} is rejected with 400`);
+
+    const payload = await response.json();
+    assertEqual(typeof payload.error, "string", `${testCase.label} returns an error message`);
+  }
+}
+
+async function assertUnauthenticatedMalformedBodyStillRejected(POST) {
+  const response = await POST(
+    createMalformedRequest(undefined, async () => {
+      throw new SyntaxError("Unexpected token in JSON");
+    })
+  );
+
+  assertEqual(response.status, 401, "unauthenticated malformed body is rejected with 401 before parsing");
 }
 
 function loadTypeScriptModule(relativePath) {

@@ -4,6 +4,13 @@ import {
   registryServiceName,
   registrySubject
 } from "@/lib/registry-manifest";
+import {
+  ACTIVE_DEV_ISSUER_KEY_ID,
+  badgeIssuerSigningSeed,
+  signBadgePayload,
+  verifyBadgeSignature
+} from "@/lib/trust-badge-crypto";
+import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 
 type NockupValidationInput = {
   project?: {
@@ -100,6 +107,12 @@ export function verifyNockupValidationSubmission(input: NockupValidationInput) {
   const generatedAt = latestTimestamp(commands) ?? new Date(0).toISOString();
   const evidenceHash = stableId(JSON.stringify({ project, commands, artifacts, fakenet }));
   const receiptId = accepted ? `nockup_validation_${stableId(JSON.stringify({ project, evidenceHash }))}` : null;
+  const status = verified ? "verified" : accepted ? "attention" : "rejected";
+  const signature = signNockupReceipt(
+    accepted && receiptId
+      ? buildNockupSignedPayload({ receiptId, generatedAt, evidenceHash, project: project.name, status })
+      : null
+  );
 
   return {
     version: "v0",
@@ -108,9 +121,10 @@ export function verifyNockupValidationSubmission(input: NockupValidationInput) {
     canonicalUrl: `${registryCanonicalBaseUrl}/api/nockchain/nockup/submit`,
     accepted,
     verified,
-    status: verified ? "verified" : accepted ? "attention" : "rejected",
+    status,
     receiptId,
     generatedAt,
+    signature,
     profile: {
       project: project.name,
       repo: project.repo,
@@ -384,4 +398,74 @@ function stableId(value: string) {
   }
 
   return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+type NockupReceiptSignedPayload = {
+  receiptId: string;
+  generatedAt: string;
+  evidenceHash: string;
+  project: string;
+  status: string;
+};
+
+type NockupReceiptSignature = {
+  algorithm: "ed25519";
+  issuerKeyId: string;
+  payloadDigest: string;
+  signature: string;
+};
+
+function buildNockupSignedPayload(payload: NockupReceiptSignedPayload): NockupReceiptSignedPayload {
+  return {
+    receiptId: payload.receiptId,
+    generatedAt: payload.generatedAt,
+    evidenceHash: payload.evidenceHash,
+    project: payload.project,
+    status: payload.status
+  };
+}
+
+function signNockupReceipt(
+  signedPayload: NockupReceiptSignedPayload | null
+): NockupReceiptSignature | null {
+  if (!signedPayload) {
+    return null;
+  }
+
+  const { payloadDigest, signature, algorithm } = signBadgePayload(signedPayload, badgeIssuerSigningSeed());
+
+  return {
+    algorithm,
+    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID,
+    payloadDigest,
+    signature
+  };
+}
+
+export function verifyNockupReceiptSignature(receipt: NockupValidationReceipt): boolean {
+  const signature = receipt.signature;
+
+  if (!signature) {
+    return false;
+  }
+
+  const publicKeySpkiBase64 = publicKeyForKeyId(signature.issuerKeyId);
+
+  if (!publicKeySpkiBase64) {
+    return false;
+  }
+
+  const signedPayload = buildNockupSignedPayload({
+    receiptId: receipt.receiptId ?? "",
+    generatedAt: receipt.generatedAt,
+    evidenceHash: receipt.summary.evidenceHash,
+    project: receipt.summary.project,
+    status: receipt.status
+  });
+
+  return verifyBadgeSignature({
+    payload: signedPayload,
+    signature: signature.signature,
+    publicKeySpkiBase64
+  });
 }

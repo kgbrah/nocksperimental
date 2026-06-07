@@ -50,6 +50,10 @@ async function main() {
   assertEqual(receipt.checks.artifactHashesProvided, true, "artifact hashes check");
   assertEqual(receipt.checks.installPathRecorded, true, "install path check");
   assertEqual(receipt.checks.noSecretFields, true, "secret-field check");
+
+  const { verifyNockupReceiptSignature } = loadTypeScriptModule("src/lib/nockup-validation-submission.ts");
+  assertEqual(receipt.signature.algorithm, "ed25519", "receipt signature algorithm");
+  assertEqual(verifyNockupReceiptSignature(receipt), true, "receipt signature verifies");
   assertEqual(receipt.nockchain.repository.fullName, "nockchain/nockchain", "receipt Nockchain repository");
   assertEqual(receipt.nockchain.commit.shortSha, "33ba97b1e206", "receipt Nockchain commit");
   assertEqual(
@@ -168,6 +172,8 @@ async function main() {
     "Read persisted Nockup validation receipt",
     "OpenAPI Nockup validation receipt detail GET path"
   );
+
+  await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/nockchain/nockup/submit");
 
   const packageJson = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
   assertEqual(
@@ -358,5 +364,22 @@ function assertEqual(actual, expected, label) {
 function assertStartsWith(actual, prefix, label) {
   if (typeof actual !== "string" || !actual.startsWith(prefix)) {
     throw new Error(`${label}: expected ${JSON.stringify(actual)} to start with ${JSON.stringify(prefix)}`);
+  }
+}
+
+async function assertMalformedBodyRejected(POST, url) {
+  for (const body of ["", "not json", "null"]) {
+    const response = await POST(
+      new Request(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body
+      })
+    );
+
+    assertEqual(response.status, 400, `malformed body (${JSON.stringify(body)}) is rejected with 400`);
+
+    const payload = await response.json();
+    assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
   }
 }

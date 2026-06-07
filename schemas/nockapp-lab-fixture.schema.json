@@ -139,7 +139,8 @@
             "enum": ["fakenet", "poke", "peek", "invariant", "bridge"]
           },
           "packId": { "type": "string" }
-        }
+        },
+        "allOf": [{ "$ref": "#/$defs/invariantKindRequirements" }]
       }
     },
     "alertPolicies": {
@@ -170,6 +171,33 @@
     }
   },
   "$defs": {
+    "invariantKindRequirements": {
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "numeric-min" } } },
+          "then": { "required": ["path", "min"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "state-equals" } } },
+          "then": { "required": ["path", "equals"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "timeline-state" } } },
+          "then": { "required": ["path", "equals"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "supply-conservation" } } },
+          "then": { "required": ["balancesPath", "supplyPath"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "authorized-actor" } } },
+          "then": {
+            "required": ["actors", "stepType"],
+            "properties": { "actors": { "minItems": 1 } }
+          }
+        }
+      ]
+    },
     "balanceCheck": {
       "type": "object",
       "required": ["address", "command"],
