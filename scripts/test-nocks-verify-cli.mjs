@@ -14,7 +14,9 @@ import {
   verifyEnvelope,
   resolveIssuerKey,
   loadIssuerKeyRegistry,
-  loadCommittedReceipts
+  loadCommittedReceipts,
+  loadCommittedRevocations,
+  findBadgeRevocation
 } from "./nocks-verify.mjs";
 
 const require = createRequire(import.meta.url);
@@ -106,13 +108,15 @@ async function main() {
     "CLI rejects a tampered payload"
   );
 
-  // ---- 3. Every committed badge issuance receipt verifies (end-to-end CLI) ----
+  // ---- 3. Every committed badge issuance receipt is cryptographically valid;
+  // active ones verify (exit 0) and revoked ones fail CLOSED (exit 1) ----
   const receipts = loadCommittedReceipts();
+  const revocations = loadCommittedRevocations();
+  const revokedBadgeIds = new Set(revocations.map((entry) => entry.badgeId));
   assertEqual(receipts.length > 0, true, "committed receipts present");
   for (const receipt of receipts) {
     const result = runCliJson(["verify-badge", "--file", writeTmp(receipt), "--json"]);
-    assertEqual(result.body.verified, true, `committed receipt verifies: ${receipt.id}`);
-    assertEqual(result.code, 0, `committed receipt exit 0: ${receipt.id}`);
+    // Crypto must hold for EVERY committed receipt, revoked or not.
     assertEqual(
       result.body.recomputedDigest,
       receipt.payloadDigest,
@@ -125,7 +129,45 @@ async function main() {
       `signature valid: ${receipt.id}`
     );
     assertEqual(result.body.issuerKeyResolved, true, `issuer key resolved: ${receipt.id}`);
+
+    if (revokedBadgeIds.has(receipt.badgeId)) {
+      // A committed revocation overrides a cryptographically valid receipt.
+      assertEqual(result.body.verified, false, `revoked receipt fails closed: ${receipt.id}`);
+      assertEqual(result.code, 1, `revoked receipt exit 1: ${receipt.id}`);
+      assertEqual(result.body.revoked, true, `revoked flag set: ${receipt.id}`);
+      assertEqual(result.body.reason, "badge-revoked", `revoked reason surfaced: ${receipt.id}`);
+    } else {
+      assertEqual(result.body.verified, true, `committed receipt verifies: ${receipt.id}`);
+      assertEqual(result.code, 0, `committed receipt exit 0: ${receipt.id}`);
+      assertEqual(result.body.revoked, false, `active receipt reported not-revoked: ${receipt.id}`);
+    }
   }
+
+  // ---- 3b. A committed badge revocation fails CLOSED offline so the portable
+  // verdict matches the host (whose verifier requires notRevoked). The signature
+  // stays valid: revocation is an independent, committed fact, checked offline. ----
+  assertEqual(revokedBadgeIds.size > 0, true, "at least one committed revocation present to exercise fail-closed");
+  const revokedReceipt = receipts.find((receipt) => revokedBadgeIds.has(receipt.badgeId));
+  assertEqual(Boolean(revokedReceipt), true, "a committed receipt exists for the revoked badge");
+  // Unit: the pure helper finds the revocation by badgeId and ignores unknown ids.
+  assertEqual(
+    findBadgeRevocation(revokedReceipt.badgeId, revocations)?.badgeId,
+    revokedReceipt.badgeId,
+    "findBadgeRevocation matches the revoked badgeId"
+  );
+  assertEqual(findBadgeRevocation("badge-does-not-exist", revocations), null, "findBadgeRevocation ignores unknown ids");
+  assertEqual(findBadgeRevocation(null, revocations), null, "findBadgeRevocation ignores a null id");
+  // --file path already covered by the loop above; assert the --digest lookup path
+  // ALSO fails closed for a revoked receipt (shared revocation overlay in runVerify).
+  const revByDigest = runCliJson(["verify-badge", "--digest", revokedReceipt.payloadDigest, "--json"]);
+  assertEqual(revByDigest.body.verified, false, "revoked badge fails closed via --digest");
+  assertEqual(revByDigest.code, 1, "revoked badge --digest exits 1");
+  assertEqual(revByDigest.body.revoked, true, "revoked badge --digest flagged revoked");
+  assertEqual(
+    revByDigest.body.signatureCryptographicallyValid,
+    true,
+    "revoked badge signature is still cryptographically valid (revocation is independent)"
+  );
 
   // A retired-key receipt must still verify (rotation does not break history).
   const retiredReceipt = receipts.find((r) => r.issuerKeyId.endsWith("dev-v0"));

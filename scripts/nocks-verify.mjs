@@ -14,8 +14,10 @@
 // scripts/test-nocks-verify-cli.mjs cross-checks the ported primitives against
 // the TypeScript source on every run, so any canonicalization drift fails CI.
 //
-// It verifies signature + payload-digest + issuer-key resolution only. Revocation
-// and live freshness are out-of-band (the hosted registry / API), by design.
+// It verifies signature + payload-digest + issuer-key resolution, and (for badges)
+// fails closed on revocations committed in src/data/trust-signals.json so the
+// offline verdict matches the host. Live freshness/staleness stays out-of-band
+// (the hosted registry / API), by design.
 
 import { createHash, createPublicKey, verify } from "node:crypto";
 import { readFileSync, realpathSync } from "node:fs";
@@ -99,6 +101,22 @@ export function resolveIssuerKey(registry, keyId) {
 export function loadCommittedReceipts() {
   const signals = JSON.parse(readFileSync(SIGNALS_PATH, "utf8"));
   return Array.isArray(signals?.badgeIssuanceReceipts) ? signals.badgeIssuanceReceipts : [];
+}
+
+// Badge revocations are committed root-of-trust data in the SAME file the verifier
+// already reads, so they are checkable fully offline — unlike live freshness, which
+// depends on the hosted registry. Loading them lets the portable verdict match the
+// host (whose verifier requires `!badge.isRevoked`).
+export function loadCommittedRevocations() {
+  const signals = JSON.parse(readFileSync(SIGNALS_PATH, "utf8"));
+  return Array.isArray(signals?.badgeRevocations) ? signals.badgeRevocations : [];
+}
+
+export function findBadgeRevocation(badgeId, revocations) {
+  if (!badgeId) {
+    return null;
+  }
+  return (Array.isArray(revocations) ? revocations : []).find((entry) => entry.badgeId === badgeId) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -219,6 +237,9 @@ function emit(result, asJson) {
     `  payloadDigestMatched:            ${result.payloadDigestMatched}`,
     `  signatureCryptographicallyValid: ${result.signatureCryptographicallyValid}`
   ];
+  if (result.revoked) {
+    lines.push(`  revoked:                         true (revokedAt ${result.revokedAt ?? "unknown"})`);
+  }
   if (result.reason) {
     lines.push(`  reason:                          ${result.reason}`);
   }
@@ -234,12 +255,15 @@ const ARTIFACT_KINDS = {
     kind: "badge",
     payloadField: "signedPayload",
     allowDigestLookup: true,
+    // Badges have a committed revocation store; attestations do not.
+    checkRevocation: true,
     subjectFields: ["badgeId", "id"]
   },
   "verify-attestation": {
     kind: "attestation",
     payloadField: "attestation",
     allowDigestLookup: false,
+    checkRevocation: false,
     subjectFields: ["subject", "canonicalUrl"]
   }
 };
@@ -254,6 +278,26 @@ function runVerify(opts, spec) {
     issuerKeyId: artifact.issuerKeyId,
     registry
   });
+
+  // Offline revocation overlay (badges only). A committed revocation fails the
+  // artifact CLOSED even when the signature is cryptographically valid — the crypto
+  // sub-fields are left intact so the output still distinguishes a signed-but-revoked
+  // badge from one whose signature did not validate.
+  if (spec.checkRevocation) {
+    const badgeId = artifact.badgeId ?? artifact[spec.payloadField]?.badgeId ?? null;
+    const revocation = findBadgeRevocation(badgeId, loadCommittedRevocations());
+    if (revocation) {
+      result.verified = false;
+      result.revoked = true;
+      result.revokedAt = revocation.revokedAt ?? null;
+      result.revocationReason = revocation.reason ?? null;
+      result.replacementBadgeId = revocation.replacementBadgeId ?? null;
+      result.reason = "badge-revoked";
+    } else {
+      result.revoked = false;
+    }
+  }
+
   const subject = spec.subjectFields.map((field) => artifact[field]).find((value) => value != null) ?? null;
   emit({ kind: spec.kind, subject, ...result }, opts.json);
   return result.verified ? 0 : 1;
@@ -277,8 +321,9 @@ Options:
                     (needed only for production keys signed with NOCKS_BADGE_ISSUER_SIGNING_SEED).
   --json            Emit the structured result as JSON.
 
-Exit code 0 when verified, non-zero otherwise. Revocation and live freshness are
-out-of-band (the hosted registry / API) and are NOT checked here.`;
+Exit code 0 when verified, non-zero otherwise. Committed badge revocations
+(src/data/trust-signals.json) ARE checked offline and fail closed; live
+freshness/staleness is out-of-band (the hosted registry / API) and is NOT checked here.`;
 
 export function main(argv) {
   const args = argv.slice(2);

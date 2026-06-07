@@ -529,6 +529,15 @@ Verified badges are now bound to the exact Nockchain build they were verified ag
 - Issuance receipts are signed with a real Ed25519 key (Node built-in, no dependency) over the canonical signed payload, which includes the `sourceAnchor`. `/api/trust/badges/verify` verifies the signature against the published issuer public key and reports `signatureCryptographicallyValid`, `freshness`, and `staleWarning` alongside revocation status.
 - Issuer public keys are discoverable at `/api/trust/keys` with a rotation model (`validFrom`/`validUntil`/`status`); retired keys still verify the badges they signed, so verification never depends on trusting the hosted endpoint. Production signs with the `NOCKS_BADGE_ISSUER_SIGNING_SEED` env var; committed demo badges are signed with a public dev seed and can be regenerated with `npm run trust:badges:sign`.
 
+### Offline verification (no host trust)
+
+`scripts/nocks-verify.mjs` (`npm run verify:portable`, or the `nocks-verify` bin) is a standalone, **dependency-free** verifier — Node builtins only. It re-implements the canonicalization/digest/Ed25519 primitives from `src/lib/trust-badge-crypto.ts` byte-for-byte and resolves issuer public keys from the committed `src/data/trust-issuer-keys.json`, so a developer who receives a signed badge receipt or drift-status attestation can verify it entirely offline — without the repo toolchain and without trusting (or contacting) `nocksperimental.com`. Committed badge revocations are checked offline and fail closed, so the portable verdict matches the host; exit code is `0` only when verified. See `docs/trust-signals.md` for full usage.
+
+```bash
+npm run verify:portable -- verify-badge --file receipt.json
+npm run verify:portable -- verify-attestation --file attestation.json
+```
+
 Registry and discovery endpoints:
 
 - `/registry`
@@ -538,6 +547,8 @@ Registry and discovery endpoints:
 - `/api/trust/keys`
 - `/api/trust/feed`
 - `/api/trust/updates`
+- `/api/trust/freshness`
+- `/trust/freshness`
 - `/openapi.json`
 - `/.well-known/nocksperimental.json`
 
