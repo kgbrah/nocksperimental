@@ -155,6 +155,21 @@ async function fetchSourceSnapshot(sourcePath, ref, requiredSymbols) {
 }
 
 function createDriftReport(trace, snapshot) {
+  // SSOT guard: this bespoke checker owns the compareFields contract and emits it
+  // into the report; the trace re-declares an identical copy as documentation.
+  // Assert the two hand-maintained copies cannot silently diverge (mirrors the
+  // shared engine's guard in scripts/lib/source-drift-check.mjs).
+  const declaredCompareFields = trace.sourceDriftCheck?.compareFields;
+  if (declaredCompareFields && !arraysEqual(declaredCompareFields, compareFields)) {
+    throw new Error(
+      `bridge source-drift compareFields contract drift: trace declares ${JSON.stringify(
+        declaredCompareFields
+      )} but the checker compares ${JSON.stringify(
+        compareFields
+      )} — keep src/lib/nockchain-bridge-source-trace.ts in sync with this checker`
+    );
+  }
+
   const pinned = normalizeSnapshot(snapshot.pinned, "pinned");
   const github = normalizeSnapshot(snapshot.github, "github");
   const trackedAnchorIds = trace.sourceDriftCheck?.sourceAnchorIds ?? [];

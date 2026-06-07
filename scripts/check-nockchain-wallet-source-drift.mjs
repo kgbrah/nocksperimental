@@ -189,6 +189,21 @@ async function fetchOpenPrSignals(openPrSignals) {
 }
 
 function createDriftReport(sourceContract, snapshot) {
+  // SSOT guard: this bespoke checker owns the compareFields contract and emits it
+  // into the report; the source contract re-declares an identical copy as
+  // documentation. Assert the two hand-maintained copies cannot silently diverge
+  // (mirrors the shared engine's guard in scripts/lib/source-drift-check.mjs).
+  const declaredCompareFields = sourceContract.sourceDriftCheck?.compareFields;
+  if (declaredCompareFields && !arraysEqual(declaredCompareFields, compareFields)) {
+    throw new Error(
+      `wallet source-drift compareFields contract drift: contract declares ${JSON.stringify(
+        declaredCompareFields
+      )} but the checker compares ${JSON.stringify(
+        compareFields
+      )} — keep src/lib/nockchain-wallet-atlas.ts in sync with this checker`
+    );
+  }
+
   const pinned = normalizeSnapshot(snapshot.pinned);
   const github = normalizeSnapshot(snapshot.github);
   const trackedAnchorIds = sourceContract.sourceDriftCheck?.sourceAnchorIds ?? [];
