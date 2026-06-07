@@ -1,0 +1,64 @@
+name: Nockchain Drift Monitor
+
+# Runs the aggregate Nockchain/Zorp upstream drift check on a schedule and
+# refreshes the committed drift-status snapshot. This job only fetches public
+# GitHub source/metadata (api.github.com + raw.githubusercontent.com); it never
+# needs a live Nockchain node. When the snapshot changes it opens a pull request
+# so the public /api/nockchain/drift-status surface stays current.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run aggregate drift check
+        id: drift
+        continue-on-error: true
+        run: |
+          npm run check:nockchain-upstream-drift -- --json | tee drift.json
+          echo "status=$(node -e "process.stdout.write(require('./drift.json').status)")" >> "$GITHUB_OUTPUT"
+
+      - name: Refresh drift-status snapshot
+        run: npm run refresh:nockchain-drift-status
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nockchain-drift-report
+          path: drift.json
+
+      - name: Open snapshot pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore(drift): refresh nockchain drift-status snapshot"
+          title: "Refresh Nockchain drift-status snapshot"
+          body: |
+            Automated refresh of `src/data/nockchain-drift-status.json`.
+
+            Aggregate drift status: `${{ steps.drift.outputs.status }}`.
+
+            Review the changed checks before treating new fakenet, wallet, bridge,
+            VESL, Launch Evidence, or state-jam evidence as current.
+          branch: chore/nockchain-drift-status-refresh
+          add-paths: src/data/nockchain-drift-status.json
+          delete-branch: true
