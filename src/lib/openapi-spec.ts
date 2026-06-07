@@ -178,6 +178,18 @@ const nockupValidationReceiptDetailEndpoint = {
   description: "Read persisted Nockup validation receipt"
 };
 
+const invariantPackVerifierEndpoint = {
+  id: "invariant-pack-verifier",
+  path: "/api/invariants/packs/verify",
+  description: "Invariant pack identity and upstream-basis verifier"
+};
+
+const driftStatusAttestationEndpoint = {
+  id: "drift-status-attestation",
+  path: "/api/nockchain/drift-status/attestation",
+  description: "Signed Nockchain upstream drift-status attestation"
+};
+
 export function createOpenApiSpec() {
   const endpoints = [
     wellKnownEndpoint,
@@ -204,7 +216,9 @@ export function createOpenApiSpec() {
     fakenetEvidenceReceiptDetailEndpoint,
     veslEvidenceReceiptDetailEndpoint,
     bazaarListingDetailEndpoint,
-    nockupValidationReceiptDetailEndpoint
+    nockupValidationReceiptDetailEndpoint,
+    invariantPackVerifierEndpoint,
+    driftStatusAttestationEndpoint
   ];
 
   return {

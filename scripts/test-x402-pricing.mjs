@@ -6,7 +6,7 @@ run("test-x402-pricing", async () => {
   const { METERED_RESOURCES, meteredResourceBySlug } = loadTs("src/lib/x402/pricing.ts");
 
   assert(Array.isArray(METERED_RESOURCES), "metered resources is an array");
-  assert(METERED_RESOURCES.length >= 6, "ships at least six metered resources");
+  assert(METERED_RESOURCES.length >= 8, "ships at least eight metered resources");
 
   const slugs = new Set();
   for (const resource of METERED_RESOURCES) {
@@ -23,6 +23,26 @@ run("test-x402-pricing", async () => {
     meteredResourceBySlug("badge-verify")?.pathPattern,
     "/api/trust/badges/verify",
     "lookup by slug resolves the path"
+  );
+  assertEqual(
+    meteredResourceBySlug("invariant-pack-report-verify")?.pathPattern,
+    "/api/invariants/packs/verify",
+    "invariant pack verify resource path"
+  );
+  assertEqual(
+    meteredResourceBySlug("invariant-pack-report-verify")?.priceNicks,
+    "1000",
+    "invariant pack verify is verification-tier priced"
+  );
+  assertEqual(
+    meteredResourceBySlug("drift-status-attestation")?.pathPattern,
+    "/api/nockchain/drift-status/attestation",
+    "drift-status attestation resource path"
+  );
+  assertEqual(
+    meteredResourceBySlug("drift-status-attestation")?.priceNicks,
+    "10000",
+    "drift-status attestation is premium-tier priced"
   );
   assertEqual(meteredResourceBySlug("does-not-exist"), undefined, "unknown slug resolves undefined");
 });

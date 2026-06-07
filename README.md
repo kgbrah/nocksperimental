@@ -596,8 +596,10 @@ verification at scale is paid in micro-`$NOCK`.
 - **Off by default** (`NOCKS_X402_ENABLED`) — routes behave normally until you flip it on.
 - A **stub verifier** ships now; set `NOCKS_X402_FACILITATOR_URL` to settle on-chain — no route changes.
 - Metered: the deep verifiers (`/api/trust/badges/verify`, `/api/reports/generated/verify`,
-  `/api/fakenet/evidence/verify`, `/api/workspaces/evidence/verify`) and premium reads
-  (`/api/trust/compute-benchmarks/[id]`, `/api/trust/token-compatibility/[id]`). Submits and lists stay free.
+  `/api/fakenet/evidence/verify`, `/api/workspaces/evidence/verify`, `/api/invariants/packs/verify`)
+  and premium reads (`/api/trust/compute-benchmarks/[id]`, `/api/trust/token-compatibility/[id]`,
+  and the signed `/api/nockchain/drift-status/attestation`). Submits, lists, the free
+  `/api/nockchain/drift-status` watch board, and the `/api/invariants` catalog stay free.
 - Advertised at `/.well-known/nocksperimental.json` (`x402` block) and `/openapi.json` (402 responses).
 - Tests: `npm run test:x402`. Full guide: [docs/x402.md](docs/x402.md).
 

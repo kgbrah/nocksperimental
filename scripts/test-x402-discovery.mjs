@@ -27,7 +27,9 @@ run("test-x402-discovery", async () => {
     "/api/fakenet/evidence/verify",
     "/api/workspaces/evidence/verify",
     "/api/trust/compute-benchmarks/{profileId}",
-    "/api/trust/token-compatibility/{reportId}"
+    "/api/trust/token-compatibility/{reportId}",
+    "/api/invariants/packs/verify",
+    "/api/nockchain/drift-status/attestation"
   ];
   for (const meteredPath of meteredPaths) {
     assert(spec.paths[meteredPath]?.get?.responses?.["402"], `402 advertised on ${meteredPath}`);

@@ -67,6 +67,22 @@ export const METERED_RESOURCES: MeteredResource[] = [
     description: "Premium native token compatibility report",
     mimeType: "application/json",
     method: "GET"
+  },
+  {
+    slug: "invariant-pack-report-verify",
+    pathPattern: "/api/invariants/packs/verify",
+    priceNicks: "1000",
+    description: "Verify an invariant pack's identity, upstream basis, and invariant set",
+    mimeType: "application/json",
+    method: "GET"
+  },
+  {
+    slug: "drift-status-attestation",
+    pathPattern: "/api/nockchain/drift-status/attestation",
+    priceNicks: "10000",
+    description: "Signed attestation of the current Nockchain upstream drift status",
+    mimeType: "application/json",
+    method: "GET"
   }
 ];
 
