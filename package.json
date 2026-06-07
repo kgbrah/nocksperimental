@@ -196,6 +196,7 @@
     "lab:local:peek": "node scripts/run-lab.mjs fixtures/local-fakenet-peek.lab.json --out .nocklab/local-fakenet-peek.report.json --markdown .nocklab/local-fakenet-peek.report.md --strict",
     "lab:local:poke": "node scripts/run-lab.mjs fixtures/local-fakenet-poke.lab.json --out .nocklab/local-fakenet-poke.report.json --markdown .nocklab/local-fakenet-poke.report.md --strict",
     "lab:local:demo": "node scripts/run-lab.mjs fixtures/real-fakenet-demo.lab.json --out .nocklab/real-fakenet-demo.report.json --markdown .nocklab/real-fakenet-demo.report.md --strict",
+    "lab:kernel": "node scripts/run-lab.mjs fixtures/kernel-compile-trivial.lab.json --out .nocklab/kernel-compile-trivial.report.json --markdown .nocklab/kernel-compile-trivial.report.md --strict",
     "lab:new": "node scripts/run-lab.mjs new-fixture",
     "lab:all": "npm run lab:ci",
     "lab:ci": "node scripts/run-lab.mjs run --config nocklab.config.json --ci --strict",

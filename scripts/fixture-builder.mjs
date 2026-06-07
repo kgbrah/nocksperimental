@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 const schemaPath = path.join(moduleDir, "..", "schemas", "nockapp-lab-fixture.schema.json");
 
-const ENVIRONMENT_MODES = ["mock-fakenet", "local-fakenet", "docker-fakenet"];
+const ENVIRONMENT_MODES = ["mock-fakenet", "local-fakenet", "docker-fakenet", "kernel"];
 
 // Step types and invariant kind/severity enums. Exported so run-lab.mjs can
 // reuse a single source of truth (the runner's runStep / evaluateInvariant rely

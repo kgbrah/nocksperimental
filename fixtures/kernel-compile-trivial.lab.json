@@ -1,0 +1,57 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "kernel-compile-trivial-v0",
+  "app": {
+    "name": "Trivial Kernel Compile Gate",
+    "slug": "kernel-compile-trivial",
+    "version": "0.0.1",
+    "kernel": "hoon-trivial"
+  },
+  "environment": {
+    "mode": "kernel",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "hoonc --ephemeral --arbitrary",
+    "notes": [
+      "Real hoonc compile gate: compiles a Hoon kernel source to a Nock jam. No node, no network, no cargo.",
+      "Requires hoonc on PATH (installed with the Nockchain toolchain).",
+      "First run boots the embedded hoon compiler (~2-3 min); subsequent compiles are ~100ms. timeoutMs is set accordingly."
+    ]
+  },
+  "actors": [
+    {
+      "name": "builder",
+      "pkh": "compile-gate"
+    }
+  ],
+  "initialState": {
+    "compiled": false
+  },
+  "steps": [
+    {
+      "id": "compile-trivial-kernel",
+      "type": "poke",
+      "title": "Compile the %trivial Hoon kernel to a Nock jam with real hoonc",
+      "actor": "builder",
+      "target": "fixtures/kernels/trivial.hoon",
+      "expectation": "hoonc exits 0 and reports build succeeded",
+      "adapter": {
+        "command": {
+          "program": "hoonc",
+          "args": [
+            "--ephemeral",
+            "--arbitrary",
+            "--output",
+            ".nocklab/kernel-trivial.jam",
+            "fixtures/kernels/trivial.hoon",
+            "fixtures/kernels"
+          ]
+        },
+        "timeoutMs": 240000,
+        "expect": {
+          "stdoutIncludes": "build succeeded"
+        }
+      }
+    }
+  ],
+  "invariants": []
+}

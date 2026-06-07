@@ -47,3 +47,6 @@ packages/nocklab/bin/
 packages/nocklab/schemas/
 packages/nocklab/dist/
 packages/nocklab/package-lock.json
+
+# Nock build artifacts (hoonc output)
+*.jam

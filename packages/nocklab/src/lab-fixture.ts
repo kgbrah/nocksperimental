@@ -3,7 +3,7 @@
 // schemas/nockapp-lab-fixture.schema.json; the schema (bundled at build time) remains
 // authoritative for validation — these types are for editor autocomplete + checking.
 
-export type LabMode = "mock-fakenet" | "local-fakenet";
+export type LabMode = "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "kernel";
 export type LabStepType = "fakenet" | "poke" | "peek" | "invariant" | "bridge";
 export type InvariantSeverity = "critical" | "high" | "medium" | "low";
 export type AlertSeverity = "critical" | "warning" | "info";

@@ -29,7 +29,7 @@
       "additionalProperties": false,
       "properties": {
         "mode": {
-          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet"]
+          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet", "kernel"]
         },
         "grpcEndpoint": { "type": "string" },
         "fakenetCommand": { "type": "string" },

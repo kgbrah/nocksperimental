@@ -619,6 +619,17 @@ async function runStep({ step, index, state, actors, environment }) {
     if (!step.actor || !actors.has(step.actor)) {
       status = "fail";
       observed = `actor '${step.actor ?? "missing"}' is not declared`;
+    } else if (environment.mode === "kernel" && step.adapter?.command) {
+      // Run a real Nock toolchain/kernel command (e.g. hoonc compile, or a kernel
+      // poke harness) directly — no live node / gRPC probe.
+      const run = await probeAdapterCommand(step.adapter, "Kernel");
+      status = run.status;
+      expectation = step.expectation ?? run.expectation ?? `kernel command exits 0 for ${step.target ?? step.id}`;
+      adapter = { kind: "kernel", run, checkedAt: run.checkedAt };
+      observed =
+        run.status === "pass"
+          ? `kernel adapter ${step.target ?? step.id} succeeded: ${singleLine(run.raw).slice(0, 200)}`
+          : `kernel adapter ${step.target ?? step.id} failed: ${run.error ?? "non-zero exit"}`;
     } else if (environment.mode === "local-fakenet" && step.adapter?.command) {
       const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
       const poke = probe.ok ? await probeAdapterCommand(step.adapter, "Poke") : null;
@@ -648,7 +659,16 @@ async function runStep({ step, index, state, actors, environment }) {
   }
 
   if (step.type === "peek") {
-    if (environment.mode === "local-fakenet" && step.adapter?.command) {
+    if (environment.mode === "kernel" && step.adapter?.command) {
+      const run = await probeAdapterCommand(step.adapter, "Kernel");
+      status = run.status;
+      expectation = step.expectation ?? run.expectation ?? `kernel command exits 0 for ${step.target ?? step.id}`;
+      adapter = { kind: "kernel", run, checkedAt: run.checkedAt };
+      observed =
+        run.status === "pass"
+          ? `kernel adapter ${step.target ?? step.id} succeeded: ${singleLine(run.raw).slice(0, 200)}`
+          : `kernel adapter ${step.target ?? step.id} failed: ${run.error ?? "non-zero exit"}`;
+    } else if (environment.mode === "local-fakenet" && step.adapter?.command) {
       const probe = await probeGrpcEndpoint(environment.grpcEndpoint);
       const peek = probe.ok ? await probeAdapterCommand(step.adapter, "Peek") : null;
       status = probe.ok && peek?.status === "pass" ? "pass" : "fail";
