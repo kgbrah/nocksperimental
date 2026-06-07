@@ -450,7 +450,10 @@ function createSteps({
       title: "Check vesl-hull health",
       status: checks.hullHealthOk ? "pass" : "fail",
       expectation: "vesl-hull health status is ok.",
-      observed: JSON.stringify(input.hull.health),
+      // Redact before echoing: this attacker-supplied object is persisted in the
+      // receipt and served from the unauthenticated receipt routes, so a nested
+      // secret-like key must never appear verbatim (AGENTS.md no-echo).
+      observed: JSON.stringify(redactSecretFields(input.hull.health)),
       beforeHash: `${baseHash}:peeks`,
       afterHash: `${baseHash}:hull-health`,
       stateDiffs: [],
@@ -465,7 +468,9 @@ function createSteps({
       title: "Check VESL fakenet settlement",
       status: checks.fakenetAccepted ? "pass" : "fail",
       expectation: "Fakenet settlement is accepted or has a transaction id.",
-      observed: JSON.stringify(input.fakenet),
+      // Redact before echoing (see vesl-hull-health step above) — persisted and
+      // served unauthenticated, so no nested secret-like key may leak verbatim.
+      observed: JSON.stringify(redactSecretFields(input.fakenet)),
       beforeHash: `${baseHash}:hull-health`,
       afterHash: `${baseHash}:fakenet`,
       stateDiffs: [],
