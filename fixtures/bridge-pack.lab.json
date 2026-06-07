@@ -14,7 +14,8 @@
     "notes": [
       "Mock bridge withdrawal settlement run exercising the bridge-settlement invariant pack.",
       "Relayer and sequencer pokes advance settlement through observed, proven, and finalized states.",
-      "Pack authority is pinned to the bridge withdrawal execution commit; see upstreamBasis."
+      "Pack authority is pinned to the bridge withdrawal execution commit; see upstreamBasis.",
+      "Metadata-only: no raw withdrawal proofs, sequencer signing material, PMA slabs, or state jams are represented."
     ]
   },
   "actors": [
