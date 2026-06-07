@@ -323,7 +323,7 @@ const pullRequests = [
     number: 124,
     title: "AI PoW Puzzle for AI Compute Network",
     draft: false,
-    updatedAt: "2026-06-05T15:49:25Z",
+    updatedAt: "2026-06-07T12:31:51Z",
     author: "tacryt-socryp",
     riskClass: "compute-proof-puzzle",
     priority: "high",
