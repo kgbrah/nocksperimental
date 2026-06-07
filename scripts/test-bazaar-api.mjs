@@ -41,4 +41,12 @@ run("test-bazaar-api", async () => {
     { params: Promise.resolve({ listingId: "does-not-exist" }) }
   );
   assertEqual(missingResponse.status, 404, "missing listing 404");
+
+  // A malformed percent-escape makes decodeURIComponent throw; it must surface as a
+  // 404 (not an uncaught URIError -> 500).
+  const malformedResponse = await detailRoute.GET(
+    new Request("https://nocksperimental.com/api/bazaar/%E0%A4%A"),
+    { params: Promise.resolve({ listingId: "%E0%A4%A" }) }
+  );
+  assertEqual(malformedResponse.status, 404, "malformed percent-encoded listingId 404");
 });
