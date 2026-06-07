@@ -1,6 +1,6 @@
 {
   "name": "nocklab",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "NockApp Lab — fixture-driven test runner for NockApp launch evidence: validate fixtures, evaluate invariants, and emit JSON/Markdown reports. Standalone CLI + TypeScript fixture-authoring types.",
   "type": "module",
   "bin": {

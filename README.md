@@ -1,5 +1,10 @@
 # nocksperimental
 
+[![nocklab on npm](https://img.shields.io/npm/v/nocklab.svg?label=nocklab)](https://www.npmjs.com/package/nocklab)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./packages/nocklab/LICENSE)
+[![node](https://img.shields.io/badge/node-%3E%3D22-339933.svg)](https://nodejs.org)
+[![deploy](https://img.shields.io/badge/deploy-Cloudflare%20Workers-f38020.svg)](https://nocksperimental.com)
+
 Nocksperimental is a Nockchain product lab for testing, simulating, and publishing audit-ready evidence for NockApps.
 
 Live deployment: https://nocksperimental.com
@@ -562,7 +567,21 @@ Public Launch Evidence surfaces:
 - `/launch-evidence/[caseId]`
 - `/api/launch-evidence`
 - `/api/launch-evidence/[caseId]`
+- `/api/launch-evidence/[caseId]/badge.svg`
 - `/api/launch-evidence/verify`
+
+### Embeddable status badge
+
+Every public case exposes a shields-style SVG badge a NockApp builder can drop into their
+own README to show live launch-readiness status (`verified` / `watch` / `blocked`):
+
+```markdown
+![launch evidence](https://nocksperimental.com/api/launch-evidence/case-vesl-demo-launch-001/badge.svg)
+```
+
+The endpoint always returns a valid `image/svg+xml` (HTTP 200) so the embed never renders
+broken. Private or unknown cases return a neutral `not found` badge and never leak a private
+case's real status.
 
 Verify the bundled VESL demo launch case:
 

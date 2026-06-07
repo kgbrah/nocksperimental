@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import net from "node:net";
@@ -22,6 +23,8 @@ const args = rawArgs[0] === "run" ? rawArgs.slice(1) : rawArgs;
 
 const BOOLEAN_FLAGS = new Set(["--strict", "--ci", "--help"]);
 const VALUE_FLAGS = new Set(["--config", "--out", "--markdown", "--out-dir"]);
+// Known subcommands (used by did-you-mean); declared early so main() can use it.
+const KNOWN_VERBS = ["run", "new-fixture"];
 
 // STEP_TYPES (handled in runStep), INVARIANT_KINDS and INVARIANT_SEVERITIES
 // (handled in evaluateInvariant) are imported from fixture-builder.mjs as the
@@ -121,6 +124,17 @@ async function main() {
     }
   } else {
     const fixturePath = args[0];
+
+    // did-you-mean: a mistyped subcommand (not an existing file) gets a suggestion.
+    if (!existsSync(fixturePath)) {
+      const suggestion = suggestVerb(fixturePath);
+      if (suggestion) {
+        throw new Error(
+          `unknown command '${fixturePath}'. Did you mean '${suggestion}'? (or pass a fixture path)`
+        );
+      }
+    }
+
     const outPath = readFlag("--out");
     const markdownPath = readFlag("--markdown");
     const outDir = readFlag("--out-dir");
@@ -143,6 +157,8 @@ async function main() {
         process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
       }
     }
+
+    printRunSummary(report, fixturePath);
 
     if (strict && report.summary.status === "fail") {
       process.exitCode = 1;
@@ -205,6 +221,11 @@ async function runNewFixture(verbArgs) {
 
   await writeArtifact(outPath, `${JSON.stringify(fixture, null, 2)}\n`);
   process.stdout.write(`Scaffolded ${type} fixture: ${outPath}\n`);
+  // Predictive next step: the obvious move after scaffolding is to run it. Hint goes to
+  // stderr so it never pollutes the stdout path that tooling may parse.
+  process.stderr.write(
+    `${ink.cyan("→ next:")} run it ${ink.bold(`nocklab ${outPath} --strict`)}\n`
+  );
 }
 
 function assertKnownFlags() {
@@ -1644,22 +1665,142 @@ async function writeArtifact(filePath, content) {
   await writeFile(filePath, content);
 }
 
+// --- human-facing colorized summary + predictive next-step hints (stderr) ---
+// Colors only on a TTY and when NO_COLOR is unset, so piped/CI output stays clean.
+
+const COLOR_ENABLED = Boolean(process.stderr.isTTY) && !process.env.NO_COLOR;
+
+function paint(code, text) {
+  return COLOR_ENABLED ? `\x1b[${code}m${text}\x1b[0m` : text;
+}
+
+const ink = {
+  green: (t) => paint("32", t),
+  red: (t) => paint("31", t),
+  yellow: (t) => paint("33", t),
+  cyan: (t) => paint("36", t),
+  dim: (t) => paint("2", t),
+  bold: (t) => paint("1", t)
+};
+
+function statusGlyph(status) {
+  if (status === "pass") return ink.green("✓");
+  if (status === "fail") return ink.red("✗");
+  if (status === "warn" || status === "triggered") return ink.yellow("⚠");
+  return ink.dim("•");
+}
+
+function statusBadge(status) {
+  const label = ` ${status.toUpperCase()} `;
+  if (status === "pass") return paint("42;30", label);
+  if (status === "fail") return paint("41;37", label);
+  return paint("43;30", label);
+}
+
+function statusEmoji(status) {
+  if (status === "pass") return "✅";
+  if (status === "fail") return "❌";
+  if (status === "warn" || status === "triggered") return "⚠️";
+  return "•";
+}
+
+// Predict the most useful next command(s) from the run outcome — the CLI form of
+// "predictive commands": guide devs to the obvious next move without them thinking.
+function predictNextSteps(report, fixturePath) {
+  const s = report.summary;
+  const hints = [];
+  if (s.status === "fail") {
+    const failingInvariant = report.invariants.find((inv) => inv.status === "fail");
+    const failingStep = report.steps.find((step) => step.status === "fail");
+    if (failingInvariant) {
+      hints.push(`fix invariant ${ink.bold(failingInvariant.id)}`);
+    } else if (failingStep) {
+      hints.push(`fix step ${ink.bold(failingStep.id)}`);
+    }
+    hints.push(`re-run ${ink.bold(`nocklab ${fixturePath} --strict`)}`);
+  } else if (s.alertsTriggered > 0) {
+    const alert = report.alerts.find((a) => a.state === "triggered");
+    hints.push(`review alert ${ink.bold(alert?.id ?? "")}`);
+    hints.push(`run the suite ${ink.bold("nocklab run --config nocklab.config.json --ci --strict")}`);
+  } else {
+    hints.push(`run the suite ${ink.bold("nocklab run --config nocklab.config.json --ci --strict")}`);
+    hints.push(`scaffold another ${ink.bold("nocklab new-fixture --slug <app>")}`);
+  }
+  return hints;
+}
+
+function printRunSummary(report, fixturePath) {
+  const s = report.summary;
+  const out = process.stderr;
+  out.write(`\n${statusBadge(s.status)} ${ink.bold(report.app.name)} ${ink.dim(`(${report.fixtureId})`)}\n`);
+  out.write(
+    `  ${s.stepsPassed}/${s.stepsPassed + s.stepsFailed} steps · ` +
+      `${s.invariantsPassed}/${s.invariantsPassed + s.invariantsFailed} invariants · ` +
+      `${s.alertsTriggered} alert${s.alertsTriggered === 1 ? "" : "s"} · ${ink.dim(`${s.durationMs}ms`)}\n`
+  );
+  for (const step of report.steps) {
+    const timing = step.durationMs != null ? ink.dim(` (${step.durationMs}ms)`) : "";
+    out.write(`  ${statusGlyph(step.status)} ${step.id}${timing}\n`);
+  }
+  for (const inv of report.invariants.filter((entry) => entry.status !== "pass")) {
+    out.write(`  ${statusGlyph(inv.status)} ${ink.dim("invariant")} ${inv.id}: ${inv.observed} ${ink.dim(`(expected ${inv.expected})`)}\n`);
+  }
+  const hints = predictNextSteps(report, fixturePath);
+  if (hints.length > 0) {
+    out.write(`${ink.cyan("  → next:")} ${hints.join(ink.dim("  ·  "))}\n`);
+  }
+  out.write("\n");
+}
+
+// did-you-mean: suggest the closest known subcommand for a mistyped verb.
+function levenshtein(a, b) {
+  const rows = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 0; j <= b.length; j += 1) rows[0][j] = j;
+  for (let i = 1; i <= a.length; i += 1) {
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      rows[i][j] = Math.min(rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost);
+    }
+  }
+  return rows[a.length][b.length];
+}
+
+function suggestVerb(token) {
+  let best = null;
+  let bestDistance = Infinity;
+  for (const verb of KNOWN_VERBS) {
+    const distance = levenshtein(token, verb);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = verb;
+    }
+  }
+  return bestDistance <= 3 ? best : null;
+}
+
 function toMarkdown(report) {
+  const s = report.summary;
   const lines = [
-    `# ${report.app.name} Lab Report`,
+    `# ${statusEmoji(s.status)} ${report.app.name} Lab Report`,
     "",
-    `- Report: ${report.reportId}`,
-    `- Fixture: ${report.fixtureId}`,
-    `- Status: ${report.summary.status}`,
-    `- Steps: ${report.summary.stepsPassed} passed, ${report.summary.stepsFailed} failed`,
-    `- Invariants: ${report.summary.invariantsPassed} passed, ${report.summary.invariantsFailed} failed`,
-    `- Alerts: ${report.summary.alertsClear} clear, ${report.summary.alertsTriggered} triggered`,
-    `- Snapshots: ${report.summary.snapshotsCaptured}`,
+    `> **${s.status.toUpperCase()}** — ${s.stepsPassed}/${s.stepsPassed + s.stepsFailed} steps · ` +
+      `${s.invariantsPassed}/${s.invariantsPassed + s.invariantsFailed} invariants · ` +
+      `${s.alertsTriggered} alert${s.alertsTriggered === 1 ? "" : "s"} · ${s.durationMs}ms`,
+    "",
+    "| Field | Value |",
+    "| --- | --- |",
+    `| Report | \`${report.reportId}\` |`,
+    `| Fixture | \`${report.fixtureId}\` |`,
+    `| Status | ${statusEmoji(s.status)} ${s.status} |`,
+    `| Steps | ${s.stepsPassed} passed, ${s.stepsFailed} failed |`,
+    `| Invariants | ${s.invariantsPassed} passed, ${s.invariantsFailed} failed |`,
+    `| Alerts | ${s.alertsClear} clear, ${s.alertsTriggered} triggered |`,
+    `| Snapshots | ${s.snapshotsCaptured} |`,
     "",
     "## Steps",
     "",
     ...report.steps.flatMap((step) => [
-      `- ${step.status.toUpperCase()} ${step.id}: ${step.observed} (${step.expectation}); ${step.beforeHash} -> ${step.afterHash}`,
+      `- ${statusEmoji(step.status)} \`${step.id}\` — ${step.observed} _(${step.expectation})_; ${step.beforeHash} -> ${step.afterHash}`,
       ...(step.stateDiffs ?? []).map((diff) => `  - ${diff.path}: ${diff.before} -> ${diff.after}`)
     ]),
     "",
@@ -1667,7 +1808,7 @@ function toMarkdown(report) {
     "",
     ...report.invariants.map(
       (invariant) =>
-        `- ${invariant.status.toUpperCase()} ${invariant.id}: ${invariant.observed} expected ${invariant.expected}`
+        `- ${statusEmoji(invariant.status)} \`${invariant.id}\` — ${invariant.observed} _(expected ${invariant.expected})_`
     ),
     "",
     "## Alerts",

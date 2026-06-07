@@ -1,5 +1,10 @@
 # nocklab
 
+[![npm version](https://img.shields.io/npm/v/nocklab.svg)](https://www.npmjs.com/package/nocklab)
+[![npm downloads](https://img.shields.io/npm/dm/nocklab.svg)](https://www.npmjs.com/package/nocklab)
+[![node](https://img.shields.io/node/v/nocklab.svg)](https://www.npmjs.com/package/nocklab)
+[![license](https://img.shields.io/npm/l/nocklab.svg)](./LICENSE)
+
 Fixture-driven test runner for **NockApp launch evidence**. Author a fixture (scripted
 `poke`/`peek`/`fakenet`/`bridge` steps over a mutable state tree), declare invariants,
 and `nocklab` emits a deterministic JSON + Markdown report with per-step state
@@ -33,6 +38,23 @@ nocklab new-fixture --slug my-app --type poke --out fixtures/my-app.lab.json
 Exit code is non-zero under `--strict` when an invariant fails. Invariant packs in a
 fixture's `invariantPacks` are resolved **relative to the fixture file**, so an external
 repo ships its own `fixtures/` and `packs/` and the paths Just Work.
+
+### Run summary, predictive next steps, did-you-mean
+
+Each run prints a colorized summary to **stderr** (the JSON/Markdown report still goes to
+stdout / `--out`, so piping is unaffected). Color auto-disables when stderr is not a TTY
+and honors `NO_COLOR`:
+
+```text
+ PASS  Hello Counter (hello-counter-v0)
+  4/4 steps · 4/4 invariants · 0 alerts · 68ms
+  ✓ boot-fakenet (19ms)  ...
+  → next: run the suite nocklab run --config nocklab.config.json --ci --strict  ·  scaffold another nocklab new-fixture --slug <app>
+```
+
+The `→ next:` line is **predictive**: after a failure it points at the failing invariant/step
+and the exact re-run command; after `new-fixture` it suggests running the file you just
+scaffolded. Mistyped a subcommand? `nocklab runn` → `Did you mean 'run'?`.
 
 ## Invariant kinds
 
