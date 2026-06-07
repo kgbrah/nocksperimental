@@ -41,8 +41,46 @@ const INVARIANT_REQUIRED_FIELDS = {
     { field: "supplyPath", type: "string" }
   ],
   "authorized-actor": [{ field: "actors", type: "array" }, { field: "stepType", type: "string" }],
-  "poke-actors-declared": []
+  "poke-actors-declared": [],
+  "numeric-range": [
+    { field: "path", type: "string" },
+    { field: "min", type: "number" },
+    { field: "max", type: "number" }
+  ],
+  "array-length-min": [{ field: "path", type: "string" }, { field: "min", type: "number" }],
+  "array-length-max": [{ field: "path", type: "string" }, { field: "max", type: "number" }],
+  "temporal-ordering": [
+    { field: "path", type: "string" },
+    { field: "field", type: "string" },
+    { field: "before", type: "present" },
+    { field: "after", type: "present" }
+  ],
+  "custom-function": [{ field: "fn", type: "string" }, { field: "path", type: "string" }]
 };
+
+// Static, in-repo allowlist of custom invariant functions. A fixture references a
+// function by NAME only (invariant.fn); there is NO eval / new Function / dynamic
+// import of fixture-supplied code. Each fn is PURE over final state (no clock,
+// network, or randomness) and returns { passes, observed, expected }. Adding a
+// function is a deliberate, reviewed code change here — third-party fixtures can
+// never register code, only reference an already-allowlisted name (enforced at load).
+const CUSTOM_INVARIANT_FUNCTIONS = Object.freeze({
+  "balances-non-negative": (state, invariant) => {
+    const balances = getPath(state, invariant.path) ?? {};
+    const offenders = Object.entries(balances).filter(([, amount]) => Number(amount) < 0);
+
+    return {
+      passes: offenders.length === 0,
+      observed:
+        offenders.length === 0
+          ? `all ${Object.keys(balances).length} balances >= 0`
+          : offenders.map(([holder, amount]) => `${holder}=${amount}`).join(", "),
+      expected: `every value under ${invariant.path} >= 0`
+    };
+  }
+});
+
+const CUSTOM_INVARIANT_FUNCTION_NAMES = Object.freeze(Object.keys(CUSTOM_INVARIANT_FUNCTIONS));
 
 const strict = args.includes("--strict");
 const ciMode = args.includes("--ci");
@@ -484,6 +522,12 @@ function validateInvariantRequiredFields(invariant, index, where) {
         `${where}invariants[${index}]${label}: kind ${JSON.stringify(invariant.kind)} requires field ${JSON.stringify(field)}`
       );
     }
+  }
+
+  if (invariant.kind === "custom-function" && !(invariant.fn in CUSTOM_INVARIANT_FUNCTIONS)) {
+    throw new Error(
+      `${where}invariants[${index}]${label}: kind "custom-function" references unknown fn ${JSON.stringify(invariant.fn)}; known: ${CUSTOM_INVARIANT_FUNCTION_NAMES.join(", ")}`
+    );
   }
 }
 
@@ -1324,6 +1368,77 @@ function evaluateInvariant({ invariant, state, steps, actors }) {
     );
   }
 
+  if (invariant.kind === "numeric-range") {
+    const actual = getPath(state, invariant.path);
+    const passes =
+      typeof actual === "number" && actual >= invariant.min && actual <= invariant.max;
+
+    return invariantResult(
+      invariant,
+      passes,
+      formatValue(actual),
+      `${formatValue(invariant.min)} <= ${invariant.path} <= ${formatValue(invariant.max)}`
+    );
+  }
+
+  if (invariant.kind === "array-length-min") {
+    const actual = getPath(state, invariant.path);
+    const isArray = Array.isArray(actual);
+
+    return invariantResult(
+      invariant,
+      isArray && actual.length >= invariant.min,
+      isArray ? `length=${actual.length}` : `not an array (${formatValue(actual)})`,
+      `${invariant.path}.length >= ${invariant.min}`
+    );
+  }
+
+  if (invariant.kind === "array-length-max") {
+    const actual = getPath(state, invariant.path);
+    const isArray = Array.isArray(actual);
+
+    return invariantResult(
+      invariant,
+      isArray && actual.length <= invariant.max,
+      isArray ? `length=${actual.length}` : `not an array (${formatValue(actual)})`,
+      `${invariant.path}.length <= ${invariant.max}`
+    );
+  }
+
+  if (invariant.kind === "temporal-ordering") {
+    // Deterministic over final state only (no snapshot history): assert `before`
+    // appears at a strictly lower index than `after` within an ordered log array.
+    const log = getPath(state, invariant.path);
+    const list = Array.isArray(log) ? log : [];
+    const beforeIndex = list.findIndex(
+      (entry) => isPlainObject(entry) && deepEqual(entry[invariant.field], invariant.before)
+    );
+    const afterIndex = list.findIndex(
+      (entry) => isPlainObject(entry) && deepEqual(entry[invariant.field], invariant.after)
+    );
+    const passes = beforeIndex !== -1 && afterIndex !== -1 && beforeIndex < afterIndex;
+
+    return invariantResult(
+      invariant,
+      passes,
+      Array.isArray(log)
+        ? `${formatValue(invariant.before)}@${beforeIndex}, ${formatValue(invariant.after)}@${afterIndex}`
+        : `not an array (${formatValue(log)})`,
+      `${invariant.path}[].${invariant.field}: ${formatValue(invariant.before)} before ${formatValue(invariant.after)}`
+    );
+  }
+
+  if (invariant.kind === "custom-function") {
+    const fn = CUSTOM_INVARIANT_FUNCTIONS[invariant.fn];
+    // Unknown names are rejected at load time; guard defensively here too.
+    if (!fn) {
+      return invariantResult(invariant, false, `unknown fn ${invariant.fn}`, invariant.fn);
+    }
+    const outcome = fn(state, invariant);
+
+    return invariantResult(invariant, Boolean(outcome.passes), outcome.observed, outcome.expected);
+  }
+
   return invariantResult(invariant, false, "unsupported invariant kind", invariant.kind);
 }
 
@@ -1440,14 +1555,29 @@ function setPath(target, pathExpression, value) {
   }
   let current = target;
 
-  for (const segment of segments.slice(0, -1)) {
-    if (!isPlainObject(current[segment])) {
+  for (let i = 0; i < segments.length - 1; i += 1) {
+    const segment = segments[i];
+    const existing = current[segment];
+    // Decide the container type for this hop by the NEXT segment: a numeric next
+    // segment indexes by number, so this container must be an array. Preserve an
+    // existing array/object and only create a fresh container when the existing
+    // value can't hold the next hop. (The old code used isPlainObject — false for
+    // arrays — so writing through "arr.0.field" clobbered the array into {"0":...}.)
+    if (isArrayIndexSegment(segments[i + 1])) {
+      if (!Array.isArray(existing)) {
+        current[segment] = [];
+      }
+    } else if (!isPlainObject(existing) && !Array.isArray(existing)) {
       current[segment] = {};
     }
     current = current[segment];
   }
 
   current[segments.at(-1)] = value;
+}
+
+function isArrayIndexSegment(segment) {
+  return /^\d+$/.test(segment);
 }
 
 function deepEqual(left, right) {

@@ -79,6 +79,73 @@ function invariantRequiredFieldRegressions() {
       );
     }
   );
+
+  // numeric-range missing max -> located error (new kind).
+  withFixture(
+    (fixture) => {
+      fixture.invariants.push({
+        id: "range-bad",
+        title: "Range bad",
+        severity: "low",
+        kind: "numeric-range",
+        path: "counter",
+        min: 0
+      });
+    },
+    (result) => {
+      assertEqual(result.status, 1, "numeric-range missing max exits 1");
+      assertIncludes(
+        result.stderr,
+        'requires numeric field "max"',
+        "numeric-range missing max reports located error"
+      );
+    }
+  );
+
+  // temporal-ordering missing after -> located error (present-type field).
+  withFixture(
+    (fixture) => {
+      fixture.invariants.push({
+        id: "order-bad",
+        title: "Order bad",
+        severity: "low",
+        kind: "temporal-ordering",
+        path: "events",
+        field: "type",
+        before: "a"
+      });
+    },
+    (result) => {
+      assertEqual(result.status, 1, "temporal-ordering missing after exits 1");
+      assertIncludes(
+        result.stderr,
+        'requires field "after"',
+        "temporal-ordering missing after reports located error"
+      );
+    }
+  );
+
+  // custom-function referencing an unregistered name -> rejected at load time.
+  withFixture(
+    (fixture) => {
+      fixture.invariants.push({
+        id: "custom-bad",
+        title: "Custom bad",
+        severity: "low",
+        kind: "custom-function",
+        fn: "does-not-exist",
+        path: "ledger.balances"
+      });
+    },
+    (result) => {
+      assertEqual(result.status, 1, "custom-function unknown fn exits 1");
+      assertIncludes(
+        result.stderr,
+        'references unknown fn "does-not-exist"',
+        "custom-function unknown fn reports located error"
+      );
+    }
+  );
 }
 
 function enumRegressions() {

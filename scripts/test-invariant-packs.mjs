@@ -17,7 +17,12 @@ const CATALOG_KINDS = new Set([
   "poke-actors-declared",
   "supply-conservation",
   "timeline-state",
-  "authorized-actor"
+  "authorized-actor",
+  "numeric-range",
+  "array-length-min",
+  "array-length-max",
+  "temporal-ordering",
+  "custom-function"
 ]);
 
 main().catch((error) => {

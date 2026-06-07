@@ -123,11 +123,17 @@
               "poke-actors-declared",
               "supply-conservation",
               "timeline-state",
-              "authorized-actor"
+              "authorized-actor",
+              "numeric-range",
+              "array-length-min",
+              "array-length-max",
+              "temporal-ordering",
+              "custom-function"
             ]
           },
           "path": { "type": "string" },
           "min": { "type": "number" },
+          "max": { "type": "number" },
           "equals": {},
           "balancesPath": { "type": "string" },
           "supplyPath": { "type": "string" },
@@ -138,6 +144,10 @@
           "stepType": {
             "enum": ["fakenet", "poke", "peek", "invariant", "bridge"]
           },
+          "field": { "type": "string" },
+          "before": {},
+          "after": {},
+          "fn": { "type": "string" },
           "packId": { "type": "string" }
         },
         "allOf": [{ "$ref": "#/$defs/invariantKindRequirements" }]
@@ -195,6 +205,26 @@
             "required": ["actors", "stepType"],
             "properties": { "actors": { "minItems": 1 } }
           }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "numeric-range" } } },
+          "then": { "required": ["path", "min", "max"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "array-length-min" } } },
+          "then": { "required": ["path", "min"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "array-length-max" } } },
+          "then": { "required": ["path", "max"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "temporal-ordering" } } },
+          "then": { "required": ["path", "field", "before", "after"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "custom-function" } } },
+          "then": { "required": ["fn", "path"] }
         }
       ]
     },

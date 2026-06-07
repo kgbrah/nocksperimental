@@ -10,7 +10,12 @@ export type InvariantKind =
   | "poke-actors-declared"
   | "supply-conservation"
   | "timeline-state"
-  | "authorized-actor";
+  | "authorized-actor"
+  | "numeric-range"
+  | "array-length-min"
+  | "array-length-max"
+  | "temporal-ordering"
+  | "custom-function";
 
 export type AppProfile = {
   name: string;
@@ -244,6 +249,46 @@ export const invariantCatalog = [
     purpose: "Verify all steps of a type are performed by an allowed actor set.",
     requiredFields: ["actors", "stepType"],
     example: "all poke actors in [merchant, treasury]"
+  },
+  {
+    id: "state.numeric-range.v0",
+    kind: "numeric-range",
+    name: "Numeric range",
+    purpose: "Verify a numeric state value stays within an inclusive [min, max] range.",
+    requiredFields: ["path", "min", "max"],
+    example: "0 <= fees.rate <= 5"
+  },
+  {
+    id: "array.length-min.v0",
+    kind: "array-length-min",
+    name: "Array length floor",
+    purpose: "Verify an array at a path has at least a minimum number of elements.",
+    requiredFields: ["path", "min"],
+    example: "trades.length >= 2"
+  },
+  {
+    id: "array.length-max.v0",
+    kind: "array-length-max",
+    name: "Array length ceiling",
+    purpose: "Verify an array at a path has no more than a maximum number of elements.",
+    requiredFields: ["path", "max"],
+    example: "alerts.active.length <= 0"
+  },
+  {
+    id: "timeline.temporal-ordering.v0",
+    kind: "temporal-ordering",
+    name: "Temporal ordering",
+    purpose: "Verify one logged event precedes another within an ordered log array in final state.",
+    requiredFields: ["path", "field", "before", "after"],
+    example: "payment.events: locked before settled (by type)"
+  },
+  {
+    id: "custom.function.v0",
+    kind: "custom-function",
+    name: "Custom registered check",
+    purpose: "Run a named, repo-registered pure function against final state (allowlist; no fixture-supplied code).",
+    requiredFields: ["fn", "path"],
+    example: "fn=balances-non-negative over ledger.balances"
   }
 ] satisfies InvariantCatalogItem[];
 

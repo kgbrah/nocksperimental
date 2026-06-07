@@ -29,7 +29,12 @@ export const INVARIANT_KINDS = [
   "poke-actors-declared",
   "supply-conservation",
   "timeline-state",
-  "authorized-actor"
+  "authorized-actor",
+  "numeric-range",
+  "array-length-min",
+  "array-length-max",
+  "temporal-ordering",
+  "custom-function"
 ];
 export const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
 
