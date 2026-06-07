@@ -1,9 +1,23 @@
-# Design: NockApp kernel integration (Hoon → NockVM → lab)
+# NockApp kernel integration (Hoon → NockVM → lab)
 
-> **Status: design + scaffold.** This is the genuinely hard, upstream-gated milestone —
-> the 5th star for "real execution support." It is documented and scoped here, not
-> implemented, because it depends on a NockVM test-harness API that does not yet exist
-> upstream. Everything below is the plan and the seam, not a working path.
+> **Status: ACHIEVED (real poke/peek), not upstream-gated.** An earlier draft of this doc
+> claimed the 5th "real execution" star needed ~4–8 weeks of upstream NockVM work. That was
+> wrong: the `nockapp` crate already exposes `setup_nockapp` / `poke_sync` / `peek_sync`
+> (see `crates/nockapp/tests/integration.rs::test_sync_peek_and_poke`). The remaining gap
+> was only a small CLI front-end, now built as `nockapp-run` (~70 lines; source vendored at
+> `tools/nockapp-run/`). The lab drives a **real** offline NockVM kernel poke →
+> state-transition → peek cycle via the `kernel` environment mode:
+>
+> - **Compile:** `fixtures/kernel-compile-trivial.lab.json` runs real `hoonc` (Hoon → Nock jam).
+> - **Poke/peek:** `fixtures/kernel-poke-peek.lab.json` runs `nockapp-run`, applying 3 `inc`
+>   pokes to a real counter kernel and verifying the peeked `[%state 0]` equals 3 — strict, exit 0.
+>
+> Real runs are committed at `docs/evidence/kernel-compile-trivial.report.md` and
+> `docs/evidence/kernel-poke-peek.report.md`. Build instructions for the harness:
+> `tools/nockapp-run/README.md`. **What still needs upstream**: shipping `nockapp-run` as a
+> first-class toolchain bin (so it lands on PATH with `nockchain`/`nockchain-wallet`), and a
+> generic poke/peek that constructs arbitrary cause nouns from the CLI (today the harness uses
+> the counter kernel's `inc`/`[%state 0]` interface). Neither blocks the real-execution path.
 
 ## Problem
 

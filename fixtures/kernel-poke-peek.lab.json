@@ -1,0 +1,60 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "kernel-poke-peek-v0",
+  "app": {
+    "name": "Kernel Poke/Peek (counter)",
+    "slug": "kernel-poke-peek",
+    "version": "0.0.1",
+    "kernel": "test-ker"
+  },
+  "environment": {
+    "mode": "kernel",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "nockapp-run",
+    "notes": [
+      "Real offline NockVM kernel poke -> state-transition -> peek via the nockapp-run harness.",
+      "Applies 3 `inc` pokes to a counter kernel, peeks [%state 0]; the harness exits 0 iff state == 3.",
+      "Requires nockapp-run on PATH (built from crates/nockapp; see docs/kernel-integration-design.md). No live node, no network."
+    ]
+  },
+  "actors": [
+    {
+      "name": "driver",
+      "pkh": "kernel-harness"
+    }
+  ],
+  "initialState": {
+    "expectedState": 3
+  },
+  "steps": [
+    {
+      "id": "poke-peek-counter",
+      "type": "poke",
+      "title": "Apply 3 inc pokes to a real counter kernel and peek the resulting state",
+      "actor": "driver",
+      "target": "nockapp-run 3",
+      "expectation": "kernel state equals 3 after 3 inc pokes (real poke -> peek, no node)",
+      "adapter": {
+        "command": {
+          "program": "nockapp-run",
+          "args": ["3"]
+        },
+        "timeoutMs": 60000,
+        "expect": {
+          "stdoutIncludes": "peeked-state-matches-expected=true"
+        }
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "expected-state-pinned",
+      "title": "expected post-poke state is 3",
+      "severity": "low",
+      "kind": "numeric-range",
+      "path": "expectedState",
+      "min": 3,
+      "max": 3
+    }
+  ]
+}
