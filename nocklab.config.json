@@ -41,6 +41,10 @@
     {
       "path": "fixtures/pma-safety.lab.json",
       "slug": "pma-safety"
+    },
+    {
+      "path": "fixtures/mining-pow.lab.json",
+      "slug": "mining-pow"
     }
   ]
 }

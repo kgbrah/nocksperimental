@@ -1,0 +1,84 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "mining-pow-v0",
+  "app": {
+    "name": "Mining and PoW Pack",
+    "slug": "mining-pow",
+    "version": "0.1.0",
+    "kernel": "mock-mining-v0"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "nockchain --fakenet --mine --mining-pkh <pkh> --bind-public-grpc-addr 127.0.0.1:5555 --no-default-peers",
+    "notes": [
+      "Mock fakenet mining run exercising the mining-pow invariant pack.",
+      "A miner poke mines a block (advances height, meets the PoW target); a node poke confirms the new heaviest chain.",
+      "Metadata-only: no raw candidate noun, raw proof, PMA slabs, state jams, or mining-key secret material is represented."
+    ]
+  },
+  "actors": [
+    { "name": "miner", "pkh": "mining-miner-mock-pkh" },
+    { "name": "node", "pkh": "mining-node-mock-pkh" }
+  ],
+  "invariantPacks": ["../packs/mining-pow.invariants.json"],
+  "initialState": {
+    "mining": {
+      "blockHeight": 1000,
+      "powTargetMet": false,
+      "onHeaviestChain": true,
+      "network": "fakenet"
+    },
+    "alerts": {
+      "failed": false
+    }
+  },
+  "steps": [
+    {
+      "id": "boot-fakenet",
+      "type": "fakenet",
+      "title": "Boot mock mining fakenet",
+      "expectation": "gRPC endpoint configured at 127.0.0.1:5555 with mining enabled"
+    },
+    {
+      "id": "miner-mines-block",
+      "type": "poke",
+      "title": "Miner mines a block meeting the PoW target",
+      "actor": "miner",
+      "target": "/mining/attempt",
+      "operations": [
+        { "kind": "increment", "path": "mining.blockHeight", "by": 5 },
+        { "kind": "set", "path": "mining.powTargetMet", "value": true }
+      ],
+      "expect": { "path": "mining.blockHeight", "equals": 1005 }
+    },
+    {
+      "id": "node-confirms-heaviest",
+      "type": "poke",
+      "title": "Node confirms the new heaviest chain",
+      "actor": "node",
+      "target": "/mining/heaviest",
+      "operations": [
+        { "kind": "set", "path": "mining.onHeaviestChain", "value": true }
+      ],
+      "expect": { "path": "mining.onHeaviestChain", "equals": true }
+    },
+    {
+      "id": "peek-pow-target",
+      "type": "peek",
+      "title": "Read proof-of-work target status",
+      "target": "/mining",
+      "expect": { "path": "mining.powTargetMet", "equals": true }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "mining-no-failure-alert",
+      "title": "Mining failure alert remains clear",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "alerts.failed",
+      "equals": false
+    }
+  ]
+}

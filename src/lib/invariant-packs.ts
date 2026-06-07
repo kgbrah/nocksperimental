@@ -3,6 +3,7 @@ import intentsPack from "../../packs/intents.invariants.json";
 import tokensPack from "../../packs/tokens.invariants.json";
 import bridgePack from "../../packs/bridge.invariants.json";
 import pmaSafetyPack from "../../packs/pma-safety.invariants.json";
+import miningPowPack from "../../packs/mining-pow.invariants.json";
 
 export type InvariantPackUpstreamBasis = {
   repo: string;
@@ -49,7 +50,8 @@ const rawPacks: Array<{ pack: RawInvariantPack; path: string }> = [
   { pack: intentsPack as RawInvariantPack, path: "packs/intents.invariants.json" },
   { pack: tokensPack as RawInvariantPack, path: "packs/tokens.invariants.json" },
   { pack: bridgePack as RawInvariantPack, path: "packs/bridge.invariants.json" },
-  { pack: pmaSafetyPack as RawInvariantPack, path: "packs/pma-safety.invariants.json" }
+  { pack: pmaSafetyPack as RawInvariantPack, path: "packs/pma-safety.invariants.json" },
+  { pack: miningPowPack as RawInvariantPack, path: "packs/mining-pow.invariants.json" }
 ];
 
 export const invariantPacks: InvariantPackSummary[] = rawPacks.map(({ pack, path }) => ({

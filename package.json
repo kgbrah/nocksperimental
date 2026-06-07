@@ -177,6 +177,7 @@
     "lab:compute": "node scripts/run-lab.mjs fixtures/compute-benchmark-alpha.lab.json --out .nocklab/compute-benchmark-alpha.report.json --markdown .nocklab/compute-benchmark-alpha.report.md --strict",
     "lab:bridge:pack": "node scripts/run-lab.mjs fixtures/bridge-pack.lab.json --out .nocklab/bridge-pack.report.json --markdown .nocklab/bridge-pack.report.md --strict",
     "lab:pma": "node scripts/run-lab.mjs fixtures/pma-safety.lab.json --out .nocklab/pma-safety.report.json --markdown .nocklab/pma-safety.report.md --strict",
+    "lab:mining": "node scripts/run-lab.mjs fixtures/mining-pow.lab.json --out .nocklab/mining-pow.report.json --markdown .nocklab/mining-pow.report.md --strict",
     "test:run-lab-flags": "node scripts/test-run-lab-flags.mjs",
     "test:run-lab-validation": "node scripts/test-run-lab-validation.mjs",
     "test:fixture-builder": "node scripts/test-fixture-builder.mjs",

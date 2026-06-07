@@ -34,18 +34,22 @@ async function main() {
   assertEqual(Boolean(schema.properties.upstreamBasis), true, "schema has upstreamBasis");
   assertEqual(Boolean(schema.properties.sourceAnchors), true, "schema has sourceAnchors");
 
+  assertIncludes(domains, "mining-pow", "schema domain mining-pow");
+
   // New pack + fixture files exist.
   for (const file of [
     "packs/bridge.invariants.json",
     "packs/pma-safety.invariants.json",
+    "packs/mining-pow.invariants.json",
     "fixtures/bridge-pack.lab.json",
-    "fixtures/pma-safety.lab.json"
+    "fixtures/pma-safety.lab.json",
+    "fixtures/mining-pow.lab.json"
   ]) {
     assertFile(file);
   }
 
   const { invariantPacks, invariantPackForId } = loadTypeScriptModule("src/lib/invariant-packs.ts");
-  assertEqual(invariantPacks.length, 5, "invariant pack count");
+  assertEqual(invariantPacks.length, 6, "invariant pack count");
 
   for (const pack of invariantPacks) {
     assertIncludes(domains, pack.domain, `pack ${pack.id} domain in schema`);
@@ -58,9 +62,16 @@ async function main() {
   assertEqual(bridge.sourceAnchors.length >= 1, true, "bridge pack has source anchors");
   const pma = invariantPackForId("pma-safety-core-v0");
   assertEqual(pma.domain, "pma-safety", "pma pack domain");
+  const mining = invariantPackForId("mining-pow-core-v0");
+  assertEqual(mining.domain, "mining-pow", "mining pack domain");
+  assertEqual(mining.sourceAnchors.length >= 1, true, "mining pack has source anchors");
 
   // Every invariant kind across new packs is in the catalog (no new evaluator kinds).
-  for (const file of ["packs/bridge.invariants.json", "packs/pma-safety.invariants.json"]) {
+  for (const file of [
+    "packs/bridge.invariants.json",
+    "packs/pma-safety.invariants.json",
+    "packs/mining-pow.invariants.json"
+  ]) {
     const pack = JSON.parse(readText(file));
     for (const invariant of pack.invariants) {
       assertIncludes([...CATALOG_KINDS], invariant.kind, `${file} kind ${invariant.kind} in catalog`);
@@ -75,13 +86,15 @@ async function main() {
   assertIncludes(bridgeFixture.invariantPacks, "../packs/bridge.invariants.json", "bridge fixture references pack");
   const pmaFixture = JSON.parse(readText("fixtures/pma-safety.lab.json"));
   assertIncludes(pmaFixture.invariantPacks, "../packs/pma-safety.invariants.json", "pma fixture references pack");
+  const miningFixture = JSON.parse(readText("fixtures/mining-pow.lab.json"));
+  assertIncludes(miningFixture.invariantPacks, "../packs/mining-pow.invariants.json", "mining fixture references pack");
 
   // /api/invariants surfaces packs with basis.
   const { GET } = loadTypeScriptModule("src/app/api/invariants/route.ts");
   const response = await GET();
   const body = await response.json();
   assertEqual(Array.isArray(body.packs), true, "invariants API exposes packs");
-  assertEqual(body.packs.length, 5, "invariants API pack count");
+  assertEqual(body.packs.length, 6, "invariants API pack count");
   const apiBridge = body.packs.find((pack) => pack.id === "bridge-settlement-core-v0");
   assertEqual(apiBridge.upstreamBasis.commit, "33ba97b1e206dd89b15c61b72b7802caf2136c18", "API pack basis commit");
 
@@ -101,6 +114,11 @@ async function main() {
     packageJson.scripts["lab:pma"],
     "node scripts/run-lab.mjs fixtures/pma-safety.lab.json --out .nocklab/pma-safety.report.json --markdown .nocklab/pma-safety.report.md --strict",
     "lab:pma script"
+  );
+  assertEqual(
+    packageJson.scripts["lab:mining"],
+    "node scripts/run-lab.mjs fixtures/mining-pow.lab.json --out .nocklab/mining-pow.report.json --markdown .nocklab/mining-pow.report.md --strict",
+    "lab:mining script"
   );
 }
 

@@ -46,8 +46,9 @@ Reusable invariant packs live under `packs/` and can be imported by fixtures thr
 - `packs/tokens.invariants.json`: token issuance finalization, metadata stability, issuance authority, and token supply conservation.
 - `packs/bridge.invariants.json`: bridge withdrawal settlement — finalized terminal state, proof and Base observation, failure-free runs, and authorized relayer/sequencer pokes (exercised by `fixtures/bridge-pack.lab.json`).
 - `packs/pma-safety.invariants.json`: PMA/state-jam durability — monotonic checkpoint-height and event-log boundary floors, kernel-state continuity, network context, and authorized writers (exercised by `fixtures/pma-safety.lab.json`).
+- `packs/mining-pow.invariants.json`: fakenet mining/PoW — block-height floor (no regression), proof-of-work target met, mining on the heaviest chain (not a stale candidate), network context, and authorized miners (exercised by `fixtures/mining-pow.lab.json`).
 
-No new evaluator kinds were added: the bridge and PMA packs are expressed entirely with the existing catalog (`numeric-min`, `state-equals`, `timeline-state`, `authorized-actor`, `supply-conservation`, `poke-actors-declared`).
+No new evaluator kinds were added: the bridge, PMA, and mining packs are expressed entirely with the existing catalog (`numeric-min`, `state-equals`, `timeline-state`, `authorized-actor`, `supply-conservation`, `poke-actors-declared`).
 
 ## Pack source anchoring
 

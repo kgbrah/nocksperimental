@@ -28,7 +28,7 @@ const VALUE_FLAGS = new Set(["--config", "--out", "--markdown", "--out-dir"]);
 // single source of truth, kept in sync with the fixture/pack JSON schemas and
 // src/lib/lab-report.ts. INVARIANT_REQUIRED_FIELDS stays local (the runner owns
 // the per-kind cross-field requirements).
-const PACK_DOMAINS = ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety"];
+const PACK_DOMAINS = ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety", "mining-pow"];
 
 // Per-kind cross-field requirements, mirroring src/lib/lab-report.ts invariantCatalog
 // requiredFields. `type` "number"/"array" carry an additional type check beyond presence.

@@ -237,7 +237,7 @@ const sourceAnchors = [
       "handoffWindowBlocks"
     ],
     riskPosture:
-      "TODO: caller_node_id is currently trusted because bridge nodes run on a VPN; receipts should preserve endpoint and trust context."
+      "caller_node_id is currently trusted because bridge nodes run on a VPN; receipts preserve the sequencer endpoint and caller identity so evidence carries that trust context."
   },
   {
     id: "sequencer-store",

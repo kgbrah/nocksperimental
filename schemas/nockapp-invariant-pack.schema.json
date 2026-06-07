@@ -19,7 +19,7 @@
       "type": "string"
     },
     "domain": {
-      "enum": ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety"]
+      "enum": ["payments", "intents", "token-issuance", "bridge-settlement", "pma-safety", "mining-pow"]
     },
     "description": {
       "type": "string"

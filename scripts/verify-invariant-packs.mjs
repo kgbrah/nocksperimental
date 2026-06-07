@@ -16,8 +16,10 @@ function main() {
     "schemas/nockapp-invariant-pack.schema.json",
     "packs/bridge.invariants.json",
     "packs/pma-safety.invariants.json",
+    "packs/mining-pow.invariants.json",
     "fixtures/bridge-pack.lab.json",
     "fixtures/pma-safety.lab.json",
+    "fixtures/mining-pow.lab.json",
     "docs/invariants.md"
   ]) {
     assertFile(file);
@@ -47,6 +49,20 @@ function main() {
     pma.invariantPacks.some((pack) => pack.domain === "pma-safety"),
     true,
     "pma-safety report includes pma-safety domain"
+  );
+
+  const mining = readReport("mining-pow");
+  assertEqual(mining.summary.status, "pass", "mining-pow report status");
+  assertEqual(mining.summary.invariantsFailed, 0, "mining-pow invariants failed");
+  assertEqual(
+    mining.invariantPacks.some((pack) => pack.domain === "mining-pow"),
+    true,
+    "mining-pow report includes mining-pow domain"
+  );
+  assertEqual(
+    mining.invariantPacks.some((pack) => pack.upstreamBasis?.commit),
+    true,
+    "mining-pow report carries upstream basis"
   );
 
   // Per-step state diffs are rendered in Markdown.

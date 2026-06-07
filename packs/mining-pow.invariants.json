@@ -1,0 +1,82 @@
+{
+  "$schema": "../schemas/nockapp-invariant-pack.schema.json",
+  "id": "mining-pow-core-v0",
+  "name": "Mining and PoW Core",
+  "version": "0.1.0",
+  "domain": "mining-pow",
+  "description": "Safety checks for Nockchain fakenet mining/PoW evidence: block-height floor (no regression), proof-of-work target met, mining on the heaviest chain (not a stale candidate), fakenet network context, and authorized miners.",
+  "upstreamBasis": {
+    "repo": "nockchain/nockchain",
+    "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18",
+    "protocolTrack": "mining-pow"
+  },
+  "sourceAnchors": [
+    {
+      "id": "mining-driver",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/nockchain/src/mining.rs",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/nockchain/src/mining.rs",
+      "docTier": "tier-1-scoped",
+      "note": "Mining driver wire/attempt logic underpins the block-height floor and authorized-miner assertions here."
+    },
+    {
+      "id": "pow-check-target",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "hoon/common/pow.hoon",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/hoon/common/pow.hoon",
+      "docTier": "tier-1-scoped",
+      "note": "check-target / proof-to-pow define when a proof meets the target; this pack asserts the PoW target is met."
+    },
+    {
+      "id": "heaviest-chain-trace",
+      "upstreamRepo": "nockchain/nockchain",
+      "upstreamFile": "crates/nockchain/src/traces.rs",
+      "upstreamUrl": "https://github.com/nockchain/nockchain/blob/33ba97b1e206dd89b15c61b72b7802caf2136c18/crates/nockchain/src/traces.rs",
+      "docTier": "tier-1-scoped",
+      "note": "new_heaviest_chain / new_heaviest_miner / block_height define heaviest-chain progression; this pack asserts mining tracks the heaviest chain."
+    }
+  ],
+  "invariants": [
+    {
+      "id": "mining-block-height-floor",
+      "title": "Mined block height does not regress below its floor",
+      "severity": "critical",
+      "kind": "numeric-min",
+      "path": "mining.blockHeight",
+      "min": 1000
+    },
+    {
+      "id": "mining-pow-target-met",
+      "title": "Proof of work meets the difficulty target",
+      "severity": "critical",
+      "kind": "state-equals",
+      "path": "mining.powTargetMet",
+      "equals": true
+    },
+    {
+      "id": "mining-on-heaviest-chain",
+      "title": "Mining tracks the heaviest chain, not a stale candidate",
+      "severity": "high",
+      "kind": "state-equals",
+      "path": "mining.onHeaviestChain",
+      "equals": true
+    },
+    {
+      "id": "mining-network-context",
+      "title": "Mining evidence records the fakenet network context",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "mining.network",
+      "equals": "fakenet"
+    },
+    {
+      "id": "mining-authorized-miner",
+      "title": "Mining pokes are performed by authorized miners",
+      "severity": "high",
+      "kind": "authorized-actor",
+      "actors": ["miner", "node"],
+      "stepType": "poke"
+    }
+  ]
+}
