@@ -1,0 +1,50 @@
+{
+  "name": "nocklab",
+  "version": "0.1.0",
+  "description": "NockApp Lab — fixture-driven test runner for NockApp launch evidence: validate fixtures, evaluate invariants, and emit JSON/Markdown reports. Standalone CLI + TypeScript fixture-authoring types.",
+  "type": "module",
+  "bin": {
+    "nocklab": "./bin/nocklab.mjs"
+  },
+  "main": "./dist/lab-fixture.js",
+  "types": "./dist/lab-fixture.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lab-fixture.d.ts",
+      "import": "./dist/lab-fixture.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin/",
+    "schemas/",
+    "dist/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs && tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "nockapp",
+    "nockchain",
+    "fixtures",
+    "lab",
+    "launch-evidence",
+    "invariants",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kgbrah/nocksperimental.git",
+    "directory": "packages/nocklab"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
