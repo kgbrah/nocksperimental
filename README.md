@@ -242,6 +242,8 @@ The runtime safety trace pins NockVM failure triage to exact upstream source anc
 - `/api/nockchain/runtime-safety`
 - `/nockchain/runtime-safety`
 
+Run `npm run check:nockchain-runtime-safety-source-drift -- --json` to compare the commit-pinned NockVM runtime-safety source anchors against current upstream `nockchain/nockchain` master before runtime-failure receipts rely on them.
+
 Use it when a fakenet run, state-jam restore, malformed cue payload, PMA offset read, or NockVM panic needs a receipt-safe explanation before it becomes a test assumption or operator runbook change.
 
 ## Nockchain Testkit/E2E Trace
@@ -349,6 +351,8 @@ The public API source trace anchors the wallet/API atlas to exact upstream `nock
 - `/nockchain/api/source`
 - `/api/nockchain/api-source`
 
+Run `npm run check:nockchain-api-source-drift -- --json` to compare the commit-pinned public API / gRPC source anchors against current upstream `nockchain/nockchain` master before wallet, balance, transaction, or BYO-fakenet endpoint receipts rely on them.
+
 Use it when a hosted or user-connected fakenet test needs to prove which API endpoint answered, whether the endpoint was private gRPC, public gRPC, or hosted HTTP manifest mode, and whether `tx-accepted` means node acceptance rather than block inclusion.
 
 ## Nockchain Upstream Watch
@@ -360,7 +364,7 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, and mining source drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, and public API source drift checks into one monitor report before treating the watch board as current.
 
 ### Drift Status (public freshness snapshot)
 

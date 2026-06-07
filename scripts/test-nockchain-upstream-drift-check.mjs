@@ -46,8 +46,8 @@ async function main() {
   assertEqual(passing.status, 0, "matching fixture exit status");
   const passingBody = JSON.parse(passing.stdout);
   assertEqual(passingBody.status, "in-sync", "matching fixture status");
-  assertEqual(passingBody.summary.totalChecks, 10, "matching total check count");
-  assertEqual(passingBody.summary.inSyncChecks, 10, "matching in-sync check count");
+  assertEqual(passingBody.summary.totalChecks, 12, "matching total check count");
+  assertEqual(passingBody.summary.inSyncChecks, 12, "matching in-sync check count");
   assertEqual(passingBody.summary.reviewNeededChecks, 0, "matching review-needed check count");
   assertEqual(passingBody.summary.failedChecks, 0, "matching failed check count");
   assertIncludes(
@@ -101,6 +101,16 @@ async function main() {
     "aggregate includes mining source drift command"
   );
   assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-runtime-safety-source-drift -- --json",
+    "aggregate includes runtime-safety source drift command"
+  );
+  assertIncludes(
+    passingBody.requiredCommands,
+    "npm run check:nockchain-api-source-drift -- --json",
+    "aggregate includes API source drift command"
+  );
+  assertIncludes(
     passingBody.sourceUrls,
     "https://raw.githubusercontent.com/nockchain/nockchain/master/START_HERE.md",
     "aggregate includes docs source"
@@ -150,7 +160,7 @@ async function main() {
   assertEqual(drift.status, 1, "drift fixture exit status");
   const driftBody = JSON.parse(drift.stdout);
   assertEqual(driftBody.status, "review-needed", "drift fixture status");
-  assertEqual(driftBody.summary.inSyncChecks, 9, "drift fixture in-sync count");
+  assertEqual(driftBody.summary.inSyncChecks, 11, "drift fixture in-sync count");
   assertEqual(driftBody.summary.reviewNeededChecks, 1, "drift fixture review-needed count");
   assertIncludes(driftBody.drift.reviewNeededCheckIds, "pr-radar", "aggregate detects PR radar drift");
   assertIncludes(
@@ -381,6 +391,20 @@ function fixtureChecks() {
         "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain/src/mining.rs"
       ],
       snapshot: { sourceAnchorCount: 14, sourceFileCount: 11 }
+    },
+    {
+      id: "runtime-safety-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockvm/rust/nockvm/src/mem.rs"
+      ],
+      snapshot: { sourceAnchorCount: 9, sourceFileCount: 5 }
+    },
+    {
+      id: "api-source",
+      sourceUrls: [
+        "https://raw.githubusercontent.com/nockchain/nockchain/master/crates/nockchain-api/src/main.rs"
+      ],
+      snapshot: { sourceAnchorCount: 13, sourceFileCount: 8 }
     }
   ];
 }

@@ -267,6 +267,28 @@ const localVerification = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-runtime-safety-source-drift -- --json",
+  script: "scripts/check-nockchain-runtime-safety-source-drift.mjs",
+  testCommand: "npm run test:nockchain-runtime-safety-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainRuntimeSafety",
+    "nockchainPmaSourceTrace",
+    "localFakenetEvidence",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned NockVM runtime-safety source anchors (stack frames, cue/jam bounds, noun space, HAMT) against current upstream master before runtime-failure receipts rely on them."
+} as const;
+
 export function createNockchainRuntimeSafetyTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -288,6 +310,7 @@ export function createNockchainRuntimeSafetyTrace() {
     receiptContract,
     operatorTriage,
     localVerification,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "Fakenet support bundles can classify NockVM runtime failures without uploading raw jam payloads, stack memory, PMA slabs, or core dumps.",
       "Bring-your-own fakenet tests should join cue/jam failures with sync/gossip peer context before interpreting no peers or wrong commitments.",

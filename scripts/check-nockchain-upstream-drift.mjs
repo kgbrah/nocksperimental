@@ -75,6 +75,20 @@ const aggregateChecks = [
     domain: "mining-pow",
     command: "npm run check:nockchain-mining-source-drift -- --json",
     npmScript: "check:nockchain-mining-source-drift"
+  },
+  {
+    id: "runtime-safety-source",
+    label: "NockVM runtime-safety source anchors",
+    domain: "runtime-safety",
+    command: "npm run check:nockchain-runtime-safety-source-drift -- --json",
+    npmScript: "check:nockchain-runtime-safety-source-drift"
+  },
+  {
+    id: "api-source",
+    label: "Public API and gRPC source anchors",
+    domain: "public-api",
+    command: "npm run check:nockchain-api-source-drift -- --json",
+    npmScript: "check:nockchain-api-source-drift"
   }
 ];
 

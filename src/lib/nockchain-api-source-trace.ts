@@ -333,6 +333,28 @@ const localVerification = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-api-source-drift -- --json",
+  script: "scripts/check-nockchain-api-source-drift.mjs",
+  testCommand: "npm run test:nockchain-api-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainApiSourceTrace",
+    "nockchainWalletAtlas",
+    "localFakenetEvidence",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned Nockchain public API / gRPC source anchors against current upstream master before wallet, balance, transaction, or BYO-fakenet endpoint receipts rely on them."
+} as const;
+
 export function createNockchainApiSourceTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -354,6 +376,7 @@ export function createNockchainApiSourceTrace() {
     endpointModes,
     receiptContract,
     localVerification,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "BYO fakenet receipts can now classify endpoints as private gRPC, public gRPC, or hosted HTTP manifest before probing.",
       "Balance and transaction evidence can separate public wallet/client checks from private local peeks and pokes.",

@@ -1,13 +1,13 @@
 {
   "version": "v0",
   "status": "in-sync",
-  "observedAt": "2026-06-06T23:06:14.520Z",
-  "generatedAt": "2026-06-06T23:06:14.529Z",
+  "observedAt": "2026-06-07T00:22:24.737Z",
+  "generatedAt": "2026-06-07T00:22:24.746Z",
   "source": "scripts/refresh-drift-status.mjs",
   "aggregateCommand": "npm run check:nockchain-upstream-drift -- --json",
   "summary": {
-    "totalChecks": 10,
-    "inSyncChecks": 10,
+    "totalChecks": 12,
+    "inSyncChecks": 12,
     "reviewNeededChecks": 0,
     "failedChecks": 0
   },
@@ -17,70 +17,84 @@
       "label": "Tier 0 and promoted Tier 1 docs",
       "domain": "source-authority",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "cargo-workspace",
       "label": "Cargo workspace manifest",
       "domain": "rust-workspace",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "cargo-manifests",
       "label": "Crate Cargo manifests",
       "domain": "rust-crate-manifests",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "bridge-source",
       "label": "Bridge source anchors and bridge-dev scenarios",
       "domain": "bridge-source",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "wallet-source",
       "label": "Wallet transaction source anchors",
       "domain": "wallet-source",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "release-assets",
       "label": "Latest release assets",
       "domain": "release-build",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "pr-radar",
       "label": "Open PR and issue radar",
       "domain": "pre-merge-review",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "zorp-org",
       "label": "Zorp org and state-jam lineage",
       "domain": "zorp-lineage",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "pma-source",
       "label": "PMA, snapshot, and event-log source anchors",
       "domain": "pma-state-jam",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
     },
     {
       "id": "mining-source",
       "label": "Mining and PoW source anchors",
       "domain": "mining-pow",
       "status": "in-sync",
-      "observedAt": "2026-06-06T23:06:14.520Z"
+      "observedAt": "2026-06-07T00:22:24.737Z"
+    },
+    {
+      "id": "runtime-safety-source",
+      "label": "NockVM runtime-safety source anchors",
+      "domain": "runtime-safety",
+      "status": "in-sync",
+      "observedAt": "2026-06-07T00:22:24.737Z"
+    },
+    {
+      "id": "api-source",
+      "label": "Public API and gRPC source anchors",
+      "domain": "public-api",
+      "status": "in-sync",
+      "observedAt": "2026-06-07T00:22:24.737Z"
     }
   ],
   "freshness": {
