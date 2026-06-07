@@ -17,36 +17,60 @@ not a rewrite.
   (`environment.grpcEndpoint`, default `127.0.0.1:5555`).
 - On Windows, run inside WSL (or any shell where `fakenock` resolves).
 
-## Flow
+## Flow (verified)
+
+The commands below are the exact ones used to produce the committed evidence
+(`docs/evidence/real-fakenet-demo.report.md`).
 
 ```bash
-# 1. Clone + build Nockchain (one time)
+# 1. Build Nockchain once: you need `nockchain` and `nockchain-wallet` on PATH.
 git clone https://github.com/nockchain/nockchain && cd nockchain && make install
 
-# 2. Start a fakenet node (leave running)
-bash scripts/run_nockchain_node_fakenet.sh        # or your node's fakenet launcher
+# 2. Start a FRESH fakenet node and leave it running. Two gotchas worth knowing:
+#    - Do NOT reuse a data dir that was created for mainnet — booting mainnet data
+#      with --fakenet panics ("attempted to boot mainnet node with fakenet flag").
+#      Use --new with a dedicated --data-dir so you never touch your mainnet data.
+#    - The default file-backed PMA is large; on a space/quota-limited disk add
+#      --ephemeral (in-memory state) to avoid "Disk quota exceeded" on snapshot build.
+nockchain --new --fakenet --ephemeral --data-dir /tmp/nock-fakenet-demo \
+  --bind-public-grpc-addr 127.0.0.1:5555 --bind /ip4/127.0.0.1/udp/3006/quic-v1
+#    (scripts/run_nockchain_node_fakenet.sh wraps the same flags but reuses
+#     ./.data.nockchain and the durable PMA — fine on a clean fakenet box.)
 
-# 3. From this repo, run the demo fixture against the live node
+# 3. Sanity-check the node from the wallet (optional):
+nockchain-wallet show-balance --public-grpc-server-addr 127.0.0.1:5555
+
+# 4. From THIS repo, run the demo fixture against the live node:
 npm run lab:local:demo
 # == npx nocklab fixtures/real-fakenet-demo.lab.json --strict
 ```
 
-The report (`.nocklab/real-fakenet-demo.report.{json,md}`) shows: the TCP reachability +
-latency of the gRPC listener, the parsed wallet balance and chain metadata, the
-stdout/exit-code of each command-backed peek/poke adapter, and the invariant results.
+The report (`.nocklab/real-fakenet-demo.report.{json,md}`) shows the TCP reachability of
+the gRPC listener and the stdout/exit-code of the `nockchain-wallet show-balance` peek
+adapter (which logs `Connected to public NockApp gRPC server endpoint=http://127.0.0.1:5555`).
 
 ## What is verified offline vs. what needs a live node
 
 | Verified WITHOUT a node (mock / unit-tested) | Requires a LIVE node |
 |---|---|
 | Fixture schema validity, invariant evaluation, report shape | Real TCP connect to the gRPC listener |
-| Adapter command signature parsing, exit-code handling, stdout-regex matching, timeouts | Real `fakenock` output (balance/chain values) |
-| Balance/chain metadata parsing logic (regex over sample output) | State transitions from an actual poke/peek |
+| Adapter command signature parsing, exit-code handling, stdout-substring matching, timeouts | Real `nockchain-wallet` output (balance, sync state) |
+| The mock → local-fakenet fixture format itself | A real state transition from a funded poke (needs a mined/funded wallet) |
 
 Without a node, the reachability/adapter steps report **unreachable** rather than passing
 — run `lab:local:demo` without `--strict` to inspect the (expected) unreachable result.
 The deterministic parts above are covered by the standard `npm test` suite, so the demo's
 *logic* is CI-verified even though the *live run* is operator-driven.
+
+## Evidence (a real run)
+
+`docs/evidence/real-fakenet-demo.report.md` is a committed report from an actual run
+against a live `nockchain --fakenet` node: `Status: pass`, both steps green —
+`probe-health` (TCP reachable at 127.0.0.1:5555) and `peek-balance`
+(`nockchain-wallet show-balance` connected to the node's public gRPC server and returned
+`Wallet Balance … at height 0`). Balance is `0 nicks` because it is a fresh ephemeral
+fakenet with no mining; to demonstrate a funded balance, also run
+`scripts/run_nockchain_miner_fakenet.sh` against the node before the peek.
 
 ## Handoff: proving the real run
 

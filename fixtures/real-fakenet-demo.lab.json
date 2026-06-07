@@ -10,24 +10,12 @@
   "environment": {
     "mode": "local-fakenet",
     "grpcEndpoint": "127.0.0.1:5555",
-    "fakenetCommand": "fakenock --start",
-    "balanceCheck": {
-      "address": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
-      "command": {
-        "program": "fakenock",
-        "args": ["--balance"]
-      }
-    },
-    "chainCheck": {
-      "command": {
-        "program": "fakenock",
-        "args": ["--balance"]
-      }
-    },
+    "fakenetCommand": "nockchain --fakenet --bind-public-grpc-addr 127.0.0.1:5555 --bind /ip4/127.0.0.1/udp/3006/quic-v1",
     "notes": [
       "End-to-end demo against a LIVE `nockchain --fakenet` node — see docs/local-fakenet-guide.md.",
-      "Requires the node running and `fakenock` on PATH (e.g. inside WSL); without a live node the probes report unreachable and the run is non-strict.",
-      "Combines a health probe, balance + chain parsing, and a command-backed peek and poke adapter in one fixture."
+      "The health step does a real TCP probe of the public gRPC listener (127.0.0.1:5555).",
+      "The peek step runs `nockchain-wallet show-balance` against the live node's public gRPC server.",
+      "Requires a running fakenet node and nockchain-wallet on PATH; without a node the probes report unreachable (run without --strict to inspect)."
     ]
   },
   "actors": [
@@ -38,48 +26,30 @@
   ],
   "initialState": {
     "fakenet": {
-      "expectedEndpoint": "127.0.0.1:5555",
-      "watchedAddress": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ"
+      "expectedEndpoint": "127.0.0.1:5555"
     }
   },
   "steps": [
     {
       "id": "probe-health",
       "type": "fakenet",
-      "title": "Probe live fakenet health, balance, and chain metadata",
-      "expectation": "endpoint is reachable; wallet balance and chain metadata parse from fakenock output"
+      "title": "Probe the live fakenet public gRPC listener",
+      "expectation": "the public gRPC endpoint at 127.0.0.1:5555 is reachable over TCP"
     },
     {
       "id": "peek-balance",
       "type": "peek",
-      "title": "Peek wallet balance through the command-backed adapter",
+      "title": "Read wallet balance from the live node via nockchain-wallet",
       "actor": "operator",
-      "target": "fakenock --balance",
-      "expectation": "fakenock --balance returns wallet-balance output",
+      "target": "nockchain-wallet show-balance",
+      "expectation": "nockchain-wallet connects to the node's public gRPC server and returns balance output",
       "adapter": {
         "command": {
-          "program": "fakenock",
-          "args": ["--balance"]
+          "program": "nockchain-wallet",
+          "args": ["show-balance", "--public-grpc-server-addr", "127.0.0.1:5555"]
         },
         "expect": {
-          "stdoutIncludes": "Fakenet wallet balance"
-        }
-      }
-    },
-    {
-      "id": "poke-balance",
-      "type": "poke",
-      "title": "Run a command-backed poke against the live node",
-      "actor": "operator",
-      "target": "fakenock --balance",
-      "expectation": "command-backed poke returns wallet-balance output",
-      "adapter": {
-        "command": {
-          "program": "fakenock",
-          "args": ["--balance"]
-        },
-        "expect": {
-          "stdoutIncludes": "Fakenet wallet balance"
+          "stdoutIncludes": "Wallet Balance"
         }
       }
     }
