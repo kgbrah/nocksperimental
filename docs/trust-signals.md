@@ -71,3 +71,18 @@ Verified badges derive their authority from drift-monitored upstream source trut
 - **Key discovery and rotation.** `src/data/trust-issuer-keys.json` publishes issuer public keys (SPKI) with `validFrom`/`validUntil`/`status`/`supersededBy`, served at `/api/trust/keys`. Verification resolves the public key for a receipt's `issuerKeyId` and never depends on trusting the hosted endpoint. Retired keys remain resolvable so historical badges keep verifying after rotation.
 - **Verifier.** `/api/trust/badges/verify` reports `signatureCryptographicallyValid`, `issuerKeyResolved`, `issuerKeyActive`, `freshness`, and `staleWarning` together with revocation status. Policy: a validly-signed but stale badge returns `verified: true` with `staleWarning: true` — cryptographic validity and upstream freshness are surfaced separately.
 - **Signing.** Production signs with the `NOCKS_BADGE_ISSUER_SIGNING_SEED` env var (32-byte hex, never committed). Committed demo badges are signed with a public dev seed; regenerate reproducibly with `npm run trust:badges:sign`.
+
+### Offline verification (no host trust)
+
+`scripts/nocks-verify.mjs` (`npm run verify:portable`, or the `nocks-verify` bin) is a standalone, **dependency-free** verifier — it imports only Node builtins, re-implements the canonicalization/digest/Ed25519 primitives from `trust-badge-crypto.ts` byte-for-byte, and resolves issuer public keys from the committed `src/data/trust-issuer-keys.json`. A NockApp developer who receives a signed artifact can verify it entirely offline, without the repo toolchain and without contacting (or trusting) `nocksperimental.com`. `scripts/test-nocks-verify-cli.mjs` asserts the ported primitives stay byte-identical to the TypeScript source on every run.
+
+```bash
+# Verify a badge issuance receipt JSON (downloaded from /api/trust/badges)
+npm run verify:portable -- verify-badge --file receipt.json
+# ...or look one up by its payloadDigest from the committed receipts
+npm run verify:portable -- verify-badge --digest sha256:<digest> --json
+# Verify a drift-status attestation JSON (from /api/nockchain/drift-status/attestation)
+npm run verify:portable -- verify-attestation --file attestation.json
+```
+
+It resolves the artifact's `issuerKeyId` against the published SPKI (retired keys included, so historical badges keep verifying), recomputes the payload digest, and checks the Ed25519 signature; exit code is `0` only when verified. For production keys signed with `NOCKS_BADGE_ISSUER_SIGNING_SEED`, pin the exported registry via `--keys <registry.json>`. Revocation and live freshness are out-of-band (the hosted registry/API) and are intentionally **not** checked offline.
