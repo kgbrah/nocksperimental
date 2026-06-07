@@ -182,6 +182,22 @@ async function fetchSourceSnapshot(sourcePath, ref, requiredSymbols, config) {
 }
 
 function createDriftReport(trace, snapshot, config) {
+  // SSOT guard: the engine owns the compareFields contract and emits it into every
+  // report (see `snapshot.compareFields` below). Each engine-processed trace also
+  // declares the same list as documentation; assert the two hand-maintained copies
+  // are identical so they cannot silently diverge. Fails loud during the drift check
+  // (and its test) rather than shipping a trace that misdocuments what is compared.
+  const declaredCompareFields = trace.sourceDriftCheck?.compareFields;
+  if (declaredCompareFields && !arraysEqual(declaredCompareFields, compareFields)) {
+    throw new Error(
+      `source-drift compareFields contract drift: trace declares ${JSON.stringify(
+        declaredCompareFields
+      )} but the engine compares ${JSON.stringify(
+        compareFields
+      )} — keep the trace's sourceDriftCheck.compareFields in sync with scripts/lib/source-drift-check.mjs`
+    );
+  }
+
   const pinned = normalizeSnapshot(snapshot.pinned, "pinned");
   const github = normalizeSnapshot(snapshot.github, "github");
   const trackedAnchorIds = trace.sourceDriftCheck?.sourceAnchorIds ?? [];
