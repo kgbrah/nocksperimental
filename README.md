@@ -692,8 +692,12 @@ curl https://nocksperimental.com/.well-known/nocksperimental.json
 
 ## Documentation
 
+- `docs/getting-started.md` — zero-to-passing-fixture in 5 minutes.
+- `docs/fixture-cookbook.md` — copy-ready fixture patterns (counter, payment, bridge, token, DEX, intent).
+- `docs/CONTRIBUTING.md` — test conventions, the coordination gate, and how to add an invariant kind.
 - `docs/strategy.md` describes the product roadmap.
-- `docs/invariants.md` documents invariant-pack behavior.
+- `docs/invariants.md` documents the invariant catalog (11 kinds) and pack behavior.
+- `docs/local-fakenet-guide.md` — run a fixture against a real `nockchain --fakenet` node.
 - `docs/ci.md` covers CI artifact generation.
 - `docs/report-history.md` describes hosted report history.
 - `docs/trust-signals.md` documents trust registry primitives.

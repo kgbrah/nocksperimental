@@ -9,6 +9,9 @@ const ts = require("typescript");
 const moduleCache = new Map();
 const repository = "nockchain/nockchain";
 const defaultRef = "master";
+// GitHub API base is overridable so the graceful-skip path (upstream unreachable) is
+// deterministically testable; defaults to the real API in normal use.
+const githubApiBase = process.env.NOCKS_DRIFT_GITHUB_API ?? "https://api.github.com";
 const compareFields = [
   "upstreamCommit",
   "sourceAnchorId",
@@ -59,9 +62,32 @@ export function presentSymbolsFor(requiredSymbols, source, sourcePath) {
 export async function runSourceDriftCheck(config) {
   const options = parseArgs(process.argv.slice(2));
   const trace = loadTypeScriptModule(config.tracePath)[config.traceFactory]();
-  const snapshot = options.fixturePath
-    ? loadFixture(options.fixturePath)
-    : await fetchSourceSnapshotSet(trace, config);
+
+  let snapshot;
+  if (options.fixturePath) {
+    snapshot = loadFixture(options.fixturePath);
+  } else {
+    try {
+      snapshot = await fetchSourceSnapshotSet(trace, config);
+    } catch (error) {
+      // Upstream unreachable (offline, rate-limited, GitHub down): SKIP rather than
+      // FAIL, so contributors can author and run lab fixtures without network access
+      // or an upstream clone. A real drift still fails once the fetch succeeds.
+      const skipped = {
+        version: "v0",
+        status: "skipped",
+        reason: `upstream unavailable: ${error.message}`,
+        interpretation: config.interpretation
+      };
+      if (options.json) {
+        process.stdout.write(`${JSON.stringify(skipped, null, 2)}\n`);
+      } else {
+        console.log(`source drift check skipped: ${skipped.reason}`);
+      }
+      return; // exit 0 — a skip is neither in-sync nor drift
+    }
+  }
+
   const report = createDriftReport(trace, snapshot, config);
 
   if (options.json) {
@@ -123,7 +149,7 @@ function loadFixture(fixturePath) {
 async function fetchSourceSnapshotSet(trace, config) {
   const paths = sourcePaths(trace);
   const symbolsByPath = requiredSymbolsByPath(trace);
-  const commitResponse = await fetch(`https://api.github.com/repos/${repository}/commits/${defaultRef}`, {
+  const commitResponse = await fetch(`${githubApiBase}/repos/${repository}/commits/${defaultRef}`, {
     headers: {
       accept: "application/vnd.github+json",
       "user-agent": config.userAgent

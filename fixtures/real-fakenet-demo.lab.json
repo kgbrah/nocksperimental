@@ -1,0 +1,97 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "real-fakenet-demo-v0",
+  "app": {
+    "name": "Real Fakenet Demo",
+    "slug": "real-fakenet-demo",
+    "version": "0.0.1",
+    "kernel": "nockchain-local-fakenet"
+  },
+  "environment": {
+    "mode": "local-fakenet",
+    "grpcEndpoint": "127.0.0.1:5555",
+    "fakenetCommand": "fakenock --start",
+    "balanceCheck": {
+      "address": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      "command": {
+        "program": "fakenock",
+        "args": ["--balance"]
+      }
+    },
+    "chainCheck": {
+      "command": {
+        "program": "fakenock",
+        "args": ["--balance"]
+      }
+    },
+    "notes": [
+      "End-to-end demo against a LIVE `nockchain --fakenet` node — see docs/local-fakenet-guide.md.",
+      "Requires the node running and `fakenock` on PATH (e.g. inside WSL); without a live node the probes report unreachable and the run is non-strict.",
+      "Combines a health probe, balance + chain parsing, and a command-backed peek and poke adapter in one fixture."
+    ]
+  },
+  "actors": [
+    {
+      "name": "operator",
+      "pkh": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ"
+    }
+  ],
+  "initialState": {
+    "fakenet": {
+      "expectedEndpoint": "127.0.0.1:5555",
+      "watchedAddress": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ"
+    }
+  },
+  "steps": [
+    {
+      "id": "probe-health",
+      "type": "fakenet",
+      "title": "Probe live fakenet health, balance, and chain metadata",
+      "expectation": "endpoint is reachable; wallet balance and chain metadata parse from fakenock output"
+    },
+    {
+      "id": "peek-balance",
+      "type": "peek",
+      "title": "Peek wallet balance through the command-backed adapter",
+      "actor": "operator",
+      "target": "fakenock --balance",
+      "expectation": "fakenock --balance returns wallet-balance output",
+      "adapter": {
+        "command": {
+          "program": "fakenock",
+          "args": ["--balance"]
+        },
+        "expect": {
+          "stdoutIncludes": "Fakenet wallet balance"
+        }
+      }
+    },
+    {
+      "id": "poke-balance",
+      "type": "poke",
+      "title": "Run a command-backed poke against the live node",
+      "actor": "operator",
+      "target": "fakenock --balance",
+      "expectation": "command-backed poke returns wallet-balance output",
+      "adapter": {
+        "command": {
+          "program": "fakenock",
+          "args": ["--balance"]
+        },
+        "expect": {
+          "stdoutIncludes": "Fakenet wallet balance"
+        }
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "endpoint-pinned",
+      "title": "watched endpoint matches the configured gRPC endpoint",
+      "severity": "medium",
+      "kind": "state-equals",
+      "path": "fakenet.expectedEndpoint",
+      "equals": "127.0.0.1:5555"
+    }
+  ]
+}
