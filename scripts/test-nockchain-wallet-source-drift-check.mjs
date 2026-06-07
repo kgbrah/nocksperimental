@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
 
-const require = createRequire(import.meta.url);
-const ts = require("typescript");
-const moduleCache = new Map();
+import {
+  loadTypeScriptModule,
+  readText,
+  assertFile,
+  assertEqual,
+  assertIncludes
+} from "./lib/source-drift-check-fixtures.mjs";
 
 main().catch((error) => {
   console.error(error);
@@ -271,99 +274,4 @@ function createSyntheticHash(content) {
   }
 
   return hash.toString(16).padStart(8, "0");
-}
-
-function loadTypeScriptModule(relativePath) {
-  const modulePath = path.join(process.cwd(), relativePath);
-
-  if (moduleCache.has(modulePath)) {
-    return moduleCache.get(modulePath).exports;
-  }
-
-  const source = readFileSync(modulePath, "utf8");
-  const output = ts.transpileModule(source, {
-    compilerOptions: {
-      esModuleInterop: true,
-      module: ts.ModuleKind.CommonJS,
-      resolveJsonModule: true,
-      target: ts.ScriptTarget.ES2020
-    },
-    fileName: modulePath
-  }).outputText;
-
-  const compiled = { exports: {} };
-  moduleCache.set(modulePath, compiled);
-
-  const run = new Function("exports", "require", "module", "__filename", "__dirname", output);
-  run(compiled.exports, createModuleRequire(), compiled, modulePath, path.dirname(modulePath));
-
-  return compiled.exports;
-}
-
-function createModuleRequire() {
-  return (specifier) => {
-    if (specifier === "next/server") {
-      return {
-        NextResponse: {
-          json: (body, init = {}) => ({
-            headers: init.headers ?? {},
-            status: init.status ?? 200,
-            json: async () => body
-          })
-        }
-      };
-    }
-
-    if (specifier.startsWith("@/")) {
-      return loadAliasModule(specifier);
-    }
-
-    return require(specifier);
-  };
-}
-
-function loadAliasModule(specifier) {
-  const aliasPath = path.join(process.cwd(), "src", specifier.slice(2));
-  const jsonPath = `${aliasPath}.json`;
-  const tsPath = `${aliasPath}.ts`;
-
-  if (existsSync(aliasPath) && path.extname(aliasPath) === ".json") {
-    return require(aliasPath);
-  }
-
-  if (existsSync(aliasPath) && path.extname(aliasPath) === ".ts") {
-    return loadTypeScriptModule(path.relative(process.cwd(), aliasPath));
-  }
-
-  if (existsSync(jsonPath)) {
-    return require(jsonPath);
-  }
-
-  if (existsSync(tsPath)) {
-    return loadTypeScriptModule(path.relative(process.cwd(), tsPath));
-  }
-
-  throw new Error(`Unsupported module alias: ${specifier}`);
-}
-
-function readText(relativePath) {
-  return readFileSync(path.join(process.cwd(), relativePath), "utf8");
-}
-
-function assertFile(relativePath) {
-  if (!existsSync(path.join(process.cwd(), relativePath))) {
-    throw new Error(`Missing file: ${relativePath}`);
-  }
-}
-
-function assertEqual(actual, expected, label) {
-  if (actual !== expected) {
-    throw new Error(`${label}: expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}`);
-  }
-}
-
-function assertIncludes(collection, expected, label) {
-  if (!collection?.includes?.(expected)) {
-    throw new Error(`${label}: expected ${JSON.stringify(collection)} to include ${JSON.stringify(expected)}`);
-  }
 }
