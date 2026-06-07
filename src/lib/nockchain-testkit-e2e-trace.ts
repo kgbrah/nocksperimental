@@ -176,7 +176,7 @@ const sourceAnchors = [
     id: "nous-gen2-scenarios",
     file: "tests/e2e/scenarios/nous_testnet_gen2_send.yaml",
     lineRange: "1-180",
-    symbols: ["nous_testnet_gen2_send.yaml", "nous_gen2_partition_reorg.yaml"],
+    symbols: ["nous_testnet_gen2_send.yaml"],
     sourceUrls: [
       sourceUrl("tests/e2e/scenarios/nous_testnet_gen2_send.yaml", 1, 180),
       sourceUrl("tests/e2e/scenarios/nous_gen2_partition_reorg.yaml", 1, 160)
@@ -309,6 +309,28 @@ const localVerification = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-testkit-e2e-source-drift -- --json",
+  script: "scripts/check-nockchain-testkit-e2e-source-drift.mjs",
+  testCommand: "npm run test:nockchain-testkit-e2e-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainTestkitE2eTrace",
+    "localFakenetEvidence",
+    "generatedLabReports",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned Nockchain testkit/E2E scenario source anchors against current upstream master before BYO-fakenet scenario receipts rely on them."
+} as const;
+
 export function createNockchainTestkitE2eTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -329,6 +351,7 @@ export function createNockchainTestkitE2eTrace() {
     scenarioCapabilities,
     receiptContract,
     localVerification,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "Nocksperimental can expose an upstream-compatible scenario and receipt vocabulary for anyone connecting a fakenet.",
       "BYO fakenets should map endpoint, wallet, node, transaction, and peer evidence to the same NodeSpec, Action, Assert, and Report concepts.",

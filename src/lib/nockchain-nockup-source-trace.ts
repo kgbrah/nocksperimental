@@ -300,6 +300,28 @@ const localVerification = {
   ]
 } as const;
 
+const sourceDriftCheck = {
+  command: "npm run check:nockchain-nockup-source-drift -- --json",
+  script: "scripts/check-nockchain-nockup-source-drift.mjs",
+  testCommand: "npm run test:nockchain-nockup-source-drift-check",
+  sourceAnchorIds: sourceAnchors.map((anchor) => anchor.id),
+  compareFields: [
+    "upstreamCommit",
+    "sourceAnchorId",
+    "sourceSha256",
+    "sourceBytes",
+    "requiredSymbols"
+  ],
+  targetSurfaces: [
+    "nockchainNockupSourceTrace",
+    "nockupValidation",
+    "generatedLabReports",
+    "registryCheckpoint"
+  ],
+  interpretation:
+    "Compares commit-pinned Nockup scaffold, manifest, and templating source anchors against current upstream master before Nockup validation receipts rely on them."
+} as const;
+
 export function createNockchainNockupSourceTrace() {
   const upstream = nockchainUpstreamIntelligence;
 
@@ -321,6 +343,7 @@ export function createNockchainNockupSourceTrace() {
     receiptContract,
     upstreamWatch,
     localVerification,
+    sourceDriftCheck,
     nocksperimentalImplications: [
       "Nockup validation receipts can now cite the upstream scaffold, template-cache, dependency-resolver, and install-path source boundaries.",
       "BYO fakenet and Launch Evidence flows can preserve template and dependency provenance before accepting generated NockApp test output.",

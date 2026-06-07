@@ -650,7 +650,7 @@ export function createRegistryCheckpoint() {
       nockchainWatchAggregateDriftCheckAvailable:
         nockchainWatch.monitor.aggregateDriftCheck.command ===
           "npm run check:nockchain-upstream-drift -- --json" &&
-        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 12 &&
+        nockchainWatch.monitor.aggregateDriftCheck.checks.length === 14 &&
         nockchainWatch.monitor.aggregateDriftCheck.checks.some(
           (check) => check.id === "cargo-workspace"
         ) &&

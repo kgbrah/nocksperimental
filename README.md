@@ -253,6 +253,8 @@ The testkit/E2E trace pins upstream scenario testing to exact source anchors for
 - `/api/nockchain/testkit-e2e`
 - `/nockchain/testkit-e2e`
 
+Run `npm run check:nockchain-testkit-e2e-source-drift -- --json` to compare the commit-pinned testkit/E2E scenario source anchors against current upstream `nockchain/nockchain` master before BYO-fakenet scenario receipts rely on them.
+
 Use it when a Nockup validation run, Launch Evidence case, VESL bridge proof, BYO fakenet submission, or support bundle needs to cite the exact upstream scenario vocabulary behind a test result.
 
 ## Nockchain Nockup Source Trace
@@ -261,6 +263,8 @@ The Nockup source trace pins scaffold and dependency behavior to exact upstream 
 
 - `/api/nockchain/nockup/source`
 - `/nockchain/nockup/source`
+
+Run `npm run check:nockchain-nockup-source-drift -- --json` to compare the commit-pinned Nockup scaffold, manifest, and templating source anchors against current upstream `nockchain/nockchain` master before Nockup validation receipts rely on them.
 
 Use it when Nockup-generated apps become Launch Evidence, VESL bridge, BYO fakenet, or NockApp test subjects and the receipt needs to preserve scaffold/template/dependency provenance without redistributing source artifacts.
 
@@ -364,7 +368,7 @@ The upstream watch board records the live GitHub API sources and the current obs
 
 Use it before interpreting fakenet failures or publishing receipts: if the pinned Nockchain commit/release no longer matches the observed upstream snapshot, or a high-severity watch item changed, refresh the relevant atlas before treating the evidence as current.
 
-Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, and public API source drift checks into one monitor report before treating the watch board as current.
+Run `npm run check:nockchain-upstream-drift -- --json` to aggregate the docs, Cargo workspace, crate manifest, bridge source, wallet source, release asset, PR radar, Zorp org, PMA source, mining source, runtime-safety source, public API source, Nockup source, and testkit/E2E source drift checks into one monitor report before treating the watch board as current.
 
 ### Drift Status (public freshness snapshot)
 
