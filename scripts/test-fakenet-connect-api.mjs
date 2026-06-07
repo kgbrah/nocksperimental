@@ -218,6 +218,7 @@ async function main() {
   }
 
   await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/fakenet/connect");
+  await assertMalformedFormDataRejected(POST, "https://nocksperimental.com/api/fakenet/connect");
 
   const registry = await loadTypeScriptModule("src/app/api/registry/route.ts").GET();
   const registryBody = await registry.json();
@@ -383,6 +384,23 @@ async function assertMalformedBodyRejected(POST, url) {
     const payload = await response.json();
     assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
   }
+}
+
+async function assertMalformedFormDataRejected(POST, url) {
+  // multipart/form-data with no boundary makes request.formData() reject; the form
+  // path must return 400 (not throw -> 500), matching the JSON path's behavior.
+  const response = await POST(
+    new Request(url, {
+      method: "POST",
+      headers: { "content-type": "multipart/form-data" },
+      body: "endpoint=127.0.0.1:5555"
+    })
+  );
+
+  assertEqual(response.status, 400, "malformed multipart body is rejected with 400");
+
+  const payload = await response.json();
+  assertEqual(typeof payload.error, "string", "malformed multipart body returns an error message");
 }
 
 function assertIncludes(actual, expected, label) {

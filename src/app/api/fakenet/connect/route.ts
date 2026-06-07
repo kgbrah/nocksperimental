@@ -49,7 +49,18 @@ async function parseRequestBody(request: Request): Promise<ParsedConnectionBody>
     contentType.includes("application/x-www-form-urlencoded") ||
     contentType.includes("multipart/form-data")
   ) {
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      // A malformed multipart body (e.g. missing/garbled boundary) makes
+      // request.formData() reject; return 400 to match the JSON path instead of
+      // letting the throw surface as an opaque 500.
+      return {
+        ok: false,
+        response: NextResponse.json({ error: "Malformed form-data request body." }, { status: 400 })
+      };
+    }
 
     return {
       ok: true,
