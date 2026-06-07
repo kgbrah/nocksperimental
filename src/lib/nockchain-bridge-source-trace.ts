@@ -237,7 +237,7 @@ const sourceAnchors = [
       "handoffWindowBlocks"
     ],
     riskPosture:
-      "caller_node_id is currently trusted because bridge nodes run on a VPN; receipts preserve the sequencer endpoint and caller identity so evidence carries that trust context."
+      "caller_node_id is currently trusted because bridge nodes run on a VPN; receipts preserve the sequencer endpoint and caller identity so evidence carries that trust context. Future gate: when bridge withdrawal receipts become independently signed, they MUST carry a machine-readable callerAuthBasis (the cryptographic reason the caller was authorized) so an offline verifier can assess caller authorization without trusting the VPN network perimeter."
   },
   {
     id: "sequencer-store",

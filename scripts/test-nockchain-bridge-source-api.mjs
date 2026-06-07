@@ -62,6 +62,9 @@ async function main() {
   const rpc = findAnchor(body, "sequencer-rpc-service");
   assertEqual(rpc.exposure, "api-node-private-sequencer", "sequencer RPC exposure");
   assertIncludes(rpc.riskPosture, "caller_node_id is currently trusted", "RPC risk posture names trusted caller");
+  // Future gate: the VPN-trust limitation is documented as a forward requirement so it
+  // cannot be silently forgotten when bridge withdrawal receipts are first signed.
+  assertIncludes(rpc.riskPosture, "callerAuthBasis", "RPC risk posture documents the future caller-auth gate");
 
   const store = findAnchor(body, "sequencer-store");
   assertIncludes(store.receiptFields, "singleFlightWithdrawal", "store maps single-flight field");
