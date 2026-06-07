@@ -6,6 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import { createRequire } from "node:module";
 
+import { presentSymbolsFor } from "./lib/source-drift-check.mjs";
+
 const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
@@ -146,9 +148,9 @@ async function fetchSourceSnapshot(sourcePath, ref, requiredSymbols) {
     rawUrl,
     sha256: createSha256(source),
     bytes: Buffer.byteLength(source, "utf8"),
-    presentSymbols: requiredSymbols.filter(
-      (symbol) => source.includes(symbol) || sourcePath.includes(symbol)
-    )
+    // Shared COR-H boundary-aware matcher (same as the engine + the other 7
+    // checkers): a short token like "mine" must not substring-match "mining".
+    presentSymbols: presentSymbolsFor(requiredSymbols, source, sourcePath)
   };
 }
 

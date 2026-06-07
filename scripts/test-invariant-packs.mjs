@@ -57,6 +57,19 @@ async function main() {
     assertEqual(Boolean(pack.upstreamBasis?.commit), true, `pack ${pack.id} pins upstream commit`);
   }
 
+  // Domain CONTRACT guard: the schema enum, the runner's PACK_DOMAINS allowlist,
+  // and the actual pack.domain values must describe the SAME set of domains. These
+  // three live in different files and are hand-synced; without this, a future 7th
+  // domain added to two of them but not the third would only surface as a first-run
+  // lab failure (run-lab rejects an out-of-enum pack.domain), bypassing this gate.
+  // Compared as sets (order-agnostic — introduction-date ordering is deliberate, so
+  // we do NOT require alphabetical/identical order). run-lab.mjs runs its CLI on
+  // import, so PACK_DOMAINS is parsed from source text rather than imported.
+  const runnerPackDomains = readPackDomainsFromRunner();
+  const packDomainValues = invariantPacks.map((pack) => pack.domain);
+  assertSameSet(domains, runnerPackDomains, "schema domain enum == run-lab PACK_DOMAINS");
+  assertSameSet(domains, packDomainValues, "schema domain enum == actual pack.domain values");
+
   const bridge = invariantPackForId("bridge-settlement-core-v0");
   assertEqual(bridge.domain, "bridge-settlement", "bridge pack domain");
   assertEqual(bridge.sourceAnchors.length >= 1, true, "bridge pack has source anchors");
@@ -206,6 +219,26 @@ function createModuleRequire(moduleDir) {
 
 function readText(relativePath) {
   return readFileSync(path.join(process.cwd(), relativePath), "utf8");
+}
+
+// Parse the PACK_DOMAINS literal from run-lab.mjs WITHOUT importing it (the runner
+// reads process.argv and calls main() at module scope, so importing would run the CLI).
+function readPackDomainsFromRunner() {
+  const source = readText("scripts/run-lab.mjs");
+  const match = source.match(/const PACK_DOMAINS\s*=\s*(\[[\s\S]*?\])/);
+  if (!match) {
+    throw new Error("could not locate the PACK_DOMAINS literal in scripts/run-lab.mjs");
+  }
+  return JSON.parse(match[1]);
+}
+
+function assertSameSet(actual, expected, label) {
+  const a = [...new Set(actual)].sort();
+  const b = [...new Set(expected)].sort();
+  const equal = a.length === b.length && a.every((value, index) => value === b[index]);
+  if (!equal) {
+    throw new Error(`${label}: sets differ — ${JSON.stringify(a)} vs ${JSON.stringify(b)}`);
+  }
 }
 
 function assertFile(relativePath) {
