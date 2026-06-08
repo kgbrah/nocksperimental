@@ -35,7 +35,10 @@ export function authenticateRegistryUpdate(request: Request): RegistryUpdateAuth
 
   const legacyKey = process.env.NOCKS_REGISTRY_UPDATE_KEY;
   if (legacyKey && safeCompareSecrets(legacyKey, requestKey)) {
-    return { keyId: request.headers.get("x-nocks-registry-key-id") ?? "legacy" };
+    // Do NOT echo the caller-supplied x-nocks-registry-key-id as the audited key id.
+    // Legacy single-secret mode has no per-request key identity to verify, so record a
+    // fixed sentinel rather than attacker-controlled attribution in the audit chain.
+    return { keyId: "legacy" };
   }
 
   return null;

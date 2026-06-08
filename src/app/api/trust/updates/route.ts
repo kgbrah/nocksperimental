@@ -78,7 +78,11 @@ export async function POST(request: Request) {
   const auditPath = process.env.NOCKS_REGISTRY_UPDATE_AUDIT_PATH;
   const auditLog = auditPath ? readTrustUpdateAuditLog(auditPath) : createTrustUpdateAuditLog();
   const auditEvent = createTrustUpdateAuditEvent({
-    actor: request.headers.get("x-nocks-registry-actor") ?? "registry-api",
+    // Verified attribution only: attribute the audited write to the AUTHENTICATED key,
+    // never to the caller-supplied x-nocks-registry-actor header — an attacker holding
+    // a valid write credential could otherwise forge actor attribution into the
+    // tamper-evident audit chain.
+    actor: auth.keyId,
     entry,
     keyId: auth.keyId,
     persisted: Boolean(writePath),

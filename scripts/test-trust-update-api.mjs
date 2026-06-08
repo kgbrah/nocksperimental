@@ -75,7 +75,9 @@ async function main() {
     assertEqual(persistedBody.persisted, true, "append API persists when write path is configured");
     assertEqual(persistedBody.storage.writePath, writePath, "append API storage write path");
     assertEqual(persistedBody.audit.persisted, true, "append API persists audit event");
-    assertEqual(persistedBody.audit.event.actor, "test-operator", "append API audit actor");
+    // Audit actor is the VERIFIED key (legacy sentinel here), never the caller-supplied
+    // x-nocks-registry-actor header — even though createRequest sent "test-operator".
+    assertEqual(persistedBody.audit.event.actor, "legacy", "append API audit actor is the verified key, not the client header");
     assertEqual(persistedBody.audit.event.updateId, "update-score-history-v1", "append API audit update id");
     assertEqual(persistedBody.audit.event.eventHash.startsWith("sha256:"), true, "append API audit hash");
     assertEqual(writtenLog.chain.entryCount, 5, "persisted file entry count");
@@ -106,6 +108,27 @@ async function main() {
     assertEqual(secondWrittenLog.chain.latestRoot, "root-score-history-v2", "second persisted file root");
     assertEqual(secondAuditLog.events.length, 2, "second audit file event count");
     assertEqual(secondAuditLog.events.at(-1).updateId, "update-score-history-v2", "second audit update id");
+
+    // Security (R2): in legacy mode, spoofed x-nocks-registry-key-id and
+    // x-nocks-registry-actor headers must NOT become verified attribution in the
+    // tamper-evident audit chain — both collapse to the "legacy" sentinel.
+    const forged = await POST(
+      createRequest(
+        {
+          ...payload,
+          id: "update-score-history-v3",
+          rootHash: "root-score-history-v3",
+          summary: "Spoofed-header append (legacy mode)."
+        },
+        "test-registry-key",
+        "spoofed-actor",
+        "spoofed-admin-key"
+      )
+    );
+    const forgedBody = await forged.json();
+    assertEqual(forged.status, 200, "legacy-mode forged-header append status");
+    assertEqual(forgedBody.audit.event.keyId, "legacy", "legacy mode ignores spoofed x-nocks-registry-key-id");
+    assertEqual(forgedBody.audit.event.actor, "legacy", "audit actor is the verified key, not the spoofed actor header");
 
     delete process.env.NOCKS_REGISTRY_UPDATE_KEY;
     delete process.env.NOCKS_REGISTRY_UPDATE_WRITE_PATH;
