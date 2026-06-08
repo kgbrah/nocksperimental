@@ -67,6 +67,24 @@ async function assertTrustUpdateVerifier() {
   assertEqual(verifiedBody.match.links.chainApi, "https://nocksperimental.com/api/trust/updates", "chain API link");
   assertEqual(verifiedBody.match.links.targetApi, "https://nocksperimental.com/api/trust/score-history", "target API link");
 
+  // Worker-runtime resilience: a base64 signature containing '+' arrives with the '+'
+  // turned into a space after URL query decoding. Place the signature literally in the
+  // raw query (so reading it yields the space-corrupted form) and assert the route
+  // restores it — signatureMatched and verified must still hold. (Regression: real
+  // Ed25519 sigs contain '+'; the old placeholder did not, so this only surfaced on
+  // the Worker runtime after the switch to real signatures.)
+  const rawTransportUrl =
+    "https://nocksperimental.com/api/trust/updates/verify" +
+    "?updateId=update-score-history-v0" +
+    `&entryHash=${encodeURIComponent("sha256:append-score-history-v0")}` +
+    "&rootHash=root-score-history-v0" +
+    `&issuerKeyId=${scoreEntry.signature.issuerKeyId}` +
+    `&signature=${scoreEntry.signature.signature}`;
+  const transported = await GET(new Request(rawTransportUrl));
+  const transportedBody = await transported.json();
+  assertEqual(transportedBody.checks.signatureMatched, true, "signatureMatched survives '+'->space query transport");
+  assertEqual(transportedBody.verified, true, "verified survives a base64 '+' in the signature query param");
+
   const badRoot = await GET(createRequest({
     updateId: "update-score-history-v0",
     entryHash: "sha256:append-score-history-v0",
