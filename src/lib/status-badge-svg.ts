@@ -40,6 +40,10 @@ export function renderStatusBadgeSvg(label: string, message: string, color: stri
   const labelXml = escapeXml(label);
   const messageXml = escapeXml(message);
   const ariaLabel = escapeXml(`${label}: ${message}`);
+  // `color` is interpolated into a raw fill="" attribute. Today every caller passes
+  // colorForStatus() (a fixed hex), but validate defensively so a future caller wiring
+  // a dynamic value can't break out of the attribute (e.g. '#000"/><script>...').
+  const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(color) ? color : "#6a737d";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="20" role="img" aria-label="${ariaLabel}">
   <title>${ariaLabel}</title>
@@ -50,7 +54,7 @@ export function renderStatusBadgeSvg(label: string, message: string, color: stri
   <clipPath id="r"><rect width="${totalW}" height="20" rx="3" fill="#fff"/></clipPath>
   <g clip-path="url(#r)">
     <rect width="${labelW}" height="20" fill="#555"/>
-    <rect x="${labelW}" width="${messageW}" height="20" fill="${color}"/>
+    <rect x="${labelW}" width="${messageW}" height="20" fill="${safeColor}"/>
     <rect width="${totalW}" height="20" fill="url(#s)"/>
   </g>
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="110">

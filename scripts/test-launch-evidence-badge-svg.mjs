@@ -37,11 +37,28 @@ async function main() {
   assertIncludes(svg, 'role="img"', "is an accessible image");
   assertIncludes(svg, 'aria-label="launch evidence: verified"', "has an aria-label");
 
-  // XML-special characters must be escaped so the SVG is well-formed.
-  const escaped = badge.renderStatusBadgeSvg("a&b", "<x>", "#000000");
+  // Pin the layout geometry for a known input so a regression in sectionWidth or the
+  // centering math (which a substring check would miss) is caught: sectionWidth math
+  // gives label=115, message=66, total=181; message rect x=115; message text x=1480.
+  assertIncludes(svg, 'width="181"', "root width matches computed geometry");
+  assertIncludes(svg, '<rect x="115" width="66"', "message section rect geometry");
+  assertIncludes(svg, 'x="1480"', "message text is centered at the computed offset");
+  assertIncludes(svg, 'transform="scale(.1)"', "uses the crisp-text scale trick");
+
+  // XML-special characters must be escaped so the SVG is well-formed — including the
+  // attribute-quote characters (" and '), not just & and <>.
+  const escaped = badge.renderStatusBadgeSvg("a&b\"q'", "<x>\"'", "#000000");
   assertIncludes(escaped, "a&amp;b", "ampersand escaped in label");
   assertIncludes(escaped, "&lt;x&gt;", "angle brackets escaped in message");
+  assertIncludes(escaped, "&quot;", "double-quote escaped");
+  assertIncludes(escaped, "&apos;", "apostrophe escaped");
   assertTrue(!escaped.includes("<x>"), "raw unescaped message must not appear");
+
+  // The `color` argument must never be able to break out of the fill="" attribute:
+  // a non-hex value falls back to a safe neutral gray.
+  const malicious = badge.renderStatusBadgeSvg("launch evidence", "verified", '#000"/><script>alert(1)</script>');
+  assertTrue(!malicious.includes("<script>"), "malicious color cannot inject markup");
+  assertIncludes(malicious, 'fill="#6a737d"', "non-hex color falls back to neutral gray");
 
   // 2) Route behavior over real fixture cases.
   const launchEvidence = loadTypeScriptModule("src/lib/launch-evidence.ts");
