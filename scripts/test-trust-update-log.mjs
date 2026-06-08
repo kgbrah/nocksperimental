@@ -21,6 +21,7 @@ async function main() {
     trustUpdateChainSummary,
     trustUpdateEntries,
     trustUpdateLog,
+    trustUpdateSignedPayload,
     trustUpdatesForTarget,
     validateTrustUpdateChain
   } = loadTypeScriptModule("src/lib/trust-update-log.ts");
@@ -90,10 +91,34 @@ async function main() {
   assertEqual(appendedEntry.signature.algorithm, "ed25519-devnet-v0", "default signature algorithm");
   assertEqual(appendedEntry.signature.verificationStatus, "valid", "default signature status");
   assertEqual(appendedEntry.entryHash.startsWith("sha256:"), true, "generated entry hash prefix");
+  // The appended signature must be a REAL Ed25519 signature (not the old placeholder
+  // string) that verifies against the issuer key's public key, and tamper-evident.
   assertEqual(
     appendedEntry.signature.signature.startsWith("ed25519-dev-sig-"),
+    false,
+    "appended signature is not the old placeholder string"
+  );
+  const crypto = loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
+  const appendedSeedSpki = crypto.publicKeySpkiFromSeed(
+    crypto.DEV_ISSUER_SEEDS[appendedEntry.signature.issuerKeyId]
+  );
+  assertEqual(
+    crypto.verifyBadgeSignature({
+      payload: trustUpdateSignedPayload(appendedEntry),
+      signature: appendedEntry.signature.signature,
+      publicKeySpkiBase64: appendedSeedSpki
+    }),
     true,
-    "generated signature prefix"
+    "appended Ed25519 signature verifies against the issuer key"
+  );
+  assertEqual(
+    crypto.verifyBadgeSignature({
+      payload: { ...trustUpdateSignedPayload(appendedEntry), summary: "tampered" },
+      signature: appendedEntry.signature.signature,
+      publicKeySpkiBase64: appendedSeedSpki
+    }),
+    false,
+    "tampering a signed field fails Ed25519 verification"
   );
   assertEqual(appendedValidation.isAppendOnly, true, "appended log remains append-only");
   assertEqual(appendedValidation.entryCount, 5, "appended validation count");

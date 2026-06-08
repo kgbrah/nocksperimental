@@ -1,6 +1,12 @@
 import trustUpdateLogData from "@/data/trust-update-log.json";
 import { createHash } from "node:crypto";
 import { canonicalStringify } from "@/lib/canonical-stringify";
+import {
+  badgeIssuerSigningSeed,
+  publicKeySpkiFromSeed,
+  signBadgePayload,
+  verifyBadgeSignature
+} from "@/lib/trust-badge-crypto";
 
 export type TrustUpdateAction =
   | "registry-snapshot"
@@ -106,19 +112,37 @@ export function appendTrustUpdateToLog(
     ...entryWithoutSignature,
     signature: signatureMetadata
   })}`;
-  const signatureDigest = createDevHash({
+  // Real Ed25519 signature over the canonical signed payload (content + chain
+  // position + issuer identity). Deterministic from the issuer seed, so the
+  // regeneration script reproduces identical signatures. verificationStatus is the
+  // honest round-trip result against the issuer's published key, not an assumed
+  // "valid".
+  const signedPayload = trustUpdateSignedPayload({
+    ...entryWithoutSignature,
     entryHash,
-    rootHash: input.rootHash,
-    previousRoot,
-    issuerKeyId: signatureMetadata.issuerKeyId,
-    signatureAlgorithm: signatureMetadata.algorithm
+    signature: signatureMetadata
   });
+  // Sign with the issuer seed and self-check against the public key that seed
+  // derives (avoids importing trust-issuer-keys here, which would create a
+  // registry-manifest -> trust-update-log import cycle). The verifier endpoint
+  // re-checks committed entries against the PUBLISHED key for the keyId, which is
+  // where a key-mismatch / tamper is actually caught.
+  const seed = badgeIssuerSigningSeed(signatureMetadata.issuerKeyId);
+  const signature = signBadgePayload(signedPayload, seed).signature;
+  const verificationStatus: TrustUpdateVerificationStatus = verifyBadgeSignature({
+    payload: signedPayload,
+    signature,
+    publicKeySpkiBase64: publicKeySpkiFromSeed(seed)
+  })
+    ? "valid"
+    : "invalid";
   const entry: TrustUpdateEntry = {
     ...entryWithoutSignature,
     entryHash,
     signature: {
       ...signatureMetadata,
-      signature: `ed25519-dev-sig-${signatureDigest.slice(0, 32)}`
+      signature,
+      verificationStatus
     }
   };
 
@@ -191,4 +215,31 @@ function sortTrustUpdateEntries(log: TrustUpdateLog) {
 
 export function createDevHash(value: unknown) {
   return createHash("sha256").update(canonicalStringify(value)).digest("hex");
+}
+
+// Canonical signed payload for a trust-update entry: every content + chain-position
+// + issuer-identity field EXCEPT the mutable signature string and its derived
+// verificationStatus. Signing over this binds the entry — tampering any field
+// invalidates the Ed25519 signature. Used by BOTH the signer (append +
+// scripts/sign-trust-update-log.mjs) and verifyTrustUpdateEntry so they reconstruct
+// byte-identical signed bytes.
+export function trustUpdateSignedPayload(
+  entry: Omit<TrustUpdateEntry, "signature"> & {
+    signature: Pick<TrustUpdateEntry["signature"], "issuerKeyId" | "algorithm">;
+  }
+) {
+  return {
+    sequence: entry.sequence,
+    id: entry.id,
+    action: entry.action,
+    target: entry.target,
+    targetPath: entry.targetPath,
+    recordedAt: entry.recordedAt,
+    previousRoot: entry.previousRoot,
+    entryHash: entry.entryHash,
+    rootHash: entry.rootHash,
+    summary: entry.summary,
+    issuerKeyId: entry.signature.issuerKeyId,
+    algorithm: entry.signature.algorithm
+  };
 }

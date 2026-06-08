@@ -4,9 +4,12 @@ import {
 } from "@/lib/registry-manifest";
 import {
   trustUpdateEntries,
+  trustUpdateSignedPayload,
   type TrustUpdateEntry,
   validateTrustUpdateChain
 } from "@/lib/trust-update-log";
+import { verifyBadgeSignature } from "@/lib/trust-badge-crypto";
+import { publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 
 type TrustUpdateVerificationInput = {
   updateId?: string | null;
@@ -35,13 +38,23 @@ export function verifyTrustUpdateEntry({
   const rootHashMatched = rootHash ? entry?.rootHash === rootHash : true;
   const signatureMatched = signature ? entry?.signature.signature === signature : true;
   const issuerKeyMatched = issuerKeyId ? entry?.signature.issuerKeyId === issuerKeyId : true;
-  // NOTE: this is the signature status RECORDED at append time and anchored in the
-  // append-only chain — NOT a live Ed25519 verification of entry.signature against
-  // the issuer key (v0 carries dev placeholder signatures). The response discloses
-  // this via `signatureVerification` so `signatureValid`/`verified` are never
-  // mistaken for a live cryptographic attestation. Real Ed25519 verification (sign
-  // canonical entry bytes at append time, verify here) is a tracked follow-up.
-  const signatureValid = entry?.signature.verificationStatus === "valid";
+  // Live Ed25519 verification: reconstruct the canonical signed payload from the
+  // entry and verify entry.signature.signature against the issuer's PUBLISHED public
+  // key (publicKeyForKeyId — retired keys still resolve so they verify the entries
+  // they signed). This is a real cryptographic check, not a read of the recorded
+  // verificationStatus: tampering any signed field, swapping the signature, or
+  // pointing at the wrong key fails it. publicKeyResolved distinguishes "no key
+  // published for this keyId" (cannot verify) from "verified false".
+  const publicKeySpki = entry ? publicKeyForKeyId(entry.signature.issuerKeyId) : undefined;
+  const signatureValid = Boolean(
+    entry &&
+      publicKeySpki &&
+      verifyBadgeSignature({
+        payload: trustUpdateSignedPayload(entry),
+        signature: entry.signature.signature,
+        publicKeySpkiBase64: publicKeySpki
+      })
+  );
   const exactUpdateMatch = Boolean(
     entry &&
       entryHashMatched &&
@@ -57,15 +70,15 @@ export function verifyTrustUpdateEntry({
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/trust/updates/verify`,
     verified: exactUpdateMatch,
-    // Honest disclosure: v0 confirms the entry exists in the append-only chain and
-    // that the supplied hashes/signature/issuer-key match the recorded entry; it
-    // does NOT perform a live signature verification. Surfaced so integrators do not
-    // read `verified`/`signatureValid` as a live Ed25519 attestation.
+    // signatureValid below is a live Ed25519 verification against the issuer's
+    // published key — surfaced explicitly so integrators can see exactly what was
+    // checked and against which key.
     signatureVerification: {
-      performed: false,
-      mode: "recorded-chain-status",
-      recordedStatus: entry?.signature.verificationStatus ?? null,
-      note: "signatureValid reflects the status recorded at append time and anchored in the append-only chain; v0 does not perform a live Ed25519 signature verification."
+      performed: true,
+      mode: "ed25519",
+      publicKeyResolved: Boolean(publicKeySpki),
+      issuerKeyId: entry?.signature.issuerKeyId ?? null,
+      note: "signatureValid is a live Ed25519 verification of entry.signature over the canonical signed payload, against the published public key for the entry's issuerKeyId."
     },
     query: {
       updateId: updateId ?? null,
@@ -82,7 +95,7 @@ export function verifyTrustUpdateEntry({
       issuerKeyMatched,
       chainAppendOnly: validation.isAppendOnly,
       signatureValid,
-      signatureChecked: false,
+      signatureChecked: true,
       exactUpdateMatch
     },
     match: exactUpdateMatch && entry

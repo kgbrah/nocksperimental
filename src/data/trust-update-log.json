@@ -22,7 +22,7 @@
       "signature": {
         "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
         "algorithm": "ed25519-devnet-v0",
-        "signature": "ed25519-dev-sig-append-trust-registry-genesis-v0",
+        "signature": "Olou9fxSE2AzBe72AvhOveYIuieydFmjzk3AvcQickD9Q7WZvoDjLlAxzD5g1Cick46T7OJuuDt4er9dUNNxCw==",
         "verificationStatus": "valid"
       }
     },
@@ -40,7 +40,7 @@
       "signature": {
         "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
         "algorithm": "ed25519-devnet-v0",
-        "signature": "ed25519-dev-sig-append-badge-issuance-v0",
+        "signature": "4TNYjAvZ4K1rqQ8uY9ruqzI5J4RilCpznIrxIzUn9GqcisZeAjCSfkOh+SLh51pAbrRuZONgou3uIOnber9VBA==",
         "verificationStatus": "valid"
       }
     },
@@ -58,7 +58,7 @@
       "signature": {
         "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
         "algorithm": "ed25519-devnet-v0",
-        "signature": "ed25519-dev-sig-append-badge-revocation-v0",
+        "signature": "N2VsqmmmNs1+cnNtLTI6o/Bq8lGirIqQfD0YRWAJP2CKBW4br6uBQWRcoPk3UfzfpbxCMfrz851NuoAOzOgGAw==",
         "verificationStatus": "valid"
       }
     },
@@ -76,7 +76,7 @@
       "signature": {
         "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
         "algorithm": "ed25519-devnet-v0",
-        "signature": "ed25519-dev-sig-append-score-history-v0",
+        "signature": "kFuHQiWgkAvpRaEBzUoKX9SczZ4qvfsI92RhKoZ+j3c7fwIlNAzgHypAH9WETxv0YQ8WaJhy4lXfya4oAp2HBQ==",
         "verificationStatus": "valid"
       }
     }

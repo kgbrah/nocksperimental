@@ -156,6 +156,7 @@
     "test:trust-badge-freshness": "node scripts/test-trust-badge-freshness.mjs",
     "verify:trust-badges": "npm run test:trust-badge-crypto && npm run test:trust-issuer-keys && npm run test:trust-keys-api && npm run test:trust-badge-freshness && npm run test:trust-signals && npm run test:badge-verify-api && npm run test:badge-verification-api && npm run test:badge-embed-api && npm run test:badge-detail-page && npm run test:nocks-verify-cli",
     "trust:badges:sign": "node scripts/sign-trust-badges.mjs",
+    "trust:updates:sign": "node scripts/sign-trust-update-log.mjs",
     "verify:portable": "node scripts/nocks-verify.mjs",
     "test:nocks-verify-cli": "node scripts/test-nocks-verify-cli.mjs",
     "test:badge-detail-page": "node scripts/test-badge-detail-page.mjs",
