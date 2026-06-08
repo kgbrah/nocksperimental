@@ -29,7 +29,7 @@ main().catch((error) => {
 
 async function main() {
   await assertStoreCreateOnly();
-  await assertFakenetCollisionDoesNotClobber();
+  await assertFakenetReceiptIdReflectsBody();
   console.log("receipt create-only: all assertions passed");
 }
 
@@ -78,44 +78,53 @@ async function assertStoreCreateOnly() {
   }
 }
 
-async function assertFakenetCollisionDoesNotClobber() {
+async function assertFakenetReceiptIdReflectsBody() {
   const { POST } = loadTypeScriptModule("src/app/api/fakenet/evidence/submit/route.ts");
   const url = "https://nocksperimental.com/api/fakenet/evidence/submit";
   const endpoint = "127.0.0.1:5555";
   const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
-  const reportId = "lab_create-only-collision_submit";
+  const reportId = "lab_create-only-body_submit";
 
-  // Victim submission and attacker submission share endpoint/wallet/reportId (the only
-  // fields that derive the fakenet receiptId) but differ in everything else.
+  // R1b: the fakenet receiptId is now derived from the FULL submission body. Two
+  // submissions sharing endpoint/wallet/reportId but differing in a persisted field
+  // (fixtureId/app) no longer collide on the same content-addressed key — the coarse
+  // {endpoint, walletAddress, reportIds} key that enabled the overwrite is gone.
   const victim = fakenetSubmission({ endpoint, walletAddress, reportId, fixtureId: "VICTIM-FIXTURE", appSlug: "victim-app" });
-  const attacker = fakenetSubmission({ endpoint, walletAddress, reportId, fixtureId: "ATTACKER-FIXTURE", appSlug: "attacker-app" });
+  const other = fakenetSubmission({ endpoint, walletAddress, reportId, fixtureId: "OTHER-FIXTURE", appSlug: "other-app" });
 
   const victimReceipt = await postJson(POST, url, victim);
+  const otherReceipt = await postJson(POST, url, other);
   assertEqual(victimReceipt.accepted, true, "victim fakenet submission accepted");
-  const receiptId = victimReceipt.receiptId;
-  assertTrue(Boolean(receiptId), "victim submission produced a receiptId");
-
-  const attackerReceipt = await postJson(POST, url, attacker);
-  // Same derived receiptId (collision), but create-only must keep the victim's content.
-  assertEqual(attackerReceipt.receiptId, receiptId, "attacker submission collides on the same receiptId");
+  assertEqual(otherReceipt.accepted, true, "second fakenet submission accepted");
+  assertTrue(Boolean(victimReceipt.receiptId), "victim submission produced a receiptId");
   assertTrue(
-    JSON.stringify(attackerReceipt).includes("VICTIM-FIXTURE"),
-    "colliding submission returns the victim's receipt content (not clobbered)"
+    victimReceipt.receiptId !== otherReceipt.receiptId,
+    "different submission bodies derive DIFFERENT receiptIds (no coarse-key collision)"
   );
+  // The receiptId is a 256-bit secureId digest, not the old 8-hex stableId.
   assertTrue(
-    !JSON.stringify(attackerReceipt).includes("ATTACKER-FIXTURE"),
-    "attacker's forged content did not replace the stored receipt"
+    /^fakenet_submission_[0-9a-f]{64}$/.test(victimReceipt.receiptId),
+    "receiptId is a 256-bit secureId digest"
+  );
+
+  // Idempotent create-only: resubmitting the EXACT victim body lands on the same key
+  // and returns the existing receipt — the store never overwrites it.
+  const resubmit = await postJson(POST, url, victim);
+  assertEqual(resubmit.receiptId, victimReceipt.receiptId, "identical resubmission keeps the same receiptId");
+  assertTrue(
+    JSON.stringify(resubmit).includes("VICTIM-FIXTURE"),
+    "identical resubmission returns the original (immutable) receipt"
   );
 
   const { GET: getReceipt } = loadTypeScriptModule("src/app/api/fakenet/evidence/receipts/[receiptId]/route.ts");
   const detail = await (
-    await getReceipt(new Request(`https://nocksperimental.com/api/fakenet/evidence/receipts/${receiptId}`), {
-      params: { receiptId }
+    await getReceipt(new Request(`https://nocksperimental.com/api/fakenet/evidence/receipts/${victimReceipt.receiptId}`), {
+      params: { receiptId: victimReceipt.receiptId }
     })
   ).json();
   assertTrue(
-    JSON.stringify(detail).includes("VICTIM-FIXTURE") && !JSON.stringify(detail).includes("ATTACKER-FIXTURE"),
-    "citable receipt URL still serves the victim's original signed evidence"
+    JSON.stringify(detail).includes("VICTIM-FIXTURE") && !JSON.stringify(detail).includes("OTHER-FIXTURE"),
+    "citable receipt URL serves the victim's evidence (the other body got its own separate id)"
   );
 }
 

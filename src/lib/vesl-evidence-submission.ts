@@ -11,7 +11,7 @@ import {
   type EvidenceReceiptSignature
 } from "@/lib/evidence-receipt-signing";
 import { containsSecretLikeField, redactSecretFields } from "@/lib/secret-field-scrubber";
-import { stableId } from "@/lib/stable-id";
+import { secureId, stableId } from "@/lib/stable-id";
 
 export type VeslEvidenceSubmissionInput = {
   connection?: {
@@ -108,8 +108,10 @@ export function verifyVeslEvidenceSubmission(input: VeslEvidenceSubmissionInput)
     checks.fakenetAccepted;
   const errors = collectErrors(checks);
   const generatedAt = latestTimestamp(effects) ?? new Date(0).toISOString();
-  const evidenceHash = stableId(JSON.stringify({ connection, verifyJam: input.verifyJam ?? null, effects, peeks, hull: input.hull ?? null, fakenet: input.fakenet ?? null }));
-  const receiptId = accepted ? `vesl_submission_${stableId(JSON.stringify({ connection, evidenceHash }))}` : null;
+  // Collision-resistant (256-bit) so a content-addressed, create-only receipt key
+  // cannot be targeted by a crafted second submission (see stable-id.ts).
+  const evidenceHash = secureId(JSON.stringify({ connection, verifyJam: input.verifyJam ?? null, effects, peeks, hull: input.hull ?? null, fakenet: input.fakenet ?? null }));
+  const receiptId = accepted ? `vesl_submission_${secureId(JSON.stringify({ connection, evidenceHash }))}` : null;
   const status = verified ? "verified" : accepted ? "attention" : "rejected";
   const signature = signVeslReceipt(
     accepted && receiptId

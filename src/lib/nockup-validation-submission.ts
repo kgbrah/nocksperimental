@@ -10,7 +10,7 @@ import {
   type EvidenceReceiptSignature
 } from "@/lib/evidence-receipt-signing";
 import { containsSecretLikeField } from "@/lib/secret-field-scrubber";
-import { stableId } from "@/lib/stable-id";
+import { secureId, stableId } from "@/lib/stable-id";
 
 type NockupValidationInput = {
   project?: {
@@ -104,8 +104,10 @@ export function verifyNockupValidationSubmission(input: NockupValidationInput) {
     checks.fakenetAccepted;
   const errors = collectErrors(checks);
   const generatedAt = latestTimestamp(commands) ?? new Date(0).toISOString();
-  const evidenceHash = stableId(JSON.stringify({ project, commands, artifacts, fakenet }));
-  const receiptId = accepted ? `nockup_validation_${stableId(JSON.stringify({ project, evidenceHash }))}` : null;
+  // Collision-resistant (256-bit) so a content-addressed, create-only receipt key
+  // cannot be targeted by a crafted second submission (see stable-id.ts).
+  const evidenceHash = secureId(JSON.stringify({ project, commands, artifacts, fakenet }));
+  const receiptId = accepted ? `nockup_validation_${secureId(JSON.stringify({ project, evidenceHash }))}` : null;
   const status = verified ? "verified" : accepted ? "attention" : "rejected";
   const signature = signNockupReceipt(
     accepted && receiptId

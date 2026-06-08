@@ -11,7 +11,7 @@ import {
   verifyEvidenceReceiptSignature,
   type EvidenceReceiptSignature
 } from "@/lib/evidence-receipt-signing";
-import { stableId } from "@/lib/stable-id";
+import { secureId } from "@/lib/stable-id";
 
 type FakenetEvidenceSubmissionInput = {
   connection?: {
@@ -64,7 +64,14 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
   const errors = collectErrors(checks);
   const generatedAt = latestByEpoch(summaries.map((summary) => summary.generatedAt)) ?? new Date(0).toISOString();
 
-  const receiptId = accepted ? `fakenet_submission_${stableId(JSON.stringify({ endpoint, walletAddress, reportIds }))}` : null;
+  // receiptId is content-addressed and the receipt store is create-only, so it MUST
+  // reflect the full submission body (a collision-resistant secureId over the persisted
+  // report summaries) — not just {endpoint, walletAddress, reportIds}, which excluded
+  // every differentiating field and let a forged body target an existing receipt key.
+  const evidenceHash = secureId(JSON.stringify({ endpoint, walletAddress, reports }));
+  const receiptId = accepted
+    ? `fakenet_submission_${secureId(JSON.stringify({ endpoint, walletAddress, evidenceHash }))}`
+    : null;
   const status = verified ? "verified" : accepted ? "attention" : "rejected";
   const signature = signFakenetReceipt(
     accepted && receiptId
@@ -96,7 +103,8 @@ export function verifyFakenetEvidenceSubmission(input: FakenetEvidenceSubmission
       failedReports: countReportsByStatus(reports, "fail"),
       warningReports: countReportsByStatus(reports, "warn"),
       endpoint,
-      walletAddress
+      walletAddress,
+      evidenceHash
     },
     nockchain: createNockchainReceiptProvenance({
       network: profile.connection.networkId,
