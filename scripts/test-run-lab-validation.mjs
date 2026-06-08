@@ -15,9 +15,45 @@ main();
 function main() {
   parityWithCatalog();
   invariantRequiredFieldRegressions();
+  expectRejectedRegressions();
   enumRegressions();
   packDomainRegressions();
   packageWiring();
+}
+
+// expectRejected (negative-control) inversion, both directions, under --strict:
+// a CAUGHT exploit (a failing invariant) must read pass/exit 0; a MISSED exploit
+// (everything passes) must read fail/exit 1.
+function expectRejectedRegressions() {
+  const base = JSON.parse(readText("fixtures/hello-counter.lab.json"));
+  delete base.invariantPacks;
+  const tempDir = mkdtempSync(path.join(tmpdir(), "nock-expect-rejected-"));
+  try {
+    // MISS -> fail: expectRejected but the fixture passes (exploit not caught).
+    const missPath = path.join(tempDir, "miss.lab.json");
+    writeFileSync(missPath, JSON.stringify({ ...base, id: "expect-rejected-miss", expectRejected: true }, null, 2));
+    const miss = runLab([missPath, "--strict"]);
+    assertEqual(miss.status, 1, "expectRejected fixture that does NOT catch the exploit exits 1");
+    assertIncludes(miss.stdout, '"rawStatus": "pass"', "expectRejected miss carries rawStatus pass");
+
+    // CATCH -> pass: expectRejected with a deliberately failing invariant (exploit caught).
+    const caughtFixture = {
+      ...base,
+      id: "expect-rejected-catch",
+      expectRejected: true,
+      invariants: [
+        ...base.invariants,
+        { id: "force-fail", title: "forced fail", severity: "critical", kind: "numeric-min", path: "counter", min: 999999 }
+      ]
+    };
+    const caughtPath = path.join(tempDir, "catch.lab.json");
+    writeFileSync(caughtPath, JSON.stringify(caughtFixture, null, 2));
+    const caught = runLab([caughtPath, "--strict"]);
+    assertEqual(caught.status, 0, "expectRejected fixture that catches the exploit exits 0 (inverted)");
+    assertIncludes(caught.stdout, '"rawStatus": "fail"', "expectRejected catch carries rawStatus fail");
+  } finally {
+    rmSync(tempDir, { force: true, recursive: true });
+  }
 }
 
 // Item 3: the runner's per-kind required-fields table must match the canonical

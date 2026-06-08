@@ -82,7 +82,8 @@
             "array-length-min",
             "array-length-max",
             "temporal-ordering",
-            "custom-function"
+            "custom-function",
+            "monotonic-strict"
           ]
         },
         "path": { "type": "string" },
@@ -146,6 +147,10 @@
         {
           "if": { "properties": { "kind": { "const": "custom-function" } } },
           "then": { "required": ["fn", "path"] }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "monotonic-strict" } } },
+          "then": { "required": ["path"] }
         }
       ]
     }

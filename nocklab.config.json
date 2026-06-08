@@ -45,6 +45,14 @@
     {
       "path": "fixtures/mining-pow.lab.json",
       "slug": "mining-pow"
+    },
+    {
+      "path": "fixtures/forfeit-flip-fairness.lab.json",
+      "slug": "forfeit-flip-fairness"
+    },
+    {
+      "path": "fixtures/attack-peek-leaks-seed.lab.json",
+      "slug": "attack-peek-leaks-seed"
     }
   ]
 }
