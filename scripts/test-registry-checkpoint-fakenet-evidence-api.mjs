@@ -29,7 +29,7 @@ async function main() {
   assertEqual(body.fakenetEvidence.endpoint, "127.0.0.1:5555", "local fakenet endpoint");
   assertEqual(
     body.fakenetEvidence.walletAddress,
-    "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+    "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
     "local fakenet wallet"
   );
   assertEqual(body.links.fakenetEvidence, "https://nocksperimental.com/api/fakenet/evidence", "fakenet evidence link");

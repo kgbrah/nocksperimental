@@ -88,7 +88,7 @@ type AvailablePeeksReport = {
 
 const defaultEndpoint = "127.0.0.1:5555";
 const defaultWalletAddress =
-  "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
 const defaultNetworkId = "local-fakenet";
 
 const testDefinitions = [

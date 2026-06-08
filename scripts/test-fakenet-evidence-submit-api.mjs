@@ -16,7 +16,7 @@ main().catch((error) => {
 
 async function main() {
   const { POST } = loadTypeScriptModule("src/app/api/fakenet/evidence/submit/route.ts");
-  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
   const healthReport = createReport({
     reportId: "lab_local-fakenet-health-v0_submit",
     fixtureId: "local-fakenet-health-v0",

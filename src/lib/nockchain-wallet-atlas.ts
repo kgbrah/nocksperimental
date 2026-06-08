@@ -6,7 +6,7 @@ import {
 import { nockchainUpstreamIntelligence } from "@/lib/nockchain-upstream";
 
 const localFakenetWalletAddress =
-  "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
 const localFakenetEndpoint = "127.0.0.1:5555";
 const walletTransactionSourceCommit = "33ba97b1e206dd89b15c61b72b7802caf2136c18";
 const walletTransactionReleaseBuild = `build-${walletTransactionSourceCommit}`;

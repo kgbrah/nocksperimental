@@ -238,7 +238,7 @@ function receiptSignedPayload(receipt, label) {
 }
 
 function createFakenetInput() {
-  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
   const endpoint = "127.0.0.1:5555";
 
   return {
@@ -420,7 +420,7 @@ function createNockupInput() {
     fakenet: {
       endpoint: "http://127.0.0.1:5555",
       networkId: "local-fakenet",
-      walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      walletAddress: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
       accepted: true
     }
   };

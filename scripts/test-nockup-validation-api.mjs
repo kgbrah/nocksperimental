@@ -64,7 +64,7 @@ async function main() {
   assertEqual(receipt.nockchain.protocol.next.codename, "Nous", "receipt Nockchain protocol track");
   assertEqual(receipt.nockchain.context.network, "local-fakenet", "receipt Nockchain network context");
   assertEqual(receipt.nockchain.context.endpoint, "http://127.0.0.1:5555", "receipt Nockchain endpoint context");
-  assertEqual(receipt.nockchain.context.walletAddress, "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ", "receipt wallet context");
+  assertEqual(receipt.nockchain.context.walletAddress, "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx", "receipt wallet context");
   assertEqual(receipt.nockchain.context.project, "counter-nockapp", "receipt project context");
   assertIncludes(receipt.nockchain.docs.canonicalSources, "PROTOCOL.md", "receipt Nockchain protocol source");
   assertEqual(receipt.nockup.crate, "nockup", "Nockup crate name");
@@ -250,7 +250,7 @@ function createNockupPayload() {
     fakenet: {
       endpoint: "http://127.0.0.1:5555",
       networkId: "local-fakenet",
-      walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      walletAddress: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
       accepted: true
     }
   };

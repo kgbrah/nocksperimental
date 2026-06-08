@@ -159,7 +159,7 @@ async function createSupportBundleRoot(mode) {
       balance: mode === "blocked"
         ? {
             status: "fail",
-            address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+            address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
             unit: "NOCK",
             raw: "",
             checkedAt: "2026-06-04T10:01:00.020Z",
@@ -167,7 +167,7 @@ async function createSupportBundleRoot(mode) {
           }
         : {
             status: "pass",
-            address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+            address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
             amount: 7012352,
             unit: "NOCK",
             raw: "Balance: 7,012,352 NOCK",
@@ -222,7 +222,7 @@ function createReport({ appSlug, appName, fixtureId, generatedAt, status, observ
       grpcEndpoint: "127.0.0.1:5555",
       fakenetCommand: "fakenock --start",
       balanceCheck: {
-        address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+        address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
         command: {
           program: "fakenock",
           args: ["--balance"]

@@ -27,7 +27,7 @@ async function main() {
   assertEqual(body.endpoint, "127.0.0.1:5555", "commands endpoint");
   assertEqual(
     body.wallet.address,
-    "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+    "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
     "commands wallet address"
   );
   assertIncludes(body.refreshSequence, "npm run lab:local", "refresh sequence health command");

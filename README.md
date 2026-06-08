@@ -91,7 +91,7 @@ npm run lab:local:poke
 The default wallet used by the bundled local fakenet fixtures is:
 
 ```text
-532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ
+AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx
 ```
 
 The public fakenet surfaces are available at:
@@ -115,7 +115,7 @@ Bring your own fakenet by creating a stateless connection profile:
 ```bash
 curl -G https://nocksperimental.com/api/fakenet/connect \
   --data-urlencode endpoint=127.0.0.1:5555 \
-  --data-urlencode walletAddress=532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ \
+  --data-urlencode walletAddress=AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx \
   --data-urlencode networkId=local-fakenet
 ```
 

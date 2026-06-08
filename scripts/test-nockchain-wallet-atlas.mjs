@@ -45,7 +45,7 @@ async function main() {
   assertIncludes(body.endpointModes.find((mode) => mode.id === "public")?.riskNotes ?? [], "default public endpoint is remote", "public endpoint risk");
   assertIncludes(body.endpointModes.find((mode) => mode.id === "private")?.riskNotes ?? [], "requires a local running nockchain instance", "private endpoint risk");
 
-  assertEqual(body.localFakenetProfile.walletAddress, "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ", "local wallet address");
+  assertEqual(body.localFakenetProfile.walletAddress, "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx", "local wallet address");
   assertEqual(body.localFakenetProfile.endpoint, "127.0.0.1:5555", "local fakenet endpoint");
   assertIncludes(body.localFakenetProfile.commands, "fakenock --balance", "local fakenock balance command");
   assertIncludes(
@@ -55,7 +55,7 @@ async function main() {
   );
   assertIncludes(
     body.localFakenetProfile.upstreamEquivalentCommands,
-    "nockchain-wallet --client private list-notes-by-address 532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+    "nockchain-wallet --client private list-notes-by-address AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
     "private address notes equivalent"
   );
 

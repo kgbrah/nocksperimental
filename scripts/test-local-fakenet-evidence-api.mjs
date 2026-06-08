@@ -44,7 +44,7 @@ async function main() {
     assertEqual(blockedBody.summary.endpoint, "127.0.0.1:5555", "blocked endpoint");
     assertEqual(
       blockedBody.summary.walletAddress,
-      "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
       "blocked wallet"
     );
     assertEqual(blockedBody.readiness.status, "blocked", "blocked readiness");
@@ -65,7 +65,7 @@ async function main() {
     assertEqual(blockedBody.verifier.inputs.grpcEndpoint, "127.0.0.1:5555", "blocked verifier endpoint");
     assertEqual(
       blockedBody.verifier.inputs.walletAddress,
-      "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
       "blocked verifier wallet"
     );
     assertEqual(blockedBody.artifacts.reports.length, 2, "blocked artifact report length");
@@ -194,7 +194,7 @@ async function createEvidenceRoot(mode) {
       balance: mode === "blocked"
         ? {
             status: "fail",
-            address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+            address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
             amount: undefined,
             unit: "NOCK",
             raw: "",
@@ -203,7 +203,7 @@ async function createEvidenceRoot(mode) {
           }
         : {
             status: "pass",
-            address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+            address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
             amount: 7012352,
             unit: "NOCK",
             raw: "Balance: 7,012,352 NOCK",
@@ -258,7 +258,7 @@ function createReport({ appSlug, appName, fixtureId, generatedAt, status, observ
       grpcEndpoint: "127.0.0.1:5555",
       fakenetCommand: "fakenock --start",
       balanceCheck: {
-        address: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+        address: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
         command: {
           program: "fakenock",
           args: ["--balance"]

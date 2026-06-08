@@ -18,7 +18,7 @@ type LocalFakenetReportOutput = {
 };
 
 const localFakenetWalletAddress =
-  "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
 const localFakenetEndpoint = "127.0.0.1:5555";
 const localFakenetRunbookPath = "/api/fakenet/runbook.sh";
 

@@ -37,7 +37,7 @@ async function main() {
   assertEqual(fakenetEvent.evidence.endpoint, "127.0.0.1:5555", "fakenet event endpoint");
   assertEqual(
     fakenetEvent.evidence.walletAddress,
-    "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+    "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
     "fakenet event wallet"
   );
   assertSortedDescending(body.events.map((event) => event.recordedAt), "feed event ordering");

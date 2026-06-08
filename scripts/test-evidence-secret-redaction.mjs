@@ -120,7 +120,7 @@ async function main() {
   const legitValues = {
     stateHash: "a".repeat(64), // bare sha256 (no 0x)
     fingerprint: "sha256:" + "c".repeat(64), // prefixed fingerprint
-    walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ", // base58 address
+    walletAddress: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx", // base58 address
     address: "0x" + "d".repeat(40), // 20-byte public address
     shortHex: "0xdeadbeef",
     xpub: "xpub" + "9".repeat(40) // extended PUBLIC key is not secret

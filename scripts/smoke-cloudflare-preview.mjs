@@ -77,7 +77,7 @@ async function main() {
     await expectStatus(`${baseUrl}/fakenet`, 200, "local fakenet readiness page");
     await expectStatus(`${baseUrl}/api/fakenet`, 200, "local fakenet readiness API");
     await expectStatus(
-      `${baseUrl}/api/fakenet/connect?endpoint=127.0.0.1%3A5555&walletAddress=532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ`,
+      `${baseUrl}/api/fakenet/connect?endpoint=127.0.0.1%3A5555&walletAddress=AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx`,
       200,
       "bring your own fakenet connection profile"
     );
@@ -319,7 +319,7 @@ async function expectTrustUpdateVerification(baseUrl, updateId) {
 }
 
 async function expectFakenetEvidenceSubmission(baseUrl) {
-  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
   const response = await fetch(`${baseUrl}/api/fakenet/evidence/submit`, {
     method: "POST",
     headers: {
@@ -557,7 +557,7 @@ async function expectNockupValidationSubmission(baseUrl) {
       fakenet: {
         endpoint: "http://127.0.0.1:5555",
         networkId: "local-fakenet",
-        walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+        walletAddress: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
         accepted: true
       }
     })

@@ -12,7 +12,7 @@
     "grpcEndpoint": "127.0.0.1:5555",
     "fakenetCommand": "fakenock --start",
     "balanceCheck": {
-      "address": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+      "address": "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
       "command": {
         "program": "fakenock",
         "args": ["--balance"]
@@ -27,7 +27,7 @@
   "initialState": {
     "fakenet": {
       "expectedEndpoint": "127.0.0.1:5555",
-      "watchedAddress": "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ"
+      "watchedAddress": "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx"
     }
   },
   "steps": [

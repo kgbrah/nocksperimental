@@ -16,7 +16,7 @@ main().catch((error) => {
 
 async function main() {
   const { GET, POST } = loadTypeScriptModule("src/app/api/fakenet/connect/route.ts");
-  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
   const localUrl = new URL("https://nocksperimental.com/api/fakenet/connect");
   localUrl.searchParams.set("endpoint", "127.0.0.1:5555");
   localUrl.searchParams.set("walletAddress", walletAddress);

@@ -82,7 +82,7 @@ async function assertFakenetCollisionDoesNotClobber() {
   const { POST } = loadTypeScriptModule("src/app/api/fakenet/evidence/submit/route.ts");
   const url = "https://nocksperimental.com/api/fakenet/evidence/submit";
   const endpoint = "127.0.0.1:5555";
-  const walletAddress = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+  const walletAddress = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
   const reportId = "lab_create-only-collision_submit";
 
   // Victim submission and attacker submission share endpoint/wallet/reportId (the only

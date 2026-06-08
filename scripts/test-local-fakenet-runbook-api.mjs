@@ -36,7 +36,7 @@ async function main() {
   assertIncludes(body, "FAKENET_ENDPOINT=\"127.0.0.1:5555\"", "runbook endpoint");
   assertIncludes(
     body,
-    "FAKENET_WALLET=\"532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ\"",
+    "FAKENET_WALLET=\"AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx\"",
     "runbook wallet"
   );
   assertIncludes(body, "fakenock --start", "runbook start command");

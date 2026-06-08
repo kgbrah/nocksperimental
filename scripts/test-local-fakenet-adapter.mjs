@@ -97,7 +97,7 @@ async function testLocalFakenetCapturesConfiguredBalance() {
   try {
     const { port } = server.address();
     const balanceCommand = await createBalanceCommand("Balance: 7,012,352 NOCK\n");
-    const address = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+    const address = "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx";
     const report = await runFixture({
       id: "local-fakenet-balance",
       environment: {

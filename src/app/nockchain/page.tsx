@@ -39,7 +39,7 @@ export default function NockchainEvidencePage() {
   const receiptProvenance = createNockchainReceiptProvenance({
     network: "local-fakenet",
     endpoint: "http://127.0.0.1:5555",
-    walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ",
+    walletAddress: "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
     project: "nocksperimental",
     settlementMode: "fakenet"
   });
