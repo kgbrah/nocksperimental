@@ -4,8 +4,8 @@
   "chain": {
     "algorithm": "sha256-dev-chain-v0",
     "source": "src/data/trust-update-log.json",
-    "entryCount": 4,
-    "latestRoot": "root-score-history-v0"
+    "entryCount": 5,
+    "latestRoot": "root-game-badge-issuance-v0"
   },
   "entries": [
     {
@@ -77,6 +77,24 @@
         "issuerKeyId": "nocksperimental-registry-ed25519-dev-v0",
         "algorithm": "ed25519-devnet-v0",
         "signature": "kFuHQiWgkAvpRaEBzUoKX9SczZ4qvfsI92RhKoZ+j3c7fwIlNAzgHypAH9WETxv0YQ8WaJhy4lXfya4oAp2HBQ==",
+        "verificationStatus": "valid"
+      }
+    },
+    {
+      "sequence": 5,
+      "id": "update-game-badge-issuance-v0",
+      "action": "badge-issuance",
+      "target": "badge-issuance",
+      "targetPath": "src/data/trust-signals.json",
+      "recordedAt": "2026-06-08T02:10:00.000Z",
+      "previousRoot": "root-score-history-v0",
+      "entryHash": "sha256:append-game-badge-issuance-v0",
+      "rootHash": "root-game-badge-issuance-v0",
+      "summary": "Issued provably-fair game trust badges for Forfeit Flip and Forfeit Dice (two-sided commit-reveal fairness, rejection-sampled uniformity, commitment-only peek surface).",
+      "signature": {
+        "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1",
+        "algorithm": "ed25519-devnet-v0",
+        "signature": "niNIw+r3fOo4ptGIk6vEy8Tb+vwIev+Ozy3jKIXmgiELo9lbzkA/GxkVt2JgrACrir3pmlHXr/vT2tY/n07fAg==",
         "verificationStatus": "valid"
       }
     }

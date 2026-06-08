@@ -44,15 +44,15 @@ async function main() {
   assertEqual(authorized.status, 200, "authorized status");
   assertEqual(authorizedBody.persisted, false, "append API does not persist static data");
   assertEqual(authorizedBody.validation.isAppendOnly, true, "append API validation");
-  assertEqual(authorizedBody.chain.entryCount, 5, "append API candidate entry count");
+  assertEqual(authorizedBody.chain.entryCount, 6, "append API candidate entry count");
   assertEqual(authorizedBody.chain.latestRoot, "root-score-history-v1", "append API latest root");
   assertEqual(authorizedBody.audit.persisted, false, "preview audit is not persisted");
   assertEqual(authorizedBody.audit.event.updateId, "update-score-history-v1", "preview audit update id");
   assertEqual(authorizedBody.audit.event.persisted, false, "preview audit event persisted flag");
-  assertEqual(appendedEntry.sequence, 5, "append API entry sequence");
-  assertEqual(appendedEntry.previousRoot, "root-score-history-v0", "append API previous root");
+  assertEqual(appendedEntry.sequence, 6, "append API entry sequence");
+  assertEqual(appendedEntry.previousRoot, "root-game-badge-issuance-v0", "append API previous root");
   assertEqual(appendedEntry.signature.verificationStatus, "valid", "append API signature status");
-  assertEqual(trustUpdateLog.chain.entryCount, 4, "append API does not mutate imported log");
+  assertEqual(trustUpdateLog.chain.entryCount, 5, "append API does not mutate imported log");
 
   await assertMalformedBodyRejected(POST, "test-registry-key");
   await assertUnauthenticatedMalformedBodyStillRejected(POST);
@@ -80,9 +80,9 @@ async function main() {
     assertEqual(persistedBody.audit.event.actor, "legacy", "append API audit actor is the verified key, not the client header");
     assertEqual(persistedBody.audit.event.updateId, "update-score-history-v1", "append API audit update id");
     assertEqual(persistedBody.audit.event.eventHash.startsWith("sha256:"), true, "append API audit hash");
-    assertEqual(writtenLog.chain.entryCount, 5, "persisted file entry count");
+    assertEqual(writtenLog.chain.entryCount, 6, "persisted file entry count");
     assertEqual(writtenLog.chain.latestRoot, "root-score-history-v1", "persisted file latest root");
-    assertEqual(writtenLog.entries.at(-1).previousRoot, "root-score-history-v0", "persisted file previous root");
+    assertEqual(writtenLog.entries.at(-1).previousRoot, "root-game-badge-issuance-v0", "persisted file previous root");
     assertEqual(auditLog.events.length, 1, "audit file event count");
     assertEqual(auditLog.events[0].updateId, "update-score-history-v1", "audit file update id");
     assertEqual(auditLog.events[0].persisted, true, "audit file persisted flag");
@@ -99,12 +99,12 @@ async function main() {
     const secondAuditLog = JSON.parse(readFileSync(auditPath, "utf8"));
 
     assertEqual(secondPersisted.status, 200, "second persisted append status");
-    assertEqual(secondBody.chain.entryCount, 6, "second persisted response count");
-    assertEqual(secondBody.entry.sequence, 6, "second persisted entry sequence");
+    assertEqual(secondBody.chain.entryCount, 7, "second persisted response count");
+    assertEqual(secondBody.entry.sequence, 7, "second persisted entry sequence");
     assertEqual(secondBody.entry.previousRoot, "root-score-history-v1", "second persisted previous root");
     assertEqual(secondBody.audit.event.sequence, 2, "second audit event sequence");
     assertEqual(secondBody.audit.event.previousRoot, "root-score-history-v1", "second audit previous root");
-    assertEqual(secondWrittenLog.chain.entryCount, 6, "second persisted file count");
+    assertEqual(secondWrittenLog.chain.entryCount, 7, "second persisted file count");
     assertEqual(secondWrittenLog.chain.latestRoot, "root-score-history-v2", "second persisted file root");
     assertEqual(secondAuditLog.events.length, 2, "second audit file event count");
     assertEqual(secondAuditLog.events.at(-1).updateId, "update-score-history-v2", "second audit update id");

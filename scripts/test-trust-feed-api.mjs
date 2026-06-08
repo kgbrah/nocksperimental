@@ -23,12 +23,12 @@ async function main() {
   assertEqual(body.version, "v0", "feed version");
   assertEqual(body.source, "nocksperimental-trust-feed", "feed source");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/trust/feed", "feed canonical URL");
-  assertEqual(body.counts.registryUpdates, 4, "registry update count");
-  assertEqual(body.counts.badgeIssuances, 5, "badge issuance count");
+  assertEqual(body.counts.registryUpdates, 5, "registry update count");
+  assertEqual(body.counts.badgeIssuances, 7, "badge issuance count");
   assertEqual(body.counts.badgeRevocations, 1, "badge revocation count");
   assertEqual(body.counts.localFakenetEvidence, 1, "local fakenet evidence count");
   assertEqual(body.eventCount, body.events.length, "event count matches events");
-  assertEqual(body.eventCount, 11, "total event count");
+  assertEqual(body.eventCount, 14, "total event count");
   assertNonEmpty(body.chain.latestRoot, "latest root");
   assertEqual(body.chain.isAppendOnly, true, "append-only chain flag");
   assertHasEventType(body, "registry-update");

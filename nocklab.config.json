@@ -51,6 +51,10 @@
       "slug": "forfeit-flip-fairness"
     },
     {
+      "path": "fixtures/forfeit-dice-fairness.lab.json",
+      "slug": "forfeit-dice-fairness"
+    },
+    {
       "path": "fixtures/attack-peek-leaks-seed.lab.json",
       "slug": "attack-peek-leaks-seed"
     }
