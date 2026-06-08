@@ -58,7 +58,8 @@ const INVARIANT_REQUIRED_FIELDS = {
     { field: "before", type: "present" },
     { field: "after", type: "present" }
   ],
-  "custom-function": [{ field: "fn", type: "string" }, { field: "path", type: "string" }]
+  "custom-function": [{ field: "fn", type: "string" }, { field: "path", type: "string" }],
+  "monotonic-strict": [{ field: "path", type: "string" }]
 };
 
 // Static, in-repo allowlist of custom invariant functions. A fixture references a
@@ -79,6 +80,57 @@ const CUSTOM_INVARIANT_FUNCTIONS = Object.freeze({
           ? `all ${Object.keys(balances).length} balances >= 0`
           : offenders.map(([holder, amount]) => `${holder}=${amount}`).join(", "),
       expected: `every value under ${invariant.path} >= 0`
+    };
+  },
+  // Commit-reveal games (forfeit-flip/dice): the kernel's PEEK SURFACE must never expose an
+  // unrevealed seed/secret. Fails if any key under `path` is secret-NAMED. (We match on key
+  // name, NOT value shape: a public commitment is a long hex hash indistinguishable by shape
+  // from a seed, so shape-matching would false-flag commitments. The structural fix is that
+  // a seed never appears in the peek surface at all — a secret-named key is the leak.)
+  // Catches the coinflip.hoon [%state ~] seed leak (its seed sat under the key `seed`).
+  "peek-reveals-no-secret": (state, invariant) => {
+    const surface = getPath(state, invariant.path) ?? {};
+    const SECRET_KEY = /seed|secret|preimage|private|mnemonic|passphrase/i;
+    const leaks = [];
+    const walk = (obj, prefix) => {
+      if (!obj || typeof obj !== "object") return;
+      for (const [key, value] of Object.entries(obj)) {
+        const keyPath = prefix ? `${prefix}.${key}` : key;
+        if (SECRET_KEY.test(key)) leaks.push(keyPath);
+        else if (value && typeof value === "object") walk(value, keyPath);
+      }
+    };
+    walk(surface, "");
+    return {
+      passes: leaks.length === 0,
+      observed:
+        leaks.length === 0
+          ? `peek surface clean: ${Object.keys(surface).length} field(s), no unrevealed secret`
+          : `LEAK: ${leaks.join(", ")}`,
+      expected: `no unrevealed seed/secret in the peek surface at ${invariant.path}`
+    };
+  },
+  // Provable fairness: every REVEALED seed must hash to its prior commitment
+  // (sha256(seed)==commit), so a post-hoc grind / wrong-seed reveal is caught. Each entry
+  // under `path` is { commit, seed, label? }; unrevealed entries (missing seed) are skipped.
+  "commit-binds-seed": (state, invariant) => {
+    const raw = getPath(state, invariant.path) ?? [];
+    const entries = Array.isArray(raw) ? raw : Object.values(raw);
+    const mismatched = [];
+    let checked = 0;
+    for (const entry of entries) {
+      if (!entry || entry.seed == null || entry.commit == null) continue;
+      checked += 1;
+      const digest = createHash("sha256").update(Buffer.from(String(entry.seed), "hex")).digest("hex");
+      if (digest !== String(entry.commit)) mismatched.push(entry.label ?? String(entry.seed).slice(0, 12));
+    }
+    return {
+      passes: mismatched.length === 0,
+      observed:
+        mismatched.length === 0
+          ? `all ${checked} revealed seed(s) hash to their commitment`
+          : `MISMATCH: ${mismatched.join(", ")}`,
+      expected: `sha256(seed) == commit for every revealed pair under ${invariant.path}`
     };
   }
 });
@@ -430,12 +482,17 @@ async function buildReport(fixture, startedAt, fixturePath) {
   const warningAlerts = alertReports.filter(
     (alert) => alert.state === "triggered" && alert.severity !== "critical"
   ).length;
-  const status =
+  const rawStatus =
     failedSteps > 0 || failedInvariants > 0 || criticalAlerts > 0
       ? "fail"
       : warningAlerts > 0
         ? "warn"
         : "pass";
+  // `expectRejected` fixtures are negative controls (an exploit attempt that MUST be
+  // caught). Invert: a caught exploit (rawStatus "fail") passes; a negative control that
+  // did NOT catch the exploit (rawStatus "pass"/"warn") is itself a failure. This lets a
+  // proof-of-prevention read CI-green instead of inverting the --strict gate.
+  const status = fixture.expectRejected === true ? (rawStatus === "fail" ? "pass" : "fail") : rawStatus;
 
   return {
     reportId: `lab_${fixture.id}_${new Date(startedAt).toISOString().replace(/[-:.TZ]/g, "")}`,
@@ -452,7 +509,9 @@ async function buildReport(fixture, startedAt, fixturePath) {
       alertsClear: alertReports.filter((alert) => alert.state === "clear").length,
       alertsTriggered: alertReports.filter((alert) => alert.state === "triggered").length,
       snapshotsCaptured: stateSnapshots.length,
-      durationMs: Math.max(Date.now() - startedAt, stepReports.length * 17)
+      durationMs: Math.max(Date.now() - startedAt, stepReports.length * 17),
+      expectRejected: fixture.expectRejected === true,
+      rawStatus
     },
     invariantPacks: fixture.invariantPackRefs ?? [],
     steps: stepReports,
@@ -1475,6 +1534,23 @@ function evaluateInvariant({ invariant, state, steps, actors }) {
         ? `${formatValue(invariant.before)}@${beforeIndex}, ${formatValue(invariant.after)}@${afterIndex}`
         : `not an array (${formatValue(log)})`,
       `${invariant.path}[].${invariant.field}: ${formatValue(invariant.before)} before ${formatValue(invariant.after)}`
+    );
+  }
+
+  if (invariant.kind === "monotonic-strict") {
+    const sequence = getPath(state, invariant.path);
+    const values = Array.isArray(sequence) ? sequence : [];
+    let passes = values.length > 0 && values.every((value) => typeof value === "number");
+    for (let index = 1; index < values.length && passes; index += 1) {
+      if (!(values[index] > values[index - 1])) {
+        passes = false;
+      }
+    }
+    return invariantResult(
+      invariant,
+      passes,
+      formatValue(values),
+      `${invariant.path} is a strictly-increasing numeric sequence (replay/nonce safety)`
     );
   }
 

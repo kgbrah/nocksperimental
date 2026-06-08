@@ -15,7 +15,8 @@ export type InvariantKind =
   | "array-length-min"
   | "array-length-max"
   | "temporal-ordering"
-  | "custom-function";
+  | "custom-function"
+  | "monotonic-strict";
 
 export type AppProfile = {
   name: string;
@@ -286,9 +287,17 @@ export const invariantCatalog = [
     id: "custom.function.v0",
     kind: "custom-function",
     name: "Custom registered check",
-    purpose: "Run a named, repo-registered pure function against final state (allowlist; no fixture-supplied code).",
+    purpose: "Run a named, repo-registered pure function against final state (allowlist; no fixture-supplied code). Includes peek-reveals-no-secret (commit-only peek surface) and commit-binds-seed (sha256(seed)==commit) for commit-reveal games.",
     requiredFields: ["fn", "path"],
-    example: "fn=balances-non-negative over ledger.balances"
+    example: "fn=peek-reveals-no-secret over peekSurface (catches a leaked seed)"
+  },
+  {
+    id: "sequence.monotonic-strict.v0",
+    kind: "monotonic-strict",
+    name: "Strictly-increasing sequence",
+    purpose: "Verify a numeric array in final state is strictly increasing (nonce/height monotonicity for replay safety).",
+    requiredFields: ["path"],
+    example: "nonceSequence strictly increases: [0,1,2,3]"
   }
 ] satisfies InvariantCatalogItem[];
 

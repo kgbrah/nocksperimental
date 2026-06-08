@@ -34,7 +34,8 @@ export const INVARIANT_KINDS = [
   "array-length-min",
   "array-length-max",
   "temporal-ordering",
-  "custom-function"
+  "custom-function",
+  "monotonic-strict"
 ];
 export const INVARIANT_SEVERITIES = ["critical", "high", "medium", "low"];
 

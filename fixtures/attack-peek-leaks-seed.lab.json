@@ -1,0 +1,50 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-peek-leaks-seed-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: peek leaks seed",
+    "slug": "forfeit-flip",
+    "version": "0.0.1",
+    "kernel": "coinflip-bug-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): models the coinflip.hoon bug where peek [%state ~] leaks the secret seed.",
+      "The commit-only-peek invariant MUST catch it; expectRejected inverts the gate so a CAUGHT exploit reads CI-green (a signed proof-of-prevention).",
+      "If this ever passes the invariant (exploit not caught), expectRejected turns it into a hard failure."
+    ]
+  },
+  "actors": [
+    { "name": "attacker", "pkh": "attacker" }
+  ],
+  "initialState": {
+    "peekSurface": {
+      "nonce": 1,
+      "commitHouse": "02d449a31fbb267c8f352e9968a79e3e5fc95c1bbeaa502fd6454ebde5a4bedc",
+      "serverSeed": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  },
+  "steps": [
+    {
+      "id": "peek-leaks-seed",
+      "type": "peek",
+      "title": "Attacker peeks state and finds the leaked seed",
+      "target": "/state",
+      "expect": { "path": "peekSurface.nonce", "equals": 1 }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "commit-only-peek",
+      "title": "Peek surface must not expose an unrevealed seed",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "peek-reveals-no-secret",
+      "path": "peekSurface"
+    }
+  ]
+}
