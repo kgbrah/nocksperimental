@@ -46,7 +46,19 @@ async function main() {
     "rawJam",
     "rawPayload",
     "rawBytes",
-    "rawHash"
+    "rawHash",
+    // Abbreviated wallet-secret key names that the longer terms previously missed.
+    "privKey",
+    "priv_key",
+    "recoveryPhrase",
+    "recovery_phrase",
+    "recoveryWords",
+    "keystore",
+    "key_store",
+    "xpriv",
+    "xprv",
+    "encryptedKey",
+    "encrypted_key"
   ];
   for (const key of nowCovered) {
     assertTrue(
@@ -65,7 +77,12 @@ async function main() {
     assertTrue(scrubber.containsSecretLikeField({ [key]: "x" }), `scrubber still flags "${key}"`);
   }
   // Innocuous evidence keys must NOT be flagged (avoid over-rejecting real submissions).
-  for (const key of ["project", "endpoint", "commit", "status", "health", "fakenet", "txId", "network"]) {
+  // Includes word-boundary cases that the xpriv/xprv terms must not catch and a bare
+  // "recovery" (only recovery-phrase/-words is a secret), plus "key"/"recovery" alone.
+  for (const key of [
+    "project", "endpoint", "commit", "status", "health", "fakenet", "txId", "network",
+    "maxprivacy", "xprivilege", "recovery", "key"
+  ]) {
     assertTrue(!scrubber.containsSecretLikeField({ [key]: "x" }), `scrubber does not over-flag "${key}"`);
   }
 

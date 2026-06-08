@@ -18,9 +18,18 @@
 // rawTransaction / rawTx / rawJam / rawPayload / rawBytes / rawHash). Without
 // these, a submission keyed with e.g. `signingKey` or `authorization` slipped
 // past the noSecretFields gate and was persisted/echoed verbatim.
+//
+// It additionally covers canonical abbreviated wallet-secret key names the longer
+// terms miss: privKey/priv_key (the `private` term truncates to `priv` and does
+// not reach `key`), recoveryPhrase/recoveryWords, keystore/key_store, xpriv/xprv
+// extended keys, and encryptedKey/encryptionKey. The same single pattern powers
+// both the reject gate (containsSecretLikeField) and the redactor
+// (redactSecretFields), so one missing term simultaneously fails to reject AND
+// fails to redact before persistence. xpriv/xprv carry word boundaries so a
+// benign key like `maxprivacy`/`xprivilege` is not over-flagged.
 
 const secretKeyPattern =
-  /(?:private|secret|seed|mnemonic|passphrase|credential|password|api[-_]?key|access[-_]?key|sign(?:ing)?[-_]?key|session[-_]?key|token|authorization|bearer|cookie|tx[-_]?hash|transaction[-_]?hash|raw[-_]?(?:pma[-_]?slab|state[-_]?jam|event[-_]?log|grpc[-_]?payload|transaction[-_]?jam|transaction|tx|jam|payload|bytes|hash)|state[-_]?jam|event[-_]?log|checkpoint|wallet[-_]?export)/i;
+  /(?:private|priv[-_]?key|secret|seed|mnemonic|recovery[-_]?(?:phrase|words?)|passphrase|credential|password|api[-_]?key|access[-_]?key|sign(?:ing)?[-_]?key|session[-_]?key|key[-_]?store|\bx(?:priv|prv)\b|encrypt(?:ed|ion)?[-_]?key|token|authorization|bearer|cookie|tx[-_]?hash|transaction[-_]?hash|raw[-_]?(?:pma[-_]?slab|state[-_]?jam|event[-_]?log|grpc[-_]?payload|transaction[-_]?jam|transaction|tx|jam|payload|bytes|hash)|state[-_]?jam|event[-_]?log|checkpoint|wallet[-_]?export)/i;
 
 // Bounds for the secret scan, which runs synchronously over attacker-controlled
 // JSON reached from public, unauthenticated POST routes. MAX_SCAN_DEPTH guards
