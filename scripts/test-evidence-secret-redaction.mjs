@@ -86,6 +86,54 @@ async function main() {
     assertTrue(!scrubber.containsSecretLikeField({ [key]: "x" }), `scrubber does not over-flag "${key}"`);
   }
 
+  // 1b) Value-shape coverage — a secret placed under a BENIGN key name (the deny-list
+  //     is key-name-only) must still be flagged and redacted by its VALUE shape.
+  const pem = "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAA\n-----END OPENSSH PRIVATE KEY-----";
+  const secretShapedValues = {
+    note: "0x" + "a".repeat(64), // 0x + 32-byte hex raw private key
+    label: "xprv" + "9".repeat(40), // BIP32 extended private key
+    blob: pem, // PEM private-key block
+    ref: "sk_live_abcd1234efgh5678", // secret API key
+    memo: "ripple abandon ability able about above absent absorb abstract absurd abuse access" // 12-word BIP39
+  };
+  for (const [key, value] of Object.entries(secretShapedValues)) {
+    assertTrue(
+      scrubber.containsSecretLikeField({ [key]: value }),
+      `scrubber flags secret-shaped value under benign key "${key}"`
+    );
+    const redacted = scrubber.redactSecretFields({ [key]: value });
+    assertEqual(redacted[key], "[redacted]", `scrubber redacts secret-shaped value under "${key}"`);
+  }
+  // Secret-shaped value nested inside an array under benign keys is caught too.
+  const arrInput = { outer: { inner: ["ok", "0x" + "b".repeat(64)] } };
+  assertTrue(
+    scrubber.containsSecretLikeField(arrInput),
+    "scrubber flags a secret-shaped value inside a nested array"
+  );
+  const deepRedacted = scrubber.redactSecretFields(arrInput);
+  assertEqual(deepRedacted.outer.inner[0], "ok", "non-secret array element preserved");
+  assertEqual(deepRedacted.outer.inner[1], "[redacted]", "secret-shaped array element redacted");
+
+  // 1c) Legit evidence values that LOOK hashy must NOT be over-redacted: bare 64-hex
+  //     sha256, "sha256:" fingerprints, base58 wallet address, 0x-40hex (20-byte
+  //     public address), short hex, and extended PUBLIC keys.
+  const legitValues = {
+    stateHash: "a".repeat(64), // bare sha256 (no 0x)
+    fingerprint: "sha256:" + "c".repeat(64), // prefixed fingerprint
+    walletAddress: "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ", // base58 address
+    address: "0x" + "d".repeat(40), // 20-byte public address
+    shortHex: "0xdeadbeef",
+    xpub: "xpub" + "9".repeat(40) // extended PUBLIC key is not secret
+  };
+  for (const [key, value] of Object.entries(legitValues)) {
+    assertTrue(
+      !scrubber.containsSecretLikeField({ [key]: value }),
+      `scrubber does not over-flag legit value under "${key}"`
+    );
+    const redacted = scrubber.redactSecretFields({ [key]: value });
+    assertEqual(redacted[key], value, `scrubber preserves legit value under "${key}"`);
+  }
+
   // 2) End-to-end: a tainted submission must not leak any secret value, via the
   //    receipt body returned by the public POST route (covers gate + snapshot +
   //    the two per-step `observed` echo paths).
