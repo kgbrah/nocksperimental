@@ -63,6 +63,48 @@
         "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
         "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
+    },
+    {
+      "caseId": "case-forfeit-flip-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-flip",
+      "subjectName": "Forfeit Flip",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-08T02:00:00.000Z",
+      "updatedAt": "2026-06-08T02:20:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "poc-game-demo" },
+      "evidenceIds": ["evidence-forfeit-flip-lab-001"],
+      "reportSlug": "launch-forfeit-flip-001",
+      "badgeId": "badge-forfeit-flip-verified",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "caseId": "case-forfeit-dice-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-dice",
+      "subjectName": "Forfeit Dice",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-08T02:02:00.000Z",
+      "updatedAt": "2026-06-08T02:22:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "poc-game-demo" },
+      "evidenceIds": ["evidence-forfeit-dice-lab-001"],
+      "reportSlug": "launch-forfeit-dice-001",
+      "badgeId": "badge-forfeit-dice-verified",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
     }
   ],
   "submissions": [
@@ -71,7 +113,9 @@
     { "evidenceId": "evidence-vesl-demo-vesl-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "vesl", "sourceUrl": "/api/vesl/evidence/submit", "submittedAt": "2026-06-05T18:12:00.000Z", "submittedBy": "vesl-test", "status": "verified", "reportHash": "sha256:vesl-demo-report-v0", "snapshotRoot": "vesl-demo-snapshot-root-v0", "receiptId": "vesl_submission_demo", "redactionSummary": "Lifecycle tags, peek status, and hull health only." },
     { "evidenceId": "evidence-payment-flow-lab-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/payment-flow", "submittedAt": "2026-06-05T18:35:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:4cade57672628cbe3441d134eff67d6c589a8d94c70ff989a61da26d67430c91", "snapshotRoot": "3a6d6bff59cb624f", "receiptId": null, "redactionSummary": "Generated report hash and snapshot root only." },
     { "evidenceId": "evidence-payment-flow-workspace-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "workspace-upload", "sourceUrl": "/api/workspaces/launch-lab-private/evidence", "submittedAt": "2026-06-05T18:40:00.000Z", "submittedBy": "workspace-upload-token", "status": "attention", "reportHash": "sha256:workspace-payment-flow-v0", "snapshotRoot": "workspace-payment-root-v0", "receiptId": null, "redactionSummary": "Upload policy accepted metadata; reviewer notes pending." },
-    { "evidenceId": "evidence-confidential-operator-manual-001", "caseId": "case-confidential-operator-launch-001", "sourceKind": "manual", "sourceUrl": null, "submittedAt": "2026-06-05T19:08:00.000Z", "submittedBy": "private-operator", "status": "verified", "reportHash": "sha256:confidential-operator-manual-001", "snapshotRoot": "confidential-operator-manual-root-001", "receiptId": null, "redactionSummary": "Private operator evidence retained off public routes." }
+    { "evidenceId": "evidence-confidential-operator-manual-001", "caseId": "case-confidential-operator-launch-001", "sourceKind": "manual", "sourceUrl": null, "submittedAt": "2026-06-05T19:08:00.000Z", "submittedBy": "private-operator", "status": "verified", "reportHash": "sha256:confidential-operator-manual-001", "snapshotRoot": "confidential-operator-manual-root-001", "receiptId": null, "redactionSummary": "Private operator evidence retained off public routes." },
+    { "evidenceId": "evidence-forfeit-flip-lab-001", "caseId": "case-forfeit-flip-launch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/forfeit-flip-fairness", "submittedAt": "2026-06-08T02:05:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:b61ea88c49baa5f3-forfeit-flip-fairness", "snapshotRoot": "b61ea88c49baa5f3", "receiptId": null, "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced." },
+    { "evidenceId": "evidence-forfeit-dice-lab-001", "caseId": "case-forfeit-dice-launch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/forfeit-dice-fairness", "submittedAt": "2026-06-08T02:07:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:28d565bae5f10035-forfeit-dice-fairness", "snapshotRoot": "28d565bae5f10035", "receiptId": null, "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced." }
   ],
   "reports": [
     {
@@ -135,6 +179,49 @@
       "generatedAt": "2026-06-05T19:20:00.000Z",
       "reportHash": "sha256:launch-confidential-operator-001",
       "snapshotRoot": "launch-confidential-operator-root-001"
+    },
+    {
+      "reportSlug": "launch-forfeit-flip-001",
+      "caseId": "case-forfeit-flip-launch-001",
+      "summaryStatus": "verified",
+      "score": 97,
+      "requiredChecks": [
+        { "id": "lab-report-linked", "label": "Lab fairness report linked", "status": "pass", "summary": "The forfeit-flip-fairness lab report (hash + snapshot root) is attached to the case." },
+        { "id": "fairness-invariants", "label": "Provable-fairness invariants", "status": "pass", "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass." },
+        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Peek surface and evidence reference no server seed, client seed, or signing material." }
+      ],
+      "recommendedChecks": [
+        { "id": "badge-ready", "label": "Badge ready", "status": "pass", "summary": "Eligible for a public trust badge; badge-forfeit-flip-verified is issued and signed." },
+        { "id": "settlement-residual", "label": "Settlement residual disclosed", "status": "warn", "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout — consensus cannot gate a payout on the game outcome." }
+      ],
+      "evidenceSummary": "Forfeit Flip carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
+      "reviewerNotes": "Proves the fairness model and that the invariants are well-formed; the standalone verifier reproduces the coin-flip seed-leak contrast (100% vs ~50%).",
+      "publicSummary": "Provably-fair coin flip: outcome derives from H(serverSeed‖clientSeed‖nonce); either party can recompute it from public reveals.",
+      "generatedAt": "2026-06-08T02:20:00.000Z",
+      "reportHash": "sha256:launch-forfeit-flip-001",
+      "snapshotRoot": "launch-forfeit-flip-root-001"
+    },
+    {
+      "reportSlug": "launch-forfeit-dice-001",
+      "caseId": "case-forfeit-dice-launch-001",
+      "summaryStatus": "verified",
+      "score": 96,
+      "requiredChecks": [
+        { "id": "lab-report-linked", "label": "Lab fairness report linked", "status": "pass", "summary": "The forfeit-dice-fairness lab report (hash + snapshot root) is attached to the case." },
+        { "id": "fairness-invariants", "label": "Provable-fairness invariants", "status": "pass", "summary": "Commitment-only peek, seed-hashlock, strictly increasing nonce, and unbiased [0,9999] roll band all pass." },
+        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Peek surface and evidence reference no server seed, client seed, or signing material." }
+      ],
+      "recommendedChecks": [
+        { "id": "badge-ready", "label": "Badge ready", "status": "pass", "summary": "Eligible for a public trust badge; badge-forfeit-dice-verified is issued and signed." },
+        { "id": "uniformity-proof", "label": "Distribution uniformity", "status": "pass", "summary": "The standalone verifier proves chi-square uniformity (df=9) with rejection sampling removing modulo bias." },
+        { "id": "settlement-residual", "label": "Settlement residual disclosed", "status": "warn", "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout — consensus cannot gate a payout on the game outcome." }
+      ],
+      "evidenceSummary": "Forfeit Dice carries a passing commit-reveal fairness report; the published roll lives in the rejection-sampled unbiased band.",
+      "reviewerNotes": "Proves the fairness model and invariant well-formedness; the standalone verifier reproduces the chi-square uniformity proof and the modulo-bias negative control.",
+      "publicSummary": "Provably-fair dice: roll = rejection-sampled H(serverSeed‖clientSeed‖nonce) mod 10000; recomputable from public reveals and verifiably uniform.",
+      "generatedAt": "2026-06-08T02:22:00.000Z",
+      "reportHash": "sha256:launch-forfeit-dice-001",
+      "snapshotRoot": "launch-forfeit-dice-root-001"
     }
   ]
 }

@@ -114,6 +114,48 @@
         "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
         "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
+    },
+    {
+      "id": "badge-forfeit-flip-verified",
+      "label": "Forfeit Flip Fairness Verified",
+      "kind": "app-report",
+      "status": "verified",
+      "reportSlug": "forfeit-flip-fairness",
+      "fixtureId": "forfeit-flip-fairness-v0",
+      "issuedAt": "2026-06-08T02:00:00.000Z",
+      "expiresAt": "2027-06-08T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:b61ea88c49baa5f3-forfeit-flip-fairness",
+        "snapshotRoot": "b61ea88c49baa5f3",
+        "signature": "nocklab-sig-forfeit-flip-fairness-v0",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "id": "badge-forfeit-dice-verified",
+      "label": "Forfeit Dice Fairness Verified",
+      "kind": "app-report",
+      "status": "verified",
+      "reportSlug": "forfeit-dice-fairness",
+      "fixtureId": "forfeit-dice-fairness-v0",
+      "issuedAt": "2026-06-08T02:00:00.000Z",
+      "expiresAt": "2027-06-08T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:28d565bae5f10035-forfeit-dice-fairness",
+        "snapshotRoot": "28d565bae5f10035",
+        "signature": "nocklab-sig-forfeit-dice-fairness-v0",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
     }
   ],
   "badgeIssuanceReceipts": [
@@ -245,6 +287,58 @@
         "status": "valid",
         "algorithm": "ed25519",
         "checkedAt": "2026-05-30T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-forfeit-flip-v0",
+      "badgeId": "badge-forfeit-flip-verified",
+      "issuedAt": "2026-06-08T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1",
+      "payloadDigest": "sha256:038ee96a73dc9e9a716cd0261f90a27e5614a991da9c31f23af6385b2447b9f6",
+      "signature": "hSmawOlVVjwNX0d5+eHdmKlPm4u0GQN39A5gIpWilcRICNJGA35xKFEPA8WzHxmvgNwDJn+myGj02jB+QUayBQ==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-flip-verified",
+        "status": "verified",
+        "reportHash": "sha256:b61ea88c49baa5f3-forfeit-flip-fairness",
+        "snapshotRoot": "b61ea88c49baa5f3",
+        "issuedAt": "2026-06-08T02:00:00.000Z",
+        "expiresAt": "2027-06-08T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "2026-06-08T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-forfeit-dice-v0",
+      "badgeId": "badge-forfeit-dice-verified",
+      "issuedAt": "2026-06-08T02:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1",
+      "payloadDigest": "sha256:a2c8bfde6afd1b2bcfe632079e7031278b7d80c93ee0a95a3f117eb923bd4158",
+      "signature": "mp2rJVpEKMCkIWdTTrurHK6bwSzQluBQbXXxbhEBEOT58z5XTxFEx5Ia98zUHx9/iqRYsg1J9J/UyunvpDHGCA==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-dice-verified",
+        "status": "verified",
+        "reportHash": "sha256:28d565bae5f10035-forfeit-dice-fairness",
+        "snapshotRoot": "28d565bae5f10035",
+        "issuedAt": "2026-06-08T02:00:00.000Z",
+        "expiresAt": "2027-06-08T02:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+          "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+        }
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "2026-06-08T02:10:00.000Z"
       }
     }
   ],

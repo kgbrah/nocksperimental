@@ -37,7 +37,7 @@ async function assertTrustUpdateDetailApi() {
   assertEqual(body.entry.entryHash, "sha256:append-score-history-v0", "trust update entry hash");
   assertEqual(body.validation.isAppendOnly, true, "trust update chain validation");
   assertEqual(body.position.previousUpdateId, "update-badge-revocation-v0", "trust update previous entry link");
-  assertEqual(body.position.nextUpdateId, null, "trust update next entry link");
+  assertEqual(body.position.nextUpdateId, "update-game-badge-issuance-v0", "trust update next entry link");
   assertEqual(body.links.collection, "/api/trust/updates", "trust update collection API link");
   assertEqual(body.links.detail, "/trust/updates/update-score-history-v0", "trust update detail page link");
   assertEqual(body.links.targetApi, "/api/trust/score-history", "trust update target API link");

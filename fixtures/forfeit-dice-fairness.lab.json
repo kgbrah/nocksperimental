@@ -1,0 +1,82 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "forfeit-dice-fairness-v0",
+  "app": {
+    "name": "Forfeit Dice (fairness)",
+    "slug": "forfeit-dice",
+    "version": "0.0.1",
+    "kernel": "forfeit-dice"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Positive proof of the forfeit-dice fairness invariants over a resolved round.",
+      "Peek surface is commitment-only (no seed); revealed seeds hash to their commitments; nonce strictly increases; the published roll lives in the unbiased [0,9999] band (rejection-sampled shax(jam[server client nonce]) mod 10000).",
+      "Honest limit: this proves the MODEL and that the invariants are well-formed, not the compiled Hoon (the compile-gate fixture covers that). The standalone forfeit-dice verifier proves the chi-square uniformity + rejection-sampling debias separately. Real-VM poke/peek awaits generic-cause nockapp-run."
+    ]
+  },
+  "actors": [
+    { "name": "referee", "pkh": "forfeit-dice-referee" }
+  ],
+  "initialState": {
+    "peekSurface": {
+      "nonce": 3,
+      "commitHouse": "02d449a31fbb267c8f352e9968a79e3e5fc95c1bbeaa502fd6454ebde5a4bedc",
+      "commitPlayer": "9f72ea0cf49536e3c66c787f705186df9a4378083753ae9536d65b3ad7fcddc4",
+      "roll": 4217,
+      "rejectionIndex": 0,
+      "line": 5000,
+      "outcome": false
+    },
+    "reveals": [
+      { "label": "house", "seed": "1111111111111111111111111111111111111111111111111111111111111111", "commit": "02d449a31fbb267c8f352e9968a79e3e5fc95c1bbeaa502fd6454ebde5a4bedc" },
+      { "label": "player", "seed": "2222222222222222222222222222222222222222222222222222222222222222", "commit": "9f72ea0cf49536e3c66c787f705186df9a4378083753ae9536d65b3ad7fcddc4" }
+    ],
+    "nonceSequence": [0, 1, 2, 3]
+  },
+  "steps": [
+    {
+      "id": "peek-commit-surface",
+      "type": "peek",
+      "title": "Peek the commitment-only surface",
+      "target": "/round",
+      "expect": { "path": "peekSurface.nonce", "equals": 3 }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "commit-only-peek",
+      "title": "Peek surface never exposes an unrevealed seed",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "peek-reveals-no-secret",
+      "path": "peekSurface"
+    },
+    {
+      "id": "seeds-hashlock",
+      "title": "Revealed seeds hash to their commitments (provable fairness)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "commit-binds-seed",
+      "path": "reveals"
+    },
+    {
+      "id": "nonce-monotonic",
+      "title": "Nonce strictly increases (replay safety)",
+      "severity": "high",
+      "kind": "monotonic-strict",
+      "path": "nonceSequence"
+    },
+    {
+      "id": "roll-in-unbiased-band",
+      "title": "Published roll lives in the unbiased [0,9999] band (modulo-bias removed by rejection sampling)",
+      "severity": "high",
+      "kind": "numeric-range",
+      "path": "peekSurface.roll",
+      "min": 0,
+      "max": 9999
+    }
+  ]
+}

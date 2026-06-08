@@ -40,9 +40,9 @@ function main() {
     const dryRunLog = JSON.parse(dryRun.stdout);
     const sourceAfterDryRun = JSON.parse(readFileSync(logPath, "utf8"));
 
-    assertEqual(dryRunLog.chain.entryCount, 5, "dry-run entry count");
+    assertEqual(dryRunLog.chain.entryCount, 6, "dry-run entry count");
     assertEqual(dryRunLog.chain.latestRoot, "root-score-history-v1", "dry-run latest root");
-    assertEqual(sourceAfterDryRun.chain.entryCount, 4, "dry-run does not write source file");
+    assertEqual(sourceAfterDryRun.chain.entryCount, 5, "dry-run does not write source file");
 
     const writeRun = spawnSync(process.execPath, appendArgs, { encoding: "utf8" });
     assertEqual(writeRun.status, 0, `write exit status: ${writeRun.stderr}`);
@@ -51,12 +51,12 @@ function main() {
     const persistedEntry = persistedLog.entries.at(-1);
 
     assertEqual(writeSummary.wrote, logPath, "write summary path");
-    assertEqual(writeSummary.entryCount, 5, "write summary entry count");
+    assertEqual(writeSummary.entryCount, 6, "write summary entry count");
     assertEqual(writeSummary.latestRoot, "root-score-history-v1", "write summary latest root");
-    assertEqual(persistedLog.chain.entryCount, 5, "persisted entry count");
+    assertEqual(persistedLog.chain.entryCount, 6, "persisted entry count");
     assertEqual(persistedLog.chain.latestRoot, "root-score-history-v1", "persisted latest root");
-    assertEqual(persistedEntry.sequence, 5, "persisted entry sequence");
-    assertEqual(persistedEntry.previousRoot, "root-score-history-v0", "persisted previous root");
+    assertEqual(persistedEntry.sequence, 6, "persisted entry sequence");
+    assertEqual(persistedEntry.previousRoot, "root-game-badge-issuance-v0", "persisted previous root");
     assertEqual(persistedEntry.signature.verificationStatus, "valid", "persisted signature status");
     assertEqual(persistedEntry.entryHash.startsWith("sha256:"), true, "persisted entry hash prefix");
   } finally {

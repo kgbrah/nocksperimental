@@ -28,20 +28,20 @@ async function main() {
 
   assertEqual(trustUpdateLog.chain.algorithm, "sha256-dev-chain-v0", "update chain algorithm");
   assertEqual(trustUpdateLog.chain.source, "src/data/trust-update-log.json", "update chain source");
-  assertEqual(trustUpdateEntries.length, 4, "update entry count");
+  assertEqual(trustUpdateEntries.length, 5, "update entry count");
 
   const validation = validateTrustUpdateChain();
   assertEqual(validation.isAppendOnly, true, "append-only chain flag");
-  assertEqual(validation.entryCount, 4, "append-only entry count");
-  assertEqual(validation.signedEntryCount, 4, "signed entry count");
-  assertEqual(validation.validSignatureCount, 4, "valid signature count");
+  assertEqual(validation.entryCount, 5, "append-only entry count");
+  assertEqual(validation.signedEntryCount, 5, "signed entry count");
+  assertEqual(validation.validSignatureCount, 5, "valid signature count");
   assertEqual(validation.brokenLinkCount, 0, "broken link count");
   assertEqual(validation.invalidSignatureCount, 0, "invalid signature count");
-  assertEqual(validation.latestRoot, "root-score-history-v0", "latest chain root");
+  assertEqual(validation.latestRoot, "root-game-badge-issuance-v0", "latest chain root");
 
   assertEqual(trustUpdateChainSummary.latestRoot, validation.latestRoot, "summary latest root");
-  assertEqual(trustUpdateChainSummary.entryCount, 4, "summary entry count");
-  assertEqual(trustUpdateChainSummary.targets, "trust-signals,badge-issuance,badge-revocation,score-history", "summary targets");
+  assertEqual(trustUpdateChainSummary.entryCount, 5, "summary entry count");
+  assertEqual(trustUpdateChainSummary.targets, "trust-signals,badge-issuance,badge-revocation,score-history,badge-issuance", "summary targets");
 
   assertEqual(trustUpdateEntries[0].previousRoot, "genesis", "genesis previous root");
   assertEqual(
@@ -81,12 +81,12 @@ async function main() {
   const appendedEntry = appendedLog.entries.at(-1);
   const appendedValidation = validateTrustUpdateChain(appendedLog);
 
-  assertEqual(trustUpdateLog.chain.entryCount, 4, "append helper does not mutate original count");
-  assertEqual(trustUpdateLog.chain.latestRoot, "root-score-history-v0", "append helper does not mutate original root");
-  assertEqual(appendedLog.chain.entryCount, 5, "appended chain entry count");
+  assertEqual(trustUpdateLog.chain.entryCount, 5, "append helper does not mutate original count");
+  assertEqual(trustUpdateLog.chain.latestRoot, "root-game-badge-issuance-v0", "append helper does not mutate original root");
+  assertEqual(appendedLog.chain.entryCount, 6, "appended chain entry count");
   assertEqual(appendedLog.chain.latestRoot, "root-score-history-v1", "appended latest root");
-  assertEqual(appendedEntry.sequence, 5, "appended entry sequence");
-  assertEqual(appendedEntry.previousRoot, "root-score-history-v0", "appended previous root");
+  assertEqual(appendedEntry.sequence, 6, "appended entry sequence");
+  assertEqual(appendedEntry.previousRoot, "root-game-badge-issuance-v0", "appended previous root");
   assertEqual(appendedEntry.signature.issuerKeyId, "nocksperimental-registry-ed25519-dev-v0", "default issuer key");
   assertEqual(appendedEntry.signature.algorithm, "ed25519-devnet-v0", "default signature algorithm");
   assertEqual(appendedEntry.signature.verificationStatus, "valid", "default signature status");
@@ -121,7 +121,7 @@ async function main() {
     "tampering a signed field fails Ed25519 verification"
   );
   assertEqual(appendedValidation.isAppendOnly, true, "appended log remains append-only");
-  assertEqual(appendedValidation.entryCount, 5, "appended validation count");
+  assertEqual(appendedValidation.entryCount, 6, "appended validation count");
 }
 
 function loadTypeScriptModule(relativePath) {
