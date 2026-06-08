@@ -159,6 +159,9 @@ async function main() {
     await expectWorkspaceUploadTokenVerification(baseUrl);
     await expectStatus(`${baseUrl}/verify`, 200, "verification page");
     await expectStatus(`${baseUrl}/api/verify`, 200, "verification index API");
+    await expectStatus(`${baseUrl}/pocgames`, 200, "POC games hub page");
+    await expectStatus(`${baseUrl}/pocgames/forfeit-flip`, 200, "POC games forfeit-flip play page");
+    await expectStatus(`${baseUrl}/pocgames/forfeit-dice`, 200, "POC games forfeit-dice play page");
     await expectGeneratedReports(`${baseUrl}/api/reports/generated`);
     await expectStatus(`${baseUrl}/api/trust`, 200, "trust API");
     await expectStatus(`${baseUrl}/trust/feed`, 200, "trust feed page");
