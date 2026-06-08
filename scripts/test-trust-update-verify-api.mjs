@@ -49,6 +49,13 @@ async function assertTrustUpdateVerifier() {
   assertEqual(verifiedBody.checks.chainAppendOnly, true, "append-only chain check");
   assertEqual(verifiedBody.checks.signatureValid, true, "signature validity check");
   assertEqual(verifiedBody.checks.exactUpdateMatch, true, "exact update match check");
+  // Honest disclosure: signatureValid/verified are the recorded append-only-chain
+  // status, NOT a live Ed25519 check. The response must say so explicitly so an
+  // integrator never mistakes it for a live cryptographic attestation.
+  assertEqual(verifiedBody.checks.signatureChecked, false, "discloses no live signature check ran");
+  assertEqual(verifiedBody.signatureVerification.performed, false, "signatureVerification.performed is false");
+  assertEqual(verifiedBody.signatureVerification.mode, "recorded-chain-status", "signatureVerification.mode disclosed");
+  assertEqual(verifiedBody.signatureVerification.recordedStatus, "valid", "recorded signature status surfaced");
   assertEqual(verifiedBody.match.id, "update-score-history-v0", "matched update id");
   assertEqual(verifiedBody.match.sequence, 4, "matched sequence");
   assertEqual(verifiedBody.match.links.detail, "https://nocksperimental.com/trust/updates/update-score-history-v0", "detail link");

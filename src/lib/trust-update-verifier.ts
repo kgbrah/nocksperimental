@@ -35,6 +35,12 @@ export function verifyTrustUpdateEntry({
   const rootHashMatched = rootHash ? entry?.rootHash === rootHash : true;
   const signatureMatched = signature ? entry?.signature.signature === signature : true;
   const issuerKeyMatched = issuerKeyId ? entry?.signature.issuerKeyId === issuerKeyId : true;
+  // NOTE: this is the signature status RECORDED at append time and anchored in the
+  // append-only chain — NOT a live Ed25519 verification of entry.signature against
+  // the issuer key (v0 carries dev placeholder signatures). The response discloses
+  // this via `signatureVerification` so `signatureValid`/`verified` are never
+  // mistaken for a live cryptographic attestation. Real Ed25519 verification (sign
+  // canonical entry bytes at append time, verify here) is a tracked follow-up.
   const signatureValid = entry?.signature.verificationStatus === "valid";
   const exactUpdateMatch = Boolean(
     entry &&
@@ -51,6 +57,16 @@ export function verifyTrustUpdateEntry({
     subject: registrySubject,
     canonicalUrl: `${registryCanonicalBaseUrl}/api/trust/updates/verify`,
     verified: exactUpdateMatch,
+    // Honest disclosure: v0 confirms the entry exists in the append-only chain and
+    // that the supplied hashes/signature/issuer-key match the recorded entry; it
+    // does NOT perform a live signature verification. Surfaced so integrators do not
+    // read `verified`/`signatureValid` as a live Ed25519 attestation.
+    signatureVerification: {
+      performed: false,
+      mode: "recorded-chain-status",
+      recordedStatus: entry?.signature.verificationStatus ?? null,
+      note: "signatureValid reflects the status recorded at append time and anchored in the append-only chain; v0 does not perform a live Ed25519 signature verification."
+    },
     query: {
       updateId: updateId ?? null,
       entryHash: entryHash ?? null,
@@ -66,6 +82,7 @@ export function verifyTrustUpdateEntry({
       issuerKeyMatched,
       chainAppendOnly: validation.isAppendOnly,
       signatureValid,
+      signatureChecked: false,
       exactUpdateMatch
     },
     match: exactUpdateMatch && entry
