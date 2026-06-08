@@ -24,7 +24,9 @@ type VeslReceiptStore = {
   backend: VeslReceiptStorageBackend;
   get: (receiptId: string) => Promise<PersistedVeslEvidenceReceipt | null>;
   list: (limit: number) => Promise<PersistedVeslEvidenceReceipt[]>;
-  put: (receipt: PersistedVeslEvidenceReceipt) => Promise<void>;
+  // Returns the EFFECTIVE stored receipt: the new one when created, or the existing
+  // one when a receipt already occupies the key (create-only — see put impls).
+  put: (receipt: PersistedVeslEvidenceReceipt) => Promise<PersistedVeslEvidenceReceipt>;
 };
 
 type VeslReceiptKvNamespace = {
@@ -56,9 +58,10 @@ export async function persistVeslEvidenceReceipt(receipt: VeslEvidenceReceipt) {
     true
   );
 
-  await store.put(persisted);
-
-  return persisted;
+  // store.put is create-only and returns the effective stored receipt: the existing
+  // one if this key is already taken (so a colliding/forged submission cannot clobber
+  // another submitter's signed receipt), otherwise the freshly-created one.
+  return store.put(persisted);
 }
 
 export async function listVeslEvidenceReceipts(limit = 25) {
@@ -124,7 +127,15 @@ export function createKvStore(kv: VeslReceiptKvNamespace): VeslReceiptStore {
     },
     async put(receipt) {
       if (!receipt.receiptId || !receipt.storage.key) {
-        return;
+        return receipt;
+      }
+
+      // Create-only: receipts are immutable once persisted. A different submitter (or
+      // a receiptId hash collision) that lands on an existing key must NOT overwrite
+      // the stored, signed receipt — return the existing one so the first write wins.
+      const existing = await readKvReceipt(kv, receipt.storage.key);
+      if (existing) {
+        return existing;
       }
 
       await kv.put(receipt.storage.key, JSON.stringify(receipt), {
@@ -135,6 +146,8 @@ export function createKvStore(kv: VeslReceiptKvNamespace): VeslReceiptStore {
           verified: receipt.verified
         }
       });
+
+      return receipt;
     }
   };
 }
@@ -179,9 +192,18 @@ const memoryStore: VeslReceiptStore = {
     return sortReceipts(Array.from(memoryReceipts.values())).slice(0, limit);
   },
   async put(receipt) {
-    if (receipt.storage.key) {
-      memoryReceipts.set(receipt.storage.key, receipt);
+    if (!receipt.storage.key) {
+      return receipt;
     }
+
+    // Create-only: never overwrite an existing receipt (see the KV store above).
+    const existing = memoryReceipts.get(receipt.storage.key);
+    if (existing) {
+      return existing;
+    }
+
+    memoryReceipts.set(receipt.storage.key, receipt);
+    return receipt;
   }
 };
 

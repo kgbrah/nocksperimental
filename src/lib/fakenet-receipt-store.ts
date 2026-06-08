@@ -36,7 +36,9 @@ type FakenetReceiptStore = {
   backend: FakenetReceiptStorageBackend;
   get: (receiptId: string) => Promise<PersistedFakenetEvidenceReceipt | null>;
   list: (limit: number) => Promise<PersistedFakenetEvidenceReceipt[]>;
-  put: (receipt: PersistedFakenetEvidenceReceipt) => Promise<void>;
+  // Returns the EFFECTIVE stored receipt: the new one when created, or the existing
+  // one when a receipt already occupies the key (create-only — see put impls).
+  put: (receipt: PersistedFakenetEvidenceReceipt) => Promise<PersistedFakenetEvidenceReceipt>;
 };
 
 type FakenetReceiptKvNamespace = {
@@ -68,9 +70,10 @@ export async function persistFakenetEvidenceReceipt(receipt: FakenetEvidenceRece
     true
   );
 
-  await store.put(persisted);
-
-  return persisted;
+  // store.put is create-only and returns the effective stored receipt: the existing
+  // one if this key is already taken (so a colliding/forged submission cannot clobber
+  // another submitter's signed receipt), otherwise the freshly-created one.
+  return store.put(persisted);
 }
 
 export async function listFakenetEvidenceReceipts(limit = 25): Promise<FakenetReceiptListResult> {
@@ -136,7 +139,17 @@ export function createKvStore(kv: FakenetReceiptKvNamespace): FakenetReceiptStor
     },
     async put(receipt) {
       if (!receipt.receiptId || !receipt.storage.key) {
-        return;
+        return receipt;
+      }
+
+      // Create-only: receipts are immutable once persisted. A different submitter (or
+      // a receiptId hash collision) that lands on an existing key must NOT overwrite
+      // the stored, signed receipt — return the existing one so the first write wins.
+      // (KV is eventually consistent, so this read-before-write is not atomic; it
+      // defeats the deliberate cross-submitter clobber, not a true concurrent race.)
+      const existing = await readKvReceipt(kv, receipt.storage.key);
+      if (existing) {
+        return existing;
       }
 
       await kv.put(receipt.storage.key, JSON.stringify(receipt), {
@@ -147,6 +160,8 @@ export function createKvStore(kv: FakenetReceiptKvNamespace): FakenetReceiptStor
           verified: receipt.verified
         }
       });
+
+      return receipt;
     }
   };
 }
@@ -191,9 +206,18 @@ const memoryStore: FakenetReceiptStore = {
     return sortReceipts(Array.from(memoryReceipts.values())).slice(0, limit);
   },
   async put(receipt) {
-    if (receipt.storage.key) {
-      memoryReceipts.set(receipt.storage.key, receipt);
+    if (!receipt.storage.key) {
+      return receipt;
     }
+
+    // Create-only: never overwrite an existing receipt (see the KV store above).
+    const existing = memoryReceipts.get(receipt.storage.key);
+    if (existing) {
+      return existing;
+    }
+
+    memoryReceipts.set(receipt.storage.key, receipt);
+    return receipt;
   }
 };
 
