@@ -6,6 +6,7 @@ import {
   Bot,
   Code2,
   FileCheck2,
+  Gamepad2,
   GitBranch,
   History,
   LockKeyhole,
@@ -163,6 +164,13 @@ export default function Home() {
               >
                 <Terminal size={16} aria-hidden="true" />
                 Fakenet
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
+                href="/pocgames"
+              >
+                <Gamepad2 size={16} aria-hidden="true" />
+                POC Games
               </Link>
             </div>
           </div>
