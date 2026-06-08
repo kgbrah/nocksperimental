@@ -18,9 +18,19 @@ export async function POST(request: Request) {
   }
 
   const body = parsed.value as Parameters<typeof verifyNockupValidationSubmission>[0];
-  const receipt = await persistNockupValidationReceipt(verifyNockupValidationSubmission(body));
 
-  return NextResponse.json(receipt, {
-    status: receipt.accepted ? 200 : 400
+  // Backstop: fail closed to 400 (not an unhandled 500) if any residual input
+  // shape makes pure verification throw — public, unauthenticated route.
+  let receipt;
+  try {
+    receipt = verifyNockupValidationSubmission(body);
+  } catch {
+    return NextResponse.json({ error: "Invalid validation submission." }, { status: 400 });
+  }
+
+  const persisted = await persistNockupValidationReceipt(receipt);
+
+  return NextResponse.json(persisted, {
+    status: persisted.accepted ? 200 : 400
   });
 }

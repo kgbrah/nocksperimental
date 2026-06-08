@@ -158,6 +158,7 @@ async function main() {
   );
 
   await assertMalformedBodyRejected(POST, "https://nocksperimental.com/api/vesl/evidence/submit");
+  await assertDeepBodyRejected(POST, "https://nocksperimental.com/api/vesl/evidence/submit");
 
   const packageJson = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8"));
   assertEqual(
@@ -343,6 +344,29 @@ async function assertMalformedBodyRejected(POST, url) {
     const payload = await response.json();
     assertEqual(typeof payload.error, "string", `malformed body (${JSON.stringify(body)}) returns an error message`);
   }
+}
+
+async function assertDeepBodyRejected(POST, url) {
+  // A pathologically-nested body must fail closed to 400 at the parser, before any
+  // downstream raw JSON.stringify sink throws a RangeError (which would surface as an
+  // unhandled 500). Build the deep JSON as a STRING so the test itself never
+  // stringifies a deep object. depth=300 is safely beyond the parser's MAX_BODY_DEPTH.
+  const depth = 300;
+  const open = '{"a":'.repeat(depth);
+  const close = "}".repeat(depth);
+  const deepBody = `{"connection":{"project":"x"},"hull":${open}1${close}}`;
+
+  const response = await POST(
+    new Request(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: deepBody
+    })
+  );
+
+  assertEqual(response.status, 400, "deeply-nested body is rejected with 400 (not a 500)");
+  const payload = await response.json();
+  assertEqual(typeof payload.error, "string", "deeply-nested body returns an error message");
 }
 
 function assertStartsWith(actual, expectedPrefix, label) {
