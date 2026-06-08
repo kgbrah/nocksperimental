@@ -3,7 +3,7 @@
 // configured, or it is unreachable / malformed, we return an empty set and the
 // directory simply omits facilitator listings.
 
-import { resolveX402Config } from "@/lib/x402/config";
+import { isSafeFacilitatorUrl, resolveX402Config } from "@/lib/x402/config";
 
 export interface FacilitatorResource {
   resource: string;
@@ -27,11 +27,24 @@ export async function discoverFacilitatorResources(timeoutMs = 1500): Promise<Fa
     return { configured: false, reachable: false, resources: [] };
   }
 
+  // SSRF guard, mirroring FacilitatorVerifier: this fetch is server-side to the
+  // same operator-configured URL, so apply the identical safety gate. A
+  // configured-but-unsafe URL (cloud-metadata / link-local / internal-only) is
+  // treated as configured-but-unreachable rather than fetched.
+  if (!isSafeFacilitatorUrl(config.facilitatorUrl)) {
+    return { configured: true, reachable: false, resources: [] };
+  }
+
   const base = config.facilitatorUrl.replace(/\/+$/, "");
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
-    const response = await fetch(`${base}/discovery/resources`, { signal: controller.signal });
+    // redirect:"manual" so a compromised facilitator cannot 3xx-pivot the
+    // server-side fetch to an internal host; any 3xx surfaces as !response.ok.
+    const response = await fetch(`${base}/discovery/resources`, {
+      signal: controller.signal,
+      redirect: "manual"
+    });
     clearTimeout(timer);
 
     if (!response.ok) {
