@@ -12,10 +12,12 @@ not a rewrite.
 
 ## Prerequisites
 
-- A local Nockchain checkout, built (`make install`), with `fakenock` on your `PATH`.
+- A local Nockchain checkout, built (`make install`), with `nockchain-wallet` on your `PATH`.
+  The fakenet peek/poke adapter is a command-backed adapter against whatever is on your
+  PATH — on Nockchain, `nockchain-wallet` (there is no `fakenock`).
 - A running fakenet node listening on the gRPC endpoint in the fixture
   (`environment.grpcEndpoint`, default `127.0.0.1:5555`).
-- On Windows, run inside WSL (or any shell where `fakenock` resolves).
+- On Windows, run inside WSL (or any shell where `nockchain-wallet` resolves).
 
 ## Flow (verified)
 
@@ -85,6 +87,10 @@ environment can't produce, since it has no Nockchain node.
 
 ## Next: full kernel execution
 
-`local-fakenet` exercises a *running* node from the outside. Driving a NockApp's actual
-Hoon/Jock kernel through the lab (compile → load into NockVM → poke → assert) is the next
-milestone — see [`docs/kernel-integration-design.md`](./kernel-integration-design.md).
+`local-fakenet` exercises a *running* node from the outside. The `kernel` environment mode
+already drives a NockApp's actual Hoon kernel through the lab offline — a real `hoonc`
+compile gate plus offline poke/peek via the `nockapp-run` harness.
+See [`docs/kernel-integration-design.md`](./kernel-integration-design.md).
+
+> **Inflight:** a full "Hoon → hoonc → .jam → NockVM → poke/assert state transitions"
+> test-harness (arbitrary cause nouns end to end) is not complete yet.

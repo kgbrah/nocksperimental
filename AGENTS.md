@@ -31,7 +31,7 @@ nocksperimental/
 | Public/API route behavior | `src/app` | Route handlers should stay thin and delegate to `src/lib`. |
 | Evidence and receipts | `src/lib/*evidence*`, `src/lib/*receipt*` | KV in production, memory fallback in local tests. |
 | Nockchain context | `src/lib/nockchain-*`, `docs/research`, `docs/nockchain-watch.md` | Watch board is monitoring, not protocol authority. |
-| Lab runner | `scripts/run-lab.mjs`, `fixtures`, `packs`, `schemas` | Writes ignored `.nocklab/` artifacts. |
+| Lab runner | `scripts/run-lab.mjs`, `packages/nocklab/`, `fixtures`, `packs`, `schemas` | Writes ignored `.nocklab/` artifacts. Published to npm as `nocklab` (extracted to `packages/nocklab/`); the repo itself stays `private`. |
 | Product direction | `docs/strategy.md`, `docs/superpowers/specs` | Launch Evidence is the first product lane. |
 | Cloudflare deploy | `wrangler.jsonc`, `open-next.config.ts`, `docs/deployment.md` | OpenNext Workers target. |
 

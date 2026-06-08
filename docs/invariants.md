@@ -1,6 +1,6 @@
 # Invariant Catalog v0
 
-The v0 catalog covers invariants that can be evaluated from fixture state alone. These checks are intentionally adapter-independent so reports can be generated before a live fakenet adapter exists.
+The v0 catalog covers invariants that can be evaluated from fixture state alone. These checks are intentionally adapter-independent so reports can be generated without a live fakenet adapter (the `local-fakenet` adapter does real probes — a TCP gRPC-reachability check plus command-backed peek/poke against whatever is on your PATH, on Nockchain `nockchain-wallet`).
 
 | ID | Kind | Purpose | Required fields |
 | --- | --- | --- | --- |

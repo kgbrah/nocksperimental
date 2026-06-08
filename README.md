@@ -11,6 +11,15 @@ Live deployment: https://nocksperimental.com
 
 The product thesis is simple: serious NockApps need deterministic local testing, state replay, invariant checks, fakenet diagnostics, and shareable verification surfaces before meaningful value can safely flow through them.
 
+## Project status
+
+- **`nocklab` CLI — shipped & published.** The fixture-driven lab runner is published to npm as [`nocklab`](https://www.npmjs.com/package/nocklab) (v0.1.4): three verbs (`<fixture>`, `run --config`, `new-fixture`), five step types, eleven invariant kinds, four environment modes, typed `defineFixture` authoring, and command-backed `local-fakenet` / `kernel` adapters. The published package is the source of truth for the runner's current capabilities.
+- **Web app — live.** Deployed on Cloudflare Workers at https://nocksperimental.com: trust registry, evidence/receipt APIs, Launch Evidence, private workspaces, the Nockchain intelligence atlases, OpenAPI, and `.well-known` discovery (health check green).
+- **Inflight (in progress, not yet real — do not treat as done):**
+  - **gRPC-native fakenet `poke`/`peek`** — adapters are command-backed today (they shell out to `nockchain-wallet`); stable gRPC-native probes are the next adapter milestone.
+  - **Full NockVM kernel test-harness** — `kernel` mode ships a real `hoonc` compile-gate plus an offline `nockapp-run` poke/peek path; a complete Hoon → `hoonc` → `.jam` → NockVM → assert-state harness is still in progress.
+  - **x402 on-chain settlement** — metering is off by default and a stub verifier ships; live on-chain settlement through a facilitator is not yet wired.
+
 ## What is here
 
 - Fixture-driven NockApp lab runner with strict JSON schemas.
@@ -65,7 +74,9 @@ npm run verify:6-18
 
 ## Local Fakenet
 
-The local fakenet slice is designed to run from WSL with the `fakenock` helper on `PATH`.
+The local fakenet slice runs command-backed `peek`/`poke` adapters against whatever is on your `PATH` — on Nockchain that is `nockchain-wallet` (there is no `fakenock` binary). The bundled `local-fakenet-*` fixtures still carry a placeholder `fakenock` program name and fail closed with a clear `ENOENT` when it is absent; point the adapter `command.program` at `nockchain-wallet` to probe a real node. See [docs/local-fakenet-guide.md](docs/local-fakenet-guide.md) for the verified end-to-end flow.
+
+> **Inflight:** migrating the bundled `fakenock`-named local-fakenet fixtures to `nockchain-wallet`, and replacing command-backed probes with stable gRPC-native `poke`/`peek`.
 
 Useful commands:
 
@@ -342,7 +353,7 @@ Use it when deciding whether a fakenet symptom is a sync, peer, state-artifact, 
 
 ## Nockchain Wallet/API Atlas
 
-The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats local `fakenock --balance` as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context. Its public API evidence contract distinguishes node acceptance from block inclusion, cache warm-up from missing data, and reorg-window staleness from final explorer evidence.
+The wallet/API atlas turns upstream `nockchain-wallet` and `nockchain-api` docs into a receipt-safe guide for fakenet balances, note listings, watch-only tracking, public/private endpoint mode, transaction acceptance checks, and key-material safety. It treats a local `nockchain-wallet` balance probe as wrapper evidence while preserving upstream wallet command, endpoint, output hash, and Nockchain build context. Its public API evidence contract distinguishes node acceptance from block inclusion, cache warm-up from missing data, and reorg-window staleness from final explorer evidence.
 
 The atlas now includes a Transaction Source Contract for the released wallet transaction path. It pins `wallet-tx-builder` and `nockchain-wallet create-tx` source files, hashes, planner/fee/word-count/lock/note-data symbols, receipt fields, and raw transaction forbidden fields so tests can cite Rust provenance without storing unsigned transactions, signed transactions, transaction jams, wallet databases, or key material. Upstream PR #116 for wallet `memo`/`blob` transaction note data is tracked only as `open-pr-early-warning` until it lands in a released Nockchain build.
 
@@ -491,20 +502,21 @@ Bundled fixture tracks include:
 
 ## Use it on your NockApp
 
-The lab is built to test *your* NockApp, not just the bundled fixtures. To run it against your own app, copy these into your repo:
-
-- `nocklab.config.json`
-- the relevant `fixtures/*.lab.json`
-- `.github/workflows/nocklab.yml`
-- `scripts/run-lab.mjs` (the CLI itself)
-
-Then run the canonical portable invocation:
+The lab is built to test *your* NockApp, not just the bundled fixtures. The runner ships as the standalone [`nocklab`](https://www.npmjs.com/package/nocklab) package on npm, so external repos install it instead of copying source:
 
 ```bash
-node scripts/run-lab.mjs run --config nocklab.config.json --ci --strict
+npm install --save-dev nocklab
+# or run without installing:
+npx nocklab fixtures/my-app.lab.json --strict
 ```
 
-This is the same command the bundled `npm run lab:ci` script runs. One caveat: the bundled workflow calls `npm run lab:ci`, so an external repo must either copy that `lab:ci` package.json script too or change the workflow step to invoke `node scripts/run-lab.mjs run ...` directly. This package is `private` and not on npm, so there is no `npm install nocksperimental` or bare `nocklab` install path.
+Add your own fixtures and a config, then run the canonical CI invocation:
+
+```bash
+npx nocklab run --config nocklab.config.json --ci --strict
+```
+
+Invariant packs referenced in a fixture's `invariantPacks` resolve **relative to the fixture file**, so your repo ships its own `fixtures/` and `packs/` and the paths Just Work. Copy `.github/workflows/nocklab.yml` (or write your own) to wire it into CI. Only the extracted `nocklab` CLI is published; the `nocksperimental` repo itself stays `private`, so there is no `npm install nocksperimental`.
 
 See [docs/ci.md](docs/ci.md) for the full external-repo and CI guidance.
 
@@ -627,8 +639,8 @@ Upload-token issuance is protected by `NOCKS_WORKSPACE_UPLOAD_KEYS`. Signed toke
 - `npm run lab:pma` generates a PMA state-safety report with the pma-safety invariant pack.
 - `npm run lab:mining` generates a fakenet mining/PoW report with the mining-pow invariant pack.
 - `npm run lab:local` probes local fakenet health.
-- `npm run lab:local:balance` parses `fakenock --balance`.
-- `npm run lab:local:chain` parses chain metadata from `fakenock --balance`.
+- `npm run lab:local:balance` runs the local-fakenet balance fixture (parses a `nockchain-wallet` balance probe; the bundled fixture uses a `fakenock` placeholder program name).
+- `npm run lab:local:chain` runs the local-fakenet chain fixture (parses chain metadata from the same balance probe).
 - `npm run lab:local:peek` runs a command-backed local fakenet `peek`.
 - `npm run lab:local:poke` runs a command-backed local fakenet `poke`.
 - `npm run lab:all` runs the config-driven CI lab workflow.
@@ -656,7 +668,7 @@ paying revenue to the project wallet. Producing evidence stays free; consuming
 verification at scale is paid in micro-`$NOCK`.
 
 - **Off by default** (`NOCKS_X402_ENABLED`) — routes behave normally until you flip it on.
-- A **stub verifier** ships now; set `NOCKS_X402_FACILITATOR_URL` to settle on-chain — no route changes.
+- A **stub verifier** ships now and is the live path today; set `NOCKS_X402_FACILITATOR_URL` to delegate settlement to a facilitator — no route changes. _(On-chain settlement via the facilitator is inflight; the stub verifier is what runs.)_
 - Metered: the deep verifiers (`/api/trust/badges/verify`, `/api/reports/generated/verify`,
   `/api/fakenet/evidence/verify`, `/api/workspaces/evidence/verify`, `/api/invariants/packs/verify`)
   and premium reads (`/api/trust/compute-benchmarks/[id]`, `/api/trust/token-compatibility/[id]`,

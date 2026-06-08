@@ -19,14 +19,14 @@
 > generic poke/peek that constructs arbitrary cause nouns from the CLI (today the harness uses
 > the counter kernel's `inc`/`[%state 0]` interface). Neither blocks the real-execution path.
 
-## Problem
+## Problem (the gap this `kernel` mode was built to close)
 
-Today the lab can test invariant **design** but not a NockApp's actual kernel
-implementation. `mock-fakenet` applies operations to a JavaScript state tree;
-`local-fakenet` drives a *running* node from the outside via command-backed adapters.
-Neither executes the app's compiled Hoon/Jock kernel and observes real state
-transitions. Until it does, a passing report proves the invariants are well-formed, not
-that the kernel upholds them.
+`mock-fakenet` applies operations to a JavaScript state tree; `local-fakenet` drives a
+*running* node from the outside via command-backed adapters. Neither executes the app's
+compiled Hoon/Jock kernel, so for those two modes a passing report proves the invariants
+are well-formed, not that the kernel upholds them. The `kernel` env mode closes that gap:
+it now executes the compiled kernel offline (real `hoonc` compile + `nockapp-run`
+poke/peek) and evaluates the invariant catalog against real state transitions.
 
 ## Target
 
@@ -58,7 +58,7 @@ than inventing a new runner:
 This keeps the runner's invariant/report machinery untouched; only a new adapter "mode"
 (e.g. `kernel`) and an environment `kernelBuild` field are added.
 
-### Proposed fixture shape (not yet supported)
+### Fixture shape (the `kernel` mode now ships)
 
 ```jsonc
 {
@@ -75,30 +75,36 @@ This keeps the runner's invariant/report machinery untouched; only a new adapter
 }
 ```
 
-## The upstream dependency (why this is not built here)
+## How the harness is built (and what is still inflight)
 
-The load-bearing missing piece is a **NockVM test-harness API**: a stable, scriptable way
-to load a compiled kernel, apply a poke, and read state out as structured data, without a
-full node. That surface does not exist upstream today and likely requires contributing it
-to NockVM. Concretely, upstream needs to expose:
+A **NockVM test-harness API** — a stable, scriptable way to load a compiled kernel, apply
+a poke, and read state out as structured data, without a full node — turned out to already
+exist in the `nockapp` crate (`setup_nockapp` / `poke_sync` / `peek_sync`). The lab drives
+it through the small `nockapp-run` CLI front-end (vendored at `tools/nockapp-run/`), so the
+`kernel` env mode performs a **real** offline NockVM poke → state-transition → peek cycle
+today. Concretely, the harness exposes:
 
 - a deterministic "load `.jam` → context" entry point usable from a CLI/library;
 - `poke(context, input) -> context'` and `peek(context, path) -> noun` that serialize
   the result to a stable, machine-readable form (JSON or a documented jam encoding);
 - determinism guarantees (no clock/entropy) so lab reports stay reproducible.
 
-Estimated effort: **4–8 weeks**, dominated by the upstream NockVM work and its review
-cycle, not the lab-side adapter (which is small once the harness exists).
+> **Inflight:** a *generic* poke/peek that constructs arbitrary cause nouns from the CLI
+> (today the harness uses the counter kernel's `inc`/`[%state 0]` interface), plus shipping
+> `nockapp-run` as a first-class toolchain bin so it lands on PATH alongside
+> `nockchain`/`nockchain-wallet`. Neither blocks the real-execution path that ships now.
 
 ## Incremental, shippable steps (in dependency order)
 
-1. **`hoonc`-only compile gate** — add `environment.kernelBuild`; a fixture that just
-   compiles a kernel and asserts compilation succeeds. This is buildable **now** (depends
-   only on `hoonc`) and already catches real breakage. *(Smallest first star toward this.)*
-2. **Harness poke/peek** — once the NockVM harness CLI exists, add the `kernel` adapter
-   mode + `stdoutJsonMerge`, then drive real state transitions.
-3. **Reference fixture + guide** — a `kernel`-mode reference fixture and a guide mirroring
-   `docs/local-fakenet-guide.md`, with a recorded real run.
+1. **`hoonc`-only compile gate** — `environment.kernelBuild`; a fixture that just
+   compiles a kernel and asserts compilation succeeds (depends only on `hoonc`) and
+   already catches real breakage. **Shipped** (`fixtures/kernel-compile-trivial.lab.json`).
+2. **Harness poke/peek** — the `kernel` adapter mode + `stdoutJsonMerge`, driving real
+   state transitions via the `nockapp-run` harness. **Shipped**
+   (`fixtures/kernel-poke-peek.lab.json`).
+3. **Reference fixture + guide** — a `kernel`-mode reference fixture with a recorded real
+   run. **Shipped**; real runs committed at `docs/evidence/kernel-compile-trivial.report.md`
+   and `docs/evidence/kernel-poke-peek.report.md`.
 
 ## What exists today (the seam this builds on)
 

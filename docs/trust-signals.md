@@ -45,7 +45,7 @@ Compute benchmark profiles define provider reputation from reproducible job-clas
 
 Score histories persist solver, token compatibility, and compute benchmark score windows in a static JSON store with latest, previous, delta, trend, and sparkline summaries.
 
-Trust update logs chain registry changes with previous roots, entry hashes, root hashes, and registry signatures so consumers can audit append-only trust-store changes. `appendTrustUpdateToLog` creates the next signed devnet entry from the current log without mutating the static source data.
+Trust update logs chain registry changes with previous roots, entry hashes, root hashes, and registry signatures so consumers can audit append-only trust-store changes. `appendTrustUpdateToLog` creates the next signed entry from the current log without mutating the static source data. Each appended entry is signed with a **real Ed25519 signature** over a canonical signed payload (entry content + chain position + issuer identity, via `trust-badge-crypto`'s `signBadgePayload`), and `/api/trust/updates/verify` performs a **live** Ed25519 verification of `entry.signature` against the issuer's published key (`signatureVerification.mode: "ed25519"`) — not a read of the recorded status.
 
 Registry maintainers can exercise the write path with `npm run trust:update:append -- --dry-run --id <update-id> --action score-history --target score-history --target-path src/data/trust-score-history.json --recorded-at <iso-time> --root-hash <new-root> --summary "<summary>"`. Drop `--dry-run` to persist the appended log to `src/data/trust-update-log.json`, or pass `--log <path>` to write a temporary copy during review.
 

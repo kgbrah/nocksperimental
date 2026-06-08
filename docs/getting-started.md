@@ -12,7 +12,7 @@ In this repo:
 npm install
 ```
 
-In an external NockApp repo (once published):
+In an external NockApp repo (`nocklab` is published on npm):
 
 ```bash
 npm install --save-dev nocklab
@@ -43,8 +43,8 @@ npx nocklab fixtures/my-app.lab.json --strict
 
 A fixture has five required parts: `app` (identity), `environment` (mode + endpoint),
 `initialState` (the starting state tree), `steps` (scripted `fakenet`/`poke`/`peek`/
-`bridge` interactions that mutate state), and `invariants` (safety checks evaluated
-against the final state).
+`invariant`/`bridge` interactions that mutate state), and `invariants` (safety checks
+evaluated against the final state).
 
 ## 4. A minimal fixture
 
@@ -52,7 +52,7 @@ against the final state).
 {
   "id": "counter-demo-v0",
   "app": { "name": "Counter Demo", "slug": "counter-demo", "version": "0.1.0", "kernel": "counter-kernel" },
-  "environment": { "mode": "mock-fakenet", "grpcEndpoint": "127.0.0.1:5555", "fakenetCommand": "fakenock --start", "notes": [] },
+  "environment": { "mode": "mock-fakenet", "grpcEndpoint": "127.0.0.1:5555", "fakenetCommand": "nockchain --fakenet", "notes": [] },
   "actors": [{ "name": "user", "pkh": "PKHUSER" }],
   "initialState": { "counter": 0 },
   "steps": [
@@ -79,7 +79,7 @@ import { defineFixture } from "nocklab";
 export default defineFixture({
   id: "counter-demo-v0",
   app: { name: "Counter Demo", slug: "counter-demo", version: "0.1.0", kernel: "counter-kernel" },
-  environment: { mode: "mock-fakenet", grpcEndpoint: "127.0.0.1:5555", fakenetCommand: "fakenock --start", notes: [] },
+  environment: { mode: "mock-fakenet", grpcEndpoint: "127.0.0.1:5555", fakenetCommand: "nockchain --fakenet", notes: [] },
   initialState: { counter: 0 },
   steps: [{ id: "boot", type: "fakenet", title: "Boot fakenet" }],
   invariants: [{ id: "counter-floor", title: "counter >= 0", severity: "high", kind: "numeric-min", path: "counter", min: 0 }]

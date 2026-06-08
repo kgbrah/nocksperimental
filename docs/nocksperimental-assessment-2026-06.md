@@ -7,6 +7,25 @@
 
 ---
 
+## ⏱ Status update — 2026-06-08
+
+> The assessment below is the original **June 7, 2026** snapshot. In the days since, most of the "path to 5 stars" work shipped. The published [`nocklab@0.1.4`](https://www.npmjs.com/package/nocklab) package is now the source of truth for the runner's capabilities. The star tables and priorities further down are the **June-7 snapshot, annotated inline with current status** — read this section first.
+
+| Priority (from §5) | June 7 | Now |
+|---|---|---|
+| P1 — Ship the npm package | not started | ✅ **Shipped** — `nocklab@0.1.4` on npm; `npm install --save-dev nocklab` / `npx nocklab`. The runner is extracted to `packages/nocklab/`; the `nocksperimental` repo itself stays `private`. |
+| P2 — TypeScript fixture authoring | not started | ✅ **Shipped** — `import { defineFixture } from "nocklab"` ships with `.d.ts` types and autocomplete. |
+| P3 — Missing invariant kinds | 6 kinds | ✅ **Shipped** — now **11 kinds**: added `numeric-range`, `array-length-min`, `array-length-max`, `temporal-ordering`, and `custom-function` (a name resolved against a frozen in-runner allowlist — no fixture-supplied code). |
+| P6 — Developer documentation | none | ✅ **Shipped** — `docs/getting-started.md`, `docs/fixture-cookbook.md`, and `docs/invariants.md` exist and are linked from the README. |
+| P7 — `setPath` array mutation bug | open | ✅ **Fixed** — writing through `arr.0.field` now preserves the array. |
+| P8 — Drift-check graceful degradation | open | ✅ **Shipped** — drift checks skip gracefully without a local `nockchain/nockchain` clone (`test:source-drift-graceful-skip`). |
+| P4 — Real fakenet adapter demo | mock-only | ⏳ **Inflight** — `local-fakenet` mode now does real TCP reachability + command-backed (`nockchain-wallet`) poke/peek, and a real-node demo is recorded; **stable gRPC-native poke/peek is the remaining work.** |
+| P5 — NockApp kernel integration | not started | ⏳ **Inflight** — `kernel` mode ships a real `hoonc` compile-gate + offline `nockapp-run` poke/peek; **a full Hoon → `hoonc` → `.jam` → NockVM → assert harness is still in progress.** |
+
+**Updated scorecard:** Developer test suite **7.0 → ~9.5/10** — only the gRPC-native / full-NockVM execution star remains. Distribution and Portability are now ★★★★★ (npm package shipped); fixture-authoring ergonomics, invariant expressiveness, learning curve, and CI integration all reached ★★★★★. Product thesis holds at **9.5/10**.
+
+---
+
 ## Executive Summary
 
 Nocksperimental is the most thorough blockchain testing infrastructure for an ecosystem at this stage of maturity. It doesn't just run tests — it produces audit-ready, receipt-anchored, upstream-pinned evidence with cryptographic verification that can survive offline. This is genuinely a product the Nockchain ecosystem **needs** before serious value flows through NockApps.
@@ -98,7 +117,7 @@ Verified nocksperimental.com surfaces: Nockchain intelligence (28 linked traces)
 
 ### 4.1 The invariant system is the killer feature
 
-Six invariant kinds cover the critical surface area of blockchain safety. Crucially, the system **found real bugs** in a custom fixture on first run — it doesn't rubber-stamp, it actively prevents shipping broken invariants.
+Eleven invariant kinds (six at the time of this assessment) cover the critical surface area of blockchain safety. Crucially, the system **found real bugs** in a custom fixture on first run — it doesn't rubber-stamp, it actively prevents shipping broken invariants.
 
 ### 4.2 Cryptographic audit trail
 
@@ -124,7 +143,7 @@ Same fixture format for both `mock-fakenet` (deterministic, no infrastructure) a
 
 ## 5. Path to 5 Stars: Required Work
 
-### Priority 1 — Ship the npm package (unlocks distribution ★★★★★)
+### Priority 1 — Ship the npm package (unlocks distribution ★★★★★) — ✅ SHIPPED (2026-06-08)
 
 **Current:** `"private": true`, no install path. External repos must copy `scripts/run-lab.mjs`, `scripts/fixture-builder.mjs`, `nocklab.config.json`, and fixtures.
 
@@ -138,7 +157,7 @@ Same fixture format for both `mock-fakenet` (deterministic, no infrastructure) a
 
 **Effort:** ~3 days. **Impact:** Goes from "copy source files" to "one command." Largest single leverage item.
 
-### Priority 2 — TypeScript types for fixture authoring (unlocks ergonomics ★★★★★)
+### Priority 2 — TypeScript types for fixture authoring (unlocks ergonomics ★★★★★) — ✅ SHIPPED (2026-06-08)
 
 **Current:** Raw JSON authoring with no intellisense, no autocomplete, no type checking at author time.
 
@@ -157,7 +176,7 @@ const fixture = defineFixture({
 
 **Effort:** ~2 days. **Impact:** Dramatically reduces fixture authoring errors and learning curve.
 
-### Priority 3 — Add missing invariant kinds (unlocks expressiveness ★★★★★)
+### Priority 3 — Add missing invariant kinds (unlocks expressiveness ★★★★★) — ✅ SHIPPED (now 11 kinds)
 
 **Current gaps:**
 
@@ -175,7 +194,7 @@ const fixture = defineFixture({
 
 **Effort:** ~3 days for all four kinds + docs. **Impact:** Covers the ~20% of blockchain safety properties currently unexpressible.
 
-### Priority 4 — Real fakenet adapter demo (unlocks execution ★★★★★)
+### Priority 4 — Real fakenet adapter demo (unlocks execution ★★★★★) — ⏳ INFLIGHT (real local-fakenet shipped; gRPC-native poke/peek remaining)
 
 **Current:** All fixtures run in `mock-fakenet` mode. Operations are applied to a JavaScript object — no NockVM, no Nock ISA, no proof generation.
 
@@ -188,7 +207,7 @@ const fixture = defineFixture({
 
 **Effort:** ~5 days (depends on fakenet gRPC surface stability). **Impact:** Proves the bridge from mock to real; validates the whole adapter architecture.
 
-### Priority 5 — NockApp kernel integration path (unlocks full-stack testing ★★★★★)
+### Priority 5 — NockApp kernel integration path (unlocks full-stack testing ★★★★★) — ⏳ INFLIGHT (compile-gate + offline poke/peek shipped; full NockVM harness remaining)
 
 **Current:** Can test invariant design but not actual Hoon/Jock kernel implementation.
 
@@ -202,7 +221,7 @@ const fixture = defineFixture({
 
 **Effort:** ~4-8 weeks (significant upstream dependency). **Impact:** This is the 5th star for real execution support — the thing that makes Nocksperimental genuinely irreplaceable.
 
-### Priority 6 — Developer documentation (unlocks learning curve ★★★★★)
+### Priority 6 — Developer documentation (unlocks learning curve ★★★★★) — ✅ SHIPPED
 
 **Current:** README is comprehensive but deep. No separate `docs/invariants.md`, no cookbook, no tutorial.
 
@@ -214,7 +233,7 @@ const fixture = defineFixture({
 
 **Effort:** ~3 days. **Impact:** Converts the learning curve from "read 700-line README and experiment" to "5-minute tutorial then cookbook reference."
 
-### Priority 7 — Fix the `setPath` array mutation bug (correctness)
+### Priority 7 — Fix the `setPath` array mutation bug (correctness) — ✅ FIXED
 
 **Current:** `setPath(state, "orderBook.asks.0.status", "filled")` converts the array to `{"0": {"status": "filled"}}` instead of preserving `[{status: "filled"}, ...]`.
 
@@ -222,7 +241,7 @@ const fixture = defineFixture({
 
 **Effort:** ~2 hours. **Impact:** Prevents confusing state snapshots and potential downstream operation failures.
 
-### Priority 8 — Docs-atlas and drift-check hardening
+### Priority 8 — Docs-atlas and drift-check hardening — ✅ SHIPPED
 
 **Current:** Some drift checks require a local `nockchain/nockchain` clone, which blocks contributors who just want to author fixtures.
 

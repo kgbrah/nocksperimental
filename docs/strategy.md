@@ -161,7 +161,9 @@ The first executable slice is a fixture-driven runner:
 - hosted report viewer: `/reports/sample`
 - dashboard report preview on the home page
 
-This creates a stable contract for the first real adapter. The runner currently applies mock state transitions, evaluates `peek` expectations, checks invariant packs, and emits JSON plus Markdown reports. The next engineering milestone is a local fakenet adapter that replaces mock execution with calls to the Nockchain gRPC service.
+This creates a stable contract for the real adapters. In `mock-fakenet` mode the runner applies mock state transitions, evaluates `peek` expectations, checks invariant packs, and emits JSON plus Markdown reports. The local fakenet adapter has since shipped: `local-fakenet` mode runs a real TCP gRPC-reachability check plus command-backed peek/poke against whatever is on your PATH — on Nockchain, `nockchain-wallet` (there is no `fakenock`).
+
+> **Inflight:** stable gRPC-native poke/peek is the next adapter milestone; today's `local-fakenet` poke/peek are command-backed (they shell out to `nockchain-wallet` etc.) rather than gRPC-native.
 
 ## 30-90 Day Build Slice
 
