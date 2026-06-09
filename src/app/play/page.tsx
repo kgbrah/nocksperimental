@@ -81,6 +81,24 @@ export default function PlayPage() {
           <ArrowUpRight size={28} aria-hidden="true" />
         </Link>
 
+        <Link
+          href="/play/nock"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3 border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 text-[#0B0B0B] shadow-[6px_6px_0_#0B0B0B] transition hover:shadow-none"
+        >
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#4A4A4A]">
+              On-chain · Nockchain %fair · consensus-paid winner
+            </span>
+            <p className="mt-1 text-2xl font-semibold">Nock %fair — settled by consensus</p>
+            <p className="mt-1 text-sm text-[#4A4A4A]">
+              The strongest settlement in the stack: a witness-checked <code>%fair</code> lock where the
+              chain itself pays the provably-fair winner — no trusted house signature on the payout.
+              Forfeit-safe via a timeout refund branch.
+            </p>
+          </div>
+          <ArrowUpRight size={28} aria-hidden="true" />
+        </Link>
+
         <h2 className="mt-8 font-mono text-xs uppercase tracking-[0.14em] text-[#4A4A4A]">
           Provably-fair demos (in-browser, no stakes)
         </h2>

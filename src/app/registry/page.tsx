@@ -68,21 +68,21 @@ export default function RegistryPage() {
             <div className="flex flex-wrap gap-2">
               <a
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/registry"
+                href="/api/registry" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 Manifest
               </a>
               <a
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/registry/checkpoint"
+                href="/api/registry/checkpoint" target="_blank" rel="noreferrer"
               >
                 <Fingerprint size={16} aria-hidden="true" />
                 Checkpoint
               </a>
               <a
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/openapi.json"
+                href="/openapi.json" target="_blank" rel="noreferrer"
               >
                 <Globe2 size={16} aria-hidden="true" />
                 OpenAPI

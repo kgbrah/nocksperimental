@@ -1,0 +1,20 @@
+import { readFileSync } from "node:fs";
+import { createWalletClient, createPublicClient, http, defineChain } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+let k = readFileSync(process.env.HOME+"/.config/nocklab/base-sepolia-deployer.key","utf8").trim();
+if(!k.startsWith("0x")) k="0x"+k;
+const acct = privateKeyToAccount(k);
+const sepolia = defineChain({ id:84532, name:"base-sepolia", nativeCurrency:{name:"ETH",symbol:"ETH",decimals:18}, rpcUrls:{default:{http:["https://sepolia.base.org"]}} });
+const pub = createPublicClient({ chain:sepolia, transport:http() });
+const wal = createWalletClient({ account:acct, chain:sepolia, transport:http() });
+const FF = "0x347cE69E43E7dA45Cc90BcC9F124B32BadF9ad86";
+const playAbi = [{type:"function",name:"play",stateMutability:"payable",inputs:[{name:"roundId",type:"uint256"},{name:"clientSeed",type:"bytes32"}],outputs:[]}];
+const roundId = BigInt(process.argv[2]||"0");
+const clientSeed = "0x"+"ab".repeat(32);
+const stake = 100000000000000n; // 0.0001 ETH (minStake)
+console.log(`player ${acct.address} playing round ${roundId} stake ${stake} wei...`);
+const hash = await wal.writeContract({ address:FF, abi:playAbi, functionName:"play", args:[roundId, clientSeed], value:stake });
+console.log("play tx:", hash);
+const rcpt = await pub.waitForTransactionReceipt({ hash });
+console.log("play status:", rcpt.status, "block:", rcpt.blockNumber);
+console.log("CLIENT_SEED="+clientSeed);

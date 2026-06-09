@@ -77,7 +77,7 @@ export default async function TokenCompatibilityDetailPage({
           <div className="mt-4 grid gap-3 md:grid-cols-4">
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/trust/token-compatibility/${report.id}`}
+              href={`/api/trust/token-compatibility/${report.id}`} target="_blank" rel="noreferrer"
             >
               Report API
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -98,7 +98,7 @@ export default async function TokenCompatibilityDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={`/api/reports/generated/${report.reportSlug}/evidence`}
+              href={`/api/reports/generated/${report.reportSlug}/evidence`} target="_blank" rel="noreferrer"
             >
               Report Evidence
               <ArrowUpRight size={14} aria-hidden="true" />

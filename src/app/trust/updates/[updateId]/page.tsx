@@ -87,14 +87,14 @@ export default async function TrustUpdateDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/trust/updates/${entry.id}`}
+              href={`/api/trust/updates/${entry.id}`} target="_blank" rel="noreferrer"
             >
               Entry API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href="/api/trust/updates"
+              href="/api/trust/updates" target="_blank" rel="noreferrer"
             >
               Chain API
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -108,7 +108,7 @@ export default async function TrustUpdateDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href="/openapi.json"
+              href="/openapi.json" target="_blank" rel="noreferrer"
             >
               OpenAPI
               <ArrowUpRight size={14} aria-hidden="true" />

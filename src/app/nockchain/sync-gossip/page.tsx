@@ -60,7 +60,7 @@ export default function NockchainSyncGossipPage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/nockchain/sync-gossip"
+                href="/api/nockchain/sync-gossip" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 Sync API
@@ -74,7 +74,7 @@ export default function NockchainSyncGossipPage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/nockchain/zorp"
+                href="/api/nockchain/zorp" target="_blank" rel="noreferrer"
               >
                 <GitBranch size={16} aria-hidden="true" />
                 Zorp Map

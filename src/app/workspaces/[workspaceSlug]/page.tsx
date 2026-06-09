@@ -94,28 +94,28 @@ export default async function WorkspaceDetailPage({
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={`/api/workspaces/${workspace.slug}`}
+              href={`/api/workspaces/${workspace.slug}`} target="_blank" rel="noreferrer"
             >
               Workspace API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/workspaces/${workspace.slug}/evidence`}
+              href={`/api/workspaces/${workspace.slug}/evidence`} target="_blank" rel="noreferrer"
             >
               Evidence Capsule
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/workspaces/${workspace.slug}/upload-policy`}
+              href={`/api/workspaces/${workspace.slug}/upload-policy`} target="_blank" rel="noreferrer"
             >
               Upload Policy
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/workspaces/${workspace.slug}/upload-token`}
+              href={`/api/workspaces/${workspace.slug}/upload-token`} target="_blank" rel="noreferrer"
             >
               Token Gate
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -136,7 +136,7 @@ export default async function WorkspaceDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href="/api/workspaces"
+              href="/api/workspaces" target="_blank" rel="noreferrer"
             >
               Workspace Index
               <ArrowUpRight size={14} aria-hidden="true" />

@@ -264,7 +264,7 @@ export default function Home() {
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/lab"
+              href="/api/lab" target="_blank" rel="noreferrer"
             >
               <Code2 size={16} aria-hidden="true" />
               Lab JSON
@@ -686,7 +686,7 @@ export default function Home() {
               <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Build plan</p>
               <h2 className="mt-2 text-2xl font-semibold">Core product plus parallel options</h2>
             </div>
-            <a className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white" href="/api/lab">
+            <a className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white" href="/api/lab" target="_blank" rel="noreferrer">
               <Code2 size={16} aria-hidden="true" /> Lab JSON <ArrowUpRight size={14} aria-hidden="true" />
             </a>
           </div>

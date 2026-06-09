@@ -60,21 +60,21 @@ export default function NockchainOperationsPage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/nockchain/operations"
+                href="/api/nockchain/operations" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 Operations API
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/fakenet/diagnostics"
+                href="/api/fakenet/diagnostics" target="_blank" rel="noreferrer"
               >
                 <Network size={16} aria-hidden="true" />
                 Diagnostics
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/fakenet/runbook.sh"
+                href="/api/fakenet/runbook.sh" target="_blank" rel="noreferrer"
               >
                 <Terminal size={16} aria-hidden="true" />
                 Runbook

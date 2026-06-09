@@ -93,7 +93,7 @@ export default function TrustFreshnessPage() {
           </p>
           <Link
             className="mt-4 inline-flex items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
-            href="/api/trust/freshness"
+            href="/api/trust/freshness" target="_blank" rel="noreferrer"
           >
             View JSON
           </Link>

@@ -82,7 +82,7 @@ export default function NockchainPrRadarPage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/nockchain/pr-radar"
+                href="/api/nockchain/pr-radar" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 PR API
