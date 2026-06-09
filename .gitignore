@@ -42,9 +42,10 @@ pnpm-debug.log*
 # TypeScript incremental build info
 *.tsbuildinfo
 
-# nocklab package: generated at prepack (copied runner/builder/schema + tsc dist)
+# nocklab package: generated at prepack (copied runner/builder/schema + EVM registry + tsc dist)
 packages/nocklab/bin/
 packages/nocklab/schemas/
+packages/nocklab/src/data/
 packages/nocklab/dist/
 packages/nocklab/package-lock.json
 

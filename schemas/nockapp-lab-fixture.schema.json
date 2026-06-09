@@ -24,7 +24,11 @@
         "name": { "type": "string" },
         "slug": { "type": "string" },
         "version": { "type": "string" },
-        "kernel": { "type": "string" }
+        "kernel": { "type": "string" },
+        "kernelHash": {
+          "type": "string",
+          "description": "Hash (hoonc/jam) of the COMPILED deployed kernel. When present and the run executes the real kernel (environment.mode=kernel), the issued cert binds to it; otherwise the cert is model-attested only."
+        }
       }
     },
     "environment": {
@@ -33,7 +37,7 @@
       "additionalProperties": false,
       "properties": {
         "mode": {
-          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet", "kernel"]
+          "enum": ["mock-fakenet", "local-fakenet", "docker-fakenet", "kernel", "live-base"]
         },
         "grpcEndpoint": { "type": "string" },
         "fakenetCommand": { "type": "string" },
@@ -46,7 +50,18 @@
         "notes": {
           "type": "array",
           "items": { "type": "string" }
-        }
+        },
+        "baseRpcUrl": {
+          "type": "string",
+          "description": "EVM JSON-RPC URL for live-base mode. Use a ${ENV_VAR} literal to keep a private endpoint out of the committed fixture; falls back to a public Base Sepolia RPC when unset."
+        },
+        "baseInboxAddress": { "type": "string", "description": "MessageInbox.sol address (mints) for live-base mode." },
+        "baseNockAddress": { "type": "string", "description": "Nock.sol address (burns) for live-base mode." },
+        "baseChainId": { "type": "number", "description": "EVM chainId for live-base mode (e.g. 84532 = Base Sepolia)." },
+        "baseFromBlock": { "type": ["number", "string"], "description": "getLogs window start (block number or a block tag like 'earliest')." },
+        "baseToBlock": { "type": ["number", "string"], "description": "getLogs window end (block number or 'latest')." },
+        "baseConfirmationDepth": { "type": "number", "description": "Required confirmations fed to finality-depth for live-base mints." },
+        "baseAppRequiredConfirmations": { "type": "number", "description": "App-declared confirmation floor fed to finality-adequacy for live-base settles." }
       }
     },
     "actors": {
@@ -185,6 +200,12 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "environment": { "properties": { "mode": { "const": "live-base" } } } } },
+      "then": { "properties": { "environment": { "required": ["baseInboxAddress", "baseNockAddress"] } } }
+    }
+  ],
   "$defs": {
     "invariantKindRequirements": {
       "allOf": [

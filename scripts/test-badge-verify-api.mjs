@@ -153,6 +153,24 @@ async function assertTamperedBadgeFailsBinding() {
   } finally {
     badge.evidence.reportHash = originalReportHash;
   }
+
+  // baseDeploymentHash binding (live-base app-report parity with kernelHash): a badge that claims a
+  // deployed-contract identity hash the signed payload does NOT carry must fail payloadBoundToBadge,
+  // so an unsigned/forged deployment-identity claim cannot ride on an otherwise-valid signature.
+  try {
+    badge.evidence.baseDeploymentHash = "sha256:unsigned-base-deployment-hash";
+    const tampered = verifyTrustBadgeIssuance({
+      badgeId: badge.id,
+      payloadDigest: issuance.payloadDigest,
+      signature: issuance.signature,
+      issuerKeyId: issuance.issuerKeyId
+    });
+    assertEqual(tampered.checks.payloadBoundToBadge, false, "unsigned baseDeploymentHash not bound to signed payload");
+    assertEqual(tampered.verified, false, "badge with an unsigned baseDeploymentHash does not verify");
+    assertEqual(tampered.checks.signatureCryptographicallyValid, true, "signature still valid over the untouched signed copy");
+  } finally {
+    delete badge.evidence.baseDeploymentHash;
+  }
 }
 
 function createRequest(params) {

@@ -19,16 +19,24 @@ const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".
 const repoRoot = path.resolve(packageDir, "..", "..");
 
 mkdirSync(path.join(packageDir, "bin"), { recursive: true });
+mkdirSync(path.join(packageDir, "bin", "lib"), { recursive: true });
 mkdirSync(path.join(packageDir, "schemas"), { recursive: true });
+// bin/nocklab.mjs reads "../src/data/evm-chains.json" (the EVM cross-chain registry) relative to
+// itself, so it must land at <package>/src/data/. (run-lab also degrades gracefully if it is absent.)
+mkdirSync(path.join(packageDir, "src", "data"), { recursive: true });
 
 const copies = [
   { from: "scripts/run-lab.mjs", to: "bin/nocklab.mjs", executable: true },
   { from: "scripts/fixture-builder.mjs", to: "bin/fixture-builder.mjs", executable: false },
+  // run-lab dynamically imports "./lib/base-evm-reader.mjs" on the (optional) live-base path; ship it
+  // alongside so the published CLI can do live-base reads when the user has the optional viem dep.
+  { from: "scripts/lib/base-evm-reader.mjs", to: "bin/lib/base-evm-reader.mjs", executable: false },
   {
     from: "schemas/nockapp-lab-fixture.schema.json",
     to: "schemas/nockapp-lab-fixture.schema.json",
     executable: false
-  }
+  },
+  { from: "src/data/evm-chains.json", to: "src/data/evm-chains.json", executable: false }
 ];
 
 for (const { from, to, executable } of copies) {

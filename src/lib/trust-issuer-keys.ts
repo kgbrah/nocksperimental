@@ -50,11 +50,16 @@ function overlaidIssuerKeys(): TrustIssuerKey[] {
   const existing = issuerKeys.find((key) => key.keyId === overlay.keyId);
 
   if (existing) {
+    // The env secret supplies the signing key for an ALREADY-PUBLISHED (committed) keyId.
     return issuerKeys.map((key) =>
       key.keyId === overlay.keyId ? { ...key, publicKeySpki: overlay.publicKeySpki } : key
     );
   }
 
+  // Fail closed (F6): an env keyId that is NOT in the committed registry is NOT auto-published
+  // as an ACTIVE trust anchor. A new production key must be added to trust-issuer-keys.json via
+  // a reviewed commit before its env-held secret can sign live certs. We surface it only as a
+  // RETIRED entry (so its public key still resolves for diagnostics) — never as a live anchor.
   return [
     ...issuerKeys,
     {
@@ -62,8 +67,8 @@ function overlaidIssuerKeys(): TrustIssuerKey[] {
       algorithm: "ed25519",
       publicKeySpki: overlay.publicKeySpki,
       validFrom: new Date(0).toISOString(),
-      validUntil: null,
-      status: "active",
+      validUntil: new Date(0).toISOString(),
+      status: "retired",
       supersededBy: null
     }
   ];

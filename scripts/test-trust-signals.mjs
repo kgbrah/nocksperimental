@@ -40,7 +40,7 @@ async function main() {
   assertEqual(paymentIssuance.badgeId, "badge-payment-flow-verified", "payment issuance badge id");
   assertEqual(
     paymentIssuance.issuerKeyId,
-    "nocksperimental-registry-ed25519-dev-v0",
+    "nocksperimental-registry-ed25519-prod-v1",
     "payment issuance key id"
   );
   assertEqual(
@@ -177,7 +177,7 @@ async function main() {
   );
   assertIncludes(
     paymentEmbed.htmlSnippet,
-    'data-issuer-key="nocksperimental-registry-ed25519-dev-v0"',
+    'data-issuer-key="nocksperimental-registry-ed25519-prod-v1"',
     "payment embed html issuer key"
   );
   assertIncludes(paymentEmbed.htmlSnippet, "Payment Flow Verified", "payment embed html label");

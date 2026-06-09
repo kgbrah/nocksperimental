@@ -1,0 +1,71 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "xchain-atomic-swap-v0",
+  "app": {
+    "name": "Nockchain<->Base HTLC Atomic Swap",
+    "slug": "xchain-atomic-swap",
+    "version": "0.0.1",
+    "kernel": "xchain-atomic-swap-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Models a CORRECT cross-chain HTLC: both legs lock the SAME shared preimage, each under its own native hash.",
+      "Nockchain leg uses %hax = Tip5 (hoon/common/tx-engine-1.hoon); Base leg uses sha256 (an EVM precompile). The commitments DIFFER (Tip5 != sha256) but both derive from the one shared preimage, so revealing it unlocks both legs.",
+      "Timelocks are safe: the first-funded (Nockchain) refund window outlasts the Base claim window, so the counterparty cannot refund and still claim.",
+      "Honest limit: a single-process MODEL of two chains (model-attested), not live execution. The Tip5 commitment is opaque here (Tip5 is not computable in JS)."
+    ]
+  },
+  "actors": [
+    { "name": "swap-party", "pkh": "atomic-swap" }
+  ],
+  "initialState": {
+    "xchain": {
+      "preimage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "legs": [
+        { "chain": "nockchain", "hashAlgo": "tip5", "commitment": "t1p5cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "derivedFromSharedPreimage": true, "timelockBlocks": 200, "fundsFirst": true },
+        { "chain": "base", "hashAlgo": "sha256", "commitment": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e", "derivedFromSharedPreimage": true, "timelockBlocks": 100, "fundsFirst": false }
+      ],
+      "settlement": ["locked", "locked"]
+    }
+  },
+  "steps": [
+    {
+      "id": "reveal-and-claim",
+      "type": "bridge",
+      "title": "Reveal the shared preimage -> both legs claimed",
+      "operations": [
+        { "kind": "set", "path": "xchain.settlement", "value": ["claimed", "claimed"] }
+      ],
+      "expect": { "path": "xchain.settlement.0", "equals": "claimed" }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "hashlock-algo-match",
+      "title": "Each HTLC leg locks the shared preimage under a hash its own chain can compute (Tip5 vs sha256)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-hashlock-algo-match",
+      "path": "xchain"
+    },
+    {
+      "id": "timelock-ordering",
+      "title": "First-funded refund window outlasts the second leg's claim window (no free option)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-timelock-ordering",
+      "path": "xchain"
+    },
+    {
+      "id": "atomic-settlement",
+      "title": "Both legs claimed or both refunded (never one-sided)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-atomic-settlement",
+      "path": "xchain.settlement"
+    }
+  ]
+}

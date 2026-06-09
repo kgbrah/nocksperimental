@@ -35,7 +35,7 @@ function main() {
       "Recorded a follow-up score history batch through the append-only write path."
     ];
 
-    const dryRun = spawnSync(process.execPath, [...appendArgs, "--dry-run"], { encoding: "utf8" });
+    const dryRun = spawnSync(process.execPath, [...appendArgs, "--dry-run"], { encoding: "utf8", env: { ...process.env, NOCKS_ALLOW_DEV_SIGNING: "1" } });
     assertEqual(dryRun.status, 0, `dry-run exit status: ${dryRun.stderr}`);
     const dryRunLog = JSON.parse(dryRun.stdout);
     const sourceAfterDryRun = JSON.parse(readFileSync(logPath, "utf8"));
@@ -44,7 +44,7 @@ function main() {
     assertEqual(dryRunLog.chain.latestRoot, "root-score-history-v1", "dry-run latest root");
     assertEqual(sourceAfterDryRun.chain.entryCount, 5, "dry-run does not write source file");
 
-    const writeRun = spawnSync(process.execPath, appendArgs, { encoding: "utf8" });
+    const writeRun = spawnSync(process.execPath, appendArgs, { encoding: "utf8", env: { ...process.env, NOCKS_ALLOW_DEV_SIGNING: "1" } });
     assertEqual(writeRun.status, 0, `write exit status: ${writeRun.stderr}`);
     const writeSummary = JSON.parse(writeRun.stdout);
     const persistedLog = JSON.parse(readFileSync(logPath, "utf8"));

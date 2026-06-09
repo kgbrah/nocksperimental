@@ -1,0 +1,78 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-replay-namespacing-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: replay-namespacing",
+    "slug": "attack-xchain-replay-namespacing",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a multi-EVM cross-chain exploit the invariant MUST catch.",
+      "One Nockchain burn (id wd-001) processed on BOTH Base (8453) and Arbitrum (42161) - double mint.",
+      "expectRejected inverts a CAUGHT exploit to a green proof-of-prevention."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "routing": {
+        "processed": [
+          {
+            "id": "wd-001",
+            "sourceChainId": 0,
+            "destChainId": 8453,
+            "sourceTxHash": "0xabc"
+          },
+          {
+            "id": "wd-001",
+            "sourceChainId": 0,
+            "destChainId": 42161,
+            "sourceTxHash": "0xabc"
+          }
+        ],
+        "expectedRoute": {
+          "wd-001": 8453
+        }
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "replay-namespacing",
+      "title": "Replay keyed per (destChainId, id)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-per-chain-replay-namespacing",
+      "path": "xchain.routing"
+    }
+  ]
+}

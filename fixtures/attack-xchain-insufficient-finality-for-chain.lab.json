@@ -1,0 +1,71 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-insufficient-finality-for-chain-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: insufficient-finality-for-chain",
+    "slug": "attack-xchain-insufficient-finality-for-chain",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a multi-EVM cross-chain exploit the invariant MUST catch.",
+      "Base (8453) settle credited at 12 NATIVE confirmations; Base needs ~65 on L1-batch basis.",
+      "expectRejected inverts a CAUGHT exploit to a green proof-of-prevention."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "finality": {
+        "appRequiredConfirmations": 12,
+        "settles": [
+          {
+            "id": "wd-001",
+            "chainId": 8453,
+            "confirmations": 12,
+            "confirmationBasis": "native",
+            "basedOnSoftConfirm": false
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "finality-adequacy",
+      "title": "Confirmations >= registry floor + correct basis",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-finality-adequacy",
+      "path": "xchain.finality"
+    }
+  ]
+}

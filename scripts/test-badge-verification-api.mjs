@@ -34,7 +34,7 @@ async function main() {
   assertEqual(body.checks.issuanceFound, true, "issuance found check");
   assertEqual(body.checks.publicEmbedAvailable, true, "public embed check");
   assertEqual(body.issuance.verification.status, "valid", "issuance verification status");
-  assertEqual(body.issuance.issuerKeyId, "nocksperimental-registry-ed25519-dev-v0", "issuer key id");
+  assertEqual(body.issuance.issuerKeyId, "nocksperimental-registry-ed25519-prod-v1", "issuer key id");
   assertEqual(body.issuance.payloadDigest, expectedDigest, "payload digest");
   assertEqual(body.evidence.reportHash, "sha256:3a6d6bff59cb624f-payment-flow", "report hash");
   assertEqual(body.evidence.snapshotRoot, "3a6d6bff59cb624f", "snapshot root");

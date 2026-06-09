@@ -28,6 +28,18 @@ These cover the ~20% of safety properties the original six could not express, wh
   - `balances-non-negative` — every value under `path` is `>= 0`.
   - `peek-reveals-no-secret` — a commit-reveal game's peek surface at `path` must contain **no secret-NAMED key** (`seed`/`secret`/`preimage`/…). Catches the `coinflip.hoon` `[%state ~]` seed leak. (Matches on key name, not value shape — a public commitment is long hex indistinguishable by shape from a seed, so shape-matching would false-flag commitments.)
   - `commit-binds-seed` — every revealed `{commit, seed}` entry under `path` must satisfy `sha256(seed) == commit` (provable fairness; catches a post-hoc grind / wrong-seed reveal).
+  - `xchain-supply-conserved` — cross-chain (Nockchain↔Base): `minted ≤ burned` and every Base mint is backed by a recorded Nockchain burn. Catches inflation / mint-from-nothing.
+  - `xchain-quorum-authorized` — every mint/settle carries `≥ threshold` **distinct** signatures, all from the authorized federation set. Catches under-quorum + unauthorized signer.
+  - `xchain-replay-safe` — each cross-chain message id under `path` is processed at most once. Catches replay / double-mint.
+  - `xchain-finality-depth` — each dependent settle references a source event with `confirmations ≥ requiredConfirmations`. Catches premature / reorg double-spend.
+  - `xchain-hashlock-algo-match` — each HTLC leg's `hashAlgo` is computable on its chain (`nockchain→tip5`, `base→keccak256/sha256`) and its commitment derives from the shared preimage; distinct per-chain commitments. Catches the Tip5-vs-keccak break. See `docs/xchain-security-model.md`.
+  - `xchain-timelock-ordering` — the first-funded HTLC leg's refund window outlasts every other leg's claim window. Catches the free-option / theft.
+  - `xchain-atomic-settlement` — terminal settlement under `path` is all-claimed XOR all-refunded (no mix, no stuck-locked). Catches partial / one-sided settlement.
+  - `xchain-chainid-bound` — multi-EVM: every cross-chain message/attestation binds its `targetChainId` in the signed payload (and raw txs use EIP-155). Catches cross-EVM **signature replay** (one attestation minting on N chains). Registry: `src/data/evm-chains.json`.
+  - `xchain-finality-adequacy` — per-chain finality: `confirmations >= max(app, registry floor[chain])` on the chain's required `confirmationBasis`, no reliance on a reversible soft-confirmation. Catches "12 native confirmations on Base" (needs ~65 L1-batch).
+  - `xchain-per-chain-replay-namespacing` — multi-EVM replay key is `(destChainId, id)`, source-scoped, routed to its expected chain. Catches one burn double-minted across chains.
+  - `xchain-domain-separator-binding` — each EVM endpoint has a distinct EIP-712 domain `(chainId, verifyingContract)`, re-derived at verify; authorizations valid only at their bound endpoint. Catches cross-contract / cross-chain signature reuse.
+  - `xchain-challenge-window-respected` — no optimistic-rollup withdrawal credited before L1-finalization or its challenge window closes (registry `challengeWindowSeconds`), unless LP-bonded.
 - **`monotonic-strict`** — the value at `path` must be a **strictly-increasing numeric array** (each element greater than the previous); used for nonce / block-height monotonicity (replay safety). A non-array or non-increasing sequence fails.
 
 ## Negative controls (`expectRejected`)

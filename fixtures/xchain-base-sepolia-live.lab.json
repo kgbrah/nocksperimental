@@ -1,0 +1,82 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "xchain-base-sepolia-live-v0",
+  "app": {
+    "name": "Nockchain<->Base Federated Bridge (LIVE Base Sepolia)",
+    "slug": "xchain-base-sepolia-live",
+    "version": "0.0.1",
+    "kernel": "nockchain/crates/bridge: MessageInbox.sol + Nock.sol (Base Sepolia 84532)"
+  },
+  "environment": {
+    "mode": "live-base",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "live-base-rpc",
+    "baseRpcUrl": "${BASE_SEPOLIA_RPC_URL}",
+    "baseChainId": 84532,
+    "baseInboxAddress": "0x9b1becA13c39b9Be10dB616F1bE10C3CeF9Dfb36",
+    "baseNockAddress": "0xA9cd4087D9B050D8B35727AAf810296CA957c7B3",
+    "baseConfirmationDepth": 32,
+    "baseAppRequiredConfirmations": 0,
+    "notes": [
+      "LIVE read of the Basescan-verified Nockchain<->Base bridge on Base Sepolia (chainId 84532): MessageInbox.sol (DepositProcessed mints) + Nock.sol (BurnForWithdrawal burns), read-only via viem. Run with: export BASE_SEPOLIA_RPC_URL=...; npm run lab:base",
+      "Only the BASE-sourced subset of invariants runs live: quorum (LOG-DERIVED — the actual signers are recovered from each mint tx's submitDeposit calldata via ecrecover, reproducing MessageInbox.sol verification byte-for-byte; falls back to the CONTRACT-ENFORCED bridgeNodes roster if recovery is unavailable), replay-safety, finality-depth, and finality-adequacy over real mints.",
+      "supply-conserved is intentionally NOT asserted: each Base mint is backed by a Nockchain-side burn that is NOT observable from Base, so the backing relation is not fabricated here. HTLC / multi-EVM / domain / challenge-window paths have no source on this single federated MessageInbox and do not run.",
+      "Honest limit: an empty event window (no deposits in the scanned range, or withdrawals disabled pre-launch) makes the live invariants pass VACUOUSLY — that is a real read of 'nothing happened', NOT an 'app works' proof. The report's adapter observation carries the observed mint/burn event counts.",
+      "A successful live read earns an app-report ONLY when bound to the deployed identity via app.baseDeploymentHash (sha256 of chainId+inbox+nock), exactly as a kernel run requires kernelHash. See docs/xchain-security-model.md."
+    ]
+  },
+  "actors": [
+    { "name": "bridge-node", "pkh": "bridge-federation" }
+  ],
+  "initialState": {
+    "xchain": {
+      "signers": [],
+      "threshold": 0,
+      "requiredConfirmations": 0,
+      "mints": [],
+      "finality": { "appRequiredConfirmations": 0, "settles": [] }
+    }
+  },
+  "steps": [
+    {
+      "id": "read-live-bridge",
+      "type": "fakenet",
+      "title": "Read the live Base Sepolia bridge deployment (read-only viem)",
+      "expectation": "Base RPC reachable and the MessageInbox/Nock contracts readable"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "quorum-authorized",
+      "title": "Every live mint carries contract-enforced >= 3-of-5 authorized attestation",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-quorum-authorized",
+      "path": "xchain"
+    },
+    {
+      "id": "replay-safe",
+      "title": "Each live deposit (txId) is minted at most once",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-replay-safe",
+      "path": "xchain.mints"
+    },
+    {
+      "id": "finality-depth",
+      "title": "Live mints only after >= requiredConfirmations on Base",
+      "severity": "high",
+      "kind": "custom-function",
+      "fn": "xchain-finality-depth",
+      "path": "xchain"
+    },
+    {
+      "id": "finality-adequacy",
+      "title": "Live mints meet Base Sepolia's registry finality floor + basis (not a reversible soft-confirm)",
+      "severity": "high",
+      "kind": "custom-function",
+      "fn": "xchain-finality-adequacy",
+      "path": "xchain.finality"
+    }
+  ]
+}

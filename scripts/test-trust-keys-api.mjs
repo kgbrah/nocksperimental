@@ -21,9 +21,9 @@ async function main() {
 
   assertEqual(response.status, 200, "keys status code");
   assertEqual(response.headers["Cache-Control"], "public, max-age=300", "keys cache control");
-  assertEqual(body.version, "v0", "keys version");
+  assertEqual(body.version, "v1", "keys version");
   assertEqual(body.algorithm, "ed25519", "keys algorithm");
-  assertEqual(body.activeKeyId, "nocksperimental-registry-ed25519-dev-v1", "keys active id");
+  assertEqual(body.activeKeyId, "nocksperimental-registry-ed25519-prod-v1", "keys active id");
   assertEqual(body.canonicalUrl, "https://nocksperimental.com/api/trust/keys", "keys canonical url");
   assertEqual(body.issuerKeys.length >= 2, true, "keys count");
 

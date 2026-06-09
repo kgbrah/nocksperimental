@@ -1,0 +1,98 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "xchain-federated-bridge-v0",
+  "app": {
+    "name": "Nockchain<->Base Federated Bridge (withdrawal)",
+    "slug": "xchain-federated-bridge",
+    "version": "0.0.1",
+    "kernel": "xchain-federated-bridge-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Models the REAL Nockchain<->Base bridge: a 3-of-5 federated mint-and-burn withdrawal (nockchain/crates/bridge: Nock.sol burn -> MessageInbox.sol mint).",
+      "NOCK is burned on Nockchain, 3-of-5 authorized bridge nodes attest, then wrapped-NOCK is minted on Base once >= requiredConfirmations.",
+      "Honest limit: a single-process MODEL of two chains (model-attested), not a live two-chain execution. See docs/xchain-security-model.md."
+    ]
+  },
+  "actors": [
+    { "name": "bridge-node", "pkh": "bridge-federation" }
+  ],
+  "initialState": {
+    "xchain": {
+      "minted": 0,
+      "burned": 1000,
+      "signers": ["node-1", "node-2", "node-3", "node-4", "node-5"],
+      "threshold": 3,
+      "requiredConfirmations": 12,
+      "burns": [{ "id": "wd-001", "amount": 1000 }],
+      "mints": [],
+      "settlement": ["locked"]
+    }
+  },
+  "steps": [
+    {
+      "id": "attest-and-mint",
+      "type": "bridge",
+      "title": "3-of-5 attestation -> mint on Base after finality",
+      "operations": [
+        { "kind": "set", "path": "xchain.mints", "value": [{ "id": "wd-001", "amount": 1000, "attestedBy": ["node-1", "node-2", "node-3"], "confirmations": 12 }] },
+        { "kind": "set", "path": "xchain.minted", "value": 1000 }
+      ],
+      "expect": { "path": "xchain.minted", "equals": 1000 }
+    },
+    {
+      "id": "settle",
+      "type": "bridge",
+      "title": "Withdrawal settled on both chains",
+      "operations": [
+        { "kind": "set", "path": "xchain.settlement", "value": ["claimed"] }
+      ],
+      "expect": { "path": "xchain.settlement.0", "equals": "claimed" }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "supply-conserved",
+      "title": "No wrapped value minted on Base beyond what was burned on Nockchain",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-supply-conserved",
+      "path": "xchain"
+    },
+    {
+      "id": "quorum-authorized",
+      "title": "Every mint carries >= 3-of-5 distinct authorized attestations",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-quorum-authorized",
+      "path": "xchain"
+    },
+    {
+      "id": "replay-safe",
+      "title": "Each withdrawal id is minted at most once",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-replay-safe",
+      "path": "xchain.mints"
+    },
+    {
+      "id": "finality-depth",
+      "title": "Mints only after >= requiredConfirmations on the source event",
+      "severity": "high",
+      "kind": "custom-function",
+      "fn": "xchain-finality-depth",
+      "path": "xchain"
+    },
+    {
+      "id": "atomic-settlement",
+      "title": "Terminal settlement is all-claimed or all-refunded (never one-sided)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-atomic-settlement",
+      "path": "xchain.settlement"
+    }
+  ]
+}

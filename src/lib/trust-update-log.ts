@@ -4,6 +4,7 @@ import { canonicalStringify } from "@/lib/canonical-stringify";
 import {
   badgeIssuerSigningSeed,
   publicKeySpkiFromSeed,
+  resolveActiveIssuerKeyId,
   signBadgePayload,
   verifyBadgeSignature
 } from "@/lib/trust-badge-crypto";
@@ -79,7 +80,6 @@ export type TrustUpdateAppendInput = {
   verificationStatus?: TrustUpdateVerificationStatus;
 };
 
-const DEFAULT_ISSUER_KEY_ID = "nocksperimental-registry-ed25519-dev-v0";
 const DEFAULT_SIGNATURE_ALGORITHM = "ed25519-devnet-v0";
 
 export const trustUpdateLog = trustUpdateLogData as TrustUpdateLog;
@@ -93,7 +93,10 @@ export function appendTrustUpdateToLog(
   const entries = sortTrustUpdateEntries(log);
   const previousRoot = entries.at(-1)?.rootHash ?? "genesis";
   const signatureMetadata = {
-    issuerKeyId: input.issuerKeyId ?? DEFAULT_ISSUER_KEY_ID,
+    // Default to the ACTIVE issuer anchor (prod key in production via the env overlay; the demo
+    // key under NOCKS_ALLOW_DEV_SIGNING). Never default to a retired dev key — a trust-update is
+    // a signed attestation and must be signed by the live anchor (3.12).
+    issuerKeyId: input.issuerKeyId ?? resolveActiveIssuerKeyId(),
     algorithm: input.signatureAlgorithm ?? DEFAULT_SIGNATURE_ALGORITHM,
     verificationStatus: input.verificationStatus ?? "valid"
   };

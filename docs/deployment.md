@@ -2,6 +2,31 @@
 
 Nocksperimental deploys to Cloudflare Workers with the OpenNext Cloudflare adapter. The production Worker is named `nocksperimental` and is bound to the custom domain `nocksperimental.com` in `wrangler.jsonc`. Persisted fakenet evidence receipts use the `NOCKS_FAKENET_RECEIPTS` Workers KV binding. Persisted VESL evidence receipts use the `NOCKS_VESL_RECEIPTS` Workers KV binding. Persisted Nockup validation receipts use the `NOCKS_NOCKUP_RECEIPTS` Workers KV binding.
 
+## Trust-badge issuer secrets (required to mint verifiable certs)
+
+Production signs trust badges/attestations under the active issuer anchor. Both values are Worker
+secrets (set out-of-band, never committed); **both are required together** — a seed alone stamps the
+wrong key id and live signatures will not verify:
+
+```bash
+# the 32-byte hex secret seed (held in your secret store, NOT in the repo)
+wrangler secret put NOCKS_BADGE_ISSUER_SIGNING_SEED --name nocksperimental
+# the active key id (matches src/data/trust-issuer-keys.json activeKeyId)
+printf %s "nocksperimental-registry-ed25519-prod-v1" | wrangler secret put NOCKS_BADGE_ISSUER_KEY_ID --name nocksperimental
+```
+
+Verify the env locally before/after:
+
+```bash
+NOCKS_BADGE_ISSUER_SIGNING_SEED=<secret> NOCKS_BADGE_ISSUER_KEY_ID=nocksperimental-registry-ed25519-prod-v1 \
+  node adversarial-audit/verify-prod-config.mjs   # expects "PROD CONFIG OK"
+```
+
+Signing is **fail-closed**: without the seed (or an explicit `NOCKS_ALLOW_DEV_SIGNING=1` for a
+non-authoritative demo), issuance refuses rather than signing with a public demo key. To re-sign the
+committed badges under the active key: `NOCKS_BADGE_ISSUER_SIGNING_SEED=<secret> node scripts/sign-trust-badges.mjs`.
+See `adversarial-audit/FIXES-APPLIED.md`.
+
 ## Local Verification
 
 Run the normal source gate first:

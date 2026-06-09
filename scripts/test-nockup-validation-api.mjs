@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
 
+// Evidence-receipt signing is fail-closed without a production seed. This suite signs DEMO
+// receipts; opt in explicitly (signatures are non-authoritative — dev keys are not a trust anchor).
+process.env.NOCKS_ALLOW_DEV_SIGNING = "1";
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

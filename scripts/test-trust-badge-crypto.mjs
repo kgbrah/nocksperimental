@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
 
+// Exercises DEMO signing (the public dev seed). Opt in explicitly; such signatures are
+// non-authoritative — the verifier rejects dev keys as a live trust anchor.
+process.env.NOCKS_ALLOW_DEV_SIGNING = "1";
+
 try {
   main();
 } catch (error) {

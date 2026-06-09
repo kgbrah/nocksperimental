@@ -23,15 +23,26 @@ export type AppProfile = {
   slug: string;
   version: string;
   kernel: string;
+  // Set ONLY by a successful live-base run: sha256 over the canonical {chainId, inboxAddress,
+  // nockAddress} deployment identity. Binds an app-report cert to the exact deployed contracts
+  // (mirrors the kernelHash binding for kernel runs). Absent => stays model-attested.
+  baseDeploymentHash?: string;
 };
 
 export type LabEnvironment = {
-  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "vesl-local" | "vesl-fakenet";
+  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "vesl-local" | "vesl-fakenet" | "kernel" | "live-base";
   grpcEndpoint: string;
   fakenetCommand: string;
   balanceCheck?: LocalFakenetBalanceCheck;
   chainCheck?: LocalFakenetChainCheck;
   notes: string[];
+  // Set true ONLY by a real-VM kernel run (mode "kernel"); a model/mock run leaves it unset, so a
+  // cert over it stays model-attested rather than an app-report. Read in generated-lab-reports.ts.
+  kernelExecuted?: boolean;
+  // Set true ONLY by a successful live-base run that actually read on-chain state (mode "live-base").
+  // Like kernelExecuted, it alone does NOT earn app-report — it must be paired with
+  // app.baseDeploymentHash binding the deployed contract identity. Read in generated-lab-reports.ts.
+  baseExecuted?: boolean;
 };
 
 export type LocalFakenetBalanceCheck = {
@@ -65,7 +76,7 @@ export type LabStepReport = {
 };
 
 export type StepAdapterObservation = {
-  kind: "local-fakenet";
+  kind: "local-fakenet" | "kernel" | "live-base";
   grpcEndpoint: string;
   reachable: boolean;
   latencyMs: number;
@@ -75,6 +86,11 @@ export type StepAdapterObservation = {
   poke?: PokeObservation;
   peek?: PeekObservation;
   error?: string;
+  // live-base: read-only EVM RPC provenance (set only by mode "live-base").
+  rpcEndpoint?: string;
+  chainId?: number;
+  eventCounts?: { mints: number; burns: number };
+  withdrawalsEnabled?: boolean | null;
 };
 
 export type BalanceObservation = {
@@ -137,7 +153,7 @@ export type AlertReport = {
 
 export type AdapterObservationSummary = {
   stepId: string;
-  kind: "local-fakenet";
+  kind: "local-fakenet" | "kernel" | "live-base";
   capability: AdapterObservationCapability;
   status: "pass" | "fail";
   target?: string;
@@ -182,6 +198,11 @@ export type LabRunReport = {
     alertsTriggered: number;
     snapshotsCaptured: number;
     durationMs: number;
+    // Negative-control fixtures (expectRejected) invert pass/fail; the runner records both the
+    // inverted `status` and the pre-inversion `rawStatus` so consumers can tell a proof-of-
+    // prevention from an "app works" pass.
+    expectRejected?: boolean;
+    rawStatus?: LabStatus;
   };
   invariantPacks: InvariantPackRef[];
   steps: LabStepReport[];

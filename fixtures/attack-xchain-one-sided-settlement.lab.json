@@ -1,0 +1,82 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-one-sided-settlement-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: one-sided-settlement",
+    "slug": "attack-xchain-one-sided-settlement",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a cross-chain exploit that the invariant MUST catch.",
+      "Claimed on Base but refunded on Nockchain (non-atomic / theft).",
+      "expectRejected inverts a CAUGHT exploit to a green PASS (a signed proof-of-prevention)."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "preimage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "legs": [
+        {
+          "chain": "nockchain",
+          "hashAlgo": "tip5",
+          "commitment": "t1p5cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "derivedFromSharedPreimage": true,
+          "timelockBlocks": 200,
+          "fundsFirst": true
+        },
+        {
+          "chain": "base",
+          "hashAlgo": "sha256",
+          "commitment": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e",
+          "derivedFromSharedPreimage": true,
+          "timelockBlocks": 100,
+          "fundsFirst": false
+        }
+      ],
+      "settlement": [
+        "refunded",
+        "claimed"
+      ]
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe the terminal joint state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "atomic-settlement",
+      "title": "All-claimed or all-refunded only",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-atomic-settlement",
+      "path": "xchain.settlement"
+    }
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "seedMatchesPublished": true,
+  "results": [
+    {
+      "id": "A",
+      "title": "Forge a verified cert from scratch (public committed seed)",
+      "mintsCert": true,
+      "verified": true,
+      "detail": "signatureCryptographicallyValid=true, payloadBoundToBadge=true, activeVerifiedStatus=true, notRevoked=true",
+      "evidence": {
+        "checks": {
+          "badgeFound": true,
+          "issuanceFound": true,
+          "payloadDigestMatched": true,
+          "signatureMatched": true,
+          "issuerKeyMatched": true,
+          "issuerKeyResolved": true,
+          "issuerKeyActive": true,
+          "signatureCryptographicallyValid": true,
+          "payloadBoundToBadge": true,
+          "activeVerifiedStatus": true,
+          "notRevoked": true,
+          "upstreamFresh": true,
+          "publicEmbedAvailable": true,
+          "exactIssuanceMatch": true
+        },
+        "match": {
+          "badgeId": "badge-rigged-casino-verified",
+          "label": "Rigged Roulette — Verified",
+          "reportHash": "sha256:abababababababababababababababababababababababababababababababab",
+          "snapshotRoot": "deadbeefdeadbeef",
+          "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1"
+        }
+      }
+    },
+    {
+      "id": "B",
+      "title": "Verified cert with EMPTY reportHash + snapshotRoot",
+      "mintsCert": true,
+      "verified": true,
+      "detail": "the cert binds to '' === '' string equality; no report or kernel referenced. payloadBoundToBadge=true",
+      "evidence": {
+        "checks": {
+          "badgeFound": true,
+          "issuanceFound": true,
+          "payloadDigestMatched": true,
+          "signatureMatched": true,
+          "issuerKeyMatched": true,
+          "issuerKeyResolved": true,
+          "issuerKeyActive": true,
+          "signatureCryptographicallyValid": true,
+          "payloadBoundToBadge": true,
+          "activeVerifiedStatus": true,
+          "notRevoked": true,
+          "upstreamFresh": true,
+          "publicEmbedAvailable": true,
+          "exactIssuanceMatch": true
+        }
+      }
+    },
+    {
+      "id": "C",
+      "title": "Launder an attacker stub through the real sign-trust-badges.mjs tool",
+      "mintsCert": true,
+      "verified": true,
+      "detail": "the maintainer tool blindly signed signedPayload.status='verified' and stamped verification.status='valid'. activeVerifiedStatus=true, sig valid=true",
+      "evidence": {
+        "checks": {
+          "badgeFound": true,
+          "issuanceFound": true,
+          "payloadDigestMatched": true,
+          "signatureMatched": true,
+          "issuerKeyMatched": true,
+          "issuerKeyResolved": true,
+          "issuerKeyActive": true,
+          "signatureCryptographicallyValid": true,
+          "payloadBoundToBadge": true,
+          "activeVerifiedStatus": true,
+          "notRevoked": true,
+          "upstreamFresh": true,
+          "publicEmbedAvailable": true,
+          "exactIssuanceMatch": true
+        },
+        "match": {
+          "badgeId": "badge-laundered-casino",
+          "label": "Laundered Casino",
+          "reportHash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "snapshotRoot": "0000111122223333",
+          "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1"
+        }
+      }
+    },
+    {
+      "id": "G",
+      "title": "Deploy-env attacker injects a brand-new ACTIVE issuer key (overlay)",
+      "mintsCert": true,
+      "verified": true,
+      "detail": "with NOCKS_BADGE_ISSUER_SIGNING_SEED set to an attacker key not in the committed registry, the overlay publishes it as active and the cert verifies. sig valid=true, issuerKeyResolved=true",
+      "evidence": {
+        "checks": {
+          "badgeFound": true,
+          "issuanceFound": true,
+          "payloadDigestMatched": true,
+          "signatureMatched": true,
+          "issuerKeyMatched": true,
+          "issuerKeyResolved": true,
+          "issuerKeyActive": false,
+          "signatureCryptographicallyValid": true,
+          "payloadBoundToBadge": true,
+          "activeVerifiedStatus": true,
+          "notRevoked": true,
+          "upstreamFresh": true,
+          "publicEmbedAvailable": true,
+          "exactIssuanceMatch": true
+        }
+      }
+    }
+  ]
+}
