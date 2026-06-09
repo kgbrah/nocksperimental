@@ -63,7 +63,28 @@ export default function PlayPage() {
 
       <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
         <PlayerBar />
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+
+        <Link
+          href="/play/flip"
+          className="mt-6 flex flex-wrap items-center justify-between gap-3 border-2 border-[#0B0B0B] bg-[#0B0B0B] p-5 text-[#FFFFFF] shadow-[6px_6px_0_#737373] transition hover:shadow-none"
+        >
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#A3A3A3]">
+              On-chain · Base Sepolia · real testnet ETH
+            </span>
+            <p className="mt-1 text-2xl font-semibold">Forfeit Flip — settled on-chain</p>
+            <p className="mt-1 text-sm text-[#D4D4D4]">
+              Stake real testnet ETH against the deployed, audited settlement contract. Commit-reveal, even
+              money, provably fair, timeout-protected.
+            </p>
+          </div>
+          <ArrowUpRight size={28} aria-hidden="true" />
+        </Link>
+
+        <h2 className="mt-8 font-mono text-xs uppercase tracking-[0.14em] text-[#4A4A4A]">
+          Provably-fair demos (in-browser, no stakes)
+        </h2>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
           {pocGames.map((game) => (
             <GameCard key={game.id} game={game} />
           ))}
