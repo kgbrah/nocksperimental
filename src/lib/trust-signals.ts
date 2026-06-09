@@ -72,6 +72,9 @@ export type BadgeIssuanceReceipt = {
     issuedAt: string;
     expiresAt: string;
     sourceAnchor: BadgeSourceAnchor;
+    // The cert's registry category, bound so a verified model-attested/non-app cert cannot be
+    // re-presented under a different kind. The verifier requires signedPayload.kind === badge.kind.
+    kind?: TrustBadgeKind;
     // Signed deployed-identity bindings (see VerifiedBadge.evidence). The Ed25519 signature attests
     // these, and the verifier requires signedPayload.* === badge.evidence.* for each.
     kernelHash?: string;

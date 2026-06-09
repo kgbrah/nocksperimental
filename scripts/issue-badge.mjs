@@ -104,6 +104,8 @@ const signedPayload = {
   issuedAt: now,
   expiresAt: now,
   sourceAnchor,
+  // Bind the cert's registry category to the signature (verifier checks signedPayload.kind === badge.kind).
+  kind: candidate.evidenceKind,
   ...(candidate.kernelHash ? { kernelHash: candidate.kernelHash } : {}),
   ...(candidate.baseDeploymentHash ? { baseDeploymentHash: candidate.baseDeploymentHash } : {})
 };
