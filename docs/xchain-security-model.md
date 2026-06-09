@@ -109,11 +109,46 @@ pipeline keeps it so; `npm run test:trust-forgery` still mints zero certs). Fait
 primitives — not a live two-chain execution, and not a trustless HTLC primitive (the real bridge is
 federated, and Tip5≠keccak makes naive shared-commitment HTLCs unsound).
 
-## Live-EVM follow-on (staged)
+## Live-base mode (shipped)
 
-A `mode:"live-base"` adapter using **viem** against **Base Sepolia** with the real
-`Nock.sol`/`MessageInbox.sol` ABIs, reading on-chain burn events / mint receipts / signer set /
-confirmations and feeding them as the Base-leg state — so the same 7 invariants run over real chain data.
-Mirrors `environment.kernelExecuted`: a live run sets `environment.baseExecuted=true`; only a
-live+verified run could be promoted beyond `model-attested`. The Nockchain leg stays modeled until the
-generic-cause `nockapp-run` path lands.
+`environment.mode: "live-base"` reads the **real, Basescan-verified** Nockchain↔Base bridge on **Base
+Sepolia (chainId 84532)** over a read-only [viem](https://viem.sh) client and feeds the on-chain facts
+into the same `xchain.*` state the invariants consume — so the checks run over live chain data, not a
+model. Contracts: `MessageInbox` `0x9b1becA13c39b9Be10dB616F1bE10C3CeF9Dfb36` (mints), `Nock`
+`0xA9cd4087D9B050D8B35727AAf810296CA957c7B3` (burns). Implemented in `scripts/lib/base-evm-reader.mjs`
+(read-only: `getBlockNumber` / `readContract` / `getLogs`; no signing, no keys).
+
+```bash
+export BASE_SEPOLIA_RPC_URL=https://sepolia.base.org   # or your own endpoint
+npm run lab:base            # end-to-end live run over the verified deployment
+npm run test:base-evm-reader # offline unit test (mock client, in default CI)
+npm run test:base-evm-live   # opt-in live smoke test (graceful-skip without the RPC env var)
+```
+
+**What runs live, and what does not.** Only the Base-sourced subset runs: `xchain-quorum-authorized`,
+`xchain-replay-safe`, `xchain-finality-depth`, `xchain-finality-adequacy` over real `DepositProcessed`
+mints. Deliberately **omitted** (no honest source on a single federated `MessageInbox`): `supply-conserved`
+(each mint's backing burn is a **Nockchain-side** event, not observable from Base — `BurnForWithdrawal` is
+the opposite-direction Base→Nockchain flow, not backing), and all HTLC / multi-EVM / domain / challenge-
+window paths. Omitted paths simply have nothing to assert rather than being populated with model data.
+
+**Quorum is contract-enforced.** `DepositProcessed` does not name the attesting signers (the 3-of-5 ECDSA
+sigs are verified in `submitDeposit` calldata and discarded). live-base reads the live `bridgeNodes`
+roster the contract required ≥`THRESHOLD` of, and labels mints `quorumProof: "contract-enforced"`.
+Log-provable per-signer identities (ecrecover over the 276-byte `submitDeposit` preimage) are a scoped
+follow-on.
+
+**Empty windows are honest no-ops.** A scanned block window with no deposits (low-traffic testnet, or
+withdrawals disabled pre-launch) makes the live invariants pass **vacuously** — a real read of "nothing
+happened," not an "app works" proof. The adapter observation carries the observed `eventCounts`, and the
+step note says so explicitly.
+
+**Trust boundary.** A live-base run earns an `app-report` cert **only** when it both actually read the
+chain (`environment.baseExecuted`) **and** binds the deployed identity via `app.baseDeploymentHash`
+(sha256 of `{chainId, inboxAddress, nockAddress}`) — exactly as a kernel run requires
+`kernelExecuted` + `kernelHash`. The flag alone never promotes (`scripts/test-live-base-promotion.mjs`
+guards this; `npm run test:trust-forgery` still mints zero certs). The Nockchain leg stays modeled until
+the generic-cause `nockapp-run` path lands.
+
+**viem is optional.** It is an `optionalDependency`, imported dynamically only on the live-base path, so
+the dependency-light CLI never loads it otherwise; a live run without it fails with a clear install hint.

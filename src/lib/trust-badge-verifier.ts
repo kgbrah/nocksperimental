@@ -75,7 +75,12 @@ export function verifyTrustBadgeIssuance({
       // When the cert claims a compiled-kernel hash (a kernel-verified app cert), it must bind to
       // the badge's kernel hash — a signed payload cannot claim a kernel the badge doesn't carry.
       ((issuance.signedPayload as { kernelHash?: string }).kernelHash ?? null) ===
-        ((badge.evidence as { kernelHash?: string }).kernelHash ?? null)
+        ((badge.evidence as { kernelHash?: string }).kernelHash ?? null) &&
+      // Same binding for a live-base app cert's deployed-contract identity: the signed payload's
+      // baseDeploymentHash (sha256 of chainId+inbox+nock) must equal the badge's. A signed payload
+      // cannot claim a deployment the badge doesn't carry (parity with kernelHash).
+      ((issuance.signedPayload as { baseDeploymentHash?: string }).baseDeploymentHash ?? null) ===
+        ((badge.evidence as { baseDeploymentHash?: string }).baseDeploymentHash ?? null)
   );
 
   // The signing key must be a live trust anchor: ACTIVE and NOT a public demo (dev) key.

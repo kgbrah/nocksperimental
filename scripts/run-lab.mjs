@@ -808,9 +808,13 @@ async function buildReport(fixture, startedAt, fixturePath) {
     snapshotState({ label: "Initial state", state })
   ];
   const stepReports = [];
+  // Per-run context (NOT module-level — lab:ci runs many fixtures in one process). Accumulates the
+  // once-per-run live-base read so it is fetched a single time and so buildReport can stamp
+  // baseExecuted / baseDeploymentHash onto the report after the steps complete.
+  const runCtx = { baseState: undefined };
 
   for (const [index, step] of fixture.steps.entries()) {
-    const stepReport = await runStep({ step, index, state, actors, environment: fixture.environment });
+    const stepReport = await runStep({ step, index, state, actors, environment: fixture.environment, runCtx });
     stepReports.push(stepReport);
     stateSnapshots.push(
       snapshotState({
@@ -845,12 +849,22 @@ async function buildReport(fixture, startedAt, fixturePath) {
   // proof-of-prevention read CI-green instead of inverting the --strict gate.
   const status = fixture.expectRejected === true ? (rawStatus === "fail" ? "pass" : "fail") : rawStatus;
 
+  // A successful live-base read binds the cert to the exact deployed contract identity: only then
+  // do we stamp baseExecuted + baseDeploymentHash, mirroring kernelExecuted/kernelHash. Without
+  // the hash binding the deployment, generated-lab-reports keeps the run model-attested.
+  const reportEnvironment = runCtx.baseExecuted === true
+    ? { ...fixture.environment, baseExecuted: true }
+    : fixture.environment;
+  const reportApp = runCtx.baseExecuted === true && runCtx.baseDeploymentHash
+    ? { ...fixture.app, baseDeploymentHash: runCtx.baseDeploymentHash }
+    : fixture.app;
+
   return {
     reportId: `lab_${fixture.id}_${new Date(startedAt).toISOString().replace(/[-:.TZ]/g, "")}`,
     fixtureId: fixture.id,
     generatedAt: new Date(startedAt).toISOString(),
-    app: fixture.app,
-    environment: fixture.environment,
+    app: reportApp,
+    environment: reportEnvironment,
     summary: {
       status,
       stepsPassed: stepReports.length - failedSteps,
@@ -998,7 +1012,7 @@ function validatePack(pack, packPath) {
   });
 }
 
-async function runStep({ step, index, state, actors, environment }) {
+async function runStep({ step, index, state, actors, environment, runCtx = {} }) {
   const before = structuredClone(state);
   const beforeHash = hashState(before);
   const durationMs = 19 + index * 7;
@@ -1041,6 +1055,85 @@ async function runStep({ step, index, state, actors, environment }) {
         balance,
         chain
       });
+    } else if (environment.mode === "live-base") {
+      // Read the REAL Base bridge deployment over a read-only RPC and merge the on-chain facts
+      // into state so the cross-chain invariants run over live data. Fetched ONCE per run.
+      const rpcUrl = resolveEnvValue(environment.baseRpcUrl) || DEFAULT_BASE_SEPOLIA_RPC;
+      // Only the redacted URL is ever written to a persisted report field (may carry a provider key).
+      const safeRpc = redactRpcUrl(rpcUrl);
+      expectation = step.expectation ?? `Base RPC reachable + bridge readable at ${safeRpc}`;
+      const probe = await probeEvmRpcEndpoint(rpcUrl);
+      // Fail closed if the RPC's actual chain != the fixture's declared baseChainId: otherwise a
+      // mis-pointed RPC would read a different chain's contracts yet stamp a deployment hash for the
+      // declared chain. (chainId null => endpoint did not report eth_chainId; skip the check.)
+      const chainMismatch =
+        probe.ok && probe.chainId != null && Number(probe.chainId) !== Number(environment.baseChainId);
+      if (runCtx.baseState === undefined) {
+        if (!probe.ok || chainMismatch) {
+          if (chainMismatch) {
+            runCtx.baseReadError = `RPC chainId ${probe.chainId} != declared baseChainId ${environment.baseChainId}`;
+          }
+          runCtx.baseState = null;
+        } else {
+          try {
+            const { createBaseReader, readBaseXchainState } = await import("./lib/base-evm-reader.mjs");
+            const reader = await createBaseReader({ rpcUrl, chainId: environment.baseChainId });
+            runCtx.baseState = await readBaseXchainState(reader, {
+              inboxAddress: environment.baseInboxAddress,
+              nockAddress: environment.baseNockAddress,
+              fromBlock: environment.baseFromBlock,
+              toBlock: environment.baseToBlock,
+              requiredConfirmations: environment.baseConfirmationDepth,
+              appRequiredConfirmations: environment.baseAppRequiredConfirmations,
+              chainId: environment.baseChainId
+            });
+            runCtx.baseExecuted = true;
+            runCtx.baseDeploymentHash = createHash("sha256")
+              .update(stableStringify({
+                chainId: Number(environment.baseChainId),
+                inboxAddress: String(environment.baseInboxAddress ?? "").toLowerCase(),
+                nockAddress: String(environment.baseNockAddress ?? "").toLowerCase()
+              }))
+              .digest("hex");
+          } catch (error) {
+            runCtx.baseReadError = error.message;
+            runCtx.baseState = null;
+          }
+        }
+      }
+      if (runCtx.baseState) {
+        state.xchain = { ...(state.xchain ?? {}), ...runCtx.baseState.xchain };
+        const prov = runCtx.baseState.provenance;
+        status = "pass";
+        const noEvents = prov.eventCounts.mints === 0;
+        observed =
+          `live-base read ${prov.inboxAddress} @ chain ${prov.chainId}: ${prov.eventCounts.mints} mint(s), ` +
+          `${prov.eventCounts.burns} burn(s), ${prov.signers.length} signer(s)/threshold ${prov.threshold}, head block ${prov.currentBlock}` +
+          (noEvents ? " — NO mints observed in this window: invariants pass vacuously, NOT strong evidence" : "");
+        adapter = {
+          kind: "live-base",
+          grpcEndpoint: safeRpc,
+          rpcEndpoint: safeRpc,
+          chainId: prov.chainId,
+          reachable: true,
+          latencyMs: probe.latencyMs,
+          checkedAt: probe.checkedAt,
+          eventCounts: prov.eventCounts,
+          withdrawalsEnabled: prov.withdrawalsEnabled
+        };
+      } else {
+        status = "fail";
+        observed = `live-base read failed at ${safeRpc}: ${runCtx.baseReadError ?? probe.error ?? "unreachable"}`;
+        adapter = {
+          kind: "live-base",
+          grpcEndpoint: safeRpc,
+          rpcEndpoint: safeRpc,
+          reachable: probe.ok,
+          latencyMs: probe.latencyMs,
+          checkedAt: probe.checkedAt,
+          error: runCtx.baseReadError ?? probe.error ?? "unreachable"
+        };
+      }
     } else {
       observed = `${environment.mode} profile ready at ${environment.grpcEndpoint}`;
     }
@@ -1480,6 +1573,74 @@ function describeLocalPeekObservation({ endpoint, probe, peek }) {
   }
 
   return `local-fakenet adapter peek command failed at ${endpoint}: ${peek?.error ?? "unknown error"}`;
+}
+
+// A public Base Sepolia RPC, used when the fixture's baseRpcUrl resolves to nothing. Read-only.
+const DEFAULT_BASE_SEPOLIA_RPC = "https://sepolia.base.org";
+
+// Fixture env values like baseRpcUrl may be a literal "${BASE_SEPOLIA_RPC_URL}" so a secret/private
+// RPC endpoint is never committed. Substitute from the environment; pass plain values through.
+function resolveEnvValue(value) {
+  if (typeof value !== "string") return value ?? undefined;
+  const match = value.match(/^\$\{([A-Z0-9_]+)\}$/);
+  if (match) return process.env[match[1]];
+  return value;
+}
+
+// Strip credential material from an RPC URL before it is written to a persisted report field.
+// Provider keys commonly live in userinfo (user:pass@), a trailing path segment (Alchemy/Infura
+// project keys), or query params (?apikey=...). The full URL is used only in-memory for the actual
+// request; never echoed to observed/expectation/adapter. (AGENTS.md: do not store/echo API keys.)
+function redactRpcUrl(rpcUrl) {
+  try {
+    const url = new URL(rpcUrl);
+    if (url.username || url.password) {
+      url.username = "***";
+      url.password = "";
+    }
+    url.pathname = url.pathname.replace(/\/[A-Za-z0-9_-]{16,}(\/?)$/, "/***$1");
+    if (url.search) url.search = "?***";
+    return url.toString();
+  } catch {
+    return "[redacted-rpc-url]";
+  }
+}
+
+// Lightweight liveness + chain-identity probe for an EVM JSON-RPC endpoint (eth_blockNumber +
+// eth_chainId). Mirrors probeGrpcEndpoint's result shape and adds the numeric chainId so the
+// live-base path can fail closed when the RPC's actual chain != the fixture's declared baseChainId
+// (otherwise a mis-pointed RPC would mint a deployment-identity hash for a chain it never read).
+async function probeEvmRpcEndpoint(rpcUrl, timeoutMs = 8_000) {
+  const checkedAt = new Date().toISOString();
+  const startedAt = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const call = async (method) => {
+    const res = await fetch(rpcUrl, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params: [] }),
+      signal: controller.signal
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message ?? "rpc error");
+    return json.result;
+  };
+  try {
+    const blockNumber = await call("eth_blockNumber");
+    let chainId = null;
+    try {
+      chainId = Number(BigInt(await call("eth_chainId")));
+    } catch {
+      chainId = null; // some endpoints omit eth_chainId; the caller treats null as "unknown, skip check"
+    }
+    return { ok: true, blockNumber, chainId, latencyMs: Date.now() - startedAt, checkedAt };
+  } catch (error) {
+    return { ok: false, error: error.name === "AbortError" ? "timed out" : error.message, latencyMs: Date.now() - startedAt, checkedAt };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function probeGrpcEndpoint(endpoint) {

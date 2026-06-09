@@ -104,7 +104,8 @@ const signedPayload = {
   issuedAt: now,
   expiresAt: now,
   sourceAnchor,
-  ...(candidate.kernelHash ? { kernelHash: candidate.kernelHash } : {})
+  ...(candidate.kernelHash ? { kernelHash: candidate.kernelHash } : {}),
+  ...(candidate.baseDeploymentHash ? { baseDeploymentHash: candidate.baseDeploymentHash } : {})
 };
 const signed = crypto.signBadgePayload(signedPayload, seed);
 const badge = {
@@ -122,7 +123,8 @@ const badge = {
     snapshotRoot: candidate.evidence.snapshotRoot,
     signature: signed.signature,
     invariantPacks: candidate.evidence.invariantPacks,
-    ...(candidate.kernelHash ? { kernelHash: candidate.kernelHash } : {})
+    ...(candidate.kernelHash ? { kernelHash: candidate.kernelHash } : {}),
+    ...(candidate.baseDeploymentHash ? { baseDeploymentHash: candidate.baseDeploymentHash } : {})
   },
   sourceAnchor
 };

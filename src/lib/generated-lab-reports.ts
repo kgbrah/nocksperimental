@@ -48,6 +48,10 @@ export type GeneratedBadgeCandidate = {
   // (real-VM). null in mock-fakenet model runs — meaning the deployed code is UNVERIFIED.
   kernelHash: string | null;
   kernelVerified: boolean;
+  // The deployed-contract identity hash a live-base cert is bound to (sha256 of chainId+inbox+nock),
+  // when the deployment was actually read on-chain. null for model/mock runs.
+  baseDeploymentHash: string | null;
+  baseVerified: boolean;
   signatureStatus: GeneratedBadgeCandidateSignatureStatus;
   evidence: {
     reportHash: string;
@@ -338,10 +342,18 @@ function buildGeneratedBadgeCandidate(
   // is model-attested even when a kernelHash binds the source. (See REMEDIATION.md 2.8.)
   const kernelExecuted = report.environment?.kernelExecuted === true;
   const kernelVerified = kernelExecuted && Boolean(kernelHash);
+  // live-base is the EVM analogue of the kernel path: an app-report requires a REAL on-chain read
+  // (environment.baseExecuted) AND app.baseDeploymentHash binding the exact deployed contract
+  // identity (chainId+inbox+nock). baseExecuted ALONE must not promote — without the hash binding
+  // it stays model-attested, exactly as kernelExecuted requires kernelHash. (test:trust-forgery gate.)
+  const baseExecuted = report.environment?.baseExecuted === true;
+  const appBaseDeploymentHash = (report.app as { baseDeploymentHash?: unknown }).baseDeploymentHash;
+  const baseDeploymentHash = typeof appBaseDeploymentHash === "string" ? appBaseDeploymentHash : null;
+  const baseVerified = baseExecuted && Boolean(baseDeploymentHash);
   // An expectRejected report proves an exploit was PREVENTED — it is NOT an "app works" cert.
   const evidenceKind: GeneratedBadgeCandidateEvidenceKind = expectRejected
     ? "exploit-prevention"
-    : kernelVerified
+    : kernelVerified || baseVerified
       ? "app-report"
       : "model-attested";
   // "ready" for promotion ONLY when the RE-DERIVED status is a genuine pass, it agrees with the
@@ -359,6 +371,8 @@ function buildGeneratedBadgeCandidate(
     statusConsistent,
     kernelHash,
     kernelVerified,
+    baseDeploymentHash,
+    baseVerified,
     signatureStatus: "unsigned",
     evidence: {
       reportHash,

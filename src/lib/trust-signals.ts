@@ -30,6 +30,11 @@ export type VerifiedBadge = {
     snapshotRoot: string;
     signature: string;
     invariantPacks: string[];
+    // Deployed-identity bindings for app-report certs (parity pair). kernelHash: compiled real-VM
+    // kernel; baseDeploymentHash: sha256 of {chainId,inboxAddress,nockAddress} for a live-base run.
+    // Both are cross-bound to the signed payload by the verifier; absent on model-attested certs.
+    kernelHash?: string;
+    baseDeploymentHash?: string;
   };
   sourceAnchor: BadgeSourceAnchor;
 };
@@ -67,6 +72,10 @@ export type BadgeIssuanceReceipt = {
     issuedAt: string;
     expiresAt: string;
     sourceAnchor: BadgeSourceAnchor;
+    // Signed deployed-identity bindings (see VerifiedBadge.evidence). The Ed25519 signature attests
+    // these, and the verifier requires signedPayload.* === badge.evidence.* for each.
+    kernelHash?: string;
+    baseDeploymentHash?: string;
   };
   verification: {
     status: BadgeIssuanceVerificationStatus;

@@ -115,7 +115,12 @@ function main() {
       snapshotRoot: badge.evidence.snapshotRoot,
       issuedAt: issuance.signedPayload.issuedAt,
       expiresAt: issuance.signedPayload.expiresAt,
-      sourceAnchor: { ...badge.sourceAnchor }
+      sourceAnchor: { ...badge.sourceAnchor },
+      // Carry the deployed-identity bindings through re-sign. The verifier requires
+      // signedPayload.{kernelHash,baseDeploymentHash} === badge.evidence.* — dropping them here
+      // would silently break any kernel/live-base app-report cert on re-sign.
+      ...(badge.evidence.kernelHash ? { kernelHash: badge.evidence.kernelHash } : {}),
+      ...(badge.evidence.baseDeploymentHash ? { baseDeploymentHash: badge.evidence.baseDeploymentHash } : {})
     };
 
     const signed = crypto.signBadgePayload(issuance.signedPayload, prodSeed);
