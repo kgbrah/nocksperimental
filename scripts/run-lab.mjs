@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import net from "node:net";
@@ -68,6 +68,51 @@ const INVARIANT_REQUIRED_FIELDS = {
 // network, or randomness) and returns { passes, observed, expected }. Adding a
 // function is a deliberate, reviewed code change here — third-party fixtures can
 // never register code, only reference an already-allowlisted name (enforced at load).
+// EVM chain registry (src/data/evm-chains.json): family -> native hashes, plus per-chain finality
+// profile (recommendedMinConfirmations, confirmationBasis, trustSoftConfirm, challengeWindowSeconds).
+// This is what generalizes the cross-chain invariants to ANY EVM chain (and Nockchain, family "nock").
+// Conservative, adversarially-verified model inputs — NOT a live oracle. Loaded relative to this
+// module so cwd does not matter.
+let EVM_CHAINS;
+try {
+  EVM_CHAINS = JSON.parse(
+    readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/data/evm-chains.json"), "utf8")
+  );
+} catch {
+  // Degrade gracefully if the registry is not co-located (e.g. the extracted published `nocklab`):
+  // family-based hash support still works; per-chain finality lookups resolve to undefined.
+  EVM_CHAINS = { families: { evm: { nativeHashes: ["keccak256", "sha256"] }, nock: { nativeHashes: ["tip5"] } }, chains: {} };
+}
+// Resolve a chain reference (numeric chainId, string chainId, or a legacy name like "base"/"nockchain")
+// to its registry profile.
+function resolveChain(ref) {
+  if (ref === undefined || ref === null) return undefined;
+  const direct = EVM_CHAINS.chains[String(ref)];
+  if (direct) return direct;
+  // A numeric chainId may be stored under a different key (e.g. Nockchain is keyed "nockchain" with
+  // chainId 0) — match the chainId field too.
+  const num = Number(ref);
+  if (Number.isFinite(num)) {
+    const byId = Object.values(EVM_CHAINS.chains).find((c) => Number(c.chainId) === num);
+    if (byId) return byId;
+  }
+  const lname = String(ref).toLowerCase();
+  const aliases = { nockchain: "nockchain", nock: "nockchain", base: "8453", ethereum: "1", evm: "1" };
+  if (aliases[lname]) return EVM_CHAINS.chains[aliases[lname]];
+  return Object.values(EVM_CHAINS.chains).find((c) => c.name?.toLowerCase() === lname);
+}
+function hashesForChain(ref, family) {
+  const c = resolveChain(ref);
+  if (c) return c.nativeHashes ?? EVM_CHAINS.families[c.family]?.nativeHashes ?? [];
+  if (family) return EVM_CHAINS.families[family]?.nativeHashes ?? [];
+  return [];
+}
+
+// Normalize a state value the contract types as a list. The xchain invariants take
+// arrays (message lists, withdrawals, endpoints, …); anything else (undefined, an
+// object, a scalar) becomes an empty list so iteration never throws on malformed input.
+const asArray = (v) => (Array.isArray(v) ? v : []);
+
 const CUSTOM_INVARIANT_FUNCTIONS = Object.freeze({
   "balances-non-negative": (state, invariant) => {
     const balances = getPath(state, invariant.path) ?? {};
@@ -131,6 +176,312 @@ const CUSTOM_INVARIANT_FUNCTIONS = Object.freeze({
           ? `all ${checked} revealed seed(s) hash to their commitment`
           : `MISMATCH: ${mismatched.join(", ")}`,
       expected: `sha256(seed) == commit for every revealed pair under ${invariant.path}`
+    };
+  },
+
+  // ===== Cross-chain (Nockchain <-> Base) security invariants =====
+  // Model a TWO-chain app's joint state in one process (model-attested, not live execution).
+  // Ground truth: the real Nockchain<->Base bridge is a 3-of-5 FEDERATED mint-and-burn bridge
+  // (nockchain/crates/bridge: Nock.sol burn -> MessageInbox.sol mint); Nockchain's %hax hashlock uses
+  // Tip5 while EVM uses keccak256 (hoon/common/tx-engine-1.hoon). See docs/xchain-security-model.md.
+
+  // No value is minted on Base beyond what was burned/locked on Nockchain, and every mint is backed by
+  // a recorded burn (matched by id). Catches inflation / mint-from-nothing.
+  // path -> { minted:@, burned:@, mints?:[{id,amount}], burns?:[{id,amount}] }
+  "xchain-supply-conserved": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const minted = Number(x.minted ?? 0);
+    const burned = Number(x.burned ?? 0);
+    const mints = asArray(x.mints);
+    const burns = asArray(x.burns);
+    const burnById = new Map(burns.map((b) => [String(b.id), Number(b.amount ?? 0)]));
+    const unbacked = mints.filter((m) => (burnById.get(String(m.id)) ?? -1) < Number(m.amount ?? 0));
+    return {
+      passes: minted <= burned && unbacked.length === 0,
+      observed:
+        minted > burned
+          ? `INFLATION: minted ${minted} > burned ${burned}`
+          : unbacked.length
+            ? `UNBACKED MINT(S): ${unbacked.map((m) => m.id).join(", ")}`
+            : `minted ${minted} <= burned ${burned}; all ${mints.length} mint(s) backed by a burn`,
+      expected: `minted <= burned and every mint backed by a recorded burn under ${invariant.path}`
+    };
+  },
+
+  // Every mint/settle is attested by >= threshold DISTINCT signers, all in the authorized set.
+  // Catches under-quorum and unauthorized-signer minting.
+  // path -> { signers:[id], threshold:@, mints:[{id,attestedBy:[id]}] }
+  "xchain-quorum-authorized": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const authorized = new Set((x.signers ?? []).map(String));
+    const threshold = Number(x.threshold ?? 0);
+    const mints = asArray(x.mints);
+    const bad = [];
+    for (const m of mints) {
+      const distinct = new Set((m.attestedBy ?? []).map(String));
+      const unauthorized = [...distinct].filter((s) => !authorized.has(s));
+      if (unauthorized.length) bad.push(`${m.id}: unauthorized ${unauthorized.join("/")}`);
+      else if (distinct.size < threshold) bad.push(`${m.id}: ${distinct.size}/${threshold} sigs`);
+    }
+    return {
+      passes: bad.length === 0,
+      observed:
+        bad.length === 0
+          ? `all ${mints.length} mint(s) have >= ${threshold} distinct authorized attestations`
+          : `QUORUM FAIL: ${bad.join("; ")}`,
+      expected: `each mint attested by >= threshold distinct authorized signers under ${invariant.path}`
+    };
+  },
+
+  // Each cross-chain message id is processed at most once. Catches replay / double-mint.
+  // path -> [{id}, ...] (the processed/minted message list)
+  "xchain-replay-safe": (state, invariant) => {
+    const list = asArray(getPath(state, invariant.path));
+    const counts = new Map();
+    for (const e of list) {
+      const id = String(e?.id ?? e);
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    const dups = [...counts].filter(([, n]) => n > 1).map(([id, n]) => `${id} x${n}`);
+    return {
+      passes: dups.length === 0,
+      observed: dups.length === 0 ? `all ${list.length} message id(s) unique` : `REPLAY: ${dups.join(", ")}`,
+      expected: `no cross-chain message id processed more than once under ${invariant.path}`
+    };
+  },
+
+  // Each dependent settle references a source event with confirmations >= requiredConfirmations.
+  // Catches premature / reorg double-spend.
+  // path -> { requiredConfirmations:@, mints:[{id,confirmations}] }
+  "xchain-finality-depth": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const required = Number(x.requiredConfirmations ?? 0);
+    const mints = asArray(x.mints);
+    const premature = mints.filter((m) => Number(m.confirmations ?? 0) < required);
+    return {
+      passes: premature.length === 0,
+      observed:
+        premature.length === 0
+          ? `all ${mints.length} settle(s) >= ${required} confirmations`
+          : `PREMATURE: ${premature.map((m) => `${m.id}=${m.confirmations}`).join(", ")}`,
+      expected: `every settle references a source event with >= ${required} confirmations under ${invariant.path}`
+    };
+  },
+
+  // HTLC hashlock cross-chain compatibility. Each leg's hashAlgo must be one its chain can compute
+  // (nockchain->tip5; base/evm->keccak256/sha256) AND its commitment must derive from the SHARED
+  // preimage; two legs sharing an identical commitment value is the false "cross-chain hash equality"
+  // bug (Tip5 != keccak). Where hashAlgo==sha256 the preimage->commitment is verified concretely.
+  // path -> { preimage, legs:[{chain,hashAlgo,commitment,derivedFromSharedPreimage}] }
+  "xchain-hashlock-algo-match": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    // Registry-driven: each leg's chain (by chainId or legacy name) -> its native hashes. Works for
+    // ANY EVM chain (keccak256/sha256) and the Nockchain leg (tip5) without code changes.
+    const legs = asArray(x.legs);
+    const issues = [];
+    const commitSeen = new Map();
+    for (const leg of legs) {
+      const label = leg.chain ?? leg.chainId;
+      const allowed = hashesForChain(leg.chainId ?? leg.chain, leg.family);
+      if (!allowed.includes(String(leg.hashAlgo))) {
+        issues.push(`${label}: ${leg.hashAlgo} not computable on that chain (allowed: ${allowed.join("/") || "none"})`);
+      }
+      if (leg.derivedFromSharedPreimage !== true) {
+        issues.push(`${label}: commitment not derived from the shared preimage`);
+      }
+      if (leg.hashAlgo === "sha256" && x.preimage != null) {
+        const d = createHash("sha256").update(Buffer.from(String(x.preimage), "hex")).digest("hex");
+        if (d !== String(leg.commitment)) issues.push(`${label}: sha256(preimage) != commitment`);
+      }
+      const c = String(leg.commitment);
+      commitSeen.set(c, (commitSeen.get(c) ?? 0) + 1);
+    }
+    for (const [c, n] of commitSeen) {
+      if (n > 1) issues.push(`identical commitment on ${n} legs (false cross-chain hash equality): ${c.slice(0, 12)}`);
+    }
+    return {
+      passes: issues.length === 0,
+      observed:
+        issues.length === 0
+          ? `all ${legs.length} leg(s) lock the shared preimage under a chain-computable hash; commitments distinct`
+          : `HASHLOCK MISMATCH: ${issues.join("; ")}`,
+      expected: `each HTLC leg locks the shared preimage under a hash its own chain can compute, with distinct per-chain commitments, under ${invariant.path}`
+    };
+  },
+
+  // HTLC timelock ordering: the refund window on the FIRST-funded leg must outlast the claim window on
+  // every other leg, so the counterparty can't refund and still claim. Catches the free-option / theft.
+  // path -> { legs:[{chain,timelockBlocks,fundsFirst}] }
+  "xchain-timelock-ordering": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const legs = asArray(x.legs);
+    const first = legs.find((l) => l.fundsFirst === true);
+    const rest = legs.filter((l) => l !== first);
+    const unsafe = first
+      ? rest.filter((l) => Number(first.timelockBlocks ?? 0) <= Number(l.timelockBlocks ?? 0))
+      : [];
+    return {
+      passes: Boolean(first) && unsafe.length === 0,
+      observed: !first
+        ? "no first-funded leg declared"
+        : unsafe.length
+          ? `FREE OPTION: first-funded ${first.chain}=${first.timelockBlocks} <= ${unsafe.map((l) => `${l.chain}=${l.timelockBlocks}`).join(", ")}`
+          : `first-funded ${first.chain}=${first.timelockBlocks} > all other legs`,
+      expected: `refund timelock on the first-funded leg > claim window on every other leg under ${invariant.path}`
+    };
+  },
+
+  // Atomicity: the terminal joint settlement is (all legs claimed) XOR (all legs refunded); never a mix,
+  // never stuck-locked. Catches partial execution / one-sided settlement / stuck funds.
+  // path -> [status, ...] where status in {claimed, refunded, locked}
+  "xchain-atomic-settlement": (state, invariant) => {
+    const statuses = asArray(getPath(state, invariant.path)).map(String);
+    const allClaimed = statuses.length > 0 && statuses.every((s) => s === "claimed");
+    const allRefunded = statuses.length > 0 && statuses.every((s) => s === "refunded");
+    return {
+      passes: allClaimed || allRefunded,
+      observed:
+        allClaimed || allRefunded
+          ? `atomic: all ${statuses.length} leg(s) ${allClaimed ? "claimed" : "refunded"}`
+          : `NON-ATOMIC: [${statuses.join(", ")}]`,
+      expected: `terminal settlement is all-claimed or all-refunded (no mix, no stuck-locked) under ${invariant.path}`
+    };
+  },
+
+  // ===== Multi-EVM generalization invariants (registry-driven; any EVM chain) =====
+
+  // Per-chain, registry-driven finality: a settle on chain C needs confirmations >=
+  // max(app-required, registry floor[C]), the right confirmationBasis, and no reliance on a reversible
+  // soft-confirmation. Catches "12 native confirmations on Base" (Base needs ~65 L1-batch) and trusting
+  // an optimistic-rollup sequencer soft-confirm. The floor/basis come from the registry, not state.
+  // path -> { appRequiredConfirmations?:@, settles:[{id,chainId,confirmations,confirmationBasis?,basedOnSoftConfirm?}] }
+  "xchain-finality-adequacy": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const appReq = Number(x.appRequiredConfirmations ?? 0);
+    const settles = asArray(x.settles);
+    const issues = [];
+    for (const s of settles) {
+      const c = resolveChain(s.chainId ?? s.chain);
+      if (!c) {
+        issues.push(`${s.id}: unknown chain ${s.chainId ?? s.chain}`);
+        continue;
+      }
+      const floor = Math.max(appReq, Number(c.recommendedMinConfirmations ?? 0));
+      if (Number(s.confirmations ?? 0) < floor) issues.push(`${s.id}@${c.name}: ${s.confirmations} < ${floor} confirmations`);
+      if (s.confirmationBasis != null && c.confirmationBasis != null && String(s.confirmationBasis) !== String(c.confirmationBasis)) {
+        issues.push(`${s.id}@${c.name}: basis ${s.confirmationBasis} != required ${c.confirmationBasis}`);
+      }
+      if (s.basedOnSoftConfirm === true && c.trustSoftConfirm === false) issues.push(`${s.id}@${c.name}: trusts reversible soft-confirmation`);
+    }
+    return {
+      passes: issues.length === 0,
+      observed: issues.length === 0 ? `all ${settles.length} settle(s) meet their chain's finality floor + basis` : `FINALITY: ${issues.join("; ")}`,
+      expected: `each settle has confirmations >= max(app, registry floor[chain]) on the chain's required basis, under ${invariant.path}`
+    };
+  },
+
+  // Cross-EVM signature replay: a cross-chain message/attestation must bind its TARGET chain id in the
+  // signed payload (and use EIP-155 for raw txs), so one valid signature set can't mint the same
+  // withdrawal on a DIFFERENT EVM chain (N-fold inflation). quorum-authorized checks the signers, not
+  // that the signed bytes name one chain. path -> { messages:[{id,targetChainId,attestation:{signedPayloadIncludesChainId,signedChainId,eip155?}}] }
+  "xchain-chainid-bound": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const messages = asArray(x.messages);
+    const issues = [];
+    for (const m of messages) {
+      const a = m.attestation ?? {};
+      if (a.signedPayloadIncludesChainId !== true) issues.push(`${m.id}: signed payload omits chainId (replayable on any chain)`);
+      else if (Number(a.signedChainId) !== Number(m.targetChainId)) issues.push(`${m.id}: signed for chain ${a.signedChainId} but applied to ${m.targetChainId}`);
+      if (a.eip155 === false) issues.push(`${m.id}: pre-EIP-155 (chainId not bound in v)`);
+    }
+    return {
+      passes: issues.length === 0,
+      observed: issues.length === 0 ? `all ${messages.length} message(s) bind their target chain id` : `CHAIN-ID REPLAY: ${issues.join("; ")}`,
+      expected: `every cross-chain message's signed payload binds its targetChainId (raw txs use EIP-155), under ${invariant.path}`
+    };
+  },
+
+  // Multi-EVM replay namespacing: the replay key must be (destChainId, id). A bare-id ledger lets one
+  // burn be processed once per chain (double-mint) and can mis-route ids — what single-namespace
+  // xchain-replay-safe cannot see. path -> { processed:[{id,sourceChainId,destChainId}], expectedRoute?:{id:destChainId} }
+  "xchain-per-chain-replay-namespacing": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const route = x.expectedRoute ?? {};
+    const processed = asArray(x.processed);
+    const counts = new Map();
+    const issues = [];
+    for (const p of processed) {
+      const key = `${p.destChainId}:${p.id}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      if (p.sourceChainId === undefined || p.sourceChainId === null) issues.push(`${p.id}: missing sourceChainId`);
+      if (route[p.id] != null && Number(route[p.id]) !== Number(p.destChainId)) issues.push(`${p.id} misrouted to ${p.destChainId} (expected ${route[p.id]})`);
+    }
+    for (const [k, n] of counts) if (n > 1) issues.push(`replay ${k} x${n}`);
+    return {
+      passes: issues.length === 0,
+      observed: issues.length === 0 ? `all ${processed.length} message(s) unique per (destChainId,id), source-scoped, correctly routed` : `XCHAIN REPLAY: ${issues.join("; ")}`,
+      expected: `each message unique per (destChainId,id), carries a sourceChainId, routed to its expected chain, under ${invariant.path}`
+    };
+  },
+
+  // EIP-712 domain-separator binding: each EVM endpoint must have a DISTINCT domain (chainId +
+  // verifyingContract), re-derived at verify time, and an authorization is valid only at the endpoint
+  // whose domain it was bound to. Catches cross-contract / cross-chain signature reuse + stale separators.
+  // path -> { endpoints:[{chainId,verifyingContract,domain:{name,version,chainId,verifyingContract},derivesChainIdAtVerify}], authorizations:[{boundDomainHash,usedAtEndpoint}] }
+  "xchain-domain-separator-binding": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const endpoints = asArray(x.endpoints);
+    const issues = [];
+    const hashOf = (d) => createHash("sha256").update(`${d?.name}|${d?.version}|${d?.chainId}|${d?.verifyingContract}`).digest("hex");
+    const byEndpoint = new Map();
+    const hashes = [];
+    for (const e of endpoints) {
+      const d = e.domain ?? {};
+      if (Number(d.chainId) !== Number(e.chainId)) issues.push(`endpoint ${e.chainId}: domain.chainId ${d.chainId} != ${e.chainId}`);
+      if (!d.verifyingContract || /^0x0+$|placeholder/i.test(String(d.verifyingContract))) issues.push(`endpoint ${e.chainId}: missing/placeholder verifyingContract`);
+      if (e.derivesChainIdAtVerify !== true) issues.push(`endpoint ${e.chainId}: chainId not re-derived at verify (stale on fork)`);
+      const h = hashOf(d);
+      byEndpoint.set(Number(e.chainId), h);
+      hashes.push(h);
+    }
+    if (hashes.some((h, i) => hashes.indexOf(h) !== i)) issues.push("duplicate domain separator across endpoints (cross-chain signature reuse)");
+    for (const a of asArray(x.authorizations)) {
+      if (a.boundDomainHash !== byEndpoint.get(Number(a.usedAtEndpoint))) issues.push(`authorization used at endpoint ${a.usedAtEndpoint} but bound to a different domain`);
+    }
+    return {
+      passes: issues.length === 0,
+      observed: issues.length === 0 ? `${endpoints.length} endpoint(s) have distinct, chain-bound, re-derived domains; authorizations match` : `DOMAIN: ${issues.join("; ")}`,
+      expected: `each endpoint has a distinct (chainId,verifyingContract) domain re-derived at verify; authorizations valid only at their bound endpoint, under ${invariant.path}`
+    };
+  },
+
+  // Optimistic-rollup challenge window: a bridge must not credit/mint against an OP-stack/Arbitrum L2
+  // withdrawal before its fraud-proof window closes (unless L1-finalized or an LP-bonded fast exit).
+  // The model + window come from the registry per chain. path -> { now?, withdrawals:[{id,chainId,l2BurnBlockTime,creditedAtTime,finalizedOnL1,instantLPexit?}] }
+  "xchain-challenge-window-respected": (state, invariant) => {
+    const x = getPath(state, invariant.path) ?? {};
+    const issues = [];
+    for (const w of asArray(x.withdrawals)) {
+      const c = resolveChain(w.chainId ?? w.chain);
+      if (!c) {
+        issues.push(`${w.id}: unknown chain ${w.chainId ?? w.chain}`);
+        continue;
+      }
+      // A positive challengeWindowSeconds is the registry's marker for an optimistic/contestable
+      // chain — the only family that carries a fraud-proof window. Non-optimistic chains have a 0
+      // window and nothing to wait on.
+      const window = Number(c.challengeWindowSeconds ?? 0);
+      if (window <= 0) continue;
+      if (w.finalizedOnL1 === true || w.instantLPexit === true) continue;
+      const waited = Number(w.creditedAtTime ?? 0) - Number(w.l2BurnBlockTime ?? 0);
+      if (waited < window) {
+        issues.push(`${w.id}@${c.name}: credited after ${waited}s, before the ${window}s challenge window (not L1-finalized)`);
+      }
+    }
+    return {
+      passes: issues.length === 0,
+      observed: issues.length === 0 ? `optimistic-rollup withdrawal(s) credited only after L1-finalization / challenge window / LP-bond` : `CHALLENGE WINDOW: ${issues.join("; ")}`,
+      expected: `no optimistic-rollup withdrawal credited before L1-finalization or its challenge window closes, under ${invariant.path}`
     };
   }
 });

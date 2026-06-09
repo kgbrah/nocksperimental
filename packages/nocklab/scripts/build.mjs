@@ -20,6 +20,9 @@ const repoRoot = path.resolve(packageDir, "..", "..");
 
 mkdirSync(path.join(packageDir, "bin"), { recursive: true });
 mkdirSync(path.join(packageDir, "schemas"), { recursive: true });
+// bin/nocklab.mjs reads "../src/data/evm-chains.json" (the EVM cross-chain registry) relative to
+// itself, so it must land at <package>/src/data/. (run-lab also degrades gracefully if it is absent.)
+mkdirSync(path.join(packageDir, "src", "data"), { recursive: true });
 
 const copies = [
   { from: "scripts/run-lab.mjs", to: "bin/nocklab.mjs", executable: true },
@@ -28,7 +31,8 @@ const copies = [
     from: "schemas/nockapp-lab-fixture.schema.json",
     to: "schemas/nockapp-lab-fixture.schema.json",
     executable: false
-  }
+  },
+  { from: "src/data/evm-chains.json", to: "src/data/evm-chains.json", executable: false }
 ];
 
 for (const { from, to, executable } of copies) {

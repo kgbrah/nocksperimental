@@ -1,0 +1,101 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-replay-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: replay",
+    "slug": "attack-xchain-replay",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a cross-chain exploit that the invariant MUST catch.",
+      "Same withdrawal id wd-001 minted twice (replay / double-mint).",
+      "expectRejected inverts a CAUGHT exploit to a green PASS (a signed proof-of-prevention)."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "minted": 1000,
+      "burned": 1000,
+      "signers": [
+        "node-1",
+        "node-2",
+        "node-3",
+        "node-4",
+        "node-5"
+      ],
+      "threshold": 3,
+      "requiredConfirmations": 12,
+      "burns": [
+        {
+          "id": "wd-001",
+          "amount": 1000
+        }
+      ],
+      "mints": [
+        {
+          "id": "wd-001",
+          "amount": 1000,
+          "attestedBy": [
+            "node-1",
+            "node-2",
+            "node-3"
+          ],
+          "confirmations": 12
+        },
+        {
+          "id": "wd-001",
+          "amount": 1000,
+          "attestedBy": [
+            "node-1",
+            "node-2",
+            "node-3"
+          ],
+          "confirmations": 12
+        }
+      ],
+      "settlement": [
+        "claimed"
+      ]
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe the terminal joint state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "replay-safe",
+      "title": "Each message id minted at most once",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-replay-safe",
+      "path": "xchain.mints"
+    }
+  ]
+}

@@ -107,6 +107,17 @@ Key focused suites: `npm run test:x402`, `npm run test:bazaar`,
 - Do not store or echo private keys, seed phrases, wallet exports, raw payment
   material, API keys, unredacted env dumps, raw PMA slabs, checkpoints, state
   jams, or event logs.
+- Trust certs (badges/attestations): NEVER treat a committed/public key as a live
+  trust anchor, and NEVER sign with a public demo seed (signing fails closed unless
+  `NOCKS_BADGE_ISSUER_SIGNING_SEED` is set, or `NOCKS_ALLOW_DEV_SIGNING=1` for an
+  explicitly non-authoritative demo). A `verified` cert must (a) be signed by an
+  active, non-dev key, (b) bind to a non-empty report hash + snapshot root, and
+  (c) re-derive pass/fail from the recorded steps/invariants — never trust a
+  report's self-declared `summary.status`. A mock-fakenet run attests the fixture
+  MODEL only (`model-attested`), not the deployed kernel (`app-report`); do not
+  present model-attested or `expectRejected` (exploit-prevention) results as an
+  "app works" cert. The regression gate is `npm run test:trust-forgery` — it must
+  mint zero certs. See `adversarial-audit/`.
 - Do not present mock lab or stub x402 behavior as live-chain truth.
 - Do not use old READMEs, old Zorp repos, or remembered CLI behavior as
   Nockchain protocol authority without current Tier 0/Tier 1 support.

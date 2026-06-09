@@ -1,0 +1,26 @@
+{
+  "id": "issue-badge-lucky-nock-casino-verified",
+  "badgeId": "badge-lucky-nock-casino-verified",
+  "issuedAt": "2026-06-08T00:00:00.000Z",
+  "issuer": "Nocksperimental Trust Registry",
+  "issuerKeyId": "nocksperimental-registry-ed25519-dev-v1",
+  "payloadDigest": "sha256:fff561784cdeeade54a96fa93c6f3dcec8a7ff3a4b5a6e4e6eed7cfd5d43940f",
+  "signature": "TMdOIgW0z+X9hcaSNdSiDWqqTiHs1TNyK8MAMw0V8ZLlJSZU6LjC3ncDGQiN8UaH8g/jpK4zrBPyCbNBD20PDg==",
+  "signedPayload": {
+    "badgeId": "badge-lucky-nock-casino-verified",
+    "status": "verified",
+    "reportHash": "",
+    "snapshotRoot": "",
+    "issuedAt": "2026-06-08T00:00:00.000Z",
+    "expiresAt": "2027-06-08T00:00:00.000Z",
+    "sourceAnchor": {
+      "commit": "x",
+      "build": "y"
+    }
+  },
+  "verification": {
+    "status": "valid",
+    "algorithm": "ed25519",
+    "checkedAt": "2026-06-08T00:00:00.000Z"
+  }
+}

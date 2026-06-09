@@ -18,6 +18,18 @@ export const DEV_ISSUER_SEEDS: Record<string, string> = {
 
 export const ACTIVE_DEV_ISSUER_KEY_ID = "nocksperimental-registry-ed25519-dev-v1";
 
+// The set of keyIds whose signing seed is PUBLIC (committed above). A verifier MUST NEVER
+// treat a public-seed key as a live trust anchor: anyone holding this repo can forge its
+// signatures. These keys are RETIRED in the committed registry and exist only to (a) verify
+// historical demo badges as DEMO (verified:false) and (b) let tests sign throwaway artifacts
+// under an explicit NOCKS_ALLOW_DEV_SIGNING=1 opt-in. A real `verified` cert requires the
+// secret production seed (NOCKS_BADGE_ISSUER_SIGNING_SEED) under a committed, active, non-dev key.
+export const DEV_ISSUER_KEY_IDS: ReadonlySet<string> = new Set(Object.keys(DEV_ISSUER_SEEDS));
+
+export function isDevIssuerKey(keyId: string | null | undefined): boolean {
+  return keyId != null && DEV_ISSUER_KEY_IDS.has(keyId);
+}
+
 export type BadgeSignatureResult = {
   signature: string;
   payloadDigest: string;
@@ -135,6 +147,13 @@ export function resolveActiveIssuerKeyId(): string {
   return ACTIVE_DEV_ISSUER_KEY_ID;
 }
 
+// Memoizes the Ed25519 public-key derivation below (an asymmetric key op) so a hot
+// path that resolves issuer public keys per request — e.g. the badge.svg route via
+// overlaidIssuerKeys() — does not re-derive on every call. The cache key is a hash of
+// the current (seed, keyId), so the entry self-invalidates if the env changes mid-process
+// (as test-evidence-receipt-signing.mjs does), and the raw seed is never retained.
+let issuerEnvKeyOverlayCache: { signature: string; value: { keyId: string; publicKeySpki: string } } | undefined;
+
 // When a production signing seed is configured, expose the keyId -> SPKI overlay
 // it implies so issuer-key discovery/lookup can serve the production public key
 // alongside the committed registry. Returns undefined in the dev/env-unset path
@@ -146,10 +165,16 @@ export function issuerEnvKeyOverlay(): { keyId: string; publicKeySpki: string } 
     return undefined;
   }
 
-  return {
-    keyId: resolveActiveIssuerKeyId(),
-    publicKeySpki: publicKeySpkiFromSeed(envSeed)
-  };
+  const keyId = resolveActiveIssuerKeyId();
+  const signature = createHash("sha256").update(`${envSeed}:${keyId}`).digest("hex");
+
+  if (issuerEnvKeyOverlayCache?.signature === signature) {
+    return issuerEnvKeyOverlayCache.value;
+  }
+
+  const value = { keyId, publicKeySpki: publicKeySpkiFromSeed(envSeed) };
+  issuerEnvKeyOverlayCache = { signature, value };
+  return value;
 }
 
 // Fail-closed guard run at sign time. When a production signing seed is
@@ -185,10 +210,22 @@ export function badgeIssuerSigningSeed(keyId: string = ACTIVE_DEV_ISSUER_KEY_ID)
     return envSeed;
   }
 
+  // Fail closed: never silently sign with a PUBLIC demo seed. Production must supply a secret
+  // seed via NOCKS_BADGE_ISSUER_SIGNING_SEED. Tests/maintainer demos opt in explicitly with
+  // NOCKS_ALLOW_DEV_SIGNING=1; the resulting signatures verify only as DEMO (the verifier
+  // rejects dev keys as a live trust anchor — see isDevIssuerKey).
+  if (process.env.NOCKS_ALLOW_DEV_SIGNING !== "1") {
+    throw new Error(
+      "Refusing to sign with a public demo issuer seed. Set NOCKS_BADGE_ISSUER_SIGNING_SEED " +
+        "(production secret) to issue a real cert, or NOCKS_ALLOW_DEV_SIGNING=1 for an " +
+        "explicitly non-authoritative demo signature."
+    );
+  }
+
   const devSeed = DEV_ISSUER_SEEDS[keyId];
 
   if (!devSeed) {
-    throw new Error(`No signing seed available for issuer key ${keyId}`);
+    throw new Error(`No demo signing seed available for issuer key ${keyId}`);
   }
 
   return devSeed;

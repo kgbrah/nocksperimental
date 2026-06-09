@@ -1,0 +1,72 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-challenge-window-violated-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: challenge-window-violated",
+    "slug": "attack-xchain-challenge-window-violated",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a multi-EVM cross-chain exploit the invariant MUST catch.",
+      "Bridge credits an Optimism (10) withdrawal 3600s after burn, inside the 7-day fraud-proof window, not L1-finalized.",
+      "expectRejected inverts a CAUGHT exploit to a green proof-of-prevention."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "exits": {
+        "now": 3600,
+        "withdrawals": [
+          {
+            "id": "wd-001",
+            "chainId": 10,
+            "l2BurnBlockTime": 0,
+            "creditedAtTime": 3600,
+            "finalizedOnL1": false,
+            "instantLPexit": false
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "challenge-window",
+      "title": "Wait for finalization / challenge window",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-challenge-window-respected",
+      "path": "xchain.exits"
+    }
+  ]
+}

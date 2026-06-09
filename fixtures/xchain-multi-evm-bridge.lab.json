@@ -1,0 +1,205 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "xchain-multi-evm-bridge-v0",
+  "app": {
+    "name": "Nockchain<->multi-EVM Bridge (Arbitrum/Optimism)",
+    "slug": "xchain-multi-evm-bridge",
+    "version": "0.0.1",
+    "kernel": "xchain-multi-evm-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Generalized cross-chain tester over the EVM chain registry (src/data/evm-chains.json): a correct Nockchain<->Arbitrum withdrawal with an Optimism endpoint.",
+      "Exercises chain-id-bound attestations, per-chain finality adequacy (Arbitrum L1-batch floor 64), per-(destChainId,id) replay namespacing, distinct EIP-712 domain separators, optimistic challenge-window respect, and registry-driven HTLC hashlock (Nockchain tip5 + Arbitrum keccak256).",
+      "Honest limit: a single-process MODEL of multiple chains (model-attested). See docs/xchain-security-model.md."
+    ]
+  },
+  "actors": [
+    {
+      "name": "bridge-node",
+      "pkh": "bridge-federation"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "crosschain": {
+        "messages": [
+          {
+            "id": "wd-001",
+            "targetChainId": 42161,
+            "attestation": {
+              "signedPayloadIncludesChainId": true,
+              "signedChainId": 42161,
+              "eip155": true
+            },
+            "attestedBy": [
+              "n1",
+              "n2",
+              "n3"
+            ]
+          }
+        ]
+      },
+      "finality": {
+        "appRequiredConfirmations": 0,
+        "settles": [
+          {
+            "id": "wd-001",
+            "chainId": 42161,
+            "confirmations": 64,
+            "confirmationBasis": "L1-batch",
+            "basedOnSoftConfirm": false
+          }
+        ]
+      },
+      "routing": {
+        "processed": [
+          {
+            "id": "wd-001",
+            "sourceChainId": 0,
+            "destChainId": 42161,
+            "sourceTxHash": "0xabc"
+          }
+        ],
+        "expectedRoute": {
+          "wd-001": 42161
+        }
+      },
+      "domain": {
+        "endpoints": [
+          {
+            "chainId": 42161,
+            "verifyingContract": "0xArb000000000000000000000000000000000001",
+            "domain": {
+              "name": "NockBridge",
+              "version": "1",
+              "chainId": 42161,
+              "verifyingContract": "0xArb000000000000000000000000000000000001"
+            },
+            "derivesChainIdAtVerify": true
+          },
+          {
+            "chainId": 10,
+            "verifyingContract": "0xOpt000000000000000000000000000000000002",
+            "domain": {
+              "name": "NockBridge",
+              "version": "1",
+              "chainId": 10,
+              "verifyingContract": "0xOpt000000000000000000000000000000000002"
+            },
+            "derivesChainIdAtVerify": true
+          }
+        ],
+        "authorizations": [
+          {
+            "boundDomainHash": "4e9b6cc4983a05c5793e2481a70cbfb3844356047cbb98f2b004cd78dac6b93e",
+            "usedAtEndpoint": 42161
+          }
+        ]
+      },
+      "exits": {
+        "now": 700000,
+        "withdrawals": [
+          {
+            "id": "wd-001",
+            "chainId": 42161,
+            "l2BurnBlockTime": 0,
+            "creditedAtTime": 0,
+            "finalizedOnL1": true,
+            "instantLPexit": false
+          }
+        ]
+      },
+      "htlc": {
+        "preimage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "legs": [
+          {
+            "chainId": 0,
+            "chain": "nockchain",
+            "hashAlgo": "tip5",
+            "commitment": "t1p5cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "derivedFromSharedPreimage": true
+          },
+          {
+            "chainId": 42161,
+            "chain": "arbitrum",
+            "hashAlgo": "keccak256",
+            "commitment": "keccaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "derivedFromSharedPreimage": true
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "chainid-bound",
+      "title": "Attestations bind their target chain id (no cross-EVM replay)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-chainid-bound",
+      "path": "xchain.crosschain"
+    },
+    {
+      "id": "finality-adequacy",
+      "title": "Each settle meets its chain's finality floor + basis",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-finality-adequacy",
+      "path": "xchain.finality"
+    },
+    {
+      "id": "replay-namespacing",
+      "title": "Replay keyed per (destChainId, id)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-per-chain-replay-namespacing",
+      "path": "xchain.routing"
+    },
+    {
+      "id": "domain-separator",
+      "title": "Distinct EIP-712 domain per endpoint; authorizations bound",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-domain-separator-binding",
+      "path": "xchain.domain"
+    },
+    {
+      "id": "challenge-window",
+      "title": "No optimistic withdrawal credited before finalization",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-challenge-window-respected",
+      "path": "xchain.exits"
+    },
+    {
+      "id": "hashlock-algo",
+      "title": "Each HTLC leg uses a hash its chain can compute (registry-driven)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-hashlock-algo-match",
+      "path": "xchain.htlc"
+    }
+  ]
+}

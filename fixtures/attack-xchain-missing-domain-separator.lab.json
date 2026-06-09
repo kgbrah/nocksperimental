@@ -1,0 +1,91 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-missing-domain-separator-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: missing-domain-separator",
+    "slug": "attack-xchain-missing-domain-separator",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a multi-EVM cross-chain exploit the invariant MUST catch.",
+      "Two EVM endpoints share one EIP-712 domain (chainId hardcoded to 1); a Base authorization is accepted on Optimism.",
+      "expectRejected inverts a CAUGHT exploit to a green proof-of-prevention."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "domain": {
+        "endpoints": [
+          {
+            "chainId": 8453,
+            "verifyingContract": "0xSAME0000000000000000000000000000000000ff",
+            "domain": {
+              "name": "NockBridge",
+              "version": "1",
+              "chainId": 1,
+              "verifyingContract": "0xSAME0000000000000000000000000000000000ff"
+            },
+            "derivesChainIdAtVerify": false
+          },
+          {
+            "chainId": 10,
+            "verifyingContract": "0xSAME0000000000000000000000000000000000ff",
+            "domain": {
+              "name": "NockBridge",
+              "version": "1",
+              "chainId": 1,
+              "verifyingContract": "0xSAME0000000000000000000000000000000000ff"
+            },
+            "derivesChainIdAtVerify": false
+          }
+        ],
+        "authorizations": [
+          {
+            "boundDomainHash": "ba5883d1af11e07ae5c6522c80a7692588f04609eeddd74ce285a2ba467d3ee8",
+            "usedAtEndpoint": 10
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "domain-separator",
+      "title": "Distinct, re-derived domain per endpoint",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-domain-separator-binding",
+      "path": "xchain.domain"
+    }
+  ]
+}

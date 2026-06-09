@@ -57,6 +57,23 @@
     {
       "path": "fixtures/attack-peek-leaks-seed.lab.json",
       "slug": "attack-peek-leaks-seed"
-    }
+    },
+    { "path": "fixtures/xchain-federated-bridge.lab.json", "slug": "xchain-federated-bridge" },
+    { "path": "fixtures/xchain-atomic-swap.lab.json", "slug": "xchain-atomic-swap" },
+    { "path": "fixtures/attack-xchain-mint-without-burn.lab.json", "slug": "attack-xchain-mint-without-burn" },
+    { "path": "fixtures/attack-xchain-under-quorum.lab.json", "slug": "attack-xchain-under-quorum" },
+    { "path": "fixtures/attack-xchain-unauthorized-signer.lab.json", "slug": "attack-xchain-unauthorized-signer" },
+    { "path": "fixtures/attack-xchain-replay.lab.json", "slug": "attack-xchain-replay" },
+    { "path": "fixtures/attack-xchain-premature-finality.lab.json", "slug": "attack-xchain-premature-finality" },
+    { "path": "fixtures/attack-xchain-hash-algo-mismatch.lab.json", "slug": "attack-xchain-hash-algo-mismatch" },
+    { "path": "fixtures/attack-xchain-timelock-inversion.lab.json", "slug": "attack-xchain-timelock-inversion" },
+    { "path": "fixtures/attack-xchain-one-sided-settlement.lab.json", "slug": "attack-xchain-one-sided-settlement" },
+    { "path": "fixtures/xchain-multi-evm-bridge.lab.json", "slug": "xchain-multi-evm-bridge" },
+    { "path": "fixtures/attack-xchain-signature-replay.lab.json", "slug": "attack-xchain-signature-replay" },
+    { "path": "fixtures/attack-xchain-missing-domain-separator.lab.json", "slug": "attack-xchain-missing-domain-separator" },
+    { "path": "fixtures/attack-xchain-insufficient-finality-for-chain.lab.json", "slug": "attack-xchain-insufficient-finality-for-chain" },
+    { "path": "fixtures/attack-xchain-challenge-window-violated.lab.json", "slug": "attack-xchain-challenge-window-violated" },
+    { "path": "fixtures/attack-xchain-replay-namespacing.lab.json", "slug": "attack-xchain-replay-namespacing" },
+    { "path": "fixtures/attack-xchain-evm-hashlock-family-mismatch.lab.json", "slug": "attack-xchain-evm-hashlock-family-mismatch" }
   ]
 }

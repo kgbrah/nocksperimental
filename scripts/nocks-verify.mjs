@@ -124,6 +124,14 @@ export function findBadgeRevocation(badgeId, revocations) {
 // Verifies an envelope { payload, signature, payloadDigest?, issuerKeyId }.
 // ---------------------------------------------------------------------------
 
+// Public demo keys (their seeds are committed in src/lib/trust-badge-crypto.ts). A signature
+// from one is cryptographically valid but forgeable by anyone holding this repo, so it is NEVER
+// a live trust anchor — only ever a DEMO badge. Keep in sync with DEV_ISSUER_SEEDS.
+export const DEV_ISSUER_KEY_IDS = new Set([
+  "nocksperimental-registry-ed25519-dev-v0",
+  "nocksperimental-registry-ed25519-dev-v1"
+]);
+
 export function verifyEnvelope({ payload, signature, payloadDigest, issuerKeyId, registry }) {
   if (payload === undefined || payload === null) {
     return {
@@ -131,16 +139,22 @@ export function verifyEnvelope({ payload, signature, payloadDigest, issuerKeyId,
       issuerKeyId: issuerKeyId ?? null,
       issuerKeyResolved: false,
       issuerKeyStatus: null,
+      issuerKeyIsTrustAnchor: false,
       recomputedDigest: null,
       stampedDigest: payloadDigest ?? null,
       payloadDigestMatched: false,
       signatureCryptographicallyValid: false,
+      evidencePresent: false,
       reason: "missing-signed-payload"
     };
   }
 
   const issuerKey = resolveIssuerKey(registry, issuerKeyId);
   const issuerKeyResolved = Boolean(issuerKey);
+  // The signing key must be a live trust anchor: ACTIVE and not a public demo key. A retired or
+  // dev key still RESOLVES (so we can label it), but it can never yield verified:true.
+  const issuerKeyIsTrustAnchor =
+    issuerKeyResolved && issuerKey.status === "active" && !DEV_ISSUER_KEY_IDS.has(issuerKeyId);
   const recomputedDigest = badgePayloadDigest(payload);
   // A null stamped digest (envelope without payloadDigest) is allowed; only a
   // present-but-mismatched digest fails.
@@ -148,18 +162,35 @@ export function verifyEnvelope({ payload, signature, payloadDigest, issuerKeyId,
   const signatureCryptographicallyValid = issuerKeyResolved
     ? verifyBadgeSignature({ payload, signature, publicKeySpkiBase64: issuerKey.publicKeySpki })
     : false;
+  // Badge payloads must carry non-empty evidence (reportHash + snapshotRoot); "" === "" is not a cert.
+  const looksLikeBadge =
+    typeof payload === "object" && ("reportHash" in payload || "snapshotRoot" in payload);
+  const evidencePresent = !looksLikeBadge || Boolean(payload.reportHash && payload.snapshotRoot);
   const verified =
-    issuerKeyResolved && signatureCryptographicallyValid && payloadDigestMatched !== false;
+    issuerKeyResolved &&
+    issuerKeyIsTrustAnchor &&
+    signatureCryptographicallyValid &&
+    payloadDigestMatched !== false &&
+    evidencePresent;
 
   return {
     verified,
     issuerKeyId: issuerKeyId ?? null,
     issuerKeyResolved,
     issuerKeyStatus: issuerKey?.status ?? null,
+    issuerKeyIsTrustAnchor,
     recomputedDigest,
     stampedDigest: payloadDigest ?? null,
     payloadDigestMatched,
-    signatureCryptographicallyValid
+    signatureCryptographicallyValid,
+    evidencePresent,
+    reason: verified
+      ? undefined
+      : !issuerKeyIsTrustAnchor && signatureCryptographicallyValid
+        ? "issuer-key-not-a-trust-anchor (retired or public demo key — DEMO only)"
+        : !evidencePresent
+          ? "empty-evidence"
+          : undefined
   };
 }
 
@@ -270,6 +301,16 @@ const ARTIFACT_KINDS = {
 
 function runVerify(opts, spec) {
   const registry = loadIssuerKeyRegistry(opts.keys);
+  // Phase 4.16: a relying party should pin a production-exported registry via --keys. Warn
+  // loudly when falling back to the committed registry so the advertised offline path can't be
+  // silently satisfied by a public demo key.
+  if (!opts.keys) {
+    process.stderr.write(
+      "nocks-verify: WARNING — verifying against the COMMITTED registry (no --keys pinned). " +
+        "Retired/dev keys are DEMO only and will not verify as a live cert. " +
+        "Pin your production issuer registry with --keys <registry.json>.\n"
+    );
+  }
   const artifact = loadArtifact(opts, { allowDigestLookup: spec.allowDigestLookup });
   const result = verifyEnvelope({
     payload: artifact[spec.payloadField],

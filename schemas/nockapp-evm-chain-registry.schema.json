@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://nocksperimental.com/schemas/nockapp-evm-chain-registry.schema.json",
+  "title": "NockApp cross-chain EVM chain registry",
+  "description": "Conservative, adversarially-verified per-chain profiles that generalize the cross-chain tester to any EVM chain (and Nockchain). Model inputs, NOT a live oracle.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "families", "chains"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "note": { "type": "string" },
+    "families": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["nativeHashes"],
+        "properties": { "nativeHashes": { "type": "array", "items": { "type": "string" } } }
+      }
+    },
+    "chains": {
+      "type": "object",
+      "description": "keyed by chainId string (or a name alias such as 'nockchain')",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["chainId", "name", "family", "nativeHashes", "finalityModel", "recommendedMinConfirmations", "confirmationBasis", "challengeWindowSeconds", "trustSoftConfirm", "reorgRisk"],
+        "properties": {
+          "chainId": { "type": "number" },
+          "name": { "type": "string" },
+          "family": { "type": "string", "enum": ["evm", "nock"] },
+          "nativeHashes": { "type": "array", "items": { "type": "string" } },
+          "finalityModel": { "type": "string" },
+          "recommendedMinConfirmations": { "type": "number", "minimum": 0 },
+          "confirmationBasis": { "type": "string", "enum": ["native", "L1-batch", "L1-proof-verified", "deprecated"] },
+          "challengeWindowSeconds": { "type": "number", "minimum": 0 },
+          "trustSoftConfirm": { "type": "boolean" },
+          "reorgRisk": { "type": "string", "enum": ["low", "medium", "high"] },
+          "confidence": { "type": "string", "enum": ["high", "medium", "low"] }
+        }
+      }
+    }
+  }
+}

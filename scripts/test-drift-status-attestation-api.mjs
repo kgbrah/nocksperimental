@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
 
+// Exercises DEMO signing (the public dev seed). Opt in explicitly; such signatures are
+// non-authoritative — the verifier rejects dev keys as a live trust anchor.
+process.env.NOCKS_ALLOW_DEV_SIGNING = "1";
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
@@ -16,8 +20,8 @@ main().catch((error) => {
 
 async function main() {
   const { GET } = loadTypeScriptModule("src/app/api/nockchain/drift-status/attestation/route.ts");
-  const { verifyBadgeSignature } = loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
-  const { activeIssuerKey, publicKeyForKeyId } = loadTypeScriptModule("src/lib/trust-issuer-keys.ts");
+  const { verifyBadgeSignature, resolveActiveIssuerKeyId } = loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
+  const { publicKeyForKeyId } = loadTypeScriptModule("src/lib/trust-issuer-keys.ts");
 
   const response = await GET(new Request("https://nocksperimental.com/api/nockchain/drift-status/attestation"));
   const body = await response.json();
@@ -30,7 +34,10 @@ async function main() {
     "attestation canonical url"
   );
   assertEqual(body.algorithm, "ed25519", "attestation algorithm");
-  assertEqual(body.issuerKeyId, activeIssuerKey().keyId, "attestation signed by active issuer key");
+  // The attestation is stamped with the key that actually SIGNED it (the env/prod seed in
+  // production, or the demo key in a NOCKS_ALLOW_DEV_SIGNING run) — its signature still verifies
+  // offline against that published key below.
+  assertEqual(body.issuerKeyId, resolveActiveIssuerKeyId(), "attestation signed by the active signing key");
   assertNonEmpty(body.signature, "attestation signature");
   assertNonEmpty(body.attestation.observedAt, "attestation observedAt");
   assertEqual(typeof body.attestation.summary.totalChecks, "number", "attestation summary totalChecks");

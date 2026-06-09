@@ -1,0 +1,73 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "forfeit-roulette-fairness-v0",
+  "app": {
+    "name": "Forfeit Roulette (fairness)",
+    "slug": "forfeit-roulette",
+    "version": "0.0.1",
+    "kernel": "forfeit-roulette"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Positive proof of the forfeit-roulette fairness invariants over a resolved European red/black round.",
+      "Peek surface is commitment-only (no seed); revealed seeds hash to their commitments; nonce strictly increases.",
+      "The house edge is the single green zero (1/37); the wheel itself is unbiased and the pocket is recomputable from public reveals.",
+      "Honest limit: this proves the MODEL and that the invariants are well-formed, not the compiled Hoon (the compile-gate covers that). Real-VM poke/peek awaits generic-cause nockapp-run."
+    ]
+  },
+  "actors": [
+    { "name": "referee", "pkh": "forfeit-roulette-referee" }
+  ],
+  "initialState": {
+    "peekSurface": {
+      "nonce": 4,
+      "commitHouse": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e",
+      "commitPlayer": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6",
+      "bet": "red",
+      "pocket": 24,
+      "outcome": false
+    },
+    "reveals": [
+      { "label": "house", "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "commit": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e" },
+      { "label": "player", "seed": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "commit": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6" }
+    ],
+    "nonceSequence": [0, 1, 2, 3, 4]
+  },
+  "steps": [
+    {
+      "id": "peek-commit-surface",
+      "type": "peek",
+      "title": "Peek the commitment-only surface",
+      "target": "/round",
+      "expect": { "path": "peekSurface.nonce", "equals": 4 }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "commit-only-peek",
+      "title": "Peek surface never exposes an unrevealed seed",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "peek-reveals-no-secret",
+      "path": "peekSurface"
+    },
+    {
+      "id": "seeds-hashlock",
+      "title": "Revealed seeds hash to their commitments (provable fairness)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "commit-binds-seed",
+      "path": "reveals"
+    },
+    {
+      "id": "nonce-monotonic",
+      "title": "Nonce strictly increases (replay safety)",
+      "severity": "high",
+      "kind": "monotonic-strict",
+      "path": "nonceSequence"
+    }
+  ]
+}

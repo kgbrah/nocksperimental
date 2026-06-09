@@ -1,0 +1,78 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-xchain-evm-hashlock-family-mismatch-v0",
+  "expectRejected": true,
+  "app": {
+    "name": "ATTACK: evm-hashlock-family-mismatch",
+    "slug": "attack-xchain-evm-hashlock-family-mismatch",
+    "version": "0.0.1",
+    "kernel": "xchain-attack-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): a multi-EVM cross-chain exploit the invariant MUST catch.",
+      "An Optimism (10) HTLC leg locked under tip5 - a hash no EVM chain can compute (registry-driven check).",
+      "expectRejected inverts a CAUGHT exploit to a green proof-of-prevention."
+    ]
+  },
+  "actors": [
+    {
+      "name": "attacker",
+      "pkh": "attacker"
+    }
+  ],
+  "initialState": {
+    "xchain": {
+      "htlc": {
+        "preimage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "legs": [
+          {
+            "chainId": 137,
+            "chain": "polygon",
+            "hashAlgo": "keccak256",
+            "commitment": "p0lyaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "derivedFromSharedPreimage": true
+          },
+          {
+            "chainId": 10,
+            "chain": "optimism",
+            "hashAlgo": "tip5",
+            "commitment": "opt1bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "derivedFromSharedPreimage": true
+          }
+        ]
+      }
+    }
+  },
+  "steps": [
+    {
+      "id": "observe",
+      "type": "bridge",
+      "title": "Observe terminal joint multi-EVM state",
+      "operations": [
+        {
+          "kind": "set",
+          "path": "xchain.observed",
+          "value": true
+        }
+      ],
+      "expect": {
+        "path": "xchain.observed",
+        "equals": true
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "hashlock-algo",
+      "title": "Each leg uses a hash its chain can compute",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "xchain-hashlock-algo-match",
+      "path": "xchain.htlc"
+    }
+  ]
+}

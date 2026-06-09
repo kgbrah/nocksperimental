@@ -24,7 +24,11 @@
         "name": { "type": "string" },
         "slug": { "type": "string" },
         "version": { "type": "string" },
-        "kernel": { "type": "string" }
+        "kernel": { "type": "string" },
+        "kernelHash": {
+          "type": "string",
+          "description": "Hash (hoonc/jam) of the COMPILED deployed kernel. When present and the run executes the real kernel (environment.mode=kernel), the issued cert binds to it; otherwise the cert is model-attested only."
+        }
       }
     },
     "environment": {

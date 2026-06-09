@@ -6,6 +6,10 @@ import type { LabRunReport, LabStatus } from "@/lib/lab-report";
 export type GeneratedLabReportStatus = LabStatus | "missing";
 export type GeneratedBadgeCandidateStatus = "ready" | "watch";
 export type GeneratedBadgeCandidateSignatureStatus = "unsigned";
+// "app-report"      — the deployed kernel was executed and its hash bound (real-VM, kernel-verified)
+// "model-attested"  — only the fixture MODEL passed (mock-fakenet); the deployed kernel is UNVERIFIED
+// "exploit-prevention" — a negative control proving an exploit is caught (not an "app works" cert)
+export type GeneratedBadgeCandidateEvidenceKind = "app-report" | "model-attested" | "exploit-prevention";
 
 export type GeneratedLabReportEntry = {
   fixtureId: string;
@@ -35,6 +39,15 @@ export type GeneratedBadgeCandidate = {
   reportSlug: string;
   fixtureId: string;
   status: GeneratedBadgeCandidateStatus;
+  evidenceKind: GeneratedBadgeCandidateEvidenceKind;
+  // Re-derived from the recorded steps/invariants/alerts — NOT trusted from report.summary.status.
+  statusReDerived: LabStatus;
+  // True iff the report's self-declared summary.status agrees with the re-derivation (tamper signal).
+  statusConsistent: boolean;
+  // The compiled-kernel hash the cert is bound to, when the deployed kernel was actually executed
+  // (real-VM). null in mock-fakenet model runs — meaning the deployed code is UNVERIFIED.
+  kernelHash: string | null;
+  kernelVerified: boolean;
   signatureStatus: GeneratedBadgeCandidateSignatureStatus;
   evidence: {
     reportHash: string;
@@ -280,17 +293,72 @@ function getSnapshotRoot(report: LabRunReport) {
   return report.stateSnapshots[report.stateSnapshots.length - 1]?.stateHash ?? "";
 }
 
+// Re-derive pass/warn/fail from the recorded steps/invariants/alerts instead of trusting the
+// report's self-declared summary.status (which a hand-edited report can lie about — F7). Mirrors
+// the runner's own status logic in scripts/run-lab.mjs.
+function reDeriveReportStatus(report: LabRunReport): {
+  status: LabStatus;
+  expectRejected: boolean;
+} {
+  const failedSteps = (report.steps ?? []).filter((step) => step.status === "fail").length;
+  const failedInvariants = (report.invariants ?? []).filter((invariant) => invariant.status === "fail").length;
+  const triggered = (report.alerts ?? []).filter((alert) => alert.state === "triggered");
+  const criticalAlerts = triggered.filter((alert) => alert.severity === "critical").length;
+  const warningAlerts = triggered.filter((alert) => alert.severity !== "critical").length;
+  const rawStatus: LabStatus =
+    failedSteps > 0 || failedInvariants > 0 || criticalAlerts > 0
+      ? "fail"
+      : warningAlerts > 0
+        ? "warn"
+        : "pass";
+  const expectRejected = report.summary.expectRejected === true;
+  // expectRejected inverts (a caught exploit passes) — but such a report is a negative control,
+  // not a "this app works" cert (handled by evidenceKind below).
+  const status: LabStatus = expectRejected ? (rawStatus === "fail" ? "pass" : "fail") : rawStatus;
+  return { status, expectRejected };
+}
+
 function buildGeneratedBadgeCandidate(
   report: LabRunReport,
   reportHash: string,
   snapshotRoot: string
 ): GeneratedBadgeCandidate {
+  const { status: statusReDerived, expectRejected } = reDeriveReportStatus(report);
+  const statusConsistent = statusReDerived === report.summary.status;
+  // A cert may claim the DEPLOYED kernel passed only if that kernel was actually executed
+  // (real-VM mode) AND its compiled hash is bound. A mock-fakenet run proves only the fixture
+  // MODEL — the deployed code is unverified, so such a candidate is "model-attested", never an
+  // "app-report" (F3: app.kernel is otherwise an unverified free-text label).
+  const appKernelHash = (report.app as { kernelHash?: unknown }).kernelHash;
+  const kernelHash = typeof appKernelHash === "string" ? appKernelHash : null;
+  // An app-report cert requires REAL-VM behavioral execution of the deployed kernel. A run
+  // advertises that via an explicit environment.kernelExecuted flag, set ONLY by the (staged)
+  // generic-cause nockapp-run path — NOT merely by mode==="kernel" (which today runs a
+  // fixture-supplied adapter command, not the actual kernel). Until that path is wired, every run
+  // is model-attested even when a kernelHash binds the source. (See REMEDIATION.md 2.8.)
+  const kernelExecuted = report.environment?.kernelExecuted === true;
+  const kernelVerified = kernelExecuted && Boolean(kernelHash);
+  // An expectRejected report proves an exploit was PREVENTED — it is NOT an "app works" cert.
+  const evidenceKind: GeneratedBadgeCandidateEvidenceKind = expectRejected
+    ? "exploit-prevention"
+    : kernelVerified
+      ? "app-report"
+      : "model-attested";
+  // "ready" for promotion ONLY when the RE-DERIVED status is a genuine pass, it agrees with the
+  // report's own summary (no tamper), and it is not a negative control. (A "ready" model-attested
+  // candidate is still only promotable to a MODEL-ATTESTED badge, not a kernel-verified app cert.)
+  const ready = statusReDerived === "pass" && statusConsistent && !expectRejected;
   return {
     id: `badge-candidate-${report.app.slug}`,
     label: `${report.app.name} Verification Candidate`,
     reportSlug: report.app.slug,
     fixtureId: report.fixtureId,
-    status: report.summary.status === "pass" ? "ready" : "watch",
+    status: ready ? "ready" : "watch",
+    evidenceKind,
+    statusReDerived,
+    statusConsistent,
+    kernelHash,
+    kernelVerified,
     signatureStatus: "unsigned",
     evidence: {
       reportHash,

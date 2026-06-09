@@ -7,7 +7,7 @@ import {
   badgeIssuanceReceipts,
   resolvedBadgeForId
 } from "@/lib/trust-signals";
-import { verifyBadgeSignature } from "@/lib/trust-badge-crypto";
+import { isDevIssuerKey, verifyBadgeSignature } from "@/lib/trust-badge-crypto";
 import { issuerKeyForId, publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 
 type BadgeVerificationInput = {
@@ -59,13 +59,30 @@ export function verifyTrustBadgeIssuance({
   // NOT bound here: revocation is out-of-band and covered by
   // activeVerifiedStatus + notRevoked (a revoked badge can keep a signedPayload
   // whose status is still "verified").
+  // Reject structurally-empty evidence: a cert MUST reference a non-empty report hash and a
+  // non-empty snapshot root, not "" === "". (Empty evidence verified true before this guard.)
   const payloadBoundToBadge = Boolean(
     badge &&
       issuance &&
+      badge.evidence.reportHash &&
+      badge.evidence.snapshotRoot &&
+      issuance.signedPayload.reportHash &&
+      issuance.signedPayload.snapshotRoot &&
       issuance.signedPayload.reportHash === badge.evidence.reportHash &&
       issuance.signedPayload.snapshotRoot === badge.evidence.snapshotRoot &&
       issuance.signedPayload.sourceAnchor.commit === badge.sourceAnchor.commit &&
-      issuance.signedPayload.sourceAnchor.build === badge.sourceAnchor.build
+      issuance.signedPayload.sourceAnchor.build === badge.sourceAnchor.build &&
+      // When the cert claims a compiled-kernel hash (a kernel-verified app cert), it must bind to
+      // the badge's kernel hash — a signed payload cannot claim a kernel the badge doesn't carry.
+      ((issuance.signedPayload as { kernelHash?: string }).kernelHash ?? null) ===
+        ((badge.evidence as { kernelHash?: string }).kernelHash ?? null)
+  );
+
+  // The signing key must be a live trust anchor: ACTIVE and NOT a public demo (dev) key.
+  // A dev-key signature is cryptographically valid but anyone holding the repo can forge it,
+  // so it can never yield a `verified` cert — only a DEMO badge.
+  const issuerKeyIsTrustAnchor = Boolean(
+    issuance && issuerKeyActive && !isDevIssuerKey(issuance.issuerKeyId)
   );
 
   const exactIssuanceMatch = Boolean(
@@ -75,6 +92,7 @@ export function verifyTrustBadgeIssuance({
       signatureMatched &&
       issuerKeyMatched &&
       signatureCryptographicallyValid &&
+      issuerKeyIsTrustAnchor &&
       payloadBoundToBadge &&
       activeVerifiedStatus &&
       !badge.isRevoked
@@ -101,6 +119,7 @@ export function verifyTrustBadgeIssuance({
       issuerKeyMatched,
       issuerKeyResolved,
       issuerKeyActive,
+      issuerKeyIsTrustAnchor,
       signatureCryptographicallyValid,
       payloadBoundToBadge,
       activeVerifiedStatus,

@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
 
+// Exercises DEMO signing (the public dev seed) on the append path. Opt in explicitly; such
+// signatures are non-authoritative — the verifier rejects dev keys as a live trust anchor.
+process.env.NOCKS_ALLOW_DEV_SIGNING = "1";
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;
@@ -87,7 +91,9 @@ async function main() {
   assertEqual(appendedLog.chain.latestRoot, "root-score-history-v1", "appended latest root");
   assertEqual(appendedEntry.sequence, 6, "appended entry sequence");
   assertEqual(appendedEntry.previousRoot, "root-game-badge-issuance-v0", "appended previous root");
-  assertEqual(appendedEntry.signature.issuerKeyId, "nocksperimental-registry-ed25519-dev-v0", "default issuer key");
+  // Default issuer key is now the ACTIVE signing anchor (resolveActiveIssuerKeyId): the prod key
+  // in production, or the demo key dev-v1 here under NOCKS_ALLOW_DEV_SIGNING. Never a retired key.
+  assertEqual(appendedEntry.signature.issuerKeyId, "nocksperimental-registry-ed25519-dev-v1", "default issuer key is the active anchor");
   assertEqual(appendedEntry.signature.algorithm, "ed25519-devnet-v0", "default signature algorithm");
   assertEqual(appendedEntry.signature.verificationStatus, "valid", "default signature status");
   assertEqual(appendedEntry.entryHash.startsWith("sha256:"), true, "generated entry hash prefix");

@@ -1,5 +1,6 @@
 import { launchEvidenceCaseForId } from "@/lib/launch-evidence";
 import { colorForStatus, renderStatusBadgeSvg } from "@/lib/status-badge-svg";
+import { verifyTrustBadgeIssuance } from "@/lib/trust-badge-verifier";
 
 type BadgeSvgRouteContext = {
   params:
@@ -20,7 +21,18 @@ export async function GET(_request: Request, { params }: BadgeSvgRouteContext) {
   const launchCase = launchEvidenceCaseForId(caseId);
   const visible = launchCase && launchCase.visibility !== "private";
 
-  const status = visible ? launchCase.report.summaryStatus : "unknown";
+  let status: string = visible ? launchCase.report.summaryStatus : "unknown";
+  // F10: a launch-evidence "verified" is a launch-READINESS status, NOT a cryptographic trust
+  // cert. If a case CLAIMS a cert (links a trust badge), that badge's signature must actually
+  // verify before we render the authoritative green "verified" — a linked-but-unverifiable badge
+  // is downgraded to "unverified" so a tampered/forged link can't borrow the green. A case with
+  // no linked badge keeps its (non-cryptographic) readiness status as-is.
+  if (visible && status === "verified" && launchCase.badgeId) {
+    const badgeOk = verifyTrustBadgeIssuance({ badgeId: launchCase.badgeId }).verified;
+    if (!badgeOk) {
+      status = "unverified";
+    }
+  }
   const message = visible ? status : "not found";
   const svg = renderStatusBadgeSvg("launch evidence", message, colorForStatus(status));
 

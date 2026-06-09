@@ -9,6 +9,10 @@ const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const moduleCache = new Map();
 
+// The dev-path cases exercise DEMO signing (the public dev seed); the prod-path case sets its
+// own env seed. Opt into demo signing explicitly — such signatures are non-authoritative.
+process.env.NOCKS_ALLOW_DEV_SIGNING = "1";
+
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -41,8 +41,30 @@ async function main() {
     canonicalizeBadgePayload: tsCanonicalize,
     badgePayloadDigest: tsDigest,
     verifyBadgeSignature: tsVerify,
-    signBadgePayload
+    signBadgePayload,
+    publicKeySpkiFromSeed
   } = loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
+
+  // An ephemeral ACTIVE anchor key for the synthetic positive cases. The committed dev keys are
+  // retired and rejected as anchors (a real verified cert needs an active, non-dev key); these
+  // cases publish a throwaway active key in a pinned test registry passed via --keys.
+  const TEST_ANCHOR_SEED = "77".repeat(32);
+  const TEST_ANCHOR_KEY_ID = "nocksperimental-registry-ed25519-test-anchor";
+  const testKeysPath = writeTmp({
+    version: "test-v1",
+    activeKeyId: TEST_ANCHOR_KEY_ID,
+    issuerKeys: [
+      {
+        keyId: TEST_ANCHOR_KEY_ID,
+        algorithm: "ed25519",
+        publicKeySpki: publicKeySpkiFromSeed(TEST_ANCHOR_SEED),
+        validFrom: "2026-01-01T00:00:00.000Z",
+        validUntil: null,
+        status: "active",
+        supersededBy: null
+      }
+    ]
+  });
 
   // ---- 1. The ported primitives are BYTE-IDENTICAL to the TS source ----
   const canonShapes = [
@@ -97,6 +119,24 @@ async function main() {
     true,
     "CLI verifies a TS-signed payload"
   );
+
+  // ---- 2b. THE FIX: a dev-key signature is cryptographically valid but REJECTED as a live
+  // trust anchor (the public dev seed can never mint a verified cert — only a DEMO badge). ----
+  const devKeyReceipt = {
+    badgeId: samplePayload.badgeId,
+    signedPayload: samplePayload,
+    signature: signed.signature,
+    payloadDigest: signed.payloadDigest,
+    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID
+  };
+  const devKeyResult = runCliJson(["verify-badge", "--file", writeTmp(devKeyReceipt), "--json"]);
+  assertEqual(devKeyResult.body.verified, false, "dev-key signature is REJECTED as a non-anchor (demo only)");
+  assertEqual(
+    devKeyResult.body.signatureCryptographicallyValid,
+    true,
+    "dev-key signature is still cryptographically valid (it is the ANCHOR status that fails)"
+  );
+  assertEqual(devKeyResult.body.issuerKeyIsTrustAnchor, false, "retired/dev key is not a trust anchor");
   assertEqual(
     tsVerify({ payload: samplePayload, signature: signed.signature, publicKeySpkiBase64: spkiV1 }),
     cliVerify({ payload: samplePayload, signature: signed.signature, publicKeySpkiBase64: spkiV1 }),
@@ -224,14 +264,15 @@ async function main() {
 
   // ---- 5d. A valid signature with NO stamped digest is accepted (signature is
   // the gate; the digest is a redundant stamp). Locks the documented behavior. ----
+  const anchorSigned = signBadgePayload(samplePayload, TEST_ANCHOR_SEED);
   const noDigest = {
     badgeId: "badge-no-digest",
     signedPayload: samplePayload,
-    signature: signed.signature,
-    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID
+    signature: anchorSigned.signature,
+    issuerKeyId: TEST_ANCHOR_KEY_ID
   };
-  const noDigestResult = runCliJson(["verify-badge", "--file", writeTmp(noDigest), "--json"]);
-  assertEqual(noDigestResult.body.verified, true, "valid signature without a stamped digest verifies");
+  const noDigestResult = runCliJson(["verify-badge", "--file", writeTmp(noDigest), "--keys", testKeysPath, "--json"]);
+  assertEqual(noDigestResult.body.verified, true, "valid anchor signature without a stamped digest verifies");
   assertEqual(noDigestResult.code, 0, "valid no-digest artifact exits 0");
   assertEqual(noDigestResult.body.payloadDigestMatched, null, "absent digest reported as null, not failure");
 
@@ -264,7 +305,7 @@ async function main() {
     summary: { totalChecks: 15, inSyncChecks: 15 },
     checks: [{ id: "docs", status: "in-sync" }]
   };
-  const attestationSig = signBadgePayload(attestationPayload, seedV1);
+  const attestationSig = signBadgePayload(attestationPayload, TEST_ANCHOR_SEED);
   const attestationEnvelope = {
     version: "v0",
     canonicalUrl: "https://example.test/api/nockchain/drift-status/attestation",
@@ -272,22 +313,22 @@ async function main() {
     signature: attestationSig.signature,
     payloadDigest: attestationSig.payloadDigest,
     algorithm: "ed25519",
-    issuerKeyId: ACTIVE_DEV_ISSUER_KEY_ID
+    issuerKeyId: TEST_ANCHOR_KEY_ID
   };
-  const attResult = runCliJson(["verify-attestation", "--file", writeTmp(attestationEnvelope), "--json"]);
+  const attResult = runCliJson(["verify-attestation", "--file", writeTmp(attestationEnvelope), "--keys", testKeysPath, "--json"]);
   assertEqual(attResult.body.verified, true, "synthetic attestation verifies");
   assertEqual(attResult.body.payloadDigestMatched, true, "attestation digest matches");
 
   const tamperedAtt = JSON.parse(JSON.stringify(attestationEnvelope));
   tamperedAtt.attestation.summary.inSyncChecks = 0;
-  const tamperedAttResult = runCliJson(["verify-attestation", "--file", writeTmp(tamperedAtt), "--json"]);
+  const tamperedAttResult = runCliJson(["verify-attestation", "--file", writeTmp(tamperedAtt), "--keys", testKeysPath, "--json"]);
   assertEqual(tamperedAttResult.body.verified, false, "tampered attestation payload fails");
 
   // A wrong signature on an otherwise-valid attestation must also fail (signature
   // path is enforced for attestations, not just payload tampering).
   const tamperedAttSig = JSON.parse(JSON.stringify(attestationEnvelope));
   tamperedAttSig.signature = signed.signature; // valid Ed25519 sig over a different payload
-  const tamperedAttSigResult = runCliJson(["verify-attestation", "--file", writeTmp(tamperedAttSig), "--json"]);
+  const tamperedAttSigResult = runCliJson(["verify-attestation", "--file", writeTmp(tamperedAttSig), "--keys", testKeysPath, "--json"]);
   assertEqual(tamperedAttSigResult.body.verified, false, "attestation with a wrong signature fails");
   assertEqual(
     tamperedAttSigResult.body.signatureCryptographicallyValid,

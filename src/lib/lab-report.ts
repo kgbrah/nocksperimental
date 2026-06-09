@@ -26,12 +26,15 @@ export type AppProfile = {
 };
 
 export type LabEnvironment = {
-  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "vesl-local" | "vesl-fakenet";
+  mode: "mock-fakenet" | "local-fakenet" | "docker-fakenet" | "vesl-local" | "vesl-fakenet" | "kernel";
   grpcEndpoint: string;
   fakenetCommand: string;
   balanceCheck?: LocalFakenetBalanceCheck;
   chainCheck?: LocalFakenetChainCheck;
   notes: string[];
+  // Set true ONLY by a real-VM kernel run (mode "kernel"); a model/mock run leaves it unset, so a
+  // cert over it stays model-attested rather than an app-report. Read in generated-lab-reports.ts.
+  kernelExecuted?: boolean;
 };
 
 export type LocalFakenetBalanceCheck = {
@@ -182,6 +185,11 @@ export type LabRunReport = {
     alertsTriggered: number;
     snapshotsCaptured: number;
     durationMs: number;
+    // Negative-control fixtures (expectRejected) invert pass/fail; the runner records both the
+    // inverted `status` and the pre-inversion `rawStatus` so consumers can tell a proof-of-
+    // prevention from an "app works" pass.
+    expectRejected?: boolean;
+    rawStatus?: LabStatus;
   };
   invariantPacks: InvariantPackRef[];
   steps: LabStepReport[];
