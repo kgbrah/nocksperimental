@@ -13,24 +13,10 @@
 // not a live two-chain execution. See docs/xchain-security-model.md.
 
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
 
-// EVM chain registry — generalizes hash support + finality profiles to ANY EVM chain.
-const EVM_CHAINS = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../src/data/evm-chains.json"), "utf8"));
-function chain(ref) {
-  if (ref == null) return undefined;
-  const d = EVM_CHAINS.chains[String(ref)];
-  if (d) return d;
-  // Genuine numeric refs only — a bare Number(ref) would coerce ""/false/[] to 0 -> Nockchain.
-  const n = typeof ref === "number" ? ref : (typeof ref === "string" && /^[0-9]+$/.test(ref.trim()) ? Number(ref.trim()) : NaN);
-  if (Number.isFinite(n)) { const b = Object.values(EVM_CHAINS.chains).find((c) => Number(c.chainId) === n); if (b) return b; }
-  const l = String(ref).toLowerCase();
-  const al = { nockchain: "nockchain", nock: "nockchain", base: "8453", ethereum: "1", evm: "1" };
-  return EVM_CHAINS.chains[al[l]] ?? Object.values(EVM_CHAINS.chains).find((c) => c.name?.toLowerCase() === l);
-}
-const hashesFor = (ref, fam) => { const c = chain(ref); return c?.nativeHashes ?? EVM_CHAINS.families[fam ?? c?.family]?.nativeHashes ?? []; };
+// Chain resolution + native-hash lookup is shared with the lab runner (run-lab.mjs) — same data, same
+// alias map — via ./lib/evm-chain-registry.mjs. The independent property CHECKS below stay separate.
+import { resolveChain as chain, hashesForChain as hashesFor } from "./lib/evm-chain-registry.mjs";
 
 // ---- the 7 properties, each pure over public state: () => { ok, detail } -------------------
 
