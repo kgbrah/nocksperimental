@@ -51,3 +51,9 @@ packages/nocklab/package-lock.json
 
 # Nock build artifacts (hoonc output)
 *.jam
+
+# Foundry deps + build artifacts (regenerated)
+contracts/lib/
+contracts/out/
+contracts/cache/
+contracts/broadcast/
