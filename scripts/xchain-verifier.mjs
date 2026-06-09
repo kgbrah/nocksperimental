@@ -23,7 +23,8 @@ function chain(ref) {
   if (ref == null) return undefined;
   const d = EVM_CHAINS.chains[String(ref)];
   if (d) return d;
-  const n = Number(ref);
+  // Genuine numeric refs only — a bare Number(ref) would coerce ""/false/[] to 0 -> Nockchain.
+  const n = typeof ref === "number" ? ref : (typeof ref === "string" && /^[0-9]+$/.test(ref.trim()) ? Number(ref.trim()) : NaN);
   if (Number.isFinite(n)) { const b = Object.values(EVM_CHAINS.chains).find((c) => Number(c.chainId) === n); if (b) return b; }
   const l = String(ref).toLowerCase();
   const al = { nockchain: "nockchain", nock: "nockchain", base: "8453", ethereum: "1", evm: "1" };

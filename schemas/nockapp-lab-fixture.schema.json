@@ -28,10 +28,6 @@
         "kernelHash": {
           "type": "string",
           "description": "Hash (hoonc/jam) of the COMPILED deployed kernel. When present and the run executes the real kernel (environment.mode=kernel), the issued cert binds to it; otherwise the cert is model-attested only."
-        },
-        "baseDeploymentHash": {
-          "type": "string",
-          "description": "sha256 of the canonical {chainId, inboxAddress, nockAddress} deployment identity. Written by the runner on a successful live-base run; binds an app-report cert to the exact deployed contracts."
         }
       }
     },

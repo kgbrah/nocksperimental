@@ -8,7 +8,7 @@
 //   - honest degradation: paths with no Base source (hashlock/exits/domains/burns-as-backing)
 //     are NOT emitted, so their invariants simply have nothing to assert.
 
-import { createBaseReader, readBaseXchainState } from "./lib/base-evm-reader.mjs";
+import { createBaseReader, readBaseXchainState, SUBMIT_DEPOSIT_ABI } from "./lib/base-evm-reader.mjs";
 import {
   quorumAuthorized,
   replaySafe,
@@ -143,6 +143,99 @@ console.log("base-evm-reader: offline reader + invariant specificity\n");
   const softState = (await readWith({ deposits: [deposit("0xs1", 100)] })).xchain;
   softState.finality.settles[0].basedOnSoftConfirm = true;
   ok(!finalityAdequacy(softState.finality).ok, "soft-confirmation reliance -> finality-adequacy FAILS");
+}
+
+// 5) Log-provable signer recovery (ecrecover follow-on): the reader recovers the ACTUAL signers from
+//    the mint tx's submitDeposit calldata, reproducing MessageInbox.sol verification byte-for-byte.
+{
+  let viem = null;
+  let accounts = null;
+  try {
+    viem = await import("viem");
+    accounts = await import("viem/accounts");
+  } catch {
+    viem = null;
+  }
+  console.log("\n5) Log-provable signer recovery from submitDeposit calldata:");
+  if (!viem || !accounts) {
+    console.log("  SKIP  viem not installed (optional dependency) — recovery path falls back to contract-enforced");
+  } else {
+    const { encodePacked, keccak256, hashMessage, encodeFunctionData } = viem;
+    const { privateKeyToAccount, sign } = accounts;
+
+    // 5 deterministic test keys -> roster; the message-preimage packing MUST mirror the reader exactly.
+    const keyHexes = [1, 2, 3, 4, 5].map((i) => `0x${i.toString(16).padStart(64, "0")}`);
+    const roster = keyHexes.map((k) => privateKeyToAccount(k).address);
+    const PACK = [
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "address", "uint256", "uint256",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint256"
+    ];
+    const deposit = {
+      txId: { limbs: [1n, 2n, 3n, 4n, 5n] },
+      nameFirst: { limbs: [6n, 7n, 8n, 9n, 10n] },
+      nameLast: { limbs: [11n, 12n, 13n, 14n, 15n] },
+      recipient: "0x000000000000000000000000000000000000dEaD",
+      amount: 1000n,
+      blockHeight: 100n,
+      asOf: { limbs: [16n, 17n, 18n, 19n, 20n] },
+      depositNonce: 1n
+    };
+    const ethSignedHash = hashMessage({
+      raw: keccak256(encodePacked(PACK, [
+        ...deposit.txId.limbs, ...deposit.nameFirst.limbs, ...deposit.nameLast.limbs,
+        deposit.recipient, deposit.amount, deposit.blockHeight, ...deposit.asOf.limbs, deposit.depositNonce
+      ]))
+    });
+    const signWith = async (idxs) => {
+      const sigs = [];
+      for (const i of idxs) sigs.push(await sign({ hash: ethSignedHash, privateKey: keyHexes[i], to: "hex" }));
+      return sigs;
+    };
+    const calldataFor = (ethSigs) => encodeFunctionData({
+      abi: SUBMIT_DEPOSIT_ABI,
+      functionName: "submitDeposit",
+      args: [deposit.txId, deposit.nameFirst, deposit.nameLast, deposit.recipient, deposit.amount, deposit.blockHeight, deposit.asOf, deposit.depositNonce, ethSigs]
+    });
+    const TXHASH = `0x${"ab".repeat(32)}`;
+    const recoverClient = (calldata) => ({
+      async getBlockNumber() { return HEAD; },
+      async readContract({ functionName, args }) {
+        if (functionName === "bridgeNodes") return roster[Number(args[0])];
+        if (functionName === "THRESHOLD") return 3n;
+        if (functionName === "withdrawalsEnabled") return true;
+        throw new Error(`mock: unexpected ${functionName}`);
+      },
+      async getLogs({ event }) {
+        if (event?.name === "DepositProcessed") return [{ args: { txId: "0xfeed", amount: 1000n }, blockNumber: HEAD - 100n, transactionHash: TXHASH }];
+        return [];
+      },
+      async getTransaction({ hash }) {
+        if (hash === TXHASH) return { input: calldata };
+        throw new Error("mock: unknown tx");
+      }
+    });
+    const readMint = async (idxs) => {
+      const reader = await createBaseReader({ client: recoverClient(calldataFor(await signWith(idxs))), chainId: 84532 });
+      const { xchain } = await readBaseXchainState(reader, { inboxAddress: INBOX, requiredConfirmations: 32, chainId: 84532 });
+      return xchain.mints[0];
+    };
+    const lc = (a) => a.map((x) => x.toLowerCase()).sort();
+
+    // 3-of-5 roster signed -> log-derived with EXACTLY those 3 recovered.
+    const m3 = await readMint([0, 2, 4]);
+    ok(m3.quorumProof === "log-derived", "3 roster signatures -> quorumProof log-derived");
+    ok(m3.attestedBy.length === 3, "exactly 3 signers recovered");
+    ok(JSON.stringify(lc(m3.attestedBy)) === JSON.stringify(lc([roster[0], roster[2], roster[4]])), "recovered the correct 3 roster addresses (not the non-signing 2)");
+
+    // Only 2 roster signatures -> below threshold -> falls back to contract-enforced (no false failure).
+    const m2 = await readMint([1, 3]);
+    ok(m2.quorumProof === "contract-enforced", "2 roster signatures (< threshold) -> falls back to contract-enforced");
+    ok(m2.attestedBy.length === 5, "fallback attests the full roster");
+  }
 }
 
 console.log(failures === 0 ? "\ntest-base-evm-reader: all assertions passed" : `\ntest-base-evm-reader: ${failures} assertion(s) FAILED`);

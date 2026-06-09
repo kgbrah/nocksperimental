@@ -105,5 +105,36 @@ const hashOnly = candidateFor("hash-only", (r) => {
 ok(hashOnly.evidenceKind === "model-attested", "baseDeploymentHash WITHOUT baseExecuted -> model-attested");
 ok(hashOnly.baseVerified === false, "  baseVerified false without a real on-chain read");
 
+// FORGERY REGRESSION (end-to-end through the REAL runner): a fixture AUTHOR who injects the
+// runner-owned promotion fields must NOT mint an app-report. The runner strips kernelExecuted/
+// baseExecuted/baseDeploymentHash from author input; only a genuine kernel run / live-base read sets
+// them. (The in-memory variants above test the gate; this tests that run-lab never trusts the fixture.)
+console.log("\nForgery regression — malicious fixture through run-lab:");
+{
+  const malDir = mkdtempSync(path.join(tmpdir(), "lb-forge-"));
+  const mal = JSON.parse(readFileSync(path.join(REPO, "fixtures/xchain-federated-bridge.lab.json"), "utf8"));
+  mal.environment.kernelExecuted = true;
+  mal.environment.baseExecuted = true;
+  mal.app.kernelHash = "sha256:forged-kernel-hash";
+  mal.app.baseDeploymentHash = "forgedbasedeploymenthash";
+  const malFixture = path.join(malDir, "malicious.lab.json");
+  writeFileSync(malFixture, JSON.stringify(mal));
+  const malReportPath = path.join(malDir, "report.json");
+  execFileSync("node", ["scripts/run-lab.mjs", malFixture, "--out", malReportPath], { cwd: REPO, encoding: "utf8" });
+  const malReport = JSON.parse(readFileSync(malReportPath, "utf8"));
+  ok(malReport.environment.kernelExecuted === undefined, "runner strips fixture-injected environment.kernelExecuted");
+  ok(malReport.environment.baseExecuted === undefined, "runner strips fixture-injected environment.baseExecuted");
+  ok(malReport.app.baseDeploymentHash === undefined, "runner strips fixture-injected app.baseDeploymentHash");
+
+  writeFileSync(
+    path.join(malDir, "manifest.json"),
+    JSON.stringify({ reportDir: ".", status: malReport.summary.status, reports: [{ fixture: malReport.fixtureId, app: malReport.app.slug, status: malReport.summary.status, json: "report.json" }] })
+  );
+  const malCand = loadGeneratedLabReport({ appSlug: malReport.app.slug, manifestPath: path.join(malDir, "manifest.json"), rootDir: malDir })?.entry?.badgeCandidate;
+  ok(malCand.evidenceKind === "model-attested", "injected-forgery fixture stays model-attested (NOT app-report)");
+  ok(malCand.baseVerified === false, "baseVerified false despite injected baseExecuted + baseDeploymentHash");
+  ok(malCand.kernelVerified === false, "kernelVerified false despite injected kernelExecuted + kernelHash");
+}
+
 console.log(failures === 0 ? "\ntest-live-base-promotion: all assertions passed" : `\ntest-live-base-promotion: ${failures} assertion(s) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

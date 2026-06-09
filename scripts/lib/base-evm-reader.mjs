@@ -22,7 +22,8 @@
 
 // ---- contract ABIs (only the fragments a read-only client needs) ---------------------------
 
-// Tip5Hash { uint64[5] limbs } — the bridge's Nockchain-native hash type, carried in event data.
+// Tip5Hash { uint64[5] limbs } — the bridge's Nockchain-native hash type, used in both the
+// DepositProcessed event data and the submitDeposit function inputs below.
 const TIP5 = { type: "tuple", components: [{ name: "limbs", type: "uint64[5]" }] };
 
 // MessageInbox.sol: emitted when a Nockchain deposit is minted as wrapped-NOCK on Base.
@@ -54,6 +55,34 @@ export const BURN_FOR_WITHDRAWAL_EVENT = {
     { name: "lockRoot", type: "bytes32", indexed: true }
   ]
 };
+
+// MessageInbox.submitDeposit — decoded from the mint tx's calldata to recover the actual ECDSA signers
+// (the DepositProcessed event does not carry them).
+export const SUBMIT_DEPOSIT_ABI = [
+  {
+    type: "function",
+    name: "submitDeposit",
+    stateMutability: "nonpayable",
+    inputs: [
+      { ...TIP5, name: "txId" },
+      { ...TIP5, name: "nameFirst" },
+      { ...TIP5, name: "nameLast" },
+      { name: "recipient", type: "address" },
+      { name: "amount", type: "uint256" },
+      { name: "blockHeight", type: "uint256" },
+      { ...TIP5, name: "asOf" },
+      { name: "depositNonce", type: "uint256" },
+      { name: "ethSigs", type: "bytes[]" }
+    ],
+    outputs: []
+  }
+];
+
+// secp256k1 order and its half — the contract requires canonical low-s (0 < s <= N/2) and v in {27,28}
+// (MessageInbox.sol recoverSigner). We mirror those checks so a signature the contract would reject is
+// not counted as an attestation.
+const SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141n;
+const SECP256K1_HALF_N = SECP256K1_N / 2n;
 
 // MessageInbox.sol view functions (the read-only surface we consume).
 export const INBOX_READ_ABI = [
@@ -123,7 +152,56 @@ export async function createBaseReader({ rpcUrl, chainId, client } = {}) {
     rpcUrls: { default: { http: [rpcUrl] } }
   };
   const realClient = viem.createPublicClient({ chain, transport: viem.http(rpcUrl) });
-  return { client: realClient, rpcUrl, chainId: Number(chainId), live: true };
+  // Stash the loaded module so signer recovery reuses it instead of importing viem a second time.
+  return { client: realClient, rpcUrl, chainId: Number(chainId), live: true, viem };
+}
+
+// Recover the ACTUAL bridge-node signers of a deposit from the mint tx's submitDeposit calldata,
+// reproducing MessageInbox.sol verification byte-for-byte: keccak256 of the 276-byte packed preimage
+// (each Tip5 = its 5 individual uint64 limbs big-endian — NOT array-padded — then recipient, amount,
+// blockHeight, asOf, depositNonce), wrapped in the EIP-191 personal-sign prefix, then ecrecover per
+// signature with the contract's canonical low-s (0 < s <= N/2) and v in {27,28} checks. Returns the
+// roster addresses (roster casing) that actually signed, deduped. viem is passed in by the caller.
+async function recoverDepositSigners(client, txHash, signers, viem) {
+  const { decodeFunctionData, encodePacked, keccak256, hashMessage, recoverAddress } = viem;
+  const tx = await client.getTransaction({ hash: txHash });
+  if (!tx?.input) return [];
+  const decoded = decodeFunctionData({ abi: SUBMIT_DEPOSIT_ABI, data: tx.input });
+  if (decoded.functionName !== "submitDeposit") return [];
+  const [txId, nameFirst, nameLast, recipient, amount, blockHeight, asOf, depositNonce, ethSigs] = decoded.args;
+  const limbs = (t) => Array.from(t.limbs, (x) => BigInt(x));
+  const preimage = encodePacked(
+    [
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "address", "uint256", "uint256",
+      "uint64", "uint64", "uint64", "uint64", "uint64",
+      "uint256"
+    ],
+    [
+      ...limbs(txId), ...limbs(nameFirst), ...limbs(nameLast),
+      recipient, BigInt(amount), BigInt(blockHeight),
+      ...limbs(asOf), BigInt(depositNonce)
+    ]
+  );
+  const ethSignedHash = hashMessage({ raw: keccak256(preimage) });
+  const recovered = new Set();
+  for (const sig of ethSigs ?? []) {
+    const hex = String(sig).replace(/^0x/, "");
+    if (hex.length !== 130) continue; // not a 65-byte (r,s,v) signature
+    const s = BigInt(`0x${hex.slice(64, 128)}`);
+    const v = parseInt(hex.slice(128, 130), 16);
+    if (!(s > 0n && s <= SECP256K1_HALF_N)) continue; // non-canonical s — contract rejects
+    if (v !== 27 && v !== 28) continue;
+    try {
+      const addr = await recoverAddress({ hash: ethSignedHash, signature: `0x${hex}` });
+      recovered.add(addr.toLowerCase());
+    } catch {
+      // unrecoverable signature — skip (the contract would reject it too)
+    }
+  }
+  return signers.filter((node) => recovered.has(String(node).toLowerCase()));
 }
 
 /**
@@ -145,37 +223,19 @@ export async function readBaseXchainState(reader, opts) {
   const client = reader.client;
   const resolvedChainId = Number(chainId ?? reader.chainId ?? 0);
 
-  const currentBlock = await client.getBlockNumber();
+  const readView = (functionName, args = []) =>
+    client.readContract({ address: inboxAddress, abi: INBOX_READ_ABI, functionName, args });
 
-  // Live federation roster — read FRESH every run (bridgeNodes is mutable on-chain). Never hardcoded.
-  const signers = [];
-  for (let i = 0; i < FEDERATION_SIZE; i += 1) {
-    const node = await client.readContract({
-      address: inboxAddress,
-      abi: INBOX_READ_ABI,
-      functionName: "bridgeNodes",
-      args: [BigInt(i)]
-    });
-    signers.push(String(node));
-  }
-
-  let threshold = DEFAULT_THRESHOLD;
-  try {
-    threshold = toSafeNumber(
-      await client.readContract({ address: inboxAddress, abi: INBOX_READ_ABI, functionName: "THRESHOLD", args: [] })
-    );
-  } catch {
-    threshold = DEFAULT_THRESHOLD;
-  }
-
-  let withdrawalsEnabled = null;
-  try {
-    withdrawalsEnabled = Boolean(
-      await client.readContract({ address: inboxAddress, abi: INBOX_READ_ABI, functionName: "withdrawalsEnabled", args: [] })
-    );
-  } catch {
-    withdrawalsEnabled = null;
-  }
+  // Head block + the live federation roster (read FRESH — bridgeNodes is mutable on-chain) + THRESHOLD
+  // + withdrawalsEnabled are all independent reads, so issue them as one concurrent batch instead of
+  // 7 serial round-trips. THRESHOLD/withdrawalsEnabled fall back per-read; a roster read failing throws.
+  const [currentBlock, rosterRaw, threshold, withdrawalsEnabled] = await Promise.all([
+    client.getBlockNumber(),
+    Promise.all(Array.from({ length: FEDERATION_SIZE }, (_, i) => readView("bridgeNodes", [BigInt(i)]))),
+    readView("THRESHOLD").then((v) => toSafeNumber(v)).catch(() => DEFAULT_THRESHOLD),
+    readView("withdrawalsEnabled").then((v) => Boolean(v)).catch(() => null)
+  ]);
+  const signers = rosterRaw.map((node) => String(node));
 
   // Default to a bounded recent window (head - lookback .. head) when the fixture pins neither bound,
   // so the live call stays within public-RPC getLogs limits without hardcoded block numbers.
@@ -189,14 +249,43 @@ export async function readBaseXchainState(reader, opts) {
     ? await client.getLogs({ address: nockAddress, event: BURN_FOR_WITHDRAWAL_EVENT, fromBlock: fb, toBlock: tb })
     : [];
 
-  const mints = depositLogs.map((log) => ({
-    id: String(log.args?.txId),
-    amount: toAmountString(log.args?.amount),
-    // Contract-enforced quorum: the on-chain verifier required >= threshold of these signers.
-    attestedBy: signers.slice(),
-    quorumProof: "contract-enforced",
-    confirmations: toSafeNumber(currentBlock - BigInt(log.blockNumber))
-  }));
+  // Per-mint quorum evidence. Default: recover the actual signers from each mint tx (log-provable),
+  // falling back to the contract-enforced roster when recovery is unavailable or incomplete. Recovery
+  // needs viem + a client exposing getTransaction; the offline mock path simply falls back. Reuse the
+  // module the live reader already loaded (avoids a second dynamic import).
+  const recoverSigners = opts.recoverSigners !== false;
+  let viem = null;
+  if (recoverSigners && typeof client.getTransaction === "function") {
+    viem = reader.viem ?? null;
+    if (!viem) {
+      try {
+        viem = await import("viem");
+      } catch {
+        viem = null;
+      }
+    }
+  }
+  // Recover all mints' signers concurrently; a failed (tx fetch/decode) recovery resolves to null.
+  const recoveries = await Promise.all(
+    depositLogs.map((log) =>
+      viem && log.transactionHash
+        ? recoverDepositSigners(client, log.transactionHash, signers, viem).catch(() => null)
+        : Promise.resolve(null)
+    )
+  );
+  const mints = depositLogs.map((log, i) => {
+    const recovered = recoveries[i];
+    // Upgrade to log-derived only when recovery reproduces at least the threshold of roster signers the
+    // contract required; a short/failed result keeps the contract-enforced fallback (no false failure).
+    const logDerived = Array.isArray(recovered) && recovered.length >= threshold;
+    return {
+      id: String(log.args?.txId),
+      amount: toAmountString(log.args?.amount),
+      attestedBy: logDerived ? recovered : signers.slice(),
+      quorumProof: logDerived ? "log-derived" : "contract-enforced",
+      confirmations: toSafeNumber(currentBlock - BigInt(log.blockNumber))
+    };
+  });
 
   // Burns are informational provenance only (an opposite-direction Base->Nockchain flow); they
   // are deliberately NOT used to back mints (that backing is a Nockchain-side event).

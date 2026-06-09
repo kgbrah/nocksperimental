@@ -90,8 +90,12 @@ function resolveChain(ref) {
   const direct = EVM_CHAINS.chains[String(ref)];
   if (direct) return direct;
   // A numeric chainId may be stored under a different key (e.g. Nockchain is keyed "nockchain" with
-  // chainId 0) — match the chainId field too.
-  const num = Number(ref);
+  // chainId 0) — match the chainId field too. Only treat GENUINE numeric refs as a chainId: a bare
+  // Number(ref) would coerce "", false, [] and " " to 0 and silently resolve them to Nockchain.
+  const num =
+    typeof ref === "number" ? ref
+      : typeof ref === "string" && /^[0-9]+$/.test(ref.trim()) ? Number(ref.trim())
+        : NaN;
   if (Number.isFinite(num)) {
     const byId = Object.values(EVM_CHAINS.chains).find((c) => Number(c.chainId) === num);
     if (byId) return byId;
@@ -849,15 +853,24 @@ async function buildReport(fixture, startedAt, fixturePath) {
   // proof-of-prevention read CI-green instead of inverting the --strict gate.
   const status = fixture.expectRejected === true ? (rawStatus === "fail" ? "pass" : "fail") : rawStatus;
 
-  // A successful live-base read binds the cert to the exact deployed contract identity: only then
-  // do we stamp baseExecuted + baseDeploymentHash, mirroring kernelExecuted/kernelHash. Without
-  // the hash binding the deployment, generated-lab-reports keeps the run model-attested.
+  // Runner-OWNED promotion fields. A fixture AUTHOR must never be able to inject these to forge an
+  // app-report cert (F3): the promotion gate in generated-lab-reports keys on
+  // (environment.kernelExecuted && app.kernelHash) || (environment.baseExecuted && app.baseDeploymentHash),
+  // so if any were trusted from the fixture an author could satisfy the gate with pure data. We STRIP
+  // them from the loaded fixture and set them ONLY from runCtx after a genuine real-VM kernel run /
+  // successful live-base read. (app.kernelHash stays an author input — the committed compiled-kernel
+  // hash — but is inert without kernelExecuted, which is runner-owned and never set by a model run.)
+  const fixtureEnvironment = { ...fixture.environment };
+  delete fixtureEnvironment.kernelExecuted;
+  delete fixtureEnvironment.baseExecuted;
+  const fixtureApp = { ...fixture.app };
+  delete fixtureApp.baseDeploymentHash;
   const reportEnvironment = runCtx.baseExecuted === true
-    ? { ...fixture.environment, baseExecuted: true }
-    : fixture.environment;
+    ? { ...fixtureEnvironment, baseExecuted: true }
+    : fixtureEnvironment;
   const reportApp = runCtx.baseExecuted === true && runCtx.baseDeploymentHash
-    ? { ...fixture.app, baseDeploymentHash: runCtx.baseDeploymentHash }
-    : fixture.app;
+    ? { ...fixtureApp, baseDeploymentHash: runCtx.baseDeploymentHash }
+    : fixtureApp;
 
   return {
     reportId: `lab_${fixture.id}_${new Date(startedAt).toISOString().replace(/[-:.TZ]/g, "")}`,
@@ -1062,7 +1075,10 @@ async function runStep({ step, index, state, actors, environment, runCtx = {} })
       // Only the redacted URL is ever written to a persisted report field (may carry a provider key).
       const safeRpc = redactRpcUrl(rpcUrl);
       expectation = step.expectation ?? `Base RPC reachable + bridge readable at ${safeRpc}`;
-      const probe = await probeEvmRpcEndpoint(rpcUrl);
+      // Probe once per run (memoized on runCtx alongside the read) — re-probing every step just repeats
+      // the same eth_blockNumber/eth_chainId round-trips; latency/checkedAt reflect the first probe.
+      runCtx.probe ??= await probeEvmRpcEndpoint(rpcUrl);
+      const probe = runCtx.probe;
       // Fail closed if the RPC's actual chain != the fixture's declared baseChainId: otherwise a
       // mis-pointed RPC would read a different chain's contracts yet stamp a deployment hash for the
       // declared chain. (chainId null => endpoint did not report eth_chainId; skip the check.)
@@ -1096,7 +1112,9 @@ async function runStep({ step, index, state, actors, environment, runCtx = {} })
               }))
               .digest("hex");
           } catch (error) {
-            runCtx.baseReadError = error.message;
+            // Scrub the raw RPC URL out of viem's error text before it is persisted to the report
+            // (redactRpcUrl is a URL parser; a free-form message needs a substring replace).
+            runCtx.baseReadError = String(error.message ?? "").split(rpcUrl).join(safeRpc);
             runCtx.baseState = null;
           }
         }

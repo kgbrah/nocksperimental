@@ -16,7 +16,8 @@ import {
   loadIssuerKeyRegistry,
   loadCommittedReceipts,
   loadCommittedRevocations,
-  findBadgeRevocation
+  findBadgeRevocation,
+  DEV_ISSUER_KEY_IDS
 } from "./nocks-verify.mjs";
 
 const require = createRequire(import.meta.url);
@@ -44,6 +45,15 @@ async function main() {
     signBadgePayload,
     publicKeySpkiFromSeed
   } = loadTypeScriptModule("src/lib/trust-badge-crypto.ts");
+
+  // The offline CLI hardcodes its own copy of the dev-key denylist (it must not import app internals).
+  // Assert it stays in lockstep with the committed DEV_ISSUER_SEEDS so a new dev key can never silently
+  // be treated as a live trust anchor by the portable verifier.
+  assertEqual(
+    [...DEV_ISSUER_KEY_IDS].sort().join(","),
+    Object.keys(DEV_ISSUER_SEEDS).sort().join(","),
+    "CLI DEV_ISSUER_KEY_IDS stays in sync with DEV_ISSUER_SEEDS"
+  );
 
   // An ephemeral ACTIVE anchor key for the synthetic positive cases. The committed dev keys are
   // retired and rejected as anchors (a real verified cert needs an active, non-dev key); these

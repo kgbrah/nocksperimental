@@ -132,11 +132,16 @@ mints. Deliberately **omitted** (no honest source on a single federated `Message
 the opposite-direction Base→Nockchain flow, not backing), and all HTLC / multi-EVM / domain / challenge-
 window paths. Omitted paths simply have nothing to assert rather than being populated with model data.
 
-**Quorum is contract-enforced.** `DepositProcessed` does not name the attesting signers (the 3-of-5 ECDSA
-sigs are verified in `submitDeposit` calldata and discarded). live-base reads the live `bridgeNodes`
-roster the contract required ≥`THRESHOLD` of, and labels mints `quorumProof: "contract-enforced"`.
-Log-provable per-signer identities (ecrecover over the 276-byte `submitDeposit` preimage) are a scoped
-follow-on.
+**Quorum is log-provable (with a contract-enforced fallback).** `DepositProcessed` does not name the
+attesting signers, so live-base recovers them from the mint tx's `submitDeposit` calldata: it
+reproduces `MessageInbox.sol` verification byte-for-byte — keccak256 of the 276-byte packed deposit
+preimage (each Tip5 = its five individual `uint64` limbs big-endian, then recipient/amount/blockHeight/
+asOf/nonce), wrapped in the EIP-191 personal-sign prefix, then `ecrecover` per signature with the
+contract's canonical low-s (`0 < s ≤ N/2`) and `v ∈ {27,28}` checks. The recovered roster signers
+become the mint's `attestedBy` and the mint is labelled `quorumProof: "log-derived"`. If recovery is
+unavailable (no `getTransaction`, viem absent) or reproduces fewer than `THRESHOLD` roster signers, the
+mint falls back to the live `bridgeNodes` roster the contract required ≥`THRESHOLD` of, labelled
+`quorumProof: "contract-enforced"` — never a false quorum failure.
 
 **Empty windows are honest no-ops.** A scanned block window with no deposits (low-traffic testnet, or
 withdrawals disabled pre-launch) makes the live invariants pass **vacuously** — a real read of "nothing
