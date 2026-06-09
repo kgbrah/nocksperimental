@@ -420,7 +420,7 @@ export default function Home() {
               <a
                 key={`${event.type}-${event.recordedAt}-${index}`}
                 href={event.url}
-                className="block border border-[#0B0B0B] bg-[#FFFFFF] p-3"
+                className="block border border-[#0B0B0B] bg-[#FFFFFF] p-3" target="_blank" rel="noreferrer"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.1em]">

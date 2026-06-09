@@ -68,7 +68,7 @@ export default function VerifyPage() {
           <a
             className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]"
             href={verifier.path}
-            key={verifier.id}
+            key={verifier.id} target="_blank" rel="noreferrer"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="grid size-9 place-items-center bg-[#0B0B0B] text-white">
@@ -205,7 +205,7 @@ function SamplePanel({
       </p>
       <a
         className="mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-        href={toSameOriginHref(url)}
+        href={toSameOriginHref(url)} target="_blank" rel="noreferrer"
       >
         Open
         <ArrowUpRight size={14} aria-hidden="true" />

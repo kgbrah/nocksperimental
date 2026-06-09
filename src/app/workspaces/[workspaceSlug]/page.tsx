@@ -122,7 +122,7 @@ export default async function WorkspaceDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={toSameOriginHref(evidence.links.verify)}
+              href={toSameOriginHref(evidence.links.verify)} target="_blank" rel="noreferrer"
             >
               Verify Evidence
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -195,7 +195,7 @@ export default async function WorkspaceDetailPage({
                   </Link>
                   <Link
                     className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
-                    href={toSameOriginHref(launchCase.links.verifier)}
+                    href={toSameOriginHref(launchCase.links.verifier)} target="_blank" rel="noreferrer"
                   >
                     Verifier
                     <ArrowUpRight size={14} aria-hidden="true" />

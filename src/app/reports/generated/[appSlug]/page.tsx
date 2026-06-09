@@ -97,7 +97,7 @@ export default async function GeneratedReportDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={verificationHref}
+              href={verificationHref} target="_blank" rel="noreferrer"
             >
               Verify Hash
               <ArrowUpRight size={14} aria-hidden="true" />

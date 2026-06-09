@@ -80,7 +80,7 @@ export default async function TrustUpdateDetailPage({
           <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={verificationHref}
+              href={verificationHref} target="_blank" rel="noreferrer"
             >
               Verify Entry
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -101,7 +101,7 @@ export default async function TrustUpdateDetailPage({
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={trustUpdateTargetApiPath(entry)}
+              href={trustUpdateTargetApiPath(entry)} target="_blank" rel="noreferrer"
             >
               Target API
               <ArrowUpRight size={14} aria-hidden="true" />

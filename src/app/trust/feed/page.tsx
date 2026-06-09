@@ -138,6 +138,8 @@ function EvidenceMetric({ label, value, href }: { label: string; value?: string;
         <a
           className="mt-2 inline-flex max-w-full items-center gap-2 break-all font-mono text-xs leading-6 text-[#4A4A4A] underline decoration-[#0B0B0B] underline-offset-4"
           href={href}
+          target="_blank"
+          rel="noreferrer"
         >
           {value}
           <ArrowUpRight className="size-3 shrink-0" aria-hidden="true" />

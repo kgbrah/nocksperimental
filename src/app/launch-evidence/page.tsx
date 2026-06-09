@@ -45,7 +45,7 @@ export default function LaunchEvidencePage() {
             </div>
             <Link
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href={toSameOriginHref(index.canonicalUrl)}
+              href={toSameOriginHref(index.canonicalUrl)} target="_blank" rel="noreferrer"
             >
               <FileJson size={16} aria-hidden="true" />
               JSON
@@ -101,14 +101,14 @@ export default function LaunchEvidencePage() {
                 </Link>
                 <Link
                   className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
-                  href={toSameOriginHref(launchCase.links.verifier)}
+                  href={toSameOriginHref(launchCase.links.verifier)} target="_blank" rel="noreferrer"
                 >
                   Verifier
                   <ArrowUpRight size={14} aria-hidden="true" />
                 </Link>
                 <Link
                   className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
-                  href={toSameOriginHref(launchCase.links.api)}
+                  href={toSameOriginHref(launchCase.links.api)} target="_blank" rel="noreferrer"
                 >
                   Case JSON
                   <ArrowUpRight size={14} aria-hidden="true" />

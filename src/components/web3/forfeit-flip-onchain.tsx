@@ -20,6 +20,9 @@ type Phase = "idle" | "opening" | "playing" | "revealing" | "settled" | "error";
 
 type Result = {
   roundId: string;
+  // Did the round reach terminal Settled on-chain? When false the outcome is NOT yet known — the UI must
+  // never present a not-yet-settled round as a loss ("house won").
+  settled: boolean;
   clientSeed: Hex;
   serverSeed?: Hex;
   outcome?: Hex;
@@ -149,41 +152,73 @@ export function ForfeitFlipOnchain() {
         .then((r) => r.json())
         .catch(() => ({ ok: false }));
 
-      // Read the settlement + the revealed serverSeed (for the fairness recompute).
-      const round = (await publicClient.readContract({
-        address: contract,
-        abi: forfeitFlipAbi,
-        functionName: "getRound",
-        args: [roundId]
-      })) as { status: number; playerWon: boolean };
-
+      // POLL for settlement. Our wallet's RPC node can lag the node the house used to mine the reveal,
+      // so a SINGLE read can still return Played even though the round just settled — which previously
+      // made the UI show "house won" for rounds the player actually won. Poll getRound until it reaches
+      // terminal Settled (or we find the RoundSettled event), with a bounded retry window.
+      let status = FlipStatus.None as number;
+      let structPlayerWon = false;
       let serverSeed: Hex | undefined;
       let outcome: Hex | undefined;
-      try {
-        const logs = await publicClient.getContractEvents({
-          address: contract,
-          abi: forfeitFlipAbi,
-          eventName: "RoundSettled",
-          args: { roundId },
-          fromBlock: "earliest"
-        });
-        const ev = logs[logs.length - 1]?.args as { serverSeed?: Hex; outcome?: Hex } | undefined;
-        serverSeed = ev?.serverSeed;
-        outcome = ev?.outcome;
-      } catch {
-        /* fairness recompute is best-effort */
+      let eventPlayerWon: boolean | undefined;
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        try {
+          const round = (await publicClient.readContract({
+            address: contract,
+            abi: forfeitFlipAbi,
+            functionName: "getRound",
+            args: [roundId]
+          })) as { status: number; playerWon: boolean };
+          status = round.status;
+          structPlayerWon = round.playerWon;
+        } catch {
+          /* transient RPC error — retry */
+        }
+        try {
+          const logs = await publicClient.getContractEvents({
+            address: contract,
+            abi: forfeitFlipAbi,
+            eventName: "RoundSettled",
+            args: { roundId },
+            fromBlock: "earliest"
+          });
+          const ev = logs[logs.length - 1]?.args as
+            | { serverSeed?: Hex; outcome?: Hex; playerWon?: boolean }
+            | undefined;
+          if (ev) {
+            serverSeed = ev.serverSeed;
+            outcome = ev.outcome;
+            eventPlayerWon = ev.playerWon;
+          }
+        } catch {
+          /* fairness recompute is best-effort; the struct read is the primary settled signal */
+        }
+        if (status === FlipStatus.Settled || eventPlayerWon !== undefined) break;
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
 
-      const settled = round.status === FlipStatus.Settled;
-      setResult({ roundId: roundId.toString(), clientSeed, serverSeed, outcome, playerWon: settled && round.playerWon, playTx: playHash });
+      // Settled iff the round reached terminal Settled OR the authoritative RoundSettled event was seen.
+      const settled = status === FlipStatus.Settled || eventPlayerWon !== undefined;
+      // Winner from the event (authoritative) when available, else the struct — only meaningful once settled.
+      const playerWon = eventPlayerWon ?? structPlayerWon;
+
+      setResult({
+        roundId: roundId.toString(),
+        settled,
+        clientSeed,
+        serverSeed,
+        outcome,
+        playerWon: settled ? playerWon : false,
+        playTx: playHash
+      });
       setPhase("settled");
       setStatusMsg(
         settled
-          ? round.playerWon
+          ? playerWon
             ? "You won! Withdraw your winnings below."
             : "House won this round."
           : reveal.ok
-            ? "Settling… refresh in a moment."
+            ? "Still settling — your bet is in. Refresh in a moment to see the result; your funds are safe."
             : "The house did not settle this round. You can reclaim your FULL stake via the contract's timeout after the reveal window."
       );
       await refreshCredits();

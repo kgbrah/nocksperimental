@@ -172,7 +172,7 @@ export default function RegistryPage() {
               <a
                 className="border border-[#0B0B0B] bg-white p-3"
                 href={toSameOriginHref(endpoint.url)}
-                key={endpoint.id}
+                key={endpoint.id} target="_blank" rel="noreferrer"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>

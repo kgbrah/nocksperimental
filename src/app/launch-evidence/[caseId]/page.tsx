@@ -65,14 +65,14 @@ export default async function LaunchEvidenceCasePage({
             <div className="flex flex-wrap gap-3">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href={toSameOriginHref(launchCase.links.verifier)}
+                href={toSameOriginHref(launchCase.links.verifier)} target="_blank" rel="noreferrer"
               >
                 <ShieldCheck size={16} aria-hidden="true" />
                 Verifier
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium"
-                href={toSameOriginHref(launchCase.links.api)}
+                href={toSameOriginHref(launchCase.links.api)} target="_blank" rel="noreferrer"
               >
                 <FileJson size={16} aria-hidden="true" />
                 Case JSON
@@ -152,7 +152,7 @@ export default async function LaunchEvidenceCasePage({
                 {submission.sourceUrl ? (
                   <Link
                     className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                    href={toSameOriginHref(submission.sourceUrl)}
+                    href={toSameOriginHref(submission.sourceUrl)} target="_blank" rel="noreferrer"
                   >
                     Source
                     <ArrowUpRight size={14} aria-hidden="true" />
