@@ -1,0 +1,13 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "contracts": {
+    "ForfeitFlip": {
+      "address": "0x347cE69E43E7dA45Cc90BcC9F124B32BadF9ad86",
+      "deployTx": "0x10673f842814b0ec93883232436d23ba94b92c0c3b7887d6a3c3a4661bf45e69",
+      "house": "0x3906B6B42a008CA6fec05948f4Cf4f374C3d7290",
+      "params": { "minStakeWei": "100000000000000", "maxStakeWei": "5000000000000000", "revealWindowSeconds": 3600, "initialBankrollWei": "20000000000000000" },
+      "explorer": "https://sepolia.basescan.org/address/0x347cE69E43E7dA45Cc90BcC9F124B32BadF9ad86"
+    }
+  }
+}
