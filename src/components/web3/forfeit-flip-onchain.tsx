@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { formatEther, parseEther, keccak256, encodePacked, type Hex } from "viem";
-import { Coins, Loader2, ShieldCheck, Wallet, ArrowRight, Check, X } from "lucide-react";
+import { Coins, Loader2, ShieldCheck, Wallet, ArrowRight, ArrowUpRight, Check, X } from "lucide-react";
 import { forfeitFlipAbi } from "@/lib/abi/forfeit-flip";
 import { forfeitFlipAddress, FlipStatus } from "@/lib/game-contracts";
 import { DEFAULT_CHAIN_ID, explorerTx } from "@/lib/networks";
@@ -28,6 +28,8 @@ type Result = {
   outcome?: Hex;
   playerWon: boolean;
   playTx?: Hex;
+  // The house's reveal/settlement tx — where the RoundSettled event records this round's fair outcome on-chain.
+  settleTx?: Hex;
 };
 
 function randomSeed(): Hex {
@@ -161,6 +163,7 @@ export function ForfeitFlipOnchain() {
       let serverSeed: Hex | undefined;
       let outcome: Hex | undefined;
       let eventPlayerWon: boolean | undefined;
+      let settleTx: Hex | undefined;
       for (let attempt = 0; attempt < 8; attempt += 1) {
         try {
           const round = (await publicClient.readContract({
@@ -182,13 +185,15 @@ export function ForfeitFlipOnchain() {
             args: { roundId },
             fromBlock: "earliest"
           });
-          const ev = logs[logs.length - 1]?.args as
+          const lastLog = logs[logs.length - 1];
+          const ev = lastLog?.args as
             | { serverSeed?: Hex; outcome?: Hex; playerWon?: boolean }
             | undefined;
           if (ev) {
             serverSeed = ev.serverSeed;
             outcome = ev.outcome;
             eventPlayerWon = ev.playerWon;
+            settleTx = lastLog?.transactionHash ?? undefined;
           }
         } catch {
           /* fairness recompute is best-effort; the struct read is the primary settled signal */
@@ -201,6 +206,9 @@ export function ForfeitFlipOnchain() {
       const settled = status === FlipStatus.Settled || eventPlayerWon !== undefined;
       // Winner from the event (authoritative) when available, else the struct — only meaningful once settled.
       const playerWon = eventPlayerWon ?? structPlayerWon;
+      // Settlement tx: prefer the tx that emitted RoundSettled; fall back to the hash the house returned.
+      const settleTxHash: Hex | undefined =
+        settleTx ?? (reveal?.ok && typeof reveal.txHash === "string" ? (reveal.txHash as Hex) : undefined);
 
       setResult({
         roundId: roundId.toString(),
@@ -209,7 +217,8 @@ export function ForfeitFlipOnchain() {
         serverSeed,
         outcome,
         playerWon: settled ? playerWon : false,
-        playTx: playHash
+        playTx: playHash,
+        settleTx: settleTxHash
       });
       setPhase("settled");
       setStatusMsg(
@@ -324,12 +333,34 @@ export function ForfeitFlipOnchain() {
                 }
               />
             ) : null}
+            {result.settleTx ? (
+              <Row
+                k="settlement tx (reveal)"
+                v={
+                  <a className="underline decoration-[#737373] underline-offset-2 hover:decoration-[#0B0B0B]" href={explorerTx(DEFAULT_CHAIN_ID, result.settleTx)} target="_blank" rel="noreferrer">
+                    {result.settleTx.slice(0, 18)}…
+                  </a>
+                }
+              />
+            ) : null}
           </dl>
           {fairnessOk !== undefined ? (
-            <p className="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em]">
-              <ShieldCheck aria-hidden="true" size={13} />
-              {fairnessOk ? "Fairness verified: recomputed outcome matches on-chain" : "Mismatch — do not trust this round"}
-            </p>
+            <div className="mt-3 space-y-1.5">
+              <p className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em]">
+                <ShieldCheck aria-hidden="true" size={13} />
+                {fairnessOk ? "Fairness verified: recomputed outcome matches on-chain" : "Mismatch — do not trust this round"}
+              </p>
+              {result.settleTx ? (
+                <a
+                  className="inline-flex items-center gap-1 font-mono text-[11px] uppercase tracking-[0.12em] underline decoration-[#737373] underline-offset-2 hover:decoration-[#0B0B0B]"
+                  href={explorerTx(DEFAULT_CHAIN_ID, result.settleTx)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  See the on-chain settlement (RoundSettled event) <ArrowUpRight aria-hidden="true" size={12} />
+                </a>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}
