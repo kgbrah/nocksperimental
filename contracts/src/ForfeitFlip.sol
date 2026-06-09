@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-/// @title ForfeitFlip — provably-fair, commit-reveal coin-flip settlement.
+interface IERC20 {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+
+/// @title ForfeitFlip — provably-fair, commit-reveal coin-flip settlement (native ETH or any ERC20).
 /// @notice On-chain settlement for the Nocksperimental "Forfeit Flip" game. The HOUSE commits to a
 ///         per-round random `serverSeed` (via keccak256) BEFORE a player stakes, so neither side can
 ///         grind the result: the player never sees `serverSeed` (only its commitment), and the house
@@ -9,8 +15,11 @@ pragma solidity 0.8.28;
 ///         `keccak256(serverSeed, clientSeed, roundId)` — even money. If the house fails to reveal by
 ///         the deadline, the player claims their stake PLUS the house's matched stake, so withholding a
 ///         reveal is strictly -EV for the house.
-/// @dev    Native-ETH stakes. Payouts use a pull-payment credit ledger (no value is pushed during
-///         settlement) so settlement is reentrancy-free and a hostile receiver cannot grief it.
+/// @dev    The stake/payout asset is fixed at deploy via `token`: `address(0)` = native ETH (stake is
+///         `msg.value`), otherwise an ERC20 (stake pulled via `transferFrom`; the player must `approve`
+///         first, and the house funds its bankroll via {fundBankroll} after approving). Payouts use a
+///         pull-payment credit ledger (no value is pushed during settlement) so settlement is
+///         reentrancy-free and a hostile receiver cannot grief it.
 contract ForfeitFlip {
     // ---------------------------------------------------------------------------------------------
     // Config / roles
@@ -19,7 +28,10 @@ contract ForfeitFlip {
     /// @notice Operator that opens rounds, reveals seeds, and owns the bankroll.
     address public immutable house;
 
-    /// @notice Inclusive stake bounds (wei) a player may wager per round.
+    /// @notice Stake/payout asset. `address(0)` = native ETH; otherwise the ERC20 token address.
+    address public immutable token;
+
+    /// @notice Inclusive stake bounds (in the token's smallest unit) a player may wager per round.
     uint256 public immutable minStake;
     uint256 public immutable maxStake;
 
@@ -28,8 +40,9 @@ contract ForfeitFlip {
 
     // ---------------------------------------------------------------------------------------------
     // Accounting (explicit balances; invariant checked in tests)
-    //   address(this).balance == houseBankroll + 2*lockedLiabilities + totalCredits
-    // where a Played round locks `stake` from the house AND holds the player's `stake` (a 2*stake pot).
+    //   reserves() == houseBankroll + 2*lockedLiabilities + totalCredits
+    // where reserves() is this contract's ETH balance (native) or token balance (ERC20), and a Played
+    // round locks `stake` from the house AND holds the player's `stake` (a 2*stake pot).
     // ---------------------------------------------------------------------------------------------
 
     /// @notice Free house funds available to back new bets.
@@ -101,23 +114,29 @@ contract ForfeitFlip {
     error NothingToWithdraw();
     error TransferFailed();
     error ZeroAmount();
+    error NativeValueForToken(); // ETH sent to an ERC20 game
+    error ValueMismatch(); // msg.value != declared amount on a native-ETH game
 
     modifier onlyHouse() {
         if (msg.sender != house) revert NotHouse();
         _;
     }
 
-    /// @param _minStake     Minimum wager (wei), > 0.
-    /// @param _maxStake     Maximum wager (wei), >= _minStake and within uint96.
+    /// @param _token        Stake/payout asset: address(0) for native ETH, else the ERC20 token address.
+    /// @param _minStake     Minimum wager (token's smallest unit), > 0.
+    /// @param _maxStake     Maximum wager, >= _minStake and within uint96.
     /// @param _revealWindow Reveal deadline (seconds), 60s..7d.
-    constructor(uint256 _minStake, uint256 _maxStake, uint256 _revealWindow) payable {
+    constructor(address _token, uint256 _minStake, uint256 _maxStake, uint256 _revealWindow) payable {
         if (_minStake == 0 || _maxStake < _minStake || _maxStake > type(uint96).max) revert BadConfig();
         if (_revealWindow < 60 || _revealWindow > 7 days) revert BadConfig();
         house = msg.sender;
+        token = _token;
         minStake = _minStake;
         maxStake = _maxStake;
         revealWindow = _revealWindow;
         if (msg.value > 0) {
+            // Native-ETH initial bankroll only. An ERC20 game is funded via {fundBankroll} after approve.
+            if (_token != address(0)) revert NativeValueForToken();
             houseBankroll = msg.value;
             emit BankrollFunded(msg.sender, msg.value);
         }
@@ -127,11 +146,13 @@ contract ForfeitFlip {
     // Bankroll
     // ---------------------------------------------------------------------------------------------
 
-    /// @notice Add free funds to the house bankroll.
-    function fundBankroll() external payable {
-        if (msg.value == 0) revert ZeroAmount();
-        houseBankroll += msg.value;
-        emit BankrollFunded(msg.sender, msg.value);
+    /// @notice Add free funds to the house bankroll. For ETH send `msg.value == amount`; for an ERC20
+    ///         the caller must `approve` this contract for `amount` first (pulled via transferFrom).
+    function fundBankroll(uint256 amount) external payable {
+        if (amount == 0) revert ZeroAmount();
+        _pullStake(msg.sender, amount);
+        houseBankroll += amount;
+        emit BankrollFunded(msg.sender, amount);
     }
 
     /// @notice House withdraws FREE bankroll only (never locked liabilities or player credits) into its
@@ -171,15 +192,17 @@ contract ForfeitFlip {
         emit RoundCancelled(roundId);
     }
 
-    /// @notice Player stakes ETH and supplies their own entropy (`clientSeed`). The player only knows
-    ///         the commitment, never `serverSeed`, so the outcome is unpredictable to them.
-    function play(uint256 roundId, bytes32 clientSeed) external payable {
+    /// @notice Player stakes `amount` and supplies their own entropy (`clientSeed`). The player only
+    ///         knows the commitment, never `serverSeed`, so the outcome is unpredictable to them. For
+    ///         ETH send `msg.value == amount`; for an ERC20 `approve` this contract for `amount` first.
+    function play(uint256 roundId, bytes32 clientSeed, uint256 amount) external payable {
         Round storage r = rounds[roundId];
         if (r.status != Status.Open) revert WrongStatus();
-        uint256 stake = msg.value;
+        uint256 stake = amount;
         if (stake < minStake || stake > maxStake) revert StakeOutOfRange();
         // The house must be able to MATCH the stake (even money). Move it from free bankroll to locked.
         if (houseBankroll < stake) revert InsufficientBankroll();
+        _pullStake(msg.sender, stake);
         houseBankroll -= stake;
         lockedLiabilities += stake;
 
@@ -252,14 +275,19 @@ contract ForfeitFlip {
         if (amount == 0) revert NothingToWithdraw();
         credits[msg.sender] = 0;
         totalCredits -= amount;
-        (bool ok,) = payable(msg.sender).call{value: amount}("");
-        if (!ok) revert TransferFailed();
+        _push(msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
     }
 
     // ---------------------------------------------------------------------------------------------
     // Views
     // ---------------------------------------------------------------------------------------------
+
+    /// @notice This contract's reserves in the stake asset (ETH balance for native, token balance for
+    ///         ERC20). The solvency invariant is reserves() == houseBankroll + 2*lockedLiabilities + totalCredits.
+    function reserves() public view returns (uint256) {
+        return token == address(0) ? address(this).balance : IERC20(token).balanceOf(address(this));
+    }
 
     /// @notice Verify a settled round's fairness off-chain parity: returns the outcome + whether the
     ///         player won for a given (serverSeed, clientSeed, roundId).
@@ -277,8 +305,29 @@ contract ForfeitFlip {
     }
 
     // ---------------------------------------------------------------------------------------------
-    // Internal
+    // Internal — token-aware value movement (the ONLY place native vs ERC20 differs)
     // ---------------------------------------------------------------------------------------------
+
+    /// @dev Pull `amount` of the stake asset from `from` INTO this contract. Native: require msg.value
+    ///      exactly matches. ERC20: reject stray ETH and pull via transferFrom (caller must approve).
+    function _pullStake(address from, uint256 amount) internal {
+        if (token == address(0)) {
+            if (msg.value != amount) revert ValueMismatch();
+        } else {
+            if (msg.value != 0) revert NativeValueForToken();
+            if (!IERC20(token).transferFrom(from, address(this), amount)) revert TransferFailed();
+        }
+    }
+
+    /// @dev Push `amount` of the stake asset OUT of this contract to `to`.
+    function _push(address to, uint256 amount) internal {
+        if (token == address(0)) {
+            (bool ok,) = payable(to).call{value: amount}("");
+            if (!ok) revert TransferFailed();
+        } else {
+            if (!IERC20(token).transfer(to, amount)) revert TransferFailed();
+        }
+    }
 
     function _credit(address account, uint256 amount) internal {
         credits[account] += amount;
