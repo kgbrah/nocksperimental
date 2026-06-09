@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import net from "node:net";
@@ -16,6 +16,7 @@ import {
   scaffoldFixture,
   validateFixture
 } from "./fixture-builder.mjs";
+import { resolveChain, hashesForChain } from "./lib/evm-chain-registry.mjs";
 
 const rawArgs = process.argv.slice(2);
 const verb = rawArgs[0];
@@ -71,46 +72,7 @@ const INVARIANT_REQUIRED_FIELDS = {
 // EVM chain registry (src/data/evm-chains.json): family -> native hashes, plus per-chain finality
 // profile (recommendedMinConfirmations, confirmationBasis, trustSoftConfirm, challengeWindowSeconds).
 // This is what generalizes the cross-chain invariants to ANY EVM chain (and Nockchain, family "nock").
-// Conservative, adversarially-verified model inputs — NOT a live oracle. Loaded relative to this
-// module so cwd does not matter.
-let EVM_CHAINS;
-try {
-  EVM_CHAINS = JSON.parse(
-    readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../src/data/evm-chains.json"), "utf8")
-  );
-} catch {
-  // Degrade gracefully if the registry is not co-located (e.g. the extracted published `nocklab`):
-  // family-based hash support still works; per-chain finality lookups resolve to undefined.
-  EVM_CHAINS = { families: { evm: { nativeHashes: ["keccak256", "sha256"] }, nock: { nativeHashes: ["tip5"] } }, chains: {} };
-}
-// Resolve a chain reference (numeric chainId, string chainId, or a legacy name like "base"/"nockchain")
-// to its registry profile.
-function resolveChain(ref) {
-  if (ref === undefined || ref === null) return undefined;
-  const direct = EVM_CHAINS.chains[String(ref)];
-  if (direct) return direct;
-  // A numeric chainId may be stored under a different key (e.g. Nockchain is keyed "nockchain" with
-  // chainId 0) — match the chainId field too. Only treat GENUINE numeric refs as a chainId: a bare
-  // Number(ref) would coerce "", false, [] and " " to 0 and silently resolve them to Nockchain.
-  const num =
-    typeof ref === "number" ? ref
-      : typeof ref === "string" && /^[0-9]+$/.test(ref.trim()) ? Number(ref.trim())
-        : NaN;
-  if (Number.isFinite(num)) {
-    const byId = Object.values(EVM_CHAINS.chains).find((c) => Number(c.chainId) === num);
-    if (byId) return byId;
-  }
-  const lname = String(ref).toLowerCase();
-  const aliases = { nockchain: "nockchain", nock: "nockchain", base: "8453", ethereum: "1", evm: "1" };
-  if (aliases[lname]) return EVM_CHAINS.chains[aliases[lname]];
-  return Object.values(EVM_CHAINS.chains).find((c) => c.name?.toLowerCase() === lname);
-}
-function hashesForChain(ref, family) {
-  const c = resolveChain(ref);
-  if (c) return c.nativeHashes ?? EVM_CHAINS.families[c.family]?.nativeHashes ?? [];
-  if (family) return EVM_CHAINS.families[family]?.nativeHashes ?? [];
-  return [];
-}
+// resolveChain / hashesForChain are shared with the standalone verifier via ./lib/evm-chain-registry.mjs.
 
 // Normalize a state value the contract types as a list. The xchain invariants take
 // arrays (message lists, withdrawals, endpoints, …); anything else (undefined, an
@@ -1025,6 +987,98 @@ function validatePack(pack, packPath) {
   });
 }
 
+// Read the REAL Base bridge deployment for a mode:"live-base" fakenet step and merge the on-chain
+// facts into state so the cross-chain invariants run over live data. The RPC probe + read happen ONCE
+// per run (memoized on runCtx); on a successful read it stamps runCtx.baseExecuted + baseDeploymentHash
+// so buildReport can promote the report to an app-report. Returns the step's {status, observed,
+// expectation, adapter}. Only the redacted RPC URL is ever written to a persisted field.
+async function runLiveBaseStep({ step, environment, state, runCtx }) {
+  const rpcUrl = resolveEnvValue(environment.baseRpcUrl) || DEFAULT_BASE_SEPOLIA_RPC;
+  const safeRpc = redactRpcUrl(rpcUrl);
+  const expectation = step.expectation ?? `Base RPC reachable + bridge readable at ${safeRpc}`;
+  // Probe once per run — re-probing every step just repeats the same eth_blockNumber/eth_chainId calls.
+  runCtx.probe ??= await probeEvmRpcEndpoint(rpcUrl);
+  const probe = runCtx.probe;
+  // Fail closed if the RPC's actual chain != the declared baseChainId: a mis-pointed RPC would read a
+  // different chain's contracts yet stamp a deployment hash for the declared chain. (chainId null =>
+  // endpoint did not report eth_chainId; skip the check.)
+  const chainMismatch =
+    probe.ok && probe.chainId != null && Number(probe.chainId) !== Number(environment.baseChainId);
+  if (runCtx.baseState === undefined) {
+    if (!probe.ok || chainMismatch) {
+      if (chainMismatch) {
+        runCtx.baseReadError = `RPC chainId ${probe.chainId} != declared baseChainId ${environment.baseChainId}`;
+      }
+      runCtx.baseState = null;
+    } else {
+      try {
+        const { createBaseReader, readBaseXchainState } = await import("./lib/base-evm-reader.mjs");
+        const reader = await createBaseReader({ rpcUrl, chainId: environment.baseChainId });
+        runCtx.baseState = await readBaseXchainState(reader, {
+          inboxAddress: environment.baseInboxAddress,
+          nockAddress: environment.baseNockAddress,
+          fromBlock: environment.baseFromBlock,
+          toBlock: environment.baseToBlock,
+          requiredConfirmations: environment.baseConfirmationDepth,
+          appRequiredConfirmations: environment.baseAppRequiredConfirmations,
+          chainId: environment.baseChainId
+        });
+        runCtx.baseExecuted = true;
+        runCtx.baseDeploymentHash = createHash("sha256")
+          .update(stableStringify({
+            chainId: Number(environment.baseChainId),
+            inboxAddress: String(environment.baseInboxAddress ?? "").toLowerCase(),
+            nockAddress: String(environment.baseNockAddress ?? "").toLowerCase()
+          }))
+          .digest("hex");
+      } catch (error) {
+        // Scrub the raw RPC URL out of viem's error text before it is persisted (redactRpcUrl is a URL
+        // parser; a free-form message needs a substring replace).
+        runCtx.baseReadError = String(error.message ?? "").split(rpcUrl).join(safeRpc);
+        runCtx.baseState = null;
+      }
+    }
+  }
+  if (runCtx.baseState) {
+    state.xchain = { ...(state.xchain ?? {}), ...runCtx.baseState.xchain };
+    const prov = runCtx.baseState.provenance;
+    const noEvents = prov.eventCounts.mints === 0;
+    return {
+      expectation,
+      status: "pass",
+      observed:
+        `live-base read ${prov.inboxAddress} @ chain ${prov.chainId}: ${prov.eventCounts.mints} mint(s), ` +
+        `${prov.eventCounts.burns} burn(s), ${prov.signers.length} signer(s)/threshold ${prov.threshold}, head block ${prov.currentBlock}` +
+        (noEvents ? " — NO mints observed in this window: invariants pass vacuously, NOT strong evidence" : ""),
+      adapter: {
+        kind: "live-base",
+        grpcEndpoint: safeRpc,
+        rpcEndpoint: safeRpc,
+        chainId: prov.chainId,
+        reachable: true,
+        latencyMs: probe.latencyMs,
+        checkedAt: probe.checkedAt,
+        eventCounts: prov.eventCounts,
+        withdrawalsEnabled: prov.withdrawalsEnabled
+      }
+    };
+  }
+  return {
+    expectation,
+    status: "fail",
+    observed: `live-base read failed at ${safeRpc}: ${runCtx.baseReadError ?? probe.error ?? "unreachable"}`,
+    adapter: {
+      kind: "live-base",
+      grpcEndpoint: safeRpc,
+      rpcEndpoint: safeRpc,
+      reachable: probe.ok,
+      latencyMs: probe.latencyMs,
+      checkedAt: probe.checkedAt,
+      error: runCtx.baseReadError ?? probe.error ?? "unreachable"
+    }
+  };
+}
+
 async function runStep({ step, index, state, actors, environment, runCtx = {} }) {
   const before = structuredClone(state);
   const beforeHash = hashState(before);
@@ -1069,89 +1123,7 @@ async function runStep({ step, index, state, actors, environment, runCtx = {} })
         chain
       });
     } else if (environment.mode === "live-base") {
-      // Read the REAL Base bridge deployment over a read-only RPC and merge the on-chain facts
-      // into state so the cross-chain invariants run over live data. Fetched ONCE per run.
-      const rpcUrl = resolveEnvValue(environment.baseRpcUrl) || DEFAULT_BASE_SEPOLIA_RPC;
-      // Only the redacted URL is ever written to a persisted report field (may carry a provider key).
-      const safeRpc = redactRpcUrl(rpcUrl);
-      expectation = step.expectation ?? `Base RPC reachable + bridge readable at ${safeRpc}`;
-      // Probe once per run (memoized on runCtx alongside the read) — re-probing every step just repeats
-      // the same eth_blockNumber/eth_chainId round-trips; latency/checkedAt reflect the first probe.
-      runCtx.probe ??= await probeEvmRpcEndpoint(rpcUrl);
-      const probe = runCtx.probe;
-      // Fail closed if the RPC's actual chain != the fixture's declared baseChainId: otherwise a
-      // mis-pointed RPC would read a different chain's contracts yet stamp a deployment hash for the
-      // declared chain. (chainId null => endpoint did not report eth_chainId; skip the check.)
-      const chainMismatch =
-        probe.ok && probe.chainId != null && Number(probe.chainId) !== Number(environment.baseChainId);
-      if (runCtx.baseState === undefined) {
-        if (!probe.ok || chainMismatch) {
-          if (chainMismatch) {
-            runCtx.baseReadError = `RPC chainId ${probe.chainId} != declared baseChainId ${environment.baseChainId}`;
-          }
-          runCtx.baseState = null;
-        } else {
-          try {
-            const { createBaseReader, readBaseXchainState } = await import("./lib/base-evm-reader.mjs");
-            const reader = await createBaseReader({ rpcUrl, chainId: environment.baseChainId });
-            runCtx.baseState = await readBaseXchainState(reader, {
-              inboxAddress: environment.baseInboxAddress,
-              nockAddress: environment.baseNockAddress,
-              fromBlock: environment.baseFromBlock,
-              toBlock: environment.baseToBlock,
-              requiredConfirmations: environment.baseConfirmationDepth,
-              appRequiredConfirmations: environment.baseAppRequiredConfirmations,
-              chainId: environment.baseChainId
-            });
-            runCtx.baseExecuted = true;
-            runCtx.baseDeploymentHash = createHash("sha256")
-              .update(stableStringify({
-                chainId: Number(environment.baseChainId),
-                inboxAddress: String(environment.baseInboxAddress ?? "").toLowerCase(),
-                nockAddress: String(environment.baseNockAddress ?? "").toLowerCase()
-              }))
-              .digest("hex");
-          } catch (error) {
-            // Scrub the raw RPC URL out of viem's error text before it is persisted to the report
-            // (redactRpcUrl is a URL parser; a free-form message needs a substring replace).
-            runCtx.baseReadError = String(error.message ?? "").split(rpcUrl).join(safeRpc);
-            runCtx.baseState = null;
-          }
-        }
-      }
-      if (runCtx.baseState) {
-        state.xchain = { ...(state.xchain ?? {}), ...runCtx.baseState.xchain };
-        const prov = runCtx.baseState.provenance;
-        status = "pass";
-        const noEvents = prov.eventCounts.mints === 0;
-        observed =
-          `live-base read ${prov.inboxAddress} @ chain ${prov.chainId}: ${prov.eventCounts.mints} mint(s), ` +
-          `${prov.eventCounts.burns} burn(s), ${prov.signers.length} signer(s)/threshold ${prov.threshold}, head block ${prov.currentBlock}` +
-          (noEvents ? " — NO mints observed in this window: invariants pass vacuously, NOT strong evidence" : "");
-        adapter = {
-          kind: "live-base",
-          grpcEndpoint: safeRpc,
-          rpcEndpoint: safeRpc,
-          chainId: prov.chainId,
-          reachable: true,
-          latencyMs: probe.latencyMs,
-          checkedAt: probe.checkedAt,
-          eventCounts: prov.eventCounts,
-          withdrawalsEnabled: prov.withdrawalsEnabled
-        };
-      } else {
-        status = "fail";
-        observed = `live-base read failed at ${safeRpc}: ${runCtx.baseReadError ?? probe.error ?? "unreachable"}`;
-        adapter = {
-          kind: "live-base",
-          grpcEndpoint: safeRpc,
-          rpcEndpoint: safeRpc,
-          reachable: probe.ok,
-          latencyMs: probe.latencyMs,
-          checkedAt: probe.checkedAt,
-          error: runCtx.baseReadError ?? probe.error ?? "unreachable"
-        };
-      }
+      ({ status, observed, expectation, adapter } = await runLiveBaseStep({ step, environment, state, runCtx }));
     } else {
       observed = `${environment.mode} profile ready at ${environment.grpcEndpoint}`;
     }

@@ -28,8 +28,10 @@ mkdirSync(path.join(packageDir, "src", "data"), { recursive: true });
 const copies = [
   { from: "scripts/run-lab.mjs", to: "bin/nocklab.mjs", executable: true },
   { from: "scripts/fixture-builder.mjs", to: "bin/fixture-builder.mjs", executable: false },
-  // run-lab dynamically imports "./lib/base-evm-reader.mjs" on the (optional) live-base path; ship it
-  // alongside so the published CLI can do live-base reads when the user has the optional viem dep.
+  // run-lab imports "./lib/evm-chain-registry.mjs" (chain resolution) and dynamically imports
+  // "./lib/base-evm-reader.mjs" on the (optional) live-base path; ship both alongside so the published
+  // CLI resolves chains and can do live-base reads when the user has the optional viem dep.
+  { from: "scripts/lib/evm-chain-registry.mjs", to: "bin/lib/evm-chain-registry.mjs", executable: false },
   { from: "scripts/lib/base-evm-reader.mjs", to: "bin/lib/base-evm-reader.mjs", executable: false },
   {
     from: "schemas/nockapp-lab-fixture.schema.json",
