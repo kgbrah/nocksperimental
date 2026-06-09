@@ -75,6 +75,9 @@ export function verifyTrustBadgeIssuance({
       // The signed payload must name THIS badge — closes the digest-fallback resolution path so a
       // valid signature cannot be re-associated with a different badge id.
       issuance.signedPayload.badgeId === badge.id &&
+      // The cert's registry category must be the one that was signed — a verified cert cannot be
+      // re-presented under a different kind (e.g. relabelling a non-app cert as app-report).
+      (issuance.signedPayload.kind ?? null) === (badge.kind ?? null) &&
       // When the cert claims a compiled-kernel hash (a kernel-verified app cert), it must bind to
       // the badge's kernel hash — a signed payload cannot claim a kernel the badge doesn't carry.
       (issuance.signedPayload.kernelHash ?? null) === (badge.evidence.kernelHash ?? null) &&

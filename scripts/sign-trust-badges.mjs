@@ -116,6 +116,8 @@ function main() {
       issuedAt: issuance.signedPayload.issuedAt,
       expiresAt: issuance.signedPayload.expiresAt,
       sourceAnchor: { ...badge.sourceAnchor },
+      // Bind the badge's registry category (verifier requires signedPayload.kind === badge.kind).
+      kind: badge.kind,
       // Carry the deployed-identity bindings through re-sign. The verifier requires
       // signedPayload.{kernelHash,baseDeploymentHash} === badge.evidence.* — dropping them here
       // would silently break any kernel/live-base app-report cert on re-sign.

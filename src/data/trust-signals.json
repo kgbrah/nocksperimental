@@ -165,8 +165,8 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:caf644841075a99fedb76c75c94d510fb9c14ec06715ef1515018779069789f9",
-      "signature": "K85GSuKTgAN2Z1ifiRmjIFSyFroLiFbR2S8zdwVcD9LRlLZpbqNxB5gTx7ZPoh9jPkRmuzB5TgBhMA99PFXeDg==",
+      "payloadDigest": "sha256:33366b421082977b7aebec9a05488298b40491de01daf7fa1809aeb968d5c897",
+      "signature": "mgjCPSTBY7Ca7a2SmBk0lmJIxoEbrqIpkSbQQUHvrNYnJhA2N4JolwQpVSmgIdj+N2suqTLXucC7TP05tFynBA==",
       "signedPayload": {
         "badgeId": "badge-payment-flow-verified",
         "status": "verified",
@@ -177,7 +177,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "app-report"
       },
       "verification": {
         "status": "valid",
@@ -191,8 +192,8 @@
       "issuedAt": "2026-05-20T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:823368c3cbf3710e2be36e4dd3275bedba9cbfdeab8ba7d09a5f4b0cc7f11cfc",
-      "signature": "61NoiXr8S8rSfrHwmUfJ4q+ImxjYgdnkHCutsf4G0mJLA0GeZqWhpXSDEIlo4au/ziuhkSqp+/tiViVyAI1dAw==",
+      "payloadDigest": "sha256:49f15d0499a675e23ded6c8a5631dd9138a8d7daff39ad6cdcc7c8a58dddaad9",
+      "signature": "syEs7zYZSi+lK8GmEkEeR2bYXIQ8aZzbRH/5R0pd9pCn53RdCpUxu0ak/TCbfeCl0oG8rvdc+ml1tFV6PuJwCA==",
       "signedPayload": {
         "badgeId": "badge-payment-flow-legacy",
         "status": "verified",
@@ -203,7 +204,8 @@
         "sourceAnchor": {
           "commit": "5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4",
           "build": "build-5d022ced5504e1f2a3b4c5d6e7f80910a1b2c3d4"
-        }
+        },
+        "kind": "app-report"
       },
       "verification": {
         "status": "valid",
@@ -217,8 +219,8 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:ff78de12cbe959192a25086cb17aeb67e98429152c47938b948f7ff72199f277",
-      "signature": "c6/LXszvqWOBhtOvCgtiRYjSMIYqq0u1iVperSrKXfTGasHWmzurGa/M2byQj5Pk3ub4c9YTi0AUWx0n7YTSDw==",
+      "payloadDigest": "sha256:b7f7b94a291fb242dd87757bb9631874fe2539e1e65368a4c39f6ae8de7a98da",
+      "signature": "xvdst+nWnEA/HmnTzhfKsXs1ku8gnI3EFqTFlpfzrKuDMfbJYWqBihwOIjARJa1yGF4VAFi1dvj9V6fFR9yjCg==",
       "signedPayload": {
         "badgeId": "badge-solver-a-qualified",
         "status": "verified",
@@ -229,7 +231,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "solver-score"
       },
       "verification": {
         "status": "valid",
@@ -243,8 +246,8 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:6c367ab05a9aa274a133fd4200f121d5db0e31a7b0c8cacae7f3d56ecc180603",
-      "signature": "1X8JHK6OTfNL7vGrrLT8Q6SfNpGAu0CUfY8rBT+D3fCBrY4tO8tUPRanPDWwk5SOSNR7FzPoO7mQjm0zgjtNCg==",
+      "payloadDigest": "sha256:06f789a6c2b383a5b0d32026f91f9614c035f17a0c0e298a349d6ea7fe980c84",
+      "signature": "MYypjbNFHv/6vWMXU6pmdKmFrhdetkEJdogwEKiSvl2+YX7Yw0uSIPBl+dBrHofKD0ar2UquQ433dUjmo7aADA==",
       "signedPayload": {
         "badgeId": "badge-mock-token-compatible",
         "status": "verified",
@@ -255,7 +258,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "token-compatibility"
       },
       "verification": {
         "status": "valid",
@@ -269,8 +273,8 @@
       "issuedAt": "2026-05-30T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:d0ac08ffff94d7e1bd30dc3cb96e24648b584e88560c534a35f9f72772854590",
-      "signature": "+Z3KXyHJCpA/8Kaqf+vVoHyHZahqg2/LPIqDYc2L0l16PL3qfA+ERLb3m2BEp6DKo2RAvDPgKFv2LzTUq8uVAg==",
+      "payloadDigest": "sha256:a5942b307241763c47fa5a01c2314d248d57da8f799987be709d50dc19f4a3b7",
+      "signature": "4keu+r9XHrmi4V7jSfNBmr81nbVDZzwmZ5ocXs1OudFjsqY+nkSJNvRsVnLaUQI6kr0XWJ0fVbT+AkiRv8q3Bg==",
       "signedPayload": {
         "badgeId": "badge-compute-provider-alpha",
         "status": "verified",
@@ -281,7 +285,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "compute-benchmark"
       },
       "verification": {
         "status": "valid",
@@ -295,8 +300,8 @@
       "issuedAt": "2026-06-08T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:038ee96a73dc9e9a716cd0261f90a27e5614a991da9c31f23af6385b2447b9f6",
-      "signature": "7/dnMOmiKVoWyZg7vGa53pIG/Vvz2U7F6Smab2AQJ7Z9IAOH3XXjkmO949OMYx4BKTvrIrfyE+fK/W67Q0b8Cg==",
+      "payloadDigest": "sha256:d606be4baf1140cd726b8c174b9d6f2f6653e6223dd226902a45ba558c8de84f",
+      "signature": "HbjUvqilXzCc1AKuw2v+iPOUjc0el4p3wkOeT374u2UpZLRqOXJId2AZHRvIPByMUvspw/2YsWfY3mjWkPM/Bw==",
       "signedPayload": {
         "badgeId": "badge-forfeit-flip-verified",
         "status": "verified",
@@ -307,7 +312,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "app-report"
       },
       "verification": {
         "status": "valid",
@@ -321,8 +327,8 @@
       "issuedAt": "2026-06-08T02:00:00.000Z",
       "issuer": "Nocksperimental Trust Registry",
       "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
-      "payloadDigest": "sha256:a2c8bfde6afd1b2bcfe632079e7031278b7d80c93ee0a95a3f117eb923bd4158",
-      "signature": "nPwU61LcgWcB4i2Q4b5s/+UOzTG9ijXVWbNu/vPrb2z7lypuKtsrEecNbH6M+22u1l8YpNn8IbI4nby2uoVRAw==",
+      "payloadDigest": "sha256:62cfeb7f9be2cf74fa7588d2ca7d68c0737a3f8d7d142b63299c6fff40d9fcdc",
+      "signature": "69pUKt6/aBpXCei+0H6zqBoirY29cdaepbuArsl4a/OkVPzHLm5Yfqy+lyzRggNco37b7VjwUPGPU6eOFNnEDw==",
       "signedPayload": {
         "badgeId": "badge-forfeit-dice-verified",
         "status": "verified",
@@ -333,7 +339,8 @@
         "sourceAnchor": {
           "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
           "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
-        }
+        },
+        "kind": "app-report"
       },
       "verification": {
         "status": "valid",

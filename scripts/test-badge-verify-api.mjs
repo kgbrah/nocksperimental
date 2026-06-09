@@ -171,6 +171,23 @@ async function assertTamperedBadgeFailsBinding() {
   } finally {
     delete badge.evidence.baseDeploymentHash;
   }
+
+  // kind binding: relabelling a verified cert's registry category WITHOUT re-signing must fail binding,
+  // so a non-app cert cannot be re-presented as an app-report (or vice versa).
+  const originalKind = badge.kind;
+  try {
+    badge.kind = badge.kind === "app-report" ? "solver-score" : "app-report";
+    const tampered = verifyTrustBadgeIssuance({
+      badgeId: badge.id,
+      payloadDigest: issuance.payloadDigest,
+      signature: issuance.signature,
+      issuerKeyId: issuance.issuerKeyId
+    });
+    assertEqual(tampered.checks.payloadBoundToBadge, false, "relabelled badge.kind not bound to signed payload");
+    assertEqual(tampered.verified, false, "badge with a tampered kind does not verify");
+  } finally {
+    badge.kind = originalKind;
+  }
 }
 
 function createRequest(params) {

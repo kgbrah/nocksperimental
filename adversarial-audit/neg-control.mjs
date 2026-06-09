@@ -30,7 +30,7 @@ function craft({ badgeId, status = "verified", corruptSig = false, watchStatus =
   const reportHash = "sha256:" + "ab".repeat(32), snapshotRoot = "deadbeefdeadbeef";
   const seed = devKey ? DEV_SEED : PROD_SEED;
   const keyId = devKey ? DEV_KEY_ID : PROD_KEY_ID;
-  const signedPayload = { badgeId, status, reportHash, snapshotRoot, issuedAt, expiresAt, sourceAnchor: { ...ANCHOR } };
+  const signedPayload = { badgeId, status, reportHash, snapshotRoot, issuedAt, expiresAt, sourceAnchor: { ...ANCHOR }, kind: "app-report" };
   const signed = crypto.signBadgePayload(signedPayload, seed);
   let sig = signed.signature;
   if (corruptSig) { const b = Buffer.from(sig, "base64"); b[0] ^= 0xff; sig = b.toString("base64"); }
