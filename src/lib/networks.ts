@@ -75,6 +75,16 @@ export function bridgeContracts(chainId: number | undefined): AppNetwork["bridge
   return appNetwork(chainId)?.bridge;
 }
 
+// Chains that may RECEIVE donations. Intentionally INDEPENDENT of isChainEnabled(): a donation is a
+// one-way transfer to the project's own address, so it is allowed on Base mainnet (8453) even though
+// mainnet stays GATED for bridge/game *writes*. This never widens the write gate — donate paths call
+// isDonationAllowed(), every other write path still calls isChainEnabled().
+export const DONATION_CHAIN_IDS = [84532, 8453] as const;
+
+export function isDonationAllowed(chainId: number | undefined): boolean {
+  return chainId != null && (DONATION_CHAIN_IDS as readonly number[]).includes(chainId);
+}
+
 export function explorerTx(chainId: number | undefined, txHash: string): string | undefined {
   const e = appNetwork(chainId)?.explorer;
   return e ? `${e}/tx/${txHash}` : undefined;

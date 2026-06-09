@@ -10,14 +10,15 @@ import { baseSepolia, base, type AppKitNetwork } from "@reown/appkit/networks";
 import { WagmiProvider, cookieStorage, createStorage } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { NockWalletProvider } from "@/components/web3/nock-wallet-provider";
 
-const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "";
-
-if (!projectId && typeof window !== "undefined") {
-  console.warn(
-    "[nocksperimental] NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is not set — the connect modal is limited to injected wallets (no WalletConnect/mobile QR). Set it to a Reown projectId."
-  );
-}
+// Reown/WalletConnect projectId — a PUBLIC client identifier (it ships in the browser bundle), NOT a
+// secret. NEXT_PUBLIC_* is inlined at build time, so it must be present when `next build` runs (a Worker
+// runtime secret would be too late and never reach the bundle). The committed default keeps every build
+// working; override via NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID to point at a different Reown project.
+const DEFAULT_WC_PROJECT_ID = "6a67443d7998017027f5a20a8380dcb5";
+const envProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim();
+const projectId = envProjectId && envProjectId.length > 0 ? envProjectId : DEFAULT_WC_PROJECT_ID;
 
 // BOTH chains are registered so the network switcher can SEE mainnet and explain its gate; the action
 // layer (src/lib/networks.ts isChainEnabled) is what actually prevents real writes on the gated chain.
@@ -55,9 +56,18 @@ createAppKit({
 const queryClient = new QueryClient();
 
 export function Web3Providers({ children }: { children: ReactNode }) {
+  // NOTE on SSR: the adapter sets `ssr: true` + cookieStorage so wagmi hydrates safely (no hydration
+  // mismatch) and the cookie persists the connection client-side. We deliberately do NOT seed
+  // `initialState` via cookieToInitialState here — doing so requires reading headers() in the root
+  // layout, which would opt the ENTIRE app out of static generation. Every wagmi consumer gates on
+  // `isConnected` (false on server + first client paint), so server/first-paint already agree; the
+  // wallet simply reconnects from the cookie after mount, which is the right trade for a mostly-static site.
   return (
     <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        {/* Native-Nockchain (CLI/Isis) context lives beside wagmi, so both lanes are available app-wide. */}
+        <NockWalletProvider>{children}</NockWalletProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }
