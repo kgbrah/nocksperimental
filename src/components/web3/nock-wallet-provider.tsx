@@ -1,25 +1,24 @@
 "use client";
 
-// Native-Nockchain wallet context (the CLI + Isis lane), sitting BESIDE the EVM wagmi context — it does
-// not touch wagmi/AppKit. `kind: "cli"` means the user manually linked their own base58 address; `kind:
-// "isis"` means the injected extension connected. The stored address is always the user's OWN sending
-// address — the donation DESTINATION lives in src/lib/donation.ts and the two are never conflated.
+// Native-Nockchain wallet context (the Iris lane), sitting BESIDE the EVM wagmi context — it does not
+// touch wagmi/AppKit. `kind: "iris"` means the Iris browser extension (window.nockchain) connected. The
+// stored address is always the user's OWN address — the donation DESTINATION lives in src/lib/donation.ts
+// and the two are never conflated.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { connectIsis as connectIsisProvider, detectIsis, hasConnectCapability, NockWalletError } from "@/lib/isis-provider";
+import { connectIris as connectIrisProvider, getIris, NockWalletError } from "@/lib/iris-provider";
 import { isValidNockAddress } from "@/lib/donation";
 
-export type NockWalletKind = "cli" | "isis" | null;
+export type NockWalletKind = "iris" | null;
 
 export type NockWalletApi = {
   kind: NockWalletKind;
   address: string | null;
-  isisAvailable: boolean; // feature-detect result; false during SSR/first paint to avoid hydration drift
+  irisAvailable: boolean; // feature-detect result; false during SSR/first paint to avoid hydration drift
   isConnecting: boolean;
   error: string | null;
-  connectIsis: () => Promise<void>;
-  linkCliAddress: (addr: string) => boolean; // returns true when the address validated + linked
+  connectIris: () => Promise<void>;
   disconnect: () => void;
 };
 
@@ -30,22 +29,26 @@ const NockWalletContext = createContext<NockWalletApi | null>(null);
 export function NockWalletProvider({ children }: { children: ReactNode }) {
   const [kind, setKind] = useState<NockWalletKind>(null);
   const [address, setAddress] = useState<string | null>(null);
-  const [isisAvailable, setIsisAvailable] = useState(false);
+  const [irisAvailable, setIrisAvailable] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Feature-detect Isis + restore the session link once on the client. These setState calls sync React
+  // Feature-detect Iris + restore the session link once on the client. These setState calls sync React
   // with external systems (the injected provider + sessionStorage) on mount, which is the intended use of
   // an effect; the rule's "cascading render" warning doesn't apply to a one-shot mount sync.
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    setIsisAvailable(hasConnectCapability(detectIsis()));
+    // Present now, or flips true when the extension dispatches nockchain#initialized after load.
+    setIrisAvailable(getIris() !== null);
+    const onInit = () => setIrisAvailable(true);
+    window.addEventListener("nockchain#initialized", onInit);
+
     // Restore a previously-linked address for this tab session (low-trust display data only).
     try {
       const raw = sessionStorage.getItem(SESSION_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as { kind?: NockWalletKind; address?: string };
-        if (parsed.address && isValidNockAddress(parsed.address) && (parsed.kind === "cli" || parsed.kind === "isis")) {
+        if (parsed.address && isValidNockAddress(parsed.address) && parsed.kind === "iris") {
           setKind(parsed.kind);
           setAddress(parsed.address);
         }
@@ -53,6 +56,7 @@ export function NockWalletProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore malformed/blocked sessionStorage */
     }
+    return () => window.removeEventListener("nockchain#initialized", onInit);
   }, []);
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -65,45 +69,28 @@ export function NockWalletProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const connectIsis = useCallback(async () => {
+  const connectIris = useCallback(async () => {
     setError(null);
     setIsConnecting(true);
     try {
-      const provider = detectIsis();
-      const addr = await connectIsisProvider(provider);
-      setKind("isis");
-      setAddress(addr);
-      persist({ kind: "isis", address: addr });
+      const { pkh } = await connectIrisProvider();
+      setKind("iris");
+      setAddress(pkh);
+      persist({ kind: "iris", address: pkh });
     } catch (err) {
       const msg =
         err instanceof NockWalletError
           ? err.code === "NOT_DETECTED"
-            ? "Isis wallet not detected — install it to connect."
+            ? "Iris wallet not detected — install it to connect."
             : err.message
           : err instanceof Error
             ? err.message
-            : "Could not connect to Isis.";
+            : "Could not connect to Iris.";
       setError(msg);
     } finally {
       setIsConnecting(false);
     }
   }, [persist]);
-
-  const linkCliAddress = useCallback(
-    (addr: string): boolean => {
-      const trimmed = addr.trim();
-      if (!isValidNockAddress(trimmed)) {
-        setError("That doesn't look like a valid Nockchain (base58) address.");
-        return false;
-      }
-      setError(null);
-      setKind("cli");
-      setAddress(trimmed);
-      persist({ kind: "cli", address: trimmed });
-      return true;
-    },
-    [persist]
-  );
 
   const disconnect = useCallback(() => {
     setKind(null);
@@ -113,8 +100,8 @@ export function NockWalletProvider({ children }: { children: ReactNode }) {
   }, [persist]);
 
   const api = useMemo<NockWalletApi>(
-    () => ({ kind, address, isisAvailable, isConnecting, error, connectIsis, linkCliAddress, disconnect }),
-    [kind, address, isisAvailable, isConnecting, error, connectIsis, linkCliAddress, disconnect]
+    () => ({ kind, address, irisAvailable, isConnecting, error, connectIris, disconnect }),
+    [kind, address, irisAvailable, isConnecting, error, connectIris, disconnect]
   );
 
   return <NockWalletContext.Provider value={api}>{children}</NockWalletContext.Provider>;

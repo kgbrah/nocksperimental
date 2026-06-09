@@ -30,15 +30,19 @@ export const PLACEHOLDER_BASE_ADDRESS = "0x0000000000000000000000000000000000000
 
 // ---------------------------------------------------------------------------------------------------
 // Receiving addresses (env-overridable). These are DESTINATIONS, not secrets, so NEXT_PUBLIC_* is correct.
-// Set them at build/deploy time, or paste the literals in below (replacing the sentinels).
+// The committed defaults are the project's live donation addresses; override per-deploy via env.
 // ---------------------------------------------------------------------------------------------------
 
+// Project donation addresses (public destinations). Override via NEXT_PUBLIC_* without a code change.
+const DEFAULT_NOCK_DONATION_ADDRESS = "532AxMqc29thxqonTxkVQ5D1ghfG7a6CN29CDmruQ5HaEVhLqrDqaXQ";
+const DEFAULT_BASE_DONATION_ADDRESS = "0xb405EbdE5F5c84372b5663D9D3A5758bb38025Da";
+
 export const NOCK_DONATION_ADDRESS: string =
-  process.env.NEXT_PUBLIC_NOCK_DONATION_ADDRESS?.trim() || PLACEHOLDER_NOCK_ADDRESS;
+  process.env.NEXT_PUBLIC_NOCK_DONATION_ADDRESS?.trim() || DEFAULT_NOCK_DONATION_ADDRESS;
 
 export const BASE_DONATION_ADDRESS: `0x${string}` =
   (process.env.NEXT_PUBLIC_BASE_DONATION_ADDRESS?.trim() as `0x${string}` | undefined) ||
-  PLACEHOLDER_BASE_ADDRESS;
+  DEFAULT_BASE_DONATION_ADDRESS;
 
 // ---------------------------------------------------------------------------------------------------
 // Per-chain Base NOCK ERC20. `decimals` is the EXPECTED value (mainnet NOCK is verified 16-decimals,

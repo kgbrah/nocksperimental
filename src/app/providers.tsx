@@ -65,7 +65,7 @@ export function Web3Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        {/* Native-Nockchain (CLI/Isis) context lives beside wagmi, so both lanes are available app-wide. */}
+        {/* Native-Nockchain (CLI/Iris) context lives beside wagmi, so both lanes are available app-wide. */}
         <NockWalletProvider>{children}</NockWalletProvider>
       </QueryClientProvider>
     </WagmiProvider>

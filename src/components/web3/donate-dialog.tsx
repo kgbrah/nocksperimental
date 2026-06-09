@@ -5,7 +5,7 @@
 //             the project's Base receiving address. Allowed on Base mainnet (8453) AND Base Sepolia
 //             (84532) via isDonationAllowed — even though mainnet stays gated for bridge/game WRITES.
 //   - Native: show the project's Nockchain (base58) address + a ready-to-run `nockchain-wallet create-tx`
-//             command, plus an Isis-extension connect button (feature-detected, degrades gracefully).
+//             command, plus an Iris-extension connect button (feature-detected, degrades gracefully).
 //
 // Safety: every send is gated on isPlaceholder() so funds can never flow to an unset/sentinel address;
 // the NOCK ERC20 decimals are read LIVE on-chain before scaling (mainnet NOCK is 16-dec, not 18, so a
@@ -30,6 +30,7 @@ import {
 import { ConnectButton } from "@/components/web3/wallet-controls";
 import { useNockWallet } from "@/components/web3/nock-wallet-provider";
 import { useCopy } from "@/components/web3/use-copy";
+import { IRIS_INSTALL_URL } from "@/lib/iris-provider";
 import {
   BASE_DONATION_ADDRESS,
   buildCreateTxCommand,
@@ -136,7 +137,7 @@ export function DonateDialog({
 
         <p className="px-4 pt-4 text-sm leading-6 text-[#4A4A4A]">
           Donations fund Nocksperimental&apos;s development. Give <strong>NOCK on Base</strong> with any EVM
-          wallet, or <strong>native NOCK on Nockchain mainnet</strong> via the CLI or the Isis extension.
+          wallet, or <strong>native NOCK on Nockchain mainnet</strong> via the CLI or the Iris extension.
         </p>
 
         <div className="flex gap-2 px-4 pt-4">
@@ -384,7 +385,7 @@ function DonateEvmPanel() {
 }
 
 // ----------------------------------------------------------------------------------------------------
-// Native Nockchain lane (CLI + Isis)
+// Native Nockchain lane (CLI + Iris)
 // ----------------------------------------------------------------------------------------------------
 
 function DonateNativePanel() {
@@ -474,29 +475,29 @@ function DonateNativePanel() {
 
       <div className="border-t-2 border-[#0B0B0B] pt-4">
         <p className="mb-2 inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#737373]">
-          <Puzzle aria-hidden="true" size={12} /> Isis browser extension
+          <Puzzle aria-hidden="true" size={12} /> Iris browser extension
         </p>
-        {nock.kind === "isis" && nock.address ? (
+        {nock.kind === "iris" && nock.address ? (
           <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-[#0B0B0B] bg-[#F5F5F5] p-2.5">
             <span className="font-mono text-xs">Connected · {shortNockAddress(nock.address)}</span>
             <button type="button" className={BTN} onClick={nock.disconnect}>
               Disconnect
             </button>
           </div>
-        ) : nock.isisAvailable ? (
-          <button type="button" disabled={nock.isConnecting} className={`${BTN} w-full`} onClick={nock.connectIsis}>
+        ) : nock.irisAvailable ? (
+          <button type="button" disabled={nock.isConnecting} className={`${BTN} w-full`} onClick={nock.connectIris}>
             {nock.isConnecting ? <Loader2 aria-hidden="true" size={13} className="animate-spin" /> : <Puzzle aria-hidden="true" size={13} />}
-            {nock.isConnecting ? "Connecting…" : "Connect Isis"}
+            {nock.isConnecting ? "Connecting…" : "Connect Iris"}
           </button>
         ) : (
           <a
-            href="https://www.nockchain.org/"
+            href={IRIS_INSTALL_URL}
             target="_blank"
             rel="noreferrer"
             className={`${BTN} w-full`}
-            title="Isis extension not detected in this browser"
+            title="Iris extension not detected in this browser"
           >
-            Install Isis <ArrowUpRight aria-hidden="true" size={13} />
+            Install Iris <ArrowUpRight aria-hidden="true" size={13} />
           </a>
         )}
         {nock.error ? <p className="mt-2 text-xs text-[#0B0B0B]">{nock.error}</p> : null}

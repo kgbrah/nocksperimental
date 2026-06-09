@@ -1,6 +1,8 @@
 import {
+  AlertTriangle,
   ArrowUpRight,
   BadgeCheck,
+  Beaker,
   Blocks,
   CheckCircle2,
   Code2,
@@ -18,10 +20,29 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ModuleExplorer } from "@/components/module-explorer";
-import { sampleLabReport } from "@/lib/lab-report";
+import nocklabConfig from "../../nocklab.config.json";
+import { invariantCatalog, sampleLabReport } from "@/lib/lab-report";
+import { loadGeneratedLabReports } from "@/lib/generated-lab-reports";
+import { invariantPacks } from "@/lib/invariant-packs";
+import { createLaunchEvidenceIndex } from "@/lib/launch-evidence";
+import { pocGames } from "@/lib/pocgames";
+import {
+  resolvedBadgeForId,
+  resolvedBadges,
+  trustConsumers,
+  verifiedBadges,
+  type ResolvedVerifiedBadge
+} from "@/lib/trust-signals";
+import { trustUpdateChainSummary } from "@/lib/trust-update-log";
+import { createTrustEventFeed } from "@/lib/trust-event-feed";
+import { PINNED_UPSTREAM_COMMIT } from "@/lib/nockchain-upstream-anchor";
 import { privateWorkspaces, reportHistory } from "@/lib/report-history";
 import { labModules, parallelTracks, strategyPhases } from "@/lib/strategy";
-import { trustConsumers, verifiedBadges } from "@/lib/trust-signals";
+import type { ResolvedLaunchEvidenceCase } from "@/lib/launch-evidence";
+import type { PocGame } from "@/lib/pocgames";
+
+const fixtureCount = nocklabConfig.fixtures.length;
+const attackFixtures = nocklabConfig.fixtures.filter((fixture) => fixture.slug.startsWith("attack-"));
 
 // What the lab CAN do — each grounded in a real route/CLI surface.
 const CAPABILITIES = [
@@ -101,9 +122,37 @@ const AUDIENCES = [
 ];
 
 export default function Home() {
+  // Heavy accessors called ONCE and reused across the dashboard sections.
+  const labReports = loadGeneratedLabReports();
+  const labMissing = labReports.status === "missing";
+  const evidence = createLaunchEvidenceIndex();
+  const feed = createTrustEventFeed();
+
+  const verifiedBadgeCount = resolvedBadges.filter((badge) => badge.currentStatus === "verified").length;
+  const watchBadgeCount = resolvedBadges.filter((badge) => badge.currentStatus === "watch").length;
+  const revokedBadgeCount = resolvedBadges.filter((badge) => badge.isRevoked).length;
+  const freshBadgeCount = resolvedBadges.filter((badge) => badge.freshness === "fresh").length;
+  const staleBadgeCount = resolvedBadges.filter((badge) => badge.freshness === "stale").length;
+
+  // Chain integrity: append-only AND every entry's signature verified.
+  const chainOk =
+    trustUpdateChainSummary.isAppendOnly &&
+    trustUpdateChainSummary.validSignatureCount === trustUpdateChainSummary.entryCount;
+  const healthy = chainOk && evidence.totals.blocked === 0;
+
+  // Game badges lead the grid by id (not status), so a future revoked game badge still leads.
+  const gameBadgeIds = new Set(pocGames.map((game) => game.badgeId));
+  const orderedBadges = [...resolvedBadges]
+    .sort((a, b) => (gameBadgeIds.has(a.id) ? 0 : 1) - (gameBadgeIds.has(b.id) ? 0 : 1))
+    .slice(0, 6);
+
+  const labSource = labMissing
+    ? `LAB: COMMITTED CONFIG (${fixtureCount})`
+    : `LAB LIVE: ${labReports.totals.passCount} PASS / ${labReports.totals.warnCount} WARN / ${labReports.totals.failCount} FAIL`;
+
   return (
     <main className="bg-[#FFFFFF] text-[#0B0B0B]">
-      {/* HERO — say what it is in one breath. */}
+      {/* HERO — say what it is in one breath. (#27 narrative entry point) */}
       <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
           <div className="mb-5 inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-3 py-2 font-mono text-xs uppercase tracking-[0.14em]">
@@ -148,6 +197,277 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== LIVE OPERATIONAL DASHBOARD (PR #23) ===== */}
+
+      {/* DASHBOARD — Integrity verdict banner */}
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-3 py-2 font-mono text-xs uppercase tracking-[0.14em]">
+              <ShieldCheck size={14} aria-hidden="true" />
+              Live lab status
+            </div>
+            <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#4A4A4A]">
+              pinned upstream {PINNED_UPSTREAM_COMMIT.slice(0, 7)} / build
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#0B0B0B] bg-[#0B0B0B] p-4 font-mono text-xs uppercase tracking-[0.1em] text-[#FFFFFF]">
+            <span className="inline-flex items-center gap-2 font-semibold">
+              {healthy ? (
+                <CheckCircle2 size={15} aria-hidden="true" />
+              ) : (
+                <AlertTriangle size={15} aria-hidden="true" />
+              )}
+              {healthy ? "System: healthy" : "System: attention"}
+            </span>
+            <span>· {trustUpdateChainSummary.isAppendOnly ? "Chain append-only" : "Chain broken"}</span>
+            <span>
+              · {trustUpdateChainSummary.validSignatureCount}/{trustUpdateChainSummary.entryCount} signatures valid
+            </span>
+            <span>· Latest root {trustUpdateChainSummary.latestRoot.slice(0, 16)}…</span>
+            <span>· {evidence.totals.blocked} blocked</span>
+            <span className="text-[#BFBFBF]">· {labSource}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — Headline metrics */}
+      <section className="border-b border-[#0B0B0B] bg-[#F5F5F5]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <Metric label="Lab fixtures" value={fixtureCount.toString()} />
+            <Metric label="Exploit proofs" value={attackFixtures.length.toString()} />
+            <Metric label="Trust badges" value={`${verifiedBadgeCount}/${resolvedBadges.length}`} />
+            <Metric label="Launch verified" value={`${evidence.totals.verified}/${evidence.totalCases}`} />
+            <Metric
+              label="Trust chain"
+              value={`${trustUpdateChainSummary.validSignatureCount}/${trustUpdateChainSummary.entryCount} ${chainOk ? "OK" : "CHECK"}`}
+            />
+            <Metric label="Upstream anchor" value={PINNED_UPSTREAM_COMMIT.slice(0, 7)} />
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — Lab status + exploit-proof catalog */}
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center bg-[#0B0B0B] text-white">
+                <Beaker size={18} aria-hidden="true" />
+              </div>
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Fixture suite</p>
+                <h2 className="text-2xl font-semibold">Lab status</h2>
+              </div>
+            </div>
+            <a
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
+              href="/api/lab"
+            >
+              <Code2 size={16} aria-hidden="true" />
+              Lab JSON
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </a>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+            <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+              <div className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#F5F5F5] px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em]">
+                source: {labMissing ? "committed config" : ".nocklab"}
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <Metric label="Fixtures" value={fixtureCount.toString()} />
+                <Metric label="Invariant kinds" value={invariantCatalog.length.toString()} />
+                <Metric label="Invariant packs" value={invariantPacks.length.toString()} />
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <Metric label="Pass" value={labMissing ? "—" : labReports.totals.passCount.toString()} />
+                <Metric label="Warn" value={labMissing ? "—" : labReports.totals.warnCount.toString()} />
+                <Metric label="Fail" value={labMissing ? "—" : labReports.totals.failCount.toString()} />
+              </div>
+              {labMissing ? (
+                <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
+                  Live pass/warn/fail totals come from <code>npm run lab:ci</code> artifacts; the committed
+                  fixture suite ({fixtureCount}) is always shown.
+                </p>
+              ) : null}
+            </article>
+
+            <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Exploit-proof / negative controls</h3>
+                <span className="font-mono text-xs uppercase tracking-[0.12em] text-[#4A4A4A]">
+                  {attackFixtures.length} proven
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">
+                Negative-control fixtures model a known attack and read CI-green only when the exploit is
+                caught — <code>expectRejected</code> inverts the gate, so a caught exploit is a signed
+                proof-of-prevention.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {attackFixtures.map((fixture) => (
+                  <div className="border border-[#0B0B0B] bg-[#F5F5F5] p-3" key={fixture.slug}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-2 font-mono text-xs">
+                        <ShieldCheck size={14} aria-hidden="true" />
+                        {fixture.slug}
+                      </span>
+                      <span className="bg-[#0B0B0B] px-2 py-1 font-mono text-[10px] uppercase text-[#FFFFFF]">
+                        proven
+                      </span>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-[#4A4A4A]">
+                      Caught exploit reads CI-green.
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — Trust badges (game badges first) */}
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Signed badges</p>
+              <h2 className="mt-2 text-2xl font-semibold">Trust badges</h2>
+            </div>
+            <Link
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
+              href="/trust"
+            >
+              <BadgeCheck size={16} aria-hidden="true" />
+              View all
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-2">
+            <StatPill label={`verified ${verifiedBadgeCount}`} />
+            <StatPill label={`watch ${watchBadgeCount}`} />
+            <StatPill label={`revoked ${revokedBadgeCount}`} />
+            <StatPill label={`fresh ${freshBadgeCount}`} />
+            <StatPill label={`stale ${staleBadgeCount}`} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {orderedBadges.map((badge) => (
+              <BadgeCard key={badge.id} badge={badge} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — Launch evidence */}
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Launch readiness</p>
+              <h2 className="mt-2 text-2xl font-semibold">Launch evidence</h2>
+            </div>
+            <Link
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
+              href="/verify"
+            >
+              <FileCheck2 size={16} aria-hidden="true" />
+              View all
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="mb-4 flex flex-wrap gap-2">
+            <StatPill label={`verified ${evidence.totals.verified}`} />
+            <StatPill label={`watch ${evidence.totals.watch}`} />
+            <StatPill label={`blocked ${evidence.totals.blocked}`} />
+            <StatPill label={`builder ${evidence.totals.builderAuditor}`} />
+            <StatPill label={`operator ${evidence.totals.operator}`} />
+            <StatPill label={`integrator ${evidence.totals.integrator}`} />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {evidence.cases.slice(0, 6).map((launchCase) => (
+              <EvidenceCard key={launchCase.caseId} launchCase={launchCase} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — Live trust event feed */}
+      <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Recent activity</p>
+              <h2 className="mt-2 text-2xl font-semibold">Trust event feed</h2>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <StatPill label={`reg ${feed.counts.registryUpdates}`} />
+              <StatPill label={`iss ${feed.counts.badgeIssuances}`} />
+              <StatPill label={`rev ${feed.counts.badgeRevocations}`} />
+              <StatPill label={`fakenet ${feed.counts.localFakenetEvidence}`} />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {feed.events.slice(0, 5).map((event, index) => (
+              <a
+                key={`${event.type}-${event.recordedAt}-${index}`}
+                href={event.url}
+                className="block border border-[#0B0B0B] bg-[#FFFFFF] p-3"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.1em]">
+                    <EventGlyph type={event.type} />
+                    {event.type} · {event.recordedAt.slice(0, 10)}
+                  </span>
+                  <ArrowUpRight size={14} aria-hidden="true" />
+                </div>
+                <p className="mt-2 text-sm leading-6 text-[#4A4A4A]">{event.summary}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DASHBOARD — POC games */}
+      <section className="border-b border-[#0B0B0B] bg-[#F5F5F5]">
+        <div className="mx-auto max-w-7xl px-5 py-8 lg:px-8">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="grid size-10 place-items-center bg-[#0B0B0B] text-white">
+                <Gamepad2 size={18} aria-hidden="true" />
+              </div>
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">Provably-fair</p>
+                <h2 className="text-2xl font-semibold">POC games</h2>
+              </div>
+            </div>
+            <Link
+              className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
+              href="/pocgames"
+            >
+              <Gamepad2 size={16} aria-hidden="true" />
+              Open all
+              <ArrowUpRight size={14} aria-hidden="true" />
+            </Link>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {pocGames.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== NARRATIVE / EXPLAINER (#27) ===== */}
 
       {/* WHAT IT CAN / CANNOT DO — the honest two-column. */}
       <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
@@ -260,6 +580,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ===== SHARED TAIL (appears once; richer #27 versions) ===== */}
 
       {/* PROOF: the first working artifact (a real lab report). */}
       <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
@@ -457,6 +779,122 @@ function Step({ n, title, children }: { n: string; title: string; children: Reac
 
 function Cmd({ children }: { children: React.ReactNode }) {
   return <div className="overflow-x-auto border border-[#404040] bg-[#0B0B0B] p-2.5 font-mono text-xs text-[#FFFFFF]">{children}</div>;
+}
+
+function EventGlyph({ type }: { type: string }) {
+  if (type === "badge-issuance") return <BadgeCheck size={14} aria-hidden="true" />;
+  if (type === "badge-revocation") return <XCircle size={14} aria-hidden="true" />;
+  if (type === "local-fakenet-evidence") return <Terminal size={14} aria-hidden="true" />;
+  return <GitBranch size={14} aria-hidden="true" />;
+}
+
+function StatPill({ label }: { label: string }) {
+  return (
+    <span className="border border-[#0B0B0B] bg-[#F5F5F5] px-3 py-2 font-mono text-xs uppercase tracking-[0.1em]">
+      {label}
+    </span>
+  );
+}
+
+function BadgeCard({ badge }: { badge: ResolvedVerifiedBadge }) {
+  const isVerified = badge.currentStatus === "verified";
+  return (
+    <Link
+      href={`/trust/badges/${badge.id}`}
+      className="block border border-[#0B0B0B] bg-[#FFFFFF] p-4 shadow-[4px_4px_0_#0B0B0B]"
+    >
+      <div className="flex items-center justify-between">
+        <BadgeCheck size={18} aria-hidden="true" />
+        <div className="flex gap-2">
+          <span
+            className={`px-2 py-1 font-mono text-[10px] uppercase ${
+              isVerified ? "bg-[#0B0B0B] text-[#FFFFFF]" : "bg-[#F5F5F5] text-[#4A4A4A]"
+            } ${badge.isRevoked ? "line-through" : ""}`}
+          >
+            {badge.currentStatus}
+          </span>
+          <span className="border border-[#0B0B0B] bg-[#F5F5F5] px-2 py-1 font-mono text-[10px] uppercase">
+            {badge.freshness}
+          </span>
+        </div>
+      </div>
+      <h3 className="mt-3 text-base font-semibold">{badge.label}</h3>
+      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-[#4A4A4A]">{badge.kind}</div>
+      <div className="mt-3 font-mono text-[11px] text-[#4A4A4A]">report: {badge.reportSlug}</div>
+      <div className="mt-1 break-all font-mono text-[11px] text-[#0B0B0B]">
+        root: {badge.evidence.snapshotRoot.slice(0, 12)}…
+      </div>
+    </Link>
+  );
+}
+
+function EvidenceCard({ launchCase }: { launchCase: ResolvedLaunchEvidenceCase }) {
+  return (
+    <article className="flex flex-col border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+      <div className="flex items-start justify-between gap-3">
+        <span className="border border-[#0B0B0B] bg-[#F5F5F5] px-2 py-1 font-mono text-[10px] uppercase">
+          {launchCase.report.summaryStatus}
+        </span>
+        <span className="font-mono text-2xl font-semibold tabular-nums">{launchCase.report.score}</span>
+      </div>
+      <h3 className="mt-3 text-base font-semibold">{launchCase.subjectName}</h3>
+      <div className="mt-1 flex items-center gap-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#4A4A4A]">
+          {launchCase.customerLane}
+        </span>
+        {launchCase.badgeId ? (
+          <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-[#4A4A4A]">
+            <BadgeCheck size={11} aria-hidden="true" /> badge
+          </span>
+        ) : null}
+      </div>
+      <Link className="mt-3 inline-flex items-center gap-2 text-sm font-medium" href={launchCase.links.page}>
+        Open <ArrowUpRight size={14} aria-hidden="true" />
+      </Link>
+    </article>
+  );
+}
+
+function GameCard({ game }: { game: PocGame }) {
+  const badge = resolvedBadgeForId(game.badgeId);
+  return (
+    <article className="flex flex-col border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+      <div className="flex items-center gap-2">
+        <span className="grid size-9 place-items-center bg-[#0B0B0B] text-[#FFFFFF]">
+          <Gamepad2 size={18} aria-hidden="true" />
+        </span>
+        <h3 className="text-xl font-semibold">{game.name}</h3>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">{game.tagline}</p>
+      <div className="mt-3 break-words border border-[#0B0B0B] bg-[#0B0B0B] p-3 font-mono text-xs text-[#FFFFFF]">
+        {game.construction}
+      </div>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <Callout label="Fixture" value={game.fixtureSlug} />
+        <Callout label="Case" value={game.caseId} />
+      </div>
+      {badge ? (
+        <div className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-[#4A4A4A]">
+          signed badge: {badge.currentStatus} · {badge.freshness}
+        </div>
+      ) : null}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Link
+          href="/pocgames"
+          className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
+        >
+          Play / verify <ArrowUpRight size={14} aria-hidden="true" />
+        </Link>
+        <Link
+          href={`/trust/badges/${game.badgeId}`}
+          className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium"
+        >
+          <BadgeCheck size={16} aria-hidden="true" />
+          Badge
+        </Link>
+      </div>
+    </article>
+  );
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
