@@ -20,11 +20,15 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { baseSepolia } from "viem/chains";
 import { forfeitFlipAbi } from "@/lib/abi/forfeit-flip";
-import { forfeitFlipAddress } from "@/lib/game-contracts";
+import { forfeitFlipAddress, FlipStatus } from "@/lib/game-contracts";
+import { rpcUrlFor } from "@/lib/base-rpc";
 
-const RPC = process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
 const HOUSE_CHAIN_ID = 84532;
 const SEED_DOMAIN = "nocksperimental/forfeit-flip/serverseed/v1";
+
+function publicClient() {
+  return createPublicClient({ chain: baseSepolia, transport: http(rpcUrlFor(HOUSE_CHAIN_ID)) });
+}
 
 export type HouseError = { ok: false; error: string };
 
@@ -47,9 +51,9 @@ function deriveServerSeed(key: Hex, roundId: bigint): Hex {
 export async function readFlipState() {
   const address = forfeitFlipAddress(HOUSE_CHAIN_ID);
   if (!address) return { configured: false as const };
-  const publicClient = createPublicClient({ chain: baseSepolia, transport: http(RPC) });
+  const client = publicClient();
   const read = (functionName: "minStake" | "maxStake" | "revealWindow" | "houseBankroll" | "nextRoundId") =>
-    publicClient.readContract({ address, abi: forfeitFlipAbi, functionName }) as Promise<bigint>;
+    client.readContract({ address, abi: forfeitFlipAbi, functionName }) as Promise<bigint>;
   try {
     const [minStake, maxStake, revealWindow, bankroll, nextRoundId] = await Promise.all([
       read("minStake"),
@@ -76,9 +80,9 @@ export async function readFlipState() {
 
 function clients(key: Hex) {
   const account = privateKeyToAccount(key);
-  const publicClient = createPublicClient({ chain: baseSepolia, transport: http(RPC) });
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport: http(RPC) });
-  return { account, publicClient, walletClient, address: forfeitFlipAddress(HOUSE_CHAIN_ID) as Address };
+  const pc = publicClient();
+  const walletClient = createWalletClient({ account, chain: baseSepolia, transport: http(rpcUrlFor(HOUSE_CHAIN_ID)) });
+  return { account, publicClient: pc, walletClient, address: forfeitFlipAddress(HOUSE_CHAIN_ID) as Address };
 }
 
 /// Open a fresh round: predict the next roundId, commit to its derived serverSeed, and submit.
@@ -147,7 +151,7 @@ export async function revealRound(roundId: bigint): Promise<{ ok: true; txHash: 
       functionName: "getRound",
       args: [roundId]
     })) as { status: number; commit: Hex };
-    if (round.status !== 2) return { ok: false, error: "round is not awaiting reveal" }; // 2 == Played
+    if (round.status !== FlipStatus.Played) return { ok: false, error: "round is not awaiting reveal" };
 
     const serverSeed = deriveServerSeed(key, roundId);
     if (keccak256(encodePacked(["bytes32"], [serverSeed])) !== round.commit) {

@@ -5,7 +5,7 @@ import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { formatEther, parseEther, keccak256, encodePacked, type Hex } from "viem";
 import { Coins, Loader2, ShieldCheck, Wallet, ArrowRight, Check, X } from "lucide-react";
 import { forfeitFlipAbi } from "@/lib/abi/forfeit-flip";
-import { forfeitFlipAddress } from "@/lib/game-contracts";
+import { forfeitFlipAddress, FlipStatus } from "@/lib/game-contracts";
 import { DEFAULT_CHAIN_ID, explorerTx } from "@/lib/networks";
 
 type FlipConfig = {
@@ -77,8 +77,10 @@ export function ForfeitFlipOnchain() {
   const busy = phase === "opening" || phase === "playing" || phase === "revealing";
 
   async function play() {
-    if (!publicClient || !contract || !player) return;
+    if (!publicClient || !contract || !player || !config) return;
     setResult(null);
+
+    // Validate the stake against min/max/bankroll BEFORE prompting the wallet (avoids a doomed tx).
     let stakeWei: bigint;
     try {
       stakeWei = parseEther(stake as `${number}`);
@@ -87,39 +89,67 @@ export function ForfeitFlipOnchain() {
       setStatusMsg("Invalid stake amount.");
       return;
     }
+    const min = BigInt(config.minStake);
+    const max = BigInt(config.maxStake);
+    const bank = config.bankroll ? BigInt(config.bankroll) : max;
+    if (stakeWei < min || stakeWei > max) {
+      setPhase("error");
+      setStatusMsg(`Stake must be between ${formatEther(min)} and ${formatEther(max)} ETH.`);
+      return;
+    }
+    if (stakeWei > bank) {
+      setPhase("error");
+      setStatusMsg("Stake exceeds the house bankroll right now — try a smaller amount.");
+      return;
+    }
 
+    const clientSeed = randomSeed();
     try {
-      // 1) House opens a round.
-      setPhase("opening");
-      setStatusMsg("House is opening a round…");
-      const open = await fetch("/api/game/flip/open", { method: "POST" }).then((r) => r.json());
-      if (!open.ok) throw new Error(open.error || "could not open a round");
-      const roundId = BigInt(open.roundId);
-      const clientSeed = randomSeed();
+      // open -> play, retrying once if a concurrent/front-running player took the round (WrongStatus).
+      let roundId: bigint | undefined;
+      let playHash: Hex | undefined;
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        setPhase("opening");
+        setStatusMsg(attempt === 0 ? "House is opening a round…" : "Round was taken — retrying with a fresh one…");
+        const open = await fetch("/api/game/flip/open", { method: "POST" }).then((r) => r.json());
+        if (!open.ok) throw new Error(open.error || "could not open a round");
+        roundId = BigInt(open.roundId);
 
-      // 2) Player stakes + supplies entropy (their wallet signs).
-      setPhase("playing");
-      setStatusMsg("Confirm the bet in your wallet…");
-      const playHash = await writeContractAsync({
-        address: contract,
-        abi: forfeitFlipAbi,
-        functionName: "play",
-        args: [roundId, clientSeed],
-        value: stakeWei
-      });
+        setPhase("playing");
+        setStatusMsg("Confirm the bet in your wallet…");
+        try {
+          playHash = await writeContractAsync({
+            address: contract,
+            abi: forfeitFlipAbi,
+            functionName: "play",
+            args: [roundId, clientSeed],
+            value: stakeWei
+          });
+          break;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "";
+          // Round taken between open and play -> re-open + retry once; otherwise surface it.
+          if (attempt === 0 && /WrongStatus|reverted|0x[0-9a-f]/i.test(msg)) continue;
+          throw err;
+        }
+      }
+      if (playHash === undefined || roundId === undefined) throw new Error("could not place the bet — please retry");
+
       setStatusMsg("Waiting for your bet to confirm…");
       await publicClient.waitForTransactionReceipt({ hash: playHash });
 
-      // 3) House reveals -> on-chain settlement.
+      // House reveals -> on-chain settlement (branch on whether the reveal actually succeeded).
       setPhase("revealing");
       setStatusMsg("House is revealing the seed and settling…");
-      await fetch("/api/game/flip/reveal", {
+      const reveal = await fetch("/api/game/flip/reveal", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ roundId: roundId.toString() })
-      }).then((r) => r.json());
+      })
+        .then((r) => r.json())
+        .catch(() => ({ ok: false }));
 
-      // 4) Read the settlement + the revealed serverSeed (for the fairness recompute).
+      // Read the settlement + the revealed serverSeed (for the fairness recompute).
       const round = (await publicClient.readContract({
         address: contract,
         abi: forfeitFlipAbi,
@@ -144,7 +174,7 @@ export function ForfeitFlipOnchain() {
         /* fairness recompute is best-effort */
       }
 
-      const settled = round.status === 3; // Settled
+      const settled = round.status === FlipStatus.Settled;
       setResult({ roundId: roundId.toString(), clientSeed, serverSeed, outcome, playerWon: settled && round.playerWon, playTx: playHash });
       setPhase("settled");
       setStatusMsg(
@@ -152,7 +182,9 @@ export function ForfeitFlipOnchain() {
           ? round.playerWon
             ? "You won! Withdraw your winnings below."
             : "House won this round."
-          : "Settlement is pending — if the house does not reveal, you can reclaim your stake after the timeout."
+          : reveal.ok
+            ? "Settling… refresh in a moment."
+            : "The house did not settle this round. You can reclaim your FULL stake via the contract's timeout after the reveal window."
       );
       await refreshCredits();
     } catch (error) {
@@ -174,12 +206,19 @@ export function ForfeitFlipOnchain() {
     }
   }
 
-  // Off-chain fairness recompute the player can check against the on-chain outcome.
+  // Off-chain fairness recompute the player can check against the on-chain outcome AND winner. We verify
+  // both that the outcome hash binds to the revealed seeds AND that the reported win/loss follows from
+  // the outcome's parity (the contract's rule), so a malicious node can't report a winner inconsistent
+  // with a truthful outcome and still look "verified".
   const recomputed =
     result?.serverSeed && result?.outcome
       ? keccak256(encodePacked(["bytes32", "bytes32", "uint256"], [result.serverSeed, result.clientSeed, BigInt(result.roundId)]))
       : undefined;
-  const fairnessOk = recomputed && result?.outcome ? recomputed.toLowerCase() === result.outcome.toLowerCase() : undefined;
+  const playerWonRecomputed = recomputed ? (BigInt(recomputed) & BigInt(1)) === BigInt(1) : undefined;
+  const fairnessOk =
+    recomputed && result?.outcome
+      ? recomputed.toLowerCase() === result.outcome.toLowerCase() && playerWonRecomputed === result.playerWon
+      : undefined;
 
   if (config && config.houseConfigured === false) {
     return (

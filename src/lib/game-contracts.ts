@@ -17,3 +17,13 @@ export const GAME_CONTRACTS: Record<number, GameContracts> = {
 export function forfeitFlipAddress(chainId: number | undefined): `0x${string}` | undefined {
   return chainId == null ? undefined : GAME_CONTRACTS[chainId]?.forfeitFlip;
 }
+
+// Mirrors the ForfeitFlip.Status enum order on-chain. Shared so server + client never use bare 2/3.
+export const FlipStatus = {
+  None: 0,
+  Open: 1,
+  Played: 2,
+  Settled: 3,
+  Refunded: 4,
+  Cancelled: 5
+} as const;

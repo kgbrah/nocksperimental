@@ -5,20 +5,7 @@
 
 import { createPublicClient, http, type Abi } from "viem";
 import { APP_NETWORKS, type AppNetwork } from "@/lib/networks";
-
-const DEFAULT_RPC: Record<number, string> = {
-  84532: "https://sepolia.base.org",
-  8453: "https://mainnet.base.org"
-};
-
-// Public RPC by default; an operator can point a private endpoint via env (server-only, never exposed).
-function rpcUrlFor(chainId: number): string {
-  const env =
-    (chainId === 84532 && process.env.BASE_SEPOLIA_RPC_URL) ||
-    (chainId === 8453 && process.env.BASE_MAINNET_RPC_URL) ||
-    "";
-  return env || DEFAULT_RPC[chainId] || "";
-}
+import { rpcUrlFor } from "@/lib/base-rpc";
 
 const INBOX_ABI = [
   { type: "function", name: "bridgeNodes", stateMutability: "view", inputs: [{ name: "", type: "uint256" }], outputs: [{ name: "", type: "address" }] },
