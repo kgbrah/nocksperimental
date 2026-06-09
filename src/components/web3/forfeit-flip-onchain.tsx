@@ -297,9 +297,17 @@ export function ForfeitFlipOnchain() {
       {result && phase === "settled" ? (
         <div className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <div className="flex items-center gap-2">
-            {result.playerWon ? <Check aria-hidden="true" size={18} /> : <X aria-hidden="true" size={18} />}
+            {!result.settled ? (
+              <Loader2 aria-hidden="true" size={18} className="animate-spin" />
+            ) : result.playerWon ? (
+              <Check aria-hidden="true" size={18} />
+            ) : (
+              <X aria-hidden="true" size={18} />
+            )}
             <p className="font-mono text-xs uppercase tracking-[0.12em]">
-              Round #{result.roundId} · {result.playerWon ? "player won" : "house won"}
+              {!result.settled
+                ? `Round #${result.roundId} · still settling — refresh to see the result`
+                : `Round #${result.roundId} · ${result.playerWon ? "player won" : "house won"}`}
             </p>
           </div>
           <dl className="mt-3 space-y-1 font-mono text-[11px] text-[#4A4A4A]">
