@@ -1,15 +1,14 @@
-import { ArrowLeft, ArrowUpRight, Coins, Dice5, Gamepad2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Gamepad2 } from "lucide-react";
 import Link from "next/link";
+import { FALLBACK_GAME_ICON, GAME_ICONS } from "@/lib/game-icons";
 import { pocGames, type PocGame } from "@/lib/pocgames";
 import { resolvedBadgeForId } from "@/lib/trust-signals";
 import { PlayerBar } from "@/components/web3/player-bar";
 
 export const dynamic = "force-dynamic";
 
-const GAME_ICON: Record<string, typeof Coins> = { flip: Coins, dice: Dice5 };
-
 function GameCard({ game }: { game: PocGame }) {
-  const Icon = GAME_ICON[game.kind] ?? Gamepad2;
+  const Icon = GAME_ICONS[game.kind] ?? FALLBACK_GAME_ICON;
   const verified = resolvedBadgeForId(game.badgeId)?.currentStatus === "verified";
   return (
     <div className="flex flex-col justify-between border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
@@ -55,8 +54,8 @@ export default function PlayPage() {
           <p className="mt-3 max-w-3xl text-base leading-7 text-[#4A4A4A]">
             Connect a wallet and play the provably-fair games — every outcome is recomputable from
             public data by an in-browser verifier, so neither player nor house has to trust the other.
-            Real-NOCK testnet settlement (on-chain stakes via the bridge) is the next phase and stays
-            testnet-only until proven native + cross-chain.
+            On-chain settlement is live on test networks (Base Sepolia ETH, Nockchain fakenet NOCK)
+            and stays test-only until proven native + cross-chain.
           </p>
         </div>
       </section>
@@ -87,13 +86,14 @@ export default function PlayPage() {
         >
           <div>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#4A4A4A]">
-              On-chain · Nockchain %fair · consensus-paid winner
+              On-chain · Nockchain %fair · fakenet · consensus-paid winner
             </span>
             <p className="mt-1 text-2xl font-semibold">Nock %fair — settled by consensus</p>
             <p className="mt-1 text-sm text-[#4A4A4A]">
               The strongest settlement in the stack: a witness-checked <code>%fair</code> lock where the
-              chain itself pays the provably-fair winner — no trusted house signature on the payout.
-              Forfeit-safe via a timeout refund branch.
+              winning branch is enforced by consensus, not a trusted house signature. A stalled pot is
+              recoverable via a timelocked refund branch; house policy never auto-sweeps a pot the
+              player won.
             </p>
           </div>
           <ArrowUpRight size={28} aria-hidden="true" />

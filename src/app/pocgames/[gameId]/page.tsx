@@ -10,9 +10,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ForfeitDiceGame } from "@/components/forfeit-dice-game";
 import { ForfeitFlipGame } from "@/components/forfeit-flip-game";
+import { ForfeitHighcardGame } from "@/components/forfeit-highcard-game";
+import { ForfeitLimboGame } from "@/components/forfeit-limbo-game";
+import { ForfeitRouletteGame } from "@/components/forfeit-roulette-game";
+import { ForfeitSlotsGame } from "@/components/forfeit-slots-game";
 import { launchEvidenceCaseForId } from "@/lib/launch-evidence";
-import { pocGameById } from "@/lib/pocgames";
+import { pocGameById, type PocGame } from "@/lib/pocgames";
 import { resolvedBadgeForId } from "@/lib/trust-signals";
+
+const GAME_COMPONENT: Record<PocGame["kind"], React.ComponentType> = {
+  flip: ForfeitFlipGame,
+  dice: ForfeitDiceGame,
+  roulette: ForfeitRouletteGame,
+  slots: ForfeitSlotsGame,
+  highcard: ForfeitHighcardGame,
+  limbo: ForfeitLimboGame
+};
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +43,7 @@ export default async function PocGamePage({ params }: PocGamePageProps) {
 
   const badge = resolvedBadgeForId(game.badgeId);
   const launchCase = launchEvidenceCaseForId(game.caseId);
+  const Game = GAME_COMPONENT[game.kind];
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
@@ -70,7 +84,7 @@ export default async function PocGamePage({ params }: PocGamePageProps) {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
-        {game.kind === "flip" ? <ForfeitFlipGame /> : <ForfeitDiceGame />}
+        <Game />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-12 lg:px-8">

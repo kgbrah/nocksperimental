@@ -1,0 +1,10 @@
+{
+  "_comment": "NOCK-side supply snapshot for the testnet conservation dashboard. The Cloudflare Worker cannot reach the local fakenet node directly, so the Nockchain-side figures are refreshed out-of-band by scripts/bridge-conservation-audit.sh (or a node-connected cron that POSTs them). The Base-side figures (tNOCK supply, deposits, mints) are read live. Units are nicks; 65,536 nicks = 1 NOCK; fakenet coinbase is a constant 2^32 nicks = 65,536 NOCK/block.",
+  "updatedAt": "2026-06-10T04:18:20Z",
+  "minerAddress": "AU6cMNQ9vMyBwSGkwTghPsTGf6uLREziKnpDrM3y6Jk2zNsvRWdYFVx",
+  "chainHeight": 7488,
+  "blockRewardNicks": 4294967296,
+  "minedNicks": "32160715112448",
+  "spendableNicks": "32141607912448",
+  "unspentNoteCount": 7484
+}

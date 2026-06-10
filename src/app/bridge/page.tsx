@@ -1,14 +1,8 @@
 import { ArrowLeft, GitBranch, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { readBridgeStatus } from "@/lib/base-bridge";
-import { DEFAULT_CHAIN_ID } from "@/lib/networks";
-import { BridgeStatePanel } from "@/components/web3/bridge-state-panel";
+import { BridgeSupplyPanel } from "@/components/bridge-supply-panel";
 
-export const dynamic = "force-dynamic";
-
-export default async function BridgePage() {
-  const status = await readBridgeStatus(DEFAULT_CHAIN_ID);
-
+export default function BridgePage() {
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
       <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
@@ -21,21 +15,22 @@ export default async function BridgePage() {
           <div className="mt-5 flex items-center gap-2">
             <GitBranch size={18} aria-hidden="true" />
             <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#4A4A4A]">
-              Nockchain &lt;-&gt; Base bridge · live testnet
+              NOCK &lt;-&gt; tNOCK bridge · self-run testnet
             </span>
           </div>
           <h1 className="mt-2 text-4xl font-semibold">Cross-chain Bridge</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-[#4A4A4A]">
-            The real Nockchain&lt;-&gt;Base federated bridge (3-of-5 mint-and-burn) deployed and verified on
-            Base Sepolia. This panel reads its live on-chain state directly — the federation roster, the
-            signature threshold, withdrawal status, and recent mint/burn activity — exactly what the
-            cross-chain invariants check, now visible in the browser. Read-only; mainnet stays gated.
+            Live stats for the NOCK&lt;-&gt;tNOCK bridge we built and operate ourselves: fakenet NOCK we
+            mine gets locked by a bridge-deposit on Nockchain, and an equal tNOCK (minus the bridge fee)
+            is minted on Base Sepolia by our 3-of-5 operator federation. The Base side is read live
+            on-chain; the Nockchain side comes from the conservation audit snapshot. Read-only; mainnet
+            stays gated.
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8">
-        <BridgeStatePanel initial={status} />
+        <BridgeSupplyPanel />
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-12 lg:px-8">

@@ -25,11 +25,13 @@ export default function NockFairPlayPage() {
           <h1 className="mt-2 text-4xl font-semibold">Nock %fair (on-chain)</h1>
           <p className="mt-3 text-base leading-7 text-[#4A4A4A]">
             The strongest settlement in the stack: a witness-checked <code>%fair</code> consensus lock
-            where the chain itself pays the provably-fair winner — no trusted house signature on the
-            payout. The house commits a seed (it can&apos;t grind), the pot is locked in a 3-branch
-            escrow on the Nock chain, both seeds are revealed, and the winner&apos;s claim is accepted
-            by consensus. If a player withholds their seed, the house reclaims the pot via the timeout
-            refund branch — so funds can never be permanently frozen.
+            where the <em>winning branch is enforced by consensus</em>, not a trusted house signature.
+            The house commits a seed before the round, the pot is locked in a 3-branch escrow on the
+            Nock chain, both seeds are revealed, and only the matching winner&apos;s claim is accepted
+            by consensus. In this demo the orchestrator supplies both seeds, so fairness is evidenced
+            by the signed receipt chain rather than by an adversarial player. A stalled pot is
+            recoverable via a timelocked refund branch; on-chain that leaf is outcome-blind, and it is
+            house auto-recovery policy that never sweeps a pot the player won.
           </p>
           <div className="mt-4 inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#F6F6F6] px-3 py-1.5">
             <ShieldCheck size={15} aria-hidden="true" />

@@ -2,6 +2,7 @@ import { ArrowLeft, Coins, ExternalLink, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { WalletGate } from "@/components/web3/wallet-controls";
 import { ForfeitFlipOnchain } from "@/components/web3/forfeit-flip-onchain";
+import { BridgeSupplyPanel } from "@/components/bridge-supply-panel";
 import { forfeitFlipAddress } from "@/lib/game-contracts";
 import { DEFAULT_CHAIN_ID, explorerAddress } from "@/lib/networks";
 
@@ -46,9 +47,13 @@ export default function ForfeitFlipOnchainPage() {
       </section>
 
       <section className="mx-auto max-w-3xl px-5 py-8 lg:px-8">
-        <WalletGate message="Connect a wallet on Base Sepolia to play for real testnet ETH.">
+        <WalletGate message="Connect a wallet on Base Sepolia to play for real testnet ETH or tNOCK.">
           <ForfeitFlipOnchain />
         </WalletGate>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 pb-12 lg:px-8">
+        <BridgeSupplyPanel />
       </section>
     </main>
   );

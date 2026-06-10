@@ -2,10 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
-import { formatEther, parseEther, keccak256, encodePacked, type Hex } from "viem";
+import { formatUnits, parseUnits, keccak256, encodePacked, type Hex } from "viem";
 import { Coins, Loader2, ShieldCheck, Wallet, ArrowRight, ArrowUpRight, Check, X } from "lucide-react";
 import { forfeitFlipAbi } from "@/lib/abi/forfeit-flip";
-import { forfeitFlipAddress, FlipStatus } from "@/lib/game-contracts";
+import { forfeitFlipTokenAbi } from "@/lib/abi/forfeit-flip-token";
+import {
+  forfeitFlipAddress,
+  tNockAddress,
+  flipAssetAvailable,
+  FlipStatus,
+  TNOCK_DECIMALS,
+  type FlipAsset
+} from "@/lib/game-contracts";
 import { DEFAULT_CHAIN_ID, explorerTx } from "@/lib/networks";
 
 type FlipConfig = {
@@ -32,6 +40,12 @@ type Result = {
   settleTx?: Hex;
 };
 
+// Minimal ERC20 surface for the tNOCK stake asset (allowance check + approve + withdrawable balance).
+const erc20Abi = [
+  { type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ name: "spender", type: "address" }, { name: "amount", type: "uint256" }], outputs: [{ type: "bool" }] },
+  { type: "function", name: "allowance", stateMutability: "view", inputs: [{ name: "owner", type: "address" }, { name: "spender", type: "address" }], outputs: [{ type: "uint256" }] }
+] as const;
+
 function randomSeed(): Hex {
   const b = new Uint8Array(32);
   crypto.getRandomValues(b);
@@ -41,39 +55,72 @@ function randomSeed(): Hex {
 const BTN =
   "inline-flex items-center justify-center gap-1.5 border-2 border-[#0B0B0B] px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] shadow-[3px_3px_0_#0B0B0B] transition disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none";
 
+const ASSETS: { id: FlipAsset; label: string; unit: string; decimals: number; defaultStake: string }[] = [
+  { id: "eth", label: "ETH", unit: "ETH", decimals: 18, defaultStake: "0.001" },
+  { id: "tnock", label: "tNOCK", unit: "tNOCK", decimals: TNOCK_DECIMALS, defaultStake: "10" }
+];
+
 export function ForfeitFlipOnchain() {
   const { address: player } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
-  const contract = forfeitFlipAddress(DEFAULT_CHAIN_ID);
+
+  const [asset, setAsset] = useState<FlipAsset>("eth");
+  const meta = ASSETS.find((a) => a.id === asset)!;
+  const { unit, decimals } = meta;
+  const contract = forfeitFlipAddress(DEFAULT_CHAIN_ID, asset);
+  const abi = asset === "tnock" ? forfeitFlipTokenAbi : forfeitFlipAbi;
+  const tokenAddr = tNockAddress(DEFAULT_CHAIN_ID);
 
   const [config, setConfig] = useState<FlipConfig | null>(null);
-  const [stake, setStake] = useState("0.001");
+  const [stake, setStake] = useState(meta.defaultStake);
   const [phase, setPhase] = useState<Phase>("idle");
   const [statusMsg, setStatusMsg] = useState("");
   const [result, setResult] = useState<Result | null>(null);
   const [credits, setCredits] = useState<bigint>(BigInt(0));
 
+  // Switch stake assets: reset transient state in the handler (not an effect) so one game's result never
+  // bleeds into the other, then the [asset] effect refetches that game's config.
+  function selectAsset(next: FlipAsset) {
+    if (next === asset || busy) return;
+    setAsset(next);
+    setConfig(null);
+    setResult(null);
+    setCredits(BigInt(0));
+    setPhase("idle");
+    setStatusMsg("");
+    setStake(ASSETS.find((a) => a.id === next)!.defaultStake);
+  }
+
+  // Refetch config when the asset changes (setConfig runs only in the async resolution, never synchronously).
   useEffect(() => {
-    fetch("/api/game/flip/state", { cache: "no-store" })
+    let active = true;
+    fetch(`/api/game/flip/state?asset=${asset}`, { cache: "no-store" })
       .then((r) => r.json())
-      .then(setConfig)
-      .catch(() => setConfig({ minStake: "0", maxStake: "0", error: "config unavailable" }));
-  }, []);
+      .then((c) => {
+        if (active) setConfig(c);
+      })
+      .catch(() => {
+        if (active) setConfig({ minStake: "0", maxStake: "0", error: "config unavailable" });
+      });
+    return () => {
+      active = false;
+    };
+  }, [asset]);
 
   const refreshCredits = useCallback(async () => {
     if (!publicClient || !contract || !player) return;
     const c = (await publicClient.readContract({
       address: contract,
-      abi: forfeitFlipAbi,
+      abi,
       functionName: "credits",
       args: [player]
     })) as bigint;
     setCredits(c);
-  }, [publicClient, contract, player]);
+  }, [publicClient, contract, abi, player]);
 
   useEffect(() => {
-    // Sync credits from the chain (an external system) when the player/contract becomes available.
+    // Sync credits from the chain (an external system) when the player/contract/asset becomes available.
     // setCredits runs only after the awaited read resolves, so this is not a synchronous setState.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshCredits();
@@ -86,9 +133,9 @@ export function ForfeitFlipOnchain() {
     setResult(null);
 
     // Validate the stake against min/max/bankroll BEFORE prompting the wallet (avoids a doomed tx).
-    let stakeWei: bigint;
+    let stakeAmt: bigint;
     try {
-      stakeWei = parseEther(stake as `${number}`);
+      stakeAmt = parseUnits(stake as `${number}`, decimals);
     } catch {
       setPhase("error");
       setStatusMsg("Invalid stake amount.");
@@ -97,12 +144,12 @@ export function ForfeitFlipOnchain() {
     const min = BigInt(config.minStake);
     const max = BigInt(config.maxStake);
     const bank = config.bankroll ? BigInt(config.bankroll) : max;
-    if (stakeWei < min || stakeWei > max) {
+    if (stakeAmt < min || stakeAmt > max) {
       setPhase("error");
-      setStatusMsg(`Stake must be between ${formatEther(min)} and ${formatEther(max)} ETH.`);
+      setStatusMsg(`Stake must be between ${formatUnits(min, decimals)} and ${formatUnits(max, decimals)} ${unit}.`);
       return;
     }
-    if (stakeWei > bank) {
+    if (stakeAmt > bank) {
       setPhase("error");
       setStatusMsg("Stake exceeds the house bankroll right now — try a smaller amount.");
       return;
@@ -110,26 +157,61 @@ export function ForfeitFlipOnchain() {
 
     const clientSeed = randomSeed();
     try {
+      // tNOCK (ERC20) requires an allowance for the contract to pull the stake. Approve up-front (once the
+      // allowance is sufficient, repeat plays skip this), BEFORE opening a round so we don't strand an open round.
+      if (asset === "tnock" && tokenAddr) {
+        setPhase("playing");
+        setStatusMsg("Checking tNOCK allowance…");
+        const allowance = (await publicClient.readContract({
+          address: tokenAddr,
+          abi: erc20Abi,
+          functionName: "allowance",
+          args: [player, contract]
+        })) as bigint;
+        if (allowance < stakeAmt) {
+          setStatusMsg("Approve tNOCK spending in your wallet…");
+          const approveHash = await writeContractAsync({
+            address: tokenAddr,
+            abi: erc20Abi,
+            functionName: "approve",
+            args: [contract, stakeAmt]
+          });
+          await publicClient.waitForTransactionReceipt({ hash: approveHash });
+        }
+      }
+
       // open -> play, retrying once if a concurrent/front-running player took the round (WrongStatus).
       let roundId: bigint | undefined;
       let playHash: Hex | undefined;
       for (let attempt = 0; attempt < 2; attempt += 1) {
         setPhase("opening");
         setStatusMsg(attempt === 0 ? "House is opening a round…" : "Round was taken — retrying with a fresh one…");
-        const open = await fetch("/api/game/flip/open", { method: "POST" }).then((r) => r.json());
+        const open = await fetch("/api/game/flip/open", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ asset })
+        }).then((r) => r.json());
         if (!open.ok) throw new Error(open.error || "could not open a round");
         roundId = BigInt(open.roundId);
 
         setPhase("playing");
         setStatusMsg("Confirm the bet in your wallet…");
         try {
-          playHash = await writeContractAsync({
-            address: contract,
-            abi: forfeitFlipAbi,
-            functionName: "play",
-            args: [roundId, clientSeed],
-            value: stakeWei
-          });
+          playHash =
+            asset === "tnock"
+              ? await writeContractAsync({
+                  address: contract,
+                  abi: forfeitFlipTokenAbi,
+                  functionName: "play",
+                  args: [roundId, clientSeed, stakeAmt]
+                })
+              : await writeContractAsync({
+                  address: contract,
+                  abi: forfeitFlipAbi,
+                  functionName: "play",
+                  args: [roundId, clientSeed],
+                  value: stakeAmt
+                });
           break;
         } catch (err) {
           const msg = err instanceof Error ? err.message : "";
@@ -149,7 +231,7 @@ export function ForfeitFlipOnchain() {
       const reveal = await fetch("/api/game/flip/reveal", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ roundId: roundId.toString() })
+        body: JSON.stringify({ roundId: roundId.toString(), asset })
       })
         .then((r) => r.json())
         .catch(() => ({ ok: false }));
@@ -168,7 +250,7 @@ export function ForfeitFlipOnchain() {
         try {
           const round = (await publicClient.readContract({
             address: contract,
-            abi: forfeitFlipAbi,
+            abi,
             functionName: "getRound",
             args: [roundId]
           })) as { status: number; playerWon: boolean };
@@ -180,15 +262,13 @@ export function ForfeitFlipOnchain() {
         try {
           const logs = await publicClient.getContractEvents({
             address: contract,
-            abi: forfeitFlipAbi,
+            abi,
             eventName: "RoundSettled",
             args: { roundId },
             fromBlock: "earliest"
           });
           const lastLog = logs[logs.length - 1];
-          const ev = lastLog?.args as
-            | { serverSeed?: Hex; outcome?: Hex; playerWon?: boolean }
-            | undefined;
+          const ev = lastLog?.args as { serverSeed?: Hex; outcome?: Hex; playerWon?: boolean } | undefined;
           if (ev) {
             serverSeed = ev.serverSeed;
             outcome = ev.outcome;
@@ -241,7 +321,7 @@ export function ForfeitFlipOnchain() {
     if (!publicClient || !contract) return;
     try {
       setStatusMsg("Confirm the withdrawal in your wallet…");
-      const hash = await writeContractAsync({ address: contract, abi: forfeitFlipAbi, functionName: "withdraw" });
+      const hash = await writeContractAsync({ address: contract, abi, functionName: "withdraw" });
       await publicClient.waitForTransactionReceipt({ hash });
       setStatusMsg("Withdrawn.");
       await refreshCredits();
@@ -264,44 +344,73 @@ export function ForfeitFlipOnchain() {
       ? recomputed.toLowerCase() === result.outcome.toLowerCase() && playerWonRecomputed === result.playerWon
       : undefined;
 
-  if (config && config.houseConfigured === false) {
-    return (
-      <div className="border-2 border-dashed border-[#0B0B0B] bg-[#F5F5F5] p-5 text-sm text-[#4A4A4A]">
-        The on-chain house operator is not configured on this deployment yet. The contract is live, but
-        rounds can&apos;t be opened until the house key is set server-side.
-      </div>
-    );
-  }
+  const tnockAvailable = flipAssetAvailable(DEFAULT_CHAIN_ID, "tnock");
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Stat label="Min stake" value={config ? `${formatEther(BigInt(config.minStake))} ETH` : "…"} />
-        <Stat label="Max stake" value={config ? `${formatEther(BigInt(config.maxStake))} ETH` : "…"} />
-        <Stat label="House bankroll" value={config?.bankroll ? `${formatEther(BigInt(config.bankroll))} ETH` : "…"} />
+      {/* Stake-asset toggle: native ETH or tNOCK (bridged, mined fakenet NOCK). */}
+      <div className="inline-flex border-2 border-[#0B0B0B] shadow-[3px_3px_0_#0B0B0B]">
+        {ASSETS.map((a) => {
+          const disabled = a.id === "tnock" && !tnockAvailable;
+          const active = asset === a.id;
+          return (
+            <button
+              key={a.id}
+              type="button"
+              disabled={disabled || busy}
+              onClick={() => selectAsset(a.id)}
+              className={`px-4 py-2 font-mono text-xs uppercase tracking-[0.12em] transition disabled:cursor-not-allowed disabled:opacity-40 ${
+                active ? "bg-[#0B0B0B] text-[#FFFFFF]" : "bg-[#FFFFFF] text-[#0B0B0B] hover:bg-[#F0F0F0]"
+              }`}
+            >
+              {a.label}
+            </button>
+          );
+        })}
       </div>
+      {asset === "tnock" ? (
+        <p className="font-mono text-[11px] text-[#4A4A4A]">
+          tNOCK is mined fakenet NOCK, bridged to Base via our own 3-of-5 MessageInbox. Staking pulls tNOCK
+          (an approve + a bet); winnings settle in tNOCK.
+        </p>
+      ) : null}
 
-      <div className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
-        <label className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#737373]" htmlFor="stake">
-          Your stake (ETH) · even money
-        </label>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <input
-            id="stake"
-            type="text"
-            inputMode="decimal"
-            value={stake}
-            onChange={(e) => setStake(e.target.value)}
-            disabled={busy}
-            className="w-40 border-2 border-[#0B0B0B] px-3 py-2 font-mono text-sm focus:outline-none disabled:opacity-50"
-          />
-          <button type="button" onClick={play} disabled={busy} className={`${BTN} bg-[#0B0B0B] text-[#FFFFFF]`}>
-            {busy ? <Loader2 aria-hidden="true" size={14} className="animate-spin" /> : <Coins aria-hidden="true" size={14} />}
-            {busy ? "Working…" : "Flip"}
-          </button>
+      {config && config.houseConfigured === false ? (
+        <div className="border-2 border-dashed border-[#0B0B0B] bg-[#F5F5F5] p-5 text-sm text-[#4A4A4A]">
+          The on-chain house operator is not configured on this deployment yet. The contract is live, but
+          rounds can&apos;t be opened until the house key is set server-side.
         </div>
-        {statusMsg ? <p className="mt-3 text-sm text-[#4A4A4A]">{statusMsg}</p> : null}
-      </div>
+      ) : (
+        <>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Stat label="Min stake" value={config ? `${formatUnits(BigInt(config.minStake), decimals)} ${unit}` : "…"} />
+            <Stat label="Max stake" value={config ? `${formatUnits(BigInt(config.maxStake), decimals)} ${unit}` : "…"} />
+            <Stat label="House bankroll" value={config?.bankroll ? `${formatUnits(BigInt(config.bankroll), decimals)} ${unit}` : "…"} />
+          </div>
+
+          <div className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+            <label className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#737373]" htmlFor="stake">
+              Your stake ({unit}) · even money
+            </label>
+            <div className="mt-2 flex flex-wrap items-center gap-3">
+              <input
+                id="stake"
+                type="text"
+                inputMode="decimal"
+                value={stake}
+                onChange={(e) => setStake(e.target.value)}
+                disabled={busy}
+                className="w-40 border-2 border-[#0B0B0B] px-3 py-2 font-mono text-sm focus:outline-none disabled:opacity-50"
+              />
+              <button type="button" onClick={play} disabled={busy} className={`${BTN} bg-[#0B0B0B] text-[#FFFFFF]`}>
+                {busy ? <Loader2 aria-hidden="true" size={14} className="animate-spin" /> : <Coins aria-hidden="true" size={14} />}
+                {busy ? "Working…" : "Flip"}
+              </button>
+            </div>
+            {statusMsg ? <p className="mt-3 text-sm text-[#4A4A4A]">{statusMsg}</p> : null}
+          </div>
+        </>
+      )}
 
       {result && phase === "settled" ? (
         <div className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
@@ -368,7 +477,7 @@ export function ForfeitFlipOnchain() {
       {credits > BigInt(0) ? (
         <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-[#0B0B0B] bg-[#F5F5F5] p-4">
           <p className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em]">
-            <Wallet aria-hidden="true" size={14} /> Withdrawable: {formatEther(credits)} ETH
+            <Wallet aria-hidden="true" size={14} /> Withdrawable: {formatUnits(credits, decimals)} {unit}
           </p>
           <button type="button" onClick={withdraw} className={`${BTN} bg-[#FFFFFF] hover:bg-[#0B0B0B] hover:text-[#FFFFFF]`}>
             Withdraw <ArrowRight aria-hidden="true" size={14} />

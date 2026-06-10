@@ -1,21 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowRight, Check, Coins, Eye, Lock, RefreshCw, ShieldAlert, X } from "lucide-react";
+import { ArrowRight, Cherry, Eye, Lock, RefreshCw } from "lucide-react";
 import {
+  SLOT_SYMBOLS,
   commit,
   randomSeedHex,
-  verifyFlipRound,
-  type FlipRound
+  slotsReelsFrom,
+  slotsTierOf,
+  verifySlotsRound,
+  type SlotsRound
 } from "@/lib/pocgames";
-import { tamperSeed } from "@/components/pocgame-ui";
+import { CheckRow, Field, Step, TamperToggle, VerdictBadge, tamperSeed } from "@/components/pocgame-ui";
 
 type Phase = "idle" | "house" | "player" | "revealed";
 
-// Walk a single two-sided commit-reveal coin-flip round, then recompute the outcome
-// from public data in the browser. No real NOCK changes hands — this is the fairness
-// and forensics showcase: every claim is recomputable, and tampering is caught.
-export function ForfeitFlipGame() {
+// Three-reel commit-reveal slots. Each reel is an independent domain-separated draw
+// from the same two committed seeds, so the full reel line — and the disclosed
+// 176/512 win probability — is recomputable by anyone. No real NOCK moves.
+export function ForfeitSlotsGame() {
   const [nonce, setNonce] = useState(0);
   const [serverSeed, setServerSeed] = useState<string | null>(null);
   const [clientSeed, setClientSeed] = useState<string | null>(null);
@@ -38,10 +41,6 @@ export function ForfeitFlipGame() {
     setPhase("player");
   }
 
-  function reveal() {
-    setPhase("revealed");
-  }
-
   function newRound() {
     setNonce((value) => value + 1);
     setServerSeed(null);
@@ -52,46 +51,47 @@ export function ForfeitFlipGame() {
     setPhase("idle");
   }
 
-  // The PUBLIC round record — everything an auditor needs to recompute the result.
-  const round = useMemo<FlipRound | null>(() => {
+  const round = useMemo<SlotsRound | null>(() => {
     if (phase !== "revealed" || !serverSeed || !clientSeed || !commitHouse || !commitClient) {
       return null;
     }
-    const base: FlipRound = { nonce, commitHouse, commitClient, serverSeed, clientSeed };
-    return { ...base, declaredWinner: verifyFlipRound(base).recomputedWinner };
+    const { reels, rejectionIndices } = slotsReelsFrom({ serverSeed, clientSeed, nonce });
+    return {
+      nonce,
+      commitHouse,
+      commitClient,
+      serverSeed,
+      clientSeed,
+      reels,
+      rejectionIndices,
+      declaredWinner: slotsTierOf(reels) === "miss" ? "house" : "player"
+    };
   }, [phase, serverSeed, clientSeed, commitHouse, commitClient, nonce]);
 
-  // What an auditor actually checks — optionally with a tampered revealed seed so you can
-  // watch the hashlock catch it.
-  const auditedRound = useMemo<FlipRound | null>(() => {
+  const auditedRound = useMemo<SlotsRound | null>(() => {
     if (!round) return null;
     if (!tamper) return round;
     return { ...round, serverSeed: tamperSeed(round.serverSeed) };
   }, [round, tamper]);
 
-  const verification = auditedRound ? verifyFlipRound(auditedRound) : null;
+  const verification = auditedRound ? verifySlotsRound(auditedRound) : null;
+  const tier = round?.reels ? slotsTierOf(round.reels) : null;
 
   return (
     <div className="border border-[#0B0B0B] bg-[#FFFFFF] shadow-[4px_4px_0_#0B0B0B]">
       <div className="flex items-center justify-between gap-3 border-b border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-[#FFFFFF]">
         <div className="flex items-center gap-2">
-          <Coins size={18} aria-hidden="true" />
-          <span className="font-mono text-xs uppercase tracking-[0.14em]">Forfeit Flip — round #{nonce}</span>
+          <Cherry size={18} aria-hidden="true" />
+          <span className="font-mono text-xs uppercase tracking-[0.14em]">Forfeit Slots — round #{nonce}</span>
         </div>
         <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#BFBFBF]">demo · no real NOCK</span>
       </div>
 
       <div className="grid gap-px bg-[#0B0B0B] md:grid-cols-2">
-        {/* Step 1 — house commit */}
-        <Step
-          index={1}
-          title="House commits"
-          done={phase !== "idle"}
-          icon={<Lock size={16} aria-hidden="true" />}
-        >
+        <Step index={1} title="House commits" done={phase !== "idle"} icon={<Lock size={16} aria-hidden="true" />}>
           <p className="text-sm leading-6 text-[#4A4A4A]">
-            The house locks a secret <code>serverSeed</code> by publishing only its hash. The seed
-            itself stays hidden — the peek surface is commitment-only.
+            The house locks a secret <code>serverSeed</code> behind its hash — the reels cannot be
+            re-spun after your commitment lands.
           </p>
           {commitHouse ? (
             <Field label="commitHouse = H(serverSeed)" value={commitHouse} />
@@ -106,7 +106,6 @@ export function ForfeitFlipGame() {
           )}
         </Step>
 
-        {/* Step 2 — player commit */}
         <Step
           index={2}
           title="Player commits"
@@ -114,8 +113,8 @@ export function ForfeitFlipGame() {
           icon={<Lock size={16} aria-hidden="true" />}
         >
           <p className="text-sm leading-6 text-[#4A4A4A]">
-            Before any seed is revealed, the player locks their own <code>clientSeed</code>. Neither
-            side can see the other&apos;s seed, so neither can bias the result.
+            Your <code>clientSeed</code> is half of every reel — the house cannot pick the line, and
+            neither can you.
           </p>
           {commitClient ? (
             <Field label="commitPlayer = H(clientSeed)" value={commitClient} />
@@ -132,21 +131,20 @@ export function ForfeitFlipGame() {
         </Step>
       </div>
 
-      {/* Step 3 — reveal + recompute */}
       <div className="border-t border-[#0B0B0B] p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Eye size={16} aria-hidden="true" />
-            <span className="font-mono text-xs uppercase tracking-[0.14em]">Reveal &amp; recompute</span>
+            <span className="font-mono text-xs uppercase tracking-[0.14em]">Spin &amp; recompute</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {phase === "player" ? (
               <button
                 type="button"
-                onClick={reveal}
+                onClick={() => setPhase("revealed")}
                 className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-[#FFFFFF]"
               >
-                Reveal serverSeed <ArrowRight size={14} aria-hidden="true" />
+                Reveal &amp; spin <ArrowRight size={14} aria-hidden="true" />
               </button>
             ) : null}
             {phase === "revealed" ? (
@@ -161,17 +159,31 @@ export function ForfeitFlipGame() {
           </div>
         </div>
 
-        {round && verification ? (
+        {round && round.reels && verification ? (
           <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.9fr]">
             <div className="border border-[#0B0B0B] bg-[#F5F5F5] p-4">
               <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                 Public round record
               </div>
-              <Field label="nonce" value={String(round.nonce)} />
+              <div className="mt-3 grid grid-cols-3 gap-2 border-b border-[#0B0B0B] pb-3">
+                {round.reels.map((reel, index) => (
+                  <div
+                    key={index}
+                    className="border-2 border-[#0B0B0B] bg-[#FFFFFF] py-3 text-center font-mono text-lg font-semibold"
+                  >
+                    {SLOT_SYMBOLS[reel]}
+                  </div>
+                ))}
+              </div>
+              <Field label="result tier — pair or better wins" value={String(tier)} />
+              <Field
+                label="rejectionIndices (modulo-bias audit, per reel)"
+                value={(round.rejectionIndices ?? []).join(", ")}
+              />
               <Field label="serverSeed (revealed)" value={round.serverSeed} />
               <Field label="clientSeed (revealed)" value={round.clientSeed} />
               <div className="mt-3 flex items-center justify-between border-t border-[#0B0B0B] pt-3">
-                <span className="font-mono text-xs uppercase tracking-[0.12em]">declared winner</span>
+                <span className="font-mono text-xs uppercase tracking-[0.12em]">winner — P(player) = 34.375%</span>
                 <span className="text-sm font-semibold uppercase">{round.declaredWinner}</span>
               </div>
             </div>
@@ -181,93 +193,26 @@ export function ForfeitFlipGame() {
                 <div className="font-mono text-xs uppercase tracking-[0.12em] text-[#0B0B0B]">
                   In-browser verification
                 </div>
-                <span
-                  className={`px-2 py-1 text-xs font-semibold uppercase ${
-                    verification.verified ? "bg-[#0B0B0B] text-[#FFFFFF]" : "bg-[#B91C1C] text-[#FFFFFF]"
-                  }`}
-                >
-                  {verification.verified ? "verified" : "rejected"}
-                </span>
+                <VerdictBadge verified={verification.verified} />
               </div>
               <ul className="mt-3 space-y-2">
                 <CheckRow label="H(serverSeed) == commitHouse" ok={verification.checks.houseCommitBindsSeed} />
                 <CheckRow label="H(clientSeed) == commitPlayer" ok={verification.checks.playerCommitBindsSeed} />
+                <CheckRow label="reels recompute from seeds" ok={verification.checks.reelsRecompute} />
+                <CheckRow label="rejectionIndices recompute" ok={verification.checks.rejectionIndicesRecompute} />
                 <CheckRow label="declared winner == recomputed" ok={verification.checks.declaredWinnerCorrect} />
               </ul>
-              <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
-                Recomputed winner: <span className="font-semibold uppercase">{verification.recomputedWinner}</span>
-                {" "}— from public data alone, no trust in the house required.
-              </p>
-              <label className="mt-3 flex cursor-pointer items-center gap-2 border border-[#0B0B0B] bg-[#F5F5F5] px-3 py-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={tamper}
-                  onChange={(event) => setTamper(event.target.checked)}
-                  className="h-4 w-4 accent-[#0B0B0B]"
-                />
-                <ShieldAlert size={14} aria-hidden="true" />
-                Tamper with the revealed seed (watch the hashlock catch it)
-              </label>
+              <TamperToggle tamper={tamper} onChange={setTamper} />
             </div>
           </div>
         ) : (
           <p className="mt-3 text-sm leading-6 text-[#4A4A4A]">
-            Complete both commitments, then reveal — the outcome is{" "}
-            <code>lowbit(H(serverSeed ‖ clientSeed ‖ nonce))</code> and is recomputed live in your browser.
+            Complete both commitments, then reveal — each reel is an independent rejection-sampled{" "}
+            <code>H(serverSeed ‖ clientSeed ‖ nonce ‖ reel) mod 8</code>, recomputed live in your
+            browser.
           </p>
         )}
       </div>
     </div>
-  );
-}
-
-function Step({
-  index,
-  title,
-  done,
-  icon,
-  children
-}: {
-  index: number;
-  title: string;
-  done: boolean;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-[#FFFFFF] p-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center bg-[#0B0B0B] text-xs font-semibold text-[#FFFFFF]">
-            {index}
-          </span>
-          <span className="text-sm font-semibold">{title}</span>
-        </div>
-        <span className={done ? "text-[#0B0B0B]" : "text-[#BFBFBF]"}>
-          {done ? <Check size={16} aria-hidden="true" /> : icon}
-        </span>
-      </div>
-      <div className="mt-3">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="mt-3">
-      <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#4A4A4A]">{label}</div>
-      <div className="mt-1 break-all font-mono text-xs text-[#0B0B0B]">{value}</div>
-    </div>
-  );
-}
-
-function CheckRow({ label, ok }: { label: string; ok: boolean }) {
-  return (
-    <li className="flex items-center gap-2 text-sm">
-      <span className={ok ? "text-[#0B0B0B]" : "text-[#B91C1C]"}>
-        {ok ? <Check size={16} aria-hidden="true" /> : <X size={16} aria-hidden="true" />}
-      </span>
-      <span className="font-mono text-xs text-[#0B0B0B]">{label}</span>
-    </li>
   );
 }
