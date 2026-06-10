@@ -29,7 +29,6 @@ const TNOCK = "0xaAB9a8889a7714864A6B90A9F76A092f7b4Df4f3" as const;
 const INBOX = "0xA7c373916665e89Aa52Dbd2Ecd36Ba3A45A6e942" as const;
 const TNOCK_DECIMALS = 16;
 const NICKS_PER_NOCK = BigInt(65536);
-const DEPOSIT_NOCK = BigInt(100000); // each bridge-deposit is the protocol minimum (minimum-event-nocks)
 const ZERO = BigInt(0);
 
 const erc20 = [
@@ -65,30 +64,35 @@ export async function getBridgeSupply() {
     baseError = e instanceof Error ? e.message : "base read failed";
   }
 
-  // tNOCK has no burn path on this deployment (withdrawals disabled), so minted == current supply, burned == 0.
-  // 1 tNOCK == 1 NOCK; tNOCK uses 16 decimals, so divide out the decimals then scale to nicks.
+  // The bridge is BIDIRECTIONAL: a deposit locks native NOCK and mints tNOCK; a
+  // withdrawal burns tNOCK and releases native NOCK. So tNOCK totalSupply is the
+  // OUTSTANDING (net of mints − burns) figure, read live from Base. 1 tNOCK ==
+  // 1 NOCK; tNOCK uses 16 decimals, so divide out the decimals then scale to nicks.
   const tnockSupplyNicks = (tnockSupplyBase / BigInt(10) ** BigInt(TNOCK_DECIMALS)) * NICKS_PER_NOCK;
-  const mintedNicks = tnockSupplyNicks;
-  const burnedNicks = ZERO;
 
-  // Locked NOCK backing the minted tNOCK = (minted deposits) * per-deposit amount.
-  const lockedNicks = depositsMinted * DEPOSIT_NOCK * NICKS_PER_NOCK;
-  const bridgeFeeNicks = lockedNicks > tnockSupplyNicks ? lockedNicks - tnockSupplyNicks : ZERO;
+  // The 1:1 backing TARGET: outstanding tNOCK should be matched by an equal
+  // amount of NOCK held off the miner (bridge/house/locks). Whether it actually
+  // is, is checked below against custody (mined − miner-spendable) — not assumed.
+  const backingTargetNicks = tnockSupplyNicks;
 
   // --- Nockchain side (snapshot) ---
   const minedNicks = BigInt(snapshot.minedNicks);
   const spendableNicks = BigInt(snapshot.spendableNicks);
 
   // --- conservation invariants ---
-  // (C) mined  ==  spendable + locked + residual(genesis/immature coinbase + tx fees)
-  // (B) tNOCK  <=  locked        (every tNOCK is backed by locked NOCK)
-  const residualNicks = minedNicks - spendableNicks - lockedNicks;
-  const backed = tnockSupplyNicks <= lockedNicks;
-  // A negative residual means spendable + locked exceeds mined — conservation is
-  // broken (double-count or snapshot drift) and must be flagged, not absolute-valued away.
+  // (C) mined  ==  spendable(miner) + custody(backing) + residual(genesis/immature coinbase + tx fees)
+  // (B) outstanding tNOCK  <=  NOCK held in bridge custody (the non-miner NOCK)
+  // Custody = mined NOCK that is NOT in the miner's spendable set (it was paid to
+  // the bridge/house and now backs outstanding tNOCK). The backing check is that
+  // this custody comfortably covers the outstanding tNOCK.
+  const custodyNicks = minedNicks > spendableNicks ? minedNicks - spendableNicks : ZERO;
+  const residualNicks = custodyNicks - backingTargetNicks; // custody beyond the 1:1 target (float, fees, immature coinbase)
+  const backed = custodyNicks >= tnockSupplyNicks;
+  // A negative residual means outstanding tNOCK exceeds the NOCK custody backing
+  // it — conservation broken — and must be flagged, not absolute-valued away.
   const conserved = residualNicks >= ZERO;
   const consistencyPct =
-    minedNicks > ZERO ? Number(((spendableNicks + lockedNicks) * BigInt(10000)) / minedNicks) / 100 : 0;
+    tnockSupplyNicks > ZERO ? Number((custodyNicks * BigInt(10000)) / tnockSupplyNicks) / 100 : 100;
 
   return {
     disclosure: BRIDGE_DISCLOSURE,
@@ -101,14 +105,17 @@ export async function getBridgeSupply() {
     },
     tnock: {
       totalSupply: { base: tnockSupplyBase.toString(), tnock: Number(tnockSupplyBase) / 10 ** TNOCK_DECIMALS },
-      mintedNock: nockFromNicks(mintedNicks),
-      burnedNock: nockFromNicks(burnedNicks)
+      // Outstanding = net of all mints (deposits) minus burns (withdrawals); == totalSupply.
+      outstandingNock: nockFromNicks(tnockSupplyNicks)
     },
     bridge: {
       depositsMinted: Number(depositsMinted),
-      lockedNock: nockFromNicks(lockedNicks),
-      bridgeFeeNock: nockFromNicks(bridgeFeeNicks),
-      operatorModel: "3-of-5 multisig (operated by us)"
+      // The 1:1 backing target (= outstanding tNOCK in NOCK) and the actual NOCK
+      // moved off the miner that covers it.
+      lockedNock: nockFromNicks(backingTargetNicks),
+      custodyNock: nockFromNicks(custodyNicks),
+      operatorModel: "3-of-5 multisig (operated by us)",
+      bidirectional: true
     },
     conservation: {
       minedNock: nockFromNicks(minedNicks),

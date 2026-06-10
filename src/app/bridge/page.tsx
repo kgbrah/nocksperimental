@@ -1,6 +1,10 @@
-import { ArrowLeft, GitBranch, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, GitBranch } from "lucide-react";
 import Link from "next/link";
 import { BridgeSupplyPanel } from "@/components/bridge-supply-panel";
+import { WalletGate } from "@/components/web3/wallet-controls";
+import { NockWithdrawFlow } from "@/components/web3/nock-withdraw-flow";
+
+export const dynamic = "force-dynamic";
 
 export default function BridgePage() {
   return (
@@ -34,18 +38,30 @@ export default function BridgePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-12 lg:px-8">
-        <div className="border-2 border-dashed border-[#0B0B0B] bg-[#F5F5F5] p-5">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={16} aria-hidden="true" />
-            <p className="font-mono text-xs uppercase tracking-[0.12em]">Withdraw (burn-to-Nockchain) — next</p>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <ArrowLeftRight size={16} aria-hidden="true" />
+              <p className="font-mono text-xs uppercase tracking-[0.12em]">Withdraw · burn tNOCK → native NOCK</p>
+            </div>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
+              The cross-chain WRITE: burn your <code>tNOCK</code> on Base Sepolia with your fakenet payout
+              address committed in the burn&apos;s lock root, then redeem the burn for native NOCK paid on
+              the Nockchain fakenet. The burn is the receipt — it redeems exactly once and the destination
+              can&apos;t change after the burn. Testnet-only; mainnet stays gated.
+            </p>
           </div>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
-            The connected-wallet burn-to-withdraw flow (calling Nock.sol from your own wallet, with the
-            Nockchain destination encoded into the lock root) is the real cross-chain WRITE this surface
-            is built toward. It lands once the testnet write path + lock-root derivation are wired and
-            funded — and stays testnet-only until proven, mirroring the live-base promotion gate.
-          </p>
+          <Link
+            className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm font-medium"
+            href="/swap"
+          >
+            Deposit (ETH → NOCK)
+            <ArrowLeftRight size={14} aria-hidden="true" />
+          </Link>
         </div>
+        <WalletGate message="Connect a wallet on Base Sepolia to burn tNOCK and withdraw native NOCK.">
+          <NockWithdrawFlow />
+        </WalletGate>
       </section>
     </main>
   );

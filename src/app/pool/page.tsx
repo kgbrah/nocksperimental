@@ -50,6 +50,16 @@ export default function PoolPage() {
             </a>
             . Providing liquidity carries impermanent-loss risk. This is testnet value only — Base
             Sepolia ETH and test tNOCK, with no monetary value.
+            <span className="mt-2 block">
+              <strong className="text-[#0B0B0B]">Auto-peg keeper.</strong> An operator-run keeper
+              continuously trades this pool to track the live{" "}
+              <a href="https://www.coingecko.com/en/coins/nockchain" target="_blank" rel="noreferrer" className="underline decoration-[#737373] underline-offset-2">
+                NOCK/ETH market price
+              </a>
+              , so the pool price stays consistent with real NOCK at all times. The keeper&apos;s own
+              trades pay the same fees — meaning as a liquidity provider your tNOCK exposure tracks the
+              real NOCK price (you bear the same price risk as holding NOCK).
+            </span>
           </div>
           {amm ? (
             <a

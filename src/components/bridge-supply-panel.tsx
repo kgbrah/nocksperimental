@@ -60,10 +60,10 @@ export function BridgeSupplyPanel() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <Metric icon={<Coins size={13} />} label="NOCK mined (testnet total)" value={d ? `${d.nock.mined.nock} NOCK` : "…"} sub={d ? `${d.nock.chainHeight.toLocaleString()} blocks × ${d.nock.blockRewardNock.toLocaleString()} NOCK` : undefined} />
               <Metric icon={<Coins size={13} />} label="NOCK spendable" value={d ? `${d.nock.spendable.nock} NOCK` : "…"} sub="unlocked, miner-controlled" />
-              <Metric icon={<ArrowLeftRight size={13} />} label="NOCK locked in bridge" value={d ? `${d.bridge.lockedNock} NOCK` : "…"} sub={d ? `${d.bridge.depositsMinted} deposit(s) · ${d.bridge.operatorModel}` : undefined} />
-              <Metric icon={<Coins size={13} />} label="tNOCK total supply (Base)" value={d ? `${d.tnock.totalSupply.tnock.toLocaleString("en-US", { maximumFractionDigits: 4 })} tNOCK` : "…"} sub="wrapped on Base Sepolia" />
-              <Metric icon={<ShieldCheck size={13} />} label="tNOCK minted / burned" value={d ? `${d.tnock.mintedNock} / ${d.tnock.burnedNock}` : "…"} sub="cumulative (withdrawals disabled → 0 burns)" />
-              <Metric icon={<ArrowLeftRight size={13} />} label="Bridge fee retained" value={d ? `${d.bridge.bridgeFeeNock} NOCK` : "…"} sub="locked, not minted" />
+              <Metric icon={<ArrowLeftRight size={13} />} label="tNOCK outstanding (Base)" value={d ? `${d.tnock.totalSupply.tnock.toLocaleString("en-US", { maximumFractionDigits: 4 })} tNOCK` : "…"} sub="live supply · net of deposits (mint) − withdrawals (burn)" />
+              <Metric icon={<ShieldCheck size={13} />} label="NOCK backing required (1:1)" value={d ? `${d.bridge.lockedNock} NOCK` : "…"} sub="= outstanding tNOCK (the 1:1 target)" />
+              <Metric icon={<ArrowLeftRight size={13} />} label="NOCK off-miner (custody)" value={d ? `${d.bridge.custodyNock} NOCK` : "…"} sub={d ? `covers the target · ${d.bridge.depositsMinted} deposit(s) · ${d.bridge.operatorModel}` : undefined} />
+              <Metric icon={<ArrowLeftRight size={13} />} label="Bridge direction" value="two-way" sub="NOCK→tNOCK deposit · tNOCK→NOCK withdrawal" />
             </div>
 
             {/* Conservation invariant */}
@@ -85,10 +85,9 @@ export function BridgeSupplyPanel() {
               </div>
               <p className="mt-2 font-mono text-[11px] leading-relaxed text-[#4A4A4A]">
                 {d
-                  ? `Conservation: spendable + locked = ${d.conservation.consistencyPct.toFixed(2)}% of mined ` +
-                    `(residual ${d.conservation.residualNock} NOCK = genesis + immature coinbase). ` +
-                    `Spendable NOCK + tNOCK = ${d.conservation.spendablePlusTnockNock} NOCK; mined = ${d.conservation.minedNock} NOCK. ` +
-                    `NOCK is only ever created by mining — a bridge-deposit MOVES it (spendable → locked) and mints an equal tNOCK minus fee.`
+                  ? `Backing: ${d.bridge.custodyNock} NOCK has moved off the miner (into the bridge/house/locks) — covering the ${d.tnock.outstandingNock} NOCK needed to back outstanding tNOCK ` +
+                    `(${d.conservation.consistencyPct.toFixed(0)}% coverage; residual ${d.conservation.residualNock} NOCK is bridge float + fees + immature coinbase). ` +
+                    `mined = ${d.conservation.minedNock} NOCK. NOCK is only ever created by mining — a deposit LOCKS NOCK and mints an equal tNOCK; a withdrawal burns tNOCK and RELEASES the NOCK. Custody is a conservative upper bound (it also includes immature coinbase).`
                   : "…"}
               </p>
               {d ? (

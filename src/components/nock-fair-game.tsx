@@ -124,28 +124,50 @@ export function NockFairGame() {
     } finally { setBusy(null); }
   }, [resync]);
 
+  // Settlement runs server-side in a queued worker, so play/reveal return
+  // immediately and we poll the round to its target phase. resync() maps the
+  // round's server status onto our phase + state as a side effect.
+  const pollPhase = useCallback(async (id: string, targets: Phase[], timeoutMs: number): Promise<Phase | null> => {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 5000));
+      let ph: Phase | null = null;
+      try { ph = await resync(id); } catch { /* transient — keep polling */ }
+      if (ph && targets.includes(ph)) return ph;
+    }
+    return null;
+  }, [resync]);
+
   const open = () => run("open", async () => {
     const r = await postJSON("/round/open", { chain: "nock", pot: 2_000_000 });
     setRoundId(r.roundId ?? null); setCommitH(r.commit_h ?? null); setPhase("open");
   });
   const play = () => run("play", async () => {
     const r = await postJSON("/round/play", { roundId });
-    if (r.funding_tx == null || r.funding_height == null || !r.escrow) {
-      throw new Error("play: malformed funding response from orchestrator");
+    // Newer orchestrator queues funding and returns {queued:true}; older one
+    // funded inline and returned the escrow. Handle both, then poll to FUNDED.
+    if (r.funding_tx && r.funding_height != null && r.escrow) {
+      setFunding({ tx: r.funding_tx, height: r.funding_height, first: r.escrow.first, note_hash: r.escrow.note_hash });
+      setPhase("funded");
+      return;
     }
-    setFunding({ tx: r.funding_tx, height: r.funding_height, first: r.escrow.first, note_hash: r.escrow.note_hash });
-    setPhase("funded");
+    if (!roundId) throw new Error("no round to fund");
+    const reached = await pollPhase(roundId, ["funded"], 240_000);
+    if (reached !== "funded") throw new Error("funding is taking longer than expected — start a new round to retry");
   }, roundId);
   const reveal = () => run("reveal", async () => {
-    // The reveal response carries receipts + chain verdict atomically (no
-    // partial-failure window); the settlement is committed before the
-    // fallback read so an older orchestrator that omits them can never
-    // swallow a completed payout.
     const r = await postJSON("/round/reveal", { roundId });
-    if (!r.settlement) throw new Error("reveal: orchestrator returned no settlement");
-    setSettlement({ ...r.settlement, winner: r.winner });
-    const full = r.receipts ? r : await getJSON(`/round/${roundId}`);
-    setReceipts(full.receipts ?? null); setChainVerified(full.chainVerified ?? null); setPhase("settled");
+    // Inline settlement (older orchestrator) carries the result directly.
+    if (r.settlement) {
+      setSettlement({ ...r.settlement, winner: r.winner });
+      const full = r.receipts ? r : await getJSON(`/round/${roundId}`);
+      setReceipts(full.receipts ?? null); setChainVerified(full.chainVerified ?? null); setPhase("settled");
+      return;
+    }
+    // Queued settlement — poll the round to SETTLED/REVEALED.
+    if (!roundId) throw new Error("no round to reveal");
+    const reached = await pollPhase(roundId, ["settled"], 240_000);
+    if (reached !== "settled") throw new Error("settlement is taking longer than expected — check back shortly");
   }, roundId);
 
   if (availability !== "ready") {

@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { Menu, X } from "lucide-react";
 import { ConnectButton, NetworkSwitcher } from "@/components/web3/wallet-controls";
 
 const NAV = [
@@ -14,6 +16,8 @@ const NAV = [
 ];
 
 export function SiteHeader() {
+  const [open, setOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-40 border-b-2 border-[#0B0B0B] bg-[#FFFFFF]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -38,8 +42,43 @@ export function SiteHeader() {
             <NetworkSwitcher />
           </div>
           <ConnectButton />
+          {/* Mobile menu toggle — the desktop nav is hidden below md. */}
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            className="inline-flex items-center justify-center border-2 border-[#0B0B0B] p-1.5 md:hidden"
+          >
+            {open ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile dropdown nav */}
+      {open && (
+        <nav
+          className="border-t-2 border-[#0B0B0B] bg-[#FFFFFF] md:hidden"
+          aria-label="Primary mobile"
+        >
+          <ul className="mx-auto max-w-6xl px-4 py-2">
+            {NAV.map((n) => (
+              <li key={n.href} className="border-b border-[#E5E5E5] last:border-b-0">
+                <Link
+                  href={n.href}
+                  onClick={() => setOpen(false)}
+                  className="block py-3 font-mono text-sm uppercase tracking-[0.12em] text-[#0B0B0B]"
+                >
+                  {n.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="mx-auto max-w-6xl border-t border-[#E5E5E5] px-4 py-3 sm:hidden">
+            <NetworkSwitcher />
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

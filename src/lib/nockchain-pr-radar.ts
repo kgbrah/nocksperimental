@@ -321,16 +321,16 @@ const pullRequests = [
   }),
   createPullRequest({
     number: 124,
-    title: "AI PoW Puzzle for AI Compute Network",
+    title: "AI Proof-of-Useful-Work (matmul) — ai-pow-miner + ai-pow-zk compact recursive STARK",
     draft: false,
-    updatedAt: "2026-06-07T12:31:51Z",
+    updatedAt: "2026-06-10T12:36:38Z",
     author: "tacryt-socryp",
     riskClass: "compute-proof-puzzle",
     priority: "high",
-    receiptFields: ["puzzleId", "proofDifficulty", "solverOutputHash"],
+    receiptFields: ["puzzleId", "proofDifficulty", "solverOutputHash", "compactCertificateBytes", "certificateVerifierKeyDigest"],
     forbiddenFields: ["privateSolverKey"],
     nocksperimentalAction:
-      "Review PR #124 as compute/proof benchmark material before adding any trust or x402 evidence class."
+      "Full implementation now OPEN (135k+ LOC, two new crates: ai-pow-miner with 'pearl' mining + ai-pow-zk Plonky3 3-layer compact recursive STARK, ~125KB certificate / ~32s cold build; merge-mined matmul PoUW that subsidizes AI inference/training; binds Front #2 'AI Compute Market Fork A'). Branch is CONFLICTING (needs rebase on master) and REVIEW_REQUIRED — not merged. Treat the certificate as a future compute-benchmark / proving-demand evidence class, NOT current runtime authority. Mirror the compact-certificate byte size + verifier-key digest as evidence fields only after it merges; never ingest a solver private key."
   }),
   createPullRequest({
     number: 126,

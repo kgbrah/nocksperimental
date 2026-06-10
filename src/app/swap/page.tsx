@@ -16,10 +16,16 @@ export default function SwapPage() {
     <main className="min-h-screen bg-[#FFFFFF] text-[#0B0B0B]">
       <section className="border-b border-[#0B0B0B] bg-[#FFFFFF]">
         <div className="mx-auto max-w-3xl px-5 py-8 lg:px-8">
-          <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/bridge">
-            <ArrowLeft size={16} aria-hidden="true" />
-            Bridge
-          </Link>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/bridge">
+              <ArrowLeft size={16} aria-hidden="true" />
+              Bridge
+            </Link>
+            <Link className="inline-flex items-center gap-2 text-sm font-medium" href="/swap/out">
+              <ArrowLeftRight size={16} aria-hidden="true" />
+              Swap out to ETH
+            </Link>
+          </div>
           <div className="mt-5 flex items-center gap-2">
             <ArrowLeftRight size={18} aria-hidden="true" />
             <span className="font-mono text-xs uppercase tracking-[0.14em] text-[#4A4A4A]">

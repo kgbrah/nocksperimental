@@ -76,9 +76,11 @@ export function baseUnitsToNicks(baseUnits: bigint): bigint {
   return baseUnits / BASE_UNITS_PER_NICK;
 }
 
-/** Base58 posture mirrored from the orchestrator + iris-provider validation. */
+/** Base58 posture mirrored from the orchestrator + iris-provider validation.
+ *  NOCK v1 master addresses base58-encode to ~132 chars, so the upper bound
+ *  must exceed 128 (a 128 cap rejects every real address, including the house). */
 export function isNockAddress(value: string): boolean {
-  return /^[1-9A-HJ-NP-Za-km-z]{32,128}$/.test(value);
+  return /^[1-9A-HJ-NP-Za-km-z]{32,160}$/.test(value);
 }
 
 /** bytes32 lock root binding a burn to its fakenet payout address. */

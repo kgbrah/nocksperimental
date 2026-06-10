@@ -7,7 +7,7 @@
 import { createAppKit } from "@reown/appkit/react";
 import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
 import { baseSepolia, base, type AppKitNetwork } from "@reown/appkit/networks";
-import { WagmiProvider, cookieStorage, createStorage } from "wagmi";
+import { WagmiProvider, cookieStorage, createStorage, http } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { NockWalletProvider } from "@/components/web3/nock-wallet-provider";
@@ -24,11 +24,26 @@ const projectId = envProjectId && envProjectId.length > 0 ? envProjectId : DEFAU
 // layer (src/lib/networks.ts isChainEnabled) is what actually prevents real writes on the gated chain.
 const networks: [AppKitNetwork, ...AppKitNetwork[]] = [baseSepolia, base];
 
+// Read Base Sepolia through our same-origin proxy (/api/rpc/base -> Alchemy,
+// server-side key) instead of wagmi's default PUBLIC RPC, which rate-limits hard
+// and broke balance/quote reads (notably on mobile). viem's http() needs an
+// absolute URL, so build it from the page origin on the client; the SSR fallback
+// is never actually used (every wagmi consumer gates on isConnected, false on the
+// server) but must be absolute.
+const RPC_PROXY_PATH = "/api/rpc/base";
+const baseSepoliaRpc =
+  typeof window !== "undefined"
+    ? `${window.location.origin}${RPC_PROXY_PATH}`
+    : `https://nocksperimental.com${RPC_PROXY_PATH}`;
+
 const wagmiAdapter = new WagmiAdapter({
   projectId,
   networks,
   ssr: true,
-  storage: createStorage({ storage: cookieStorage })
+  storage: createStorage({ storage: cookieStorage }),
+  transports: {
+    [baseSepolia.id]: http(baseSepoliaRpc),
+  },
 });
 
 export const wagmiConfig = wagmiAdapter.wagmiConfig;
