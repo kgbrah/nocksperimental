@@ -225,6 +225,7 @@ export function NockAmm() {
     run("remove", async () => {
       if (!amm || !publicClient || !pool) throw new Error("pool unavailable");
       const pct = Math.max(0, Math.min(100, Number(removePct) || 0));
+      if (pct <= 0) throw new Error("enter a removal percentage above 0");
       const shares = (pool.lpBalance * BigInt(Math.round(pct * 100))) / BigInt(10000);
       if (shares <= BigInt(0)) throw new Error("no LP balance to remove");
       const hash = await writeContractAsync({

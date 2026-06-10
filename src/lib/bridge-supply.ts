@@ -84,6 +84,9 @@ export async function getBridgeSupply() {
   // (B) tNOCK  <=  locked        (every tNOCK is backed by locked NOCK)
   const residualNicks = minedNicks - spendableNicks - lockedNicks;
   const backed = tnockSupplyNicks <= lockedNicks;
+  // A negative residual means spendable + locked exceeds mined — conservation is
+  // broken (double-count or snapshot drift) and must be flagged, not absolute-valued away.
+  const conserved = residualNicks >= ZERO;
   const consistencyPct =
     minedNicks > ZERO ? Number(((spendableNicks + lockedNicks) * BigInt(10000)) / minedNicks) / 100 : 0;
 
@@ -110,8 +113,9 @@ export async function getBridgeSupply() {
     conservation: {
       minedNock: nockFromNicks(minedNicks),
       spendablePlusTnockNock: nockFromNicks(spendableNicks + tnockSupplyNicks),
-      residualNock: nockFromNicks(residualNicks < ZERO ? -residualNicks : residualNicks),
+      residualNock: `${conserved ? "" : "-"}${nockFromNicks(residualNicks < ZERO ? -residualNicks : residualNicks)}`,
       backed,
+      conserved,
       consistencyPct
     },
     baseError

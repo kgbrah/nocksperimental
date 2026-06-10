@@ -70,7 +70,7 @@ export function BridgeSupplyPanel() {
             <div className="mt-4 border-t-2 border-dashed border-[#0B0B0B] pt-4">
               <div className="flex flex-wrap items-center gap-2">
                 {d ? (
-                  d.conservation.backed ? (
+                  d.conservation.backed && d.conservation.conserved ? (
                     <ShieldCheck size={16} aria-hidden="true" />
                   ) : (
                     <ShieldAlert size={16} aria-hidden="true" />
@@ -78,7 +78,8 @@ export function BridgeSupplyPanel() {
                 ) : null}
                 <p className="font-mono text-[11px] uppercase tracking-[0.12em]">
                   {d
-                    ? `Backing: every tNOCK is backed by locked NOCK — ${d.conservation.backed ? "VERIFIED" : "CHECK"}`
+                    ? `Backing: every tNOCK is backed by locked NOCK — ${d.conservation.backed ? "VERIFIED" : "CHECK"}` +
+                      (d.conservation.conserved ? "" : " · CONSERVATION BROKEN (negative residual)")
                     : "Backing: …"}
                 </p>
               </div>

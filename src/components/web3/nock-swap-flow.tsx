@@ -202,14 +202,42 @@ export function NockSwapFlow() {
     run("redeem", async () => {
       if (!burnTx) throw new Error("burn first (or paste a burn tx hash)");
       if (!isNockAddress(nockAddress)) throw new Error("enter the Nock address the burn committed to");
-      // The orchestrator verifies the burn on Base, then funds + waits for the
-      // fakenet payout tx to be mined — expect this call to take a minute or two.
+      // The orchestrator verifies the burn (fast) then funds + waits for the
+      // fakenet payout to mine — work that can exceed a CDN's ~100s request
+      // limit, so the trigger request may time out even though the payout
+      // completes server-side. We send the trigger, then POLL the status
+      // endpoint (a fast read) for the real outcome.
       try {
         const out = await postJSON("/bridge/redeem", { burnTxHash: burnTx, nockAddress });
         setRedemption(out);
+        if (out.status === "PAID") return;
+        if (out.status === "FAILED") throw new Error(out.note || "payout failed — your burn remains valid; retry");
       } catch (e) {
-        throw asOrchestratorError(e);
+        const msg = e instanceof Error ? e.message : String(e);
+        // Clean application errors (needs confirmations, bad lockRoot, …) come
+        // back fast — surface them. Only fall through to polling when the long
+        // payout outlives the request (network/timeout/5xx).
+        if (!/failed to fetch|networkerror|load failed|\(5\d\d\)|timed?\s?out/i.test(msg)) {
+          throw asOrchestratorError(e);
+        }
       }
+      // Poll until the server-side payout resolves.
+      const deadline = Date.now() + 240_000;
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 8000));
+        let r: Redemption | null = null;
+        try {
+          r = (await orchestratorGet(`/bridge/redemption/${burnTx}`)) as Redemption;
+        } catch {
+          /* 404 (not recorded yet) or transient/busy while the payout blocks — keep polling */
+        }
+        if (r) {
+          setRedemption(r);
+          if (r.status === "PAID") return;
+          if (r.status === "FAILED") throw new Error(r.note || "payout failed — your burn remains valid; retry");
+        }
+      }
+      throw new Error("payout is taking longer than expected — it may still complete; use 'check status' shortly");
     });
 
   const checkRedemption = () =>

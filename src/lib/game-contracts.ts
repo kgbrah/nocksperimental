@@ -45,7 +45,10 @@ export function tNockAddress(chainId: number | undefined): `0x${string}` | undef
 }
 
 export function flipAssetAvailable(chainId: number | undefined, asset: FlipAsset): boolean {
-  return forfeitFlipAddress(chainId, asset) !== undefined;
+  if (forfeitFlipAddress(chainId, asset) === undefined) return false;
+  // An ERC20-staked game also needs the token itself — without it the approve
+  // step is skipped and play() reverts on-chain.
+  return asset !== "tnock" || tNockAddress(chainId) !== undefined;
 }
 
 // Mirrors the ForfeitFlip.Status enum order on-chain. Shared so server + client never use bare 2/3.
