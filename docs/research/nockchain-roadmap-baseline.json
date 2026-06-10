@@ -1,0 +1,381 @@
+{
+  "version": "v0",
+  "capturedAt": "2026-06-10T01:49:15.187Z",
+  "roadmapMilestones": [
+    {
+      "status": "COMPLETED",
+      "title": "EDEN Paper Published"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Zorp Corporation Announced"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "First Nockchain Newsletter"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Zorp's $5M Seed Round"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "NockApp Framework Alpha"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "ZK-PoW Introduced"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Internal Devnet Launch"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Lightpaper Published"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Open Source Release"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Wallet & Genesis Details"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Mainnet Launch"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "NockVM Paper Published"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Jock Language Alpha"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Ecosystem Takes Off"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "First Mining Pool"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "First Programmability Features"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "First Onchain NockApp"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "NockApp SDK v1"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Bridge to Base"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Protocol Upgrade"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Phase 2 Consensus Upgrade to ASERT"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Demand Paging (PMA)"
+    },
+    {
+      "status": "COMPLETED",
+      "title": "Networking Upgrade"
+    },
+    {
+      "status": "CURRENT",
+      "title": "Bridge Withdrawals"
+    },
+    {
+      "status": "PLANNED",
+      "title": "AI Compute Market Launch"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Full Nock ZKVM Completion"
+    },
+    {
+      "status": "PLANNED",
+      "title": "ZK Verification Opcode"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Forced Data Availability"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Privacy Pool App"
+    },
+    {
+      "status": "PLANNED",
+      "title": "ZK Compute Markets"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Native Token Standard"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Post-Quantum Secure Signatures"
+    },
+    {
+      "status": "PLANNED",
+      "title": "Private DeFi Foundations"
+    }
+  ],
+  "writings": [
+    "announcing-the-whitepaper",
+    "base",
+    "bridging-the-gap",
+    "nockapp",
+    "nockchain-phase-2",
+    "nockchain-roadmap-2026",
+    "the-pma",
+    "transactions",
+    "wallet-sdk-bridge"
+  ],
+  "docsSiteIndex": [
+    "/",
+    "/architecture/research-backing",
+    "/architecture/technical-roadmap",
+    "/architecture/why-nockchain",
+    "/architecture/why-nockchain/architecture",
+    "/architecture/why-nockchain/features",
+    "/architecture/why-nockchain/running-a-node",
+    "/architecture/why-nockchain/transactions",
+    "/architecture/why-nockchain/using-a-wallet",
+    "/architecture/why-nockchain/zero-knowledge-proofs",
+    "/introduction/faq",
+    "/introduction/whitepaper",
+    "/nockapp/what-is-nock-isa",
+    "/nockapp/what-is-nockapp",
+    "/nockapp/what-is-nockapp/building-with-nockup",
+    "/nockapp/what-is-nockapp/demos",
+    "/nockapp/what-is-nockapp/development-and-testing",
+    "/nockapp/what-is-nockapp/overview",
+    "/nockapp/what-is-nockapp/troubleshooting",
+    "/reference-kernel/architecture",
+    "/reference-kernel/overview",
+    "/reference-runtime/drivers",
+    "/reference-runtime/nockvm",
+    "/reference-runtime/overview",
+    "/resources/brand-kit",
+    "/resources/official-links",
+    "/transaction-engine/overview",
+    "/transaction-engine/overview/cryptographic-foundations",
+    "/transaction-engine/overview/fees",
+    "/transaction-engine/overview/intent-script",
+    "/transaction-engine/overview/intent-trees",
+    "/transaction-engine/overview/note-data",
+    "/transaction-engine/overview/protocol-evolution",
+    "/transaction-engine/overview/utxo-model",
+    "/transaction-engine/overview/validation-pipeline",
+    "/usdnock-asset/what-is-usdnock",
+    "/usdnock-asset/what-is-usdnock/applications",
+    "/usdnock-asset/what-is-usdnock/compute-markets",
+    "/usdnock-asset/what-is-usdnock/overview"
+  ],
+  "docPages": {
+    "technical-roadmap": {
+      "url": "https://docs.nockchain.org/architecture/technical-roadmap.md",
+      "missing": false,
+      "sha256": "efe1f31dce43f104ecbe1d9be8a3dd50f4be63f29314fe91b5603534fa704367",
+      "signals": {
+        "optimistic execution": true,
+        "fraud-proof": true,
+        "oracle": true,
+        "prediction market": true,
+        "token standard": true,
+        "post-quantum": true
+      },
+      "checklist": [
+        {
+          "done": true,
+          "item": "30 Jun 2023. EDEN paper published — a proof-friendly combinator VM and instruction set for verifiable computing."
+        },
+        {
+          "done": true,
+          "item": "29 Aug 2023. Zorp Corporation announced."
+        },
+        {
+          "done": true,
+          "item": "9 Dec 2023. First Nockchain newsletter."
+        },
+        {
+          "done": true,
+          "item": "19 Jan 2024. Zorp's $5M seed round (led by Delphi Ventures)."
+        },
+        {
+          "done": true,
+          "item": "22 Aug 2024. NockApp framework alpha — Crown (Rust library) and the durable Nock runtime."
+        },
+        {
+          "done": true,
+          "item": "7 Nov 2024. ZK-PoW introduced — technical manifesto on Zero-Knowledge Proof-of-Work."
+        },
+        {
+          "done": true,
+          "item": "13 Dec 2024. Internal devnet launch; mainnet roadmap announced."
+        },
+        {
+          "done": true,
+          "item": "3 Jan 2025. Lightpaper published."
+        },
+        {
+          "done": true,
+          "item": "2 May 2025. Open-source release — Nockchain client released under MIT license."
+        },
+        {
+          "done": true,
+          "item": "9 May 2025. Wallet, issuance, and verifiably-fair genesis details confirmed."
+        },
+        {
+          "done": true,
+          "item": "21 May 2025. Mainnet launch — genesis block attests to Bitcoin block 897,767."
+        },
+        {
+          "done": true,
+          "item": "19 Jun 2025. NockVM paper published — compiling custom languages as efficiently verifiable VMs."
+        },
+        {
+          "done": true,
+          "item": "26 Jun 2025. Jock language alpha — Swift-like ergonomics for the Nock ecosystem."
+        },
+        {
+          "done": true,
+          "item": "3 Jul 2025. Ecosystem takes off — mining decentralizes; first block explorer (NockBlocks)."
+        },
+        {
+          "done": true,
+          "item": "31 Jul 2025. First mining pool (H9)."
+        },
+        {
+          "done": true,
+          "item": "17 Oct 2025. First programmability features — Transaction Engine v1 (lock-script programmability and onchain data) at bl"
+        },
+        {
+          "done": true,
+          "item": "21 Nov 2025. First onchain NockApp documented and published."
+        },
+        {
+          "done": true,
+          "item": "28 Nov 2025. NockApp SDK v1 released for developers."
+        },
+        {
+          "done": true,
+          "item": "19 Dec 2025. Bridge to Base — wrapped $NOCK available via the Base mobile app."
+        },
+        {
+          "done": true,
+          "item": "Protocol upgrade (Bythos). Proper commitment of the lock Merkle proof to the witness hash, transaction-fee reduction, an"
+        },
+        {
+          "done": true,
+          "item": "Phase 2 consensus upgrade (Aletheia). ASERT difficulty adjustment for smoother block times and faster response to hashra"
+        },
+        {
+          "done": false,
+          "item": "Demand paging (PMA). *In progress.* Reduce node memory to \\~16 GB regardless of state size, enabling low-memory nodes to"
+        },
+        {
+          "done": false,
+          "item": "Networking upgrade. Faster initial sync, metadata embedded in payloads, batch transaction propagation."
+        },
+        {
+          "done": false,
+          "item": "Bridge withdrawals. Two-way transfers between Nockchain and Base."
+        },
+        {
+          "done": false,
+          "item": "Intent Script expansion. Expanded optimistic-execution opcode support, making Nockchain a full programmability platform."
+        },
+        {
+          "done": false,
+          "item": "Optimistic execution. Intent-based programmability secured by economic disputes (fraud proofs)."
+        },
+        {
+          "done": false,
+          "item": "Fraud-proof system. Execution correctness enforced by fraud proofs; application logic expressed as verifiable spend cond"
+        },
+        {
+          "done": false,
+          "item": "Oracle primitives. Disputeable, economically secured price feeds, event outcomes, and offchain facts."
+        },
+        {
+          "done": false,
+          "item": "Prediction markets. Canonical application showcasing the full programmability stack."
+        },
+        {
+          "done": false,
+          "item": "Private transactions. Private Nock transactions integrated at the transaction level."
+        },
+        {
+          "done": false,
+          "item": "Native token standard. Composable assets on top of the programmable platform."
+        },
+        {
+          "done": false,
+          "item": "Private DeFi foundations. Foundations for private applications and financial primitives."
+        },
+        {
+          "done": false,
+          "item": "Post-quantum secure signatures. Hardening Nockchain accounts and transactions against future quantum adversaries."
+        }
+      ]
+    },
+    "fees": {
+      "url": "https://docs.nockchain.org/transaction-engine/overview/fees.md",
+      "missing": false,
+      "sha256": "cc0b952e20773d9f41be5682b69e97dee6127bf2b5bcec518d2f61f70c5b1997",
+      "signals": {
+        "256 nicks": true,
+        "input-fee-divisor": true
+      }
+    },
+    "intent-script": {
+      "url": "https://docs.nockchain.org/transaction-engine/overview/intent-script.md",
+      "missing": false,
+      "sha256": "627934a131f792a0d816341c0faf91c252f155300b0c33b3a377478be1325ee4",
+      "signals": {
+        "zkp": true,
+        "mrk": true,
+        "cmp": true,
+        "planned": true
+      }
+    },
+    "compute-markets": {
+      "url": "https://docs.nockchain.org/usdnock-asset/what-is-usdnock/compute-markets.md",
+      "missing": false,
+      "sha256": "572081e6c885db99e8ea14ba039aaed12f7fa852e214f3b48732c38393e0f9fe",
+      "signals": {
+        "Fork A": true,
+        "Fork B": true,
+        "trusted-setup": true,
+        "4,000,000": true
+      }
+    },
+    "protocol-evolution": {
+      "url": "https://docs.nockchain.org/transaction-engine/overview/protocol-evolution.md",
+      "missing": false,
+      "sha256": "39902dfa4fc107cf85ab1941649844812158ff5c50e89e62fcfdcf98f0d8b16d",
+      "signals": {
+        "activation_height": true,
+        "Bythos": true,
+        "Aletheia": true,
+        "Nous": true
+      }
+    }
+  }
+}
