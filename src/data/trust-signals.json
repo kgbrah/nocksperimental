@@ -156,6 +156,90 @@
         "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
         "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
       }
+    },
+    {
+      "id": "badge-forfeit-roulette-model-attested",
+      "label": "Forfeit Roulette (fairness) (model-attested)",
+      "kind": "model-attested",
+      "status": "verified",
+      "reportSlug": "forfeit-roulette-fairness",
+      "fixtureId": "forfeit-roulette-fairness-v0",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "expiresAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:15971a243afdd65e7e4b78a59e7c108adb4c499e7373d9b9f17e7ab1f79750a6",
+        "snapshotRoot": "e530990846751537",
+        "signature": "KBFxv4MyoEjvZWnHmDmJMeC30DyP4g8K6lq2pd8ves2JRrFy4lgJEVERS5NQF6gwCthlA+0E1F4jiv2tyGsUBA==",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "uncommitted",
+        "build": "lab-reissue"
+      }
+    },
+    {
+      "id": "badge-forfeit-slots-model-attested",
+      "label": "Forfeit Slots (fairness) (model-attested)",
+      "kind": "model-attested",
+      "status": "verified",
+      "reportSlug": "forfeit-slots-fairness",
+      "fixtureId": "forfeit-slots-fairness-v0",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "expiresAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:7de915e64de11d274fe9103b703d78ab593994fdff2194050695f90c9847024c",
+        "snapshotRoot": "427ceff7d2dc05d1",
+        "signature": "0x8tpV2JTmdGR57nXQZEeEy2QevZLIk9uO7cgfa7Dkms3vAYutagsPrZEmhtzRs3oa1H+99jvC85A0TAkP4VCA==",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "uncommitted",
+        "build": "lab-reissue"
+      }
+    },
+    {
+      "id": "badge-forfeit-highcard-model-attested",
+      "label": "Forfeit High Card (fairness) (model-attested)",
+      "kind": "model-attested",
+      "status": "verified",
+      "reportSlug": "forfeit-highcard-fairness",
+      "fixtureId": "forfeit-highcard-fairness-v0",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "expiresAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:1b7ec5a1380ae580e878610c787804d687b423bf9735e7b4814600ef619181ef",
+        "snapshotRoot": "41ecb8800fc7f7df",
+        "signature": "5rLj3XsoDtJ8yFSMHxJI74GtS3LacIV+5Ca/qlOpZ759joixwX0JsH7k8BoXRkBzameu9WkaIlxqitpZ8+OZDA==",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "uncommitted",
+        "build": "lab-reissue"
+      }
+    },
+    {
+      "id": "badge-forfeit-limbo-model-attested",
+      "label": "Forfeit Limbo (fairness) (model-attested)",
+      "kind": "model-attested",
+      "status": "verified",
+      "reportSlug": "forfeit-limbo-fairness",
+      "fixtureId": "forfeit-limbo-fairness-v0",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "expiresAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:b826c890d59565ff142c81b5764a80caf65b452bb947d96cd9de5c59dd1ac0ad",
+        "snapshotRoot": "e20ee592bdf03a70",
+        "signature": "j+FAChtBmBzsYhv7JexeWzR4cJAPAQ8jDwNjY+hjbQZ8Ro6d7Sg9BLD/t8lFAlD56CVkGhJ+cGO2GpVv6XxKBA==",
+        "invariantPacks": []
+      },
+      "sourceAnchor": {
+        "commit": "uncommitted",
+        "build": "lab-reissue"
+      }
     }
   ],
   "badgeIssuanceReceipts": [
@@ -346,6 +430,114 @@
         "status": "valid",
         "algorithm": "ed25519",
         "checkedAt": "2026-06-08T02:10:00.000Z"
+      }
+    },
+    {
+      "id": "issue-badge-forfeit-roulette-model-attested",
+      "badgeId": "badge-forfeit-roulette-model-attested",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
+      "payloadDigest": "sha256:263e64ef10761f36c1c7ecb335cee8ad781c5bcfbd39912b1928ea3df04e1794",
+      "signature": "KBFxv4MyoEjvZWnHmDmJMeC30DyP4g8K6lq2pd8ves2JRrFy4lgJEVERS5NQF6gwCthlA+0E1F4jiv2tyGsUBA==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-roulette-model-attested",
+        "status": "verified",
+        "reportHash": "sha256:15971a243afdd65e7e4b78a59e7c108adb4c499e7373d9b9f17e7ab1f79750a6",
+        "snapshotRoot": "e530990846751537",
+        "issuedAt": "1970-01-01T00:00:00.000Z",
+        "expiresAt": "1970-01-01T00:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "uncommitted",
+          "build": "lab-reissue"
+        },
+        "kind": "model-attested"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "1970-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "issue-badge-forfeit-slots-model-attested",
+      "badgeId": "badge-forfeit-slots-model-attested",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
+      "payloadDigest": "sha256:75d7bc03cd9740baa781fe18342b10138a5c864ed2d9daf5fb8e40c0622e45f3",
+      "signature": "0x8tpV2JTmdGR57nXQZEeEy2QevZLIk9uO7cgfa7Dkms3vAYutagsPrZEmhtzRs3oa1H+99jvC85A0TAkP4VCA==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-slots-model-attested",
+        "status": "verified",
+        "reportHash": "sha256:7de915e64de11d274fe9103b703d78ab593994fdff2194050695f90c9847024c",
+        "snapshotRoot": "427ceff7d2dc05d1",
+        "issuedAt": "1970-01-01T00:00:00.000Z",
+        "expiresAt": "1970-01-01T00:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "uncommitted",
+          "build": "lab-reissue"
+        },
+        "kind": "model-attested"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "1970-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "issue-badge-forfeit-highcard-model-attested",
+      "badgeId": "badge-forfeit-highcard-model-attested",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
+      "payloadDigest": "sha256:1890e74ac455e5b22434ff6055ed27a80dee5d768f6bc8a098c50ed7ebd56a8b",
+      "signature": "5rLj3XsoDtJ8yFSMHxJI74GtS3LacIV+5Ca/qlOpZ759joixwX0JsH7k8BoXRkBzameu9WkaIlxqitpZ8+OZDA==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-highcard-model-attested",
+        "status": "verified",
+        "reportHash": "sha256:1b7ec5a1380ae580e878610c787804d687b423bf9735e7b4814600ef619181ef",
+        "snapshotRoot": "41ecb8800fc7f7df",
+        "issuedAt": "1970-01-01T00:00:00.000Z",
+        "expiresAt": "1970-01-01T00:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "uncommitted",
+          "build": "lab-reissue"
+        },
+        "kind": "model-attested"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "1970-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "issue-badge-forfeit-limbo-model-attested",
+      "badgeId": "badge-forfeit-limbo-model-attested",
+      "issuedAt": "1970-01-01T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
+      "payloadDigest": "sha256:15990c77aa462e6cb634148d85968d0e1614585a330e46d67e8468f73c1b7826",
+      "signature": "j+FAChtBmBzsYhv7JexeWzR4cJAPAQ8jDwNjY+hjbQZ8Ro6d7Sg9BLD/t8lFAlD56CVkGhJ+cGO2GpVv6XxKBA==",
+      "signedPayload": {
+        "badgeId": "badge-forfeit-limbo-model-attested",
+        "status": "verified",
+        "reportHash": "sha256:b826c890d59565ff142c81b5764a80caf65b452bb947d96cd9de5c59dd1ac0ad",
+        "snapshotRoot": "e20ee592bdf03a70",
+        "issuedAt": "1970-01-01T00:00:00.000Z",
+        "expiresAt": "1970-01-01T00:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "uncommitted",
+          "build": "lab-reissue"
+        },
+        "kind": "model-attested"
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "1970-01-01T00:00:00.000Z"
       }
     }
   ],

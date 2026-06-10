@@ -232,11 +232,22 @@ function main() {
     assert(lRate > 0.465 && lRate < 0.525, `limbo win rate ≈ 49.5% at 2.00× (got ${(lRate * 100).toFixed(1)}%)`);
   }
 
-  // 11) The catalog wires every game to its badge + launch-evidence ids.
+  // 11) The catalog wires every game to its badge + launch-evidence ids. flip/dice
+  // carry app-report "verified" badges; the 4 newer games are honestly model-attested
+  // (mock-fakenet fixtures attest the model, not a deployed kernel) — their badge id
+  // ends in -model-attested, matching what issue-badge actually mints.
   assertEqual(poc.pocGames.length, 6, "six POC games in the catalog");
-  for (const id of ["forfeit-flip", "forfeit-dice", "forfeit-roulette", "forfeit-slots", "forfeit-highcard", "forfeit-limbo"]) {
+  const badgeSuffix = {
+    "forfeit-flip": "verified",
+    "forfeit-dice": "verified",
+    "forfeit-roulette": "model-attested",
+    "forfeit-slots": "model-attested",
+    "forfeit-highcard": "model-attested",
+    "forfeit-limbo": "model-attested"
+  };
+  for (const [id, suffix] of Object.entries(badgeSuffix)) {
     const short = id.replace("forfeit-", "");
-    assertEqual(poc.pocGameById(id).badgeId, `badge-${id}-verified`, `${short} badge id`);
+    assertEqual(poc.pocGameById(id).badgeId, `badge-${id}-${suffix}`, `${short} badge id`);
     assertEqual(poc.pocGameById(id).caseId, `case-${id}-launch-001`, `${short} case id`);
   }
   assertEqual(poc.pocGameById("nope"), undefined, "unknown game id is undefined");

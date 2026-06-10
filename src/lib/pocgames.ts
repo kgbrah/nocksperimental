@@ -909,7 +909,7 @@ export const pocGames: PocGame[] = [
     tagline: "Provably-fair European roulette — pick a color, zero is the disclosed house edge.",
     construction:
       "pocket = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ draw) mod 37  →  player wins iff color(pocket) == bet; 0 is green (house)",
-    badgeId: "badge-forfeit-roulette-verified",
+    badgeId: "badge-forfeit-roulette-model-attested",
     caseId: "case-forfeit-roulette-launch-001",
     fixtureSlug: "forfeit-roulette-fairness",
     dossier: "docs/FAIRNESS-DOSSIER.md",
@@ -922,7 +922,7 @@ export const pocGames: PocGame[] = [
     tagline: "Provably-fair three-reel slots — pair or better wins, odds disclosed exactly.",
     construction:
       "reel[i] = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ i) mod 8  →  player wins iff ≥2 reels match (P = 176/512 = 34.375%)",
-    badgeId: "badge-forfeit-slots-verified",
+    badgeId: "badge-forfeit-slots-model-attested",
     caseId: "case-forfeit-slots-launch-001",
     fixtureSlug: "forfeit-slots-fairness",
     dossier: "docs/FAIRNESS-DOSSIER.md",
@@ -935,7 +935,7 @@ export const pocGames: PocGame[] = [
     tagline: "Provably-fair war — two distinct cards, higher rank wins, suits break ties.",
     construction:
       "playerCard = H(…‖0) mod 52, houseCard = first H(…‖d), d≥1, ≠ playerCard  →  higher rank wins; ties: ♣ < ♦ < ♥ < ♠",
-    badgeId: "badge-forfeit-highcard-verified",
+    badgeId: "badge-forfeit-highcard-model-attested",
     caseId: "case-forfeit-highcard-launch-001",
     fixtureSlug: "forfeit-highcard-fairness",
     dossier: "docs/FAIRNESS-DOSSIER.md",
@@ -948,7 +948,7 @@ export const pocGames: PocGame[] = [
     tagline: "Provably-fair crash multiplier — 2.00× target, 1% edge disclosed in the curve.",
     construction:
       "u = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ draw) mod 2²⁴  →  multiplier = max(1.00, 0.99·2²⁴/(u+1)); player wins iff ≥ 2.00×",
-    badgeId: "badge-forfeit-limbo-verified",
+    badgeId: "badge-forfeit-limbo-model-attested",
     caseId: "case-forfeit-limbo-launch-001",
     fixtureSlug: "forfeit-limbo-fairness",
     dossier: "docs/FAIRNESS-DOSSIER.md",

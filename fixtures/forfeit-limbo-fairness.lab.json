@@ -1,0 +1,102 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "forfeit-limbo-fairness-v0",
+  "app": {
+    "name": "Forfeit Limbo (fairness)",
+    "slug": "forfeit-limbo",
+    "version": "0.0.1",
+    "kernel": "forfeit-limbo"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Positive proof of the forfeit-limbo fairness invariants over a resolved round.",
+      "Peek surface is commitment-only (no seed); revealed seeds hash to their commitments; nonce strictly increases.",
+      "Crash multiplier max(1.00, 0.99·2^24/(u+1)) from a recomputable uniform draw; player wins iff it reaches the fixed 2.00x target (49.5%).",
+      "Honest limit: this proves the MODEL and that the invariants are well-formed, not the compiled Hoon. Real-VM poke/peek awaits generic-cause nockapp-run."
+    ]
+  },
+  "actors": [
+    {
+      "name": "referee",
+      "pkh": "forfeit-limbo-referee"
+    }
+  ],
+  "initialState": {
+    "peekSurface": {
+      "nonce": 4,
+      "commitHouse": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e",
+      "commitPlayer": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6",
+      "multiplierX100": 104,
+      "target": 200,
+      "outcome": false
+    },
+    "reveals": [
+      {
+        "label": "house",
+        "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "commit": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e"
+      },
+      {
+        "label": "player",
+        "seed": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "commit": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6"
+      }
+    ],
+    "nonceSequence": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "steps": [
+    {
+      "id": "peek-commit-surface",
+      "type": "peek",
+      "title": "Peek the commitment-only surface",
+      "target": "/round",
+      "expect": {
+        "path": "peekSurface.nonce",
+        "equals": 4
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "commit-only-peek",
+      "title": "Peek surface never exposes an unrevealed seed",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "peek-reveals-no-secret",
+      "path": "peekSurface"
+    },
+    {
+      "id": "seeds-hashlock",
+      "title": "Revealed seeds hash to their commitments (provable fairness)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "commit-binds-seed",
+      "path": "reveals"
+    },
+    {
+      "id": "nonce-monotonic",
+      "title": "Nonce strictly increases (replay safety)",
+      "severity": "high",
+      "kind": "monotonic-strict",
+      "path": "nonceSequence"
+    },
+    {
+      "id": "multiplier-floor",
+      "title": "Multiplier never drops below 1.00x (x100 >= 100)",
+      "severity": "high",
+      "kind": "numeric-range",
+      "path": "peekSurface.multiplierX100",
+      "min": 100,
+      "max": 1675200
+    }
+  ]
+}
