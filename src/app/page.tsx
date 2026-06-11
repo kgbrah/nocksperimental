@@ -171,10 +171,10 @@ export default function Home() {
           <div className="mt-7 flex flex-wrap gap-3">
             <Link
               className="inline-flex items-center gap-2 border-2 border-[#0B0B0B] bg-[#0B0B0B] px-5 py-2.5 text-sm font-medium text-white shadow-[4px_4px_0_#0B0B0B] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
-              href="#run-tests"
+              href="/fakenet"
             >
               <Terminal size={16} aria-hidden="true" />
-              Run interactive tests
+              Connect fakenet
             </Link>
             <Link
               className="inline-flex items-center gap-2 border-2 border-[#0B0B0B] bg-[#FFFFFF] px-5 py-2.5 text-sm font-medium shadow-[4px_4px_0_#0B0B0B] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
