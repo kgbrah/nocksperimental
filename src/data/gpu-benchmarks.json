@@ -1,0 +1,26 @@
+{
+  "_comment": "Calibration dataset for the Miner Performance Lab. currentRegime holds REAL goldenminer GPU prover v0.3.6 measurements (--mode=gpu, single card, NOCK pool) collected on vast.ai. These 7 points calibrate the current-zkPoW model in src/lib/miner-performance-model.ts (mirrored as MEASURED_BENCHMARKS in src/lib/miner-specs.ts; a test asserts they stay in sync). matmulPoUW is the AI-zkPOW (Fork A) calibration slot — populated later by the GEMM microbenchmark harness; until then the Fork A predictor uses spec-sheet tensor throughput and is labeled modeled/low-confidence.",
+  "methodology": {
+    "miner": "golden-miner-pool-prover v0.3.6",
+    "mode": "gpu",
+    "cardsPerRun": 1,
+    "metric": "proofsPerSec (steady-state, averaged over several speed lines)",
+    "source": "vast.ai rentals, measured 2026-06-10"
+  },
+  "currentRegime": [
+    { "model": "RTX 4090", "proofsPerSec": 131.5, "rentUsdPerHr": 0.401 },
+    { "model": "RTX 4070 Ti Super", "proofsPerSec": 83.8, "rentUsdPerHr": 0.158 },
+    { "model": "RTX 4070 Ti", "proofsPerSec": 75.6, "rentUsdPerHr": 0.134 },
+    { "model": "RTX 3080 Ti", "proofsPerSec": 60.6, "rentUsdPerHr": 0.167 },
+    { "model": "RTX 4060 Ti", "proofsPerSec": 43.5, "rentUsdPerHr": 0.085 },
+    { "model": "RTX A4000", "proofsPerSec": 33.1, "rentUsdPerHr": 0.085 },
+    { "model": "RTX 3060", "proofsPerSec": 28.2, "rentUsdPerHr": 0.052 }
+  ],
+  "settingsEffects": {
+    "_comment": "Approximate multipliers used by the model; refine with the bench harness.",
+    "modeHybridVsGpu": 1.1,
+    "threadsPerCardOptimum": 4,
+    "gpuCountCoordinationCostPerExtraCard": 0.01
+  },
+  "matmulPoUW": []
+}

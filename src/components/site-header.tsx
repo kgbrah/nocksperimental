@@ -7,6 +7,7 @@ import { ConnectButton, NetworkSwitcher } from "@/components/web3/wallet-control
 
 const NAV = [
   { href: "/play", label: "Play" },
+  { href: "/miner-lab", label: "Miner Lab" },
   { href: "/swap", label: "Swap" },
   { href: "/pool", label: "Pool" },
   { href: "/lab/run", label: "Lab" },
