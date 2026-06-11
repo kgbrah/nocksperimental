@@ -29,6 +29,14 @@ export type GpuSpec = {
   tdpWatts: number;
   /** datacenter parts can merge-mine AI work — relevant to the PoUW dilution story. */
   datacenter?: boolean;
+  /**
+   * full-rate FP16/BF16-with-FP32-accumulate tensor cores (the GA100/GH100
+   * "compute" dies: A100, H100). Consumer + workstation GA10x/AD10x parts run
+   * this path at HALF rate, so their real matmul throughput is far below spec —
+   * a distinction our measured GEMM benchmark confirmed (A100 0.71 vs 3090 0.29
+   * of spec). Drives the matmul-PoUW calibration bucket.
+   */
+  fullRateTensor?: boolean;
 };
 
 // Spec sheets are approximate (dense tensor FP16/FP32-accumulate); the model
@@ -59,8 +67,8 @@ export const gpuCatalog: GpuSpec[] = [
   { model: "RTX A5000", arch: "Ampere", fp32Tflops: 27.8, memBandwidthGBs: 768, tensorFp16Tflops: 111, vramGB: 24, computeCapability: 8.6, tdpWatts: 230, datacenter: true },
   { model: "RTX A4000", arch: "Ampere", fp32Tflops: 19.2, memBandwidthGBs: 448, tensorFp16Tflops: 77, vramGB: 16, computeCapability: 8.6, tdpWatts: 140, datacenter: true },
   { model: "L40S", arch: "Ada", fp32Tflops: 91.6, memBandwidthGBs: 864, tensorFp16Tflops: 362, vramGB: 48, computeCapability: 8.9, tdpWatts: 350, datacenter: true },
-  { model: "A100 80GB", arch: "Ampere", fp32Tflops: 19.5, memBandwidthGBs: 2039, tensorFp16Tflops: 312, vramGB: 80, computeCapability: 8.0, tdpWatts: 400, datacenter: true },
-  { model: "H100 80GB", arch: "Hopper", fp32Tflops: 67.0, memBandwidthGBs: 3350, tensorFp16Tflops: 990, vramGB: 80, computeCapability: 9.0, tdpWatts: 700, datacenter: true },
+  { model: "A100 80GB", arch: "Ampere", fp32Tflops: 19.5, memBandwidthGBs: 2039, tensorFp16Tflops: 312, vramGB: 80, computeCapability: 8.0, tdpWatts: 400, datacenter: true, fullRateTensor: true },
+  { model: "H100 80GB", arch: "Hopper", fp32Tflops: 67.0, memBandwidthGBs: 3350, tensorFp16Tflops: 990, vramGB: 80, computeCapability: 9.0, tdpWatts: 700, datacenter: true, fullRateTensor: true },
 ];
 
 export function gpuByModel(model: string): GpuSpec | undefined {
@@ -85,6 +93,20 @@ export const MEASURED_BENCHMARKS: MeasuredBenchmark[] = [
   { model: "RTX 4060 Ti", proofsPerSec: 43.5, rentUsdPerHr: 0.085 },
   { model: "RTX A4000", proofsPerSec: 33.1, rentUsdPerHr: 0.085 },
   { model: "RTX 3060", proofsPerSec: 28.2, rentUsdPerHr: 0.052 },
+];
+
+// REAL measured FP16/BF16 GEMM (matmul) throughput — the representative Fork A
+// "matmul PoUW" workload — measured by us on vast.ai (PyTorch, 8192³ GEMM, 2026).
+// These anchor the Fork A predictor instead of spec-sheet tensor peaks (which
+// overstate real GEMM by ~2x and miss the consumer/full-rate split entirely).
+// `tflops` uses the better of FP16/BF16. The A100 was measured on the SXM4-40GB
+// variant — identical GA100 tensor throughput to the 80GB part in the catalog.
+export type MeasuredMatmul = { model: string; tflops: number; fp16Tflops: number; bf16Tflops: number };
+
+export const MEASURED_MATMUL: MeasuredMatmul[] = [
+  { model: "RTX 4090", tflops: 171.8, fp16Tflops: 163.9, bf16Tflops: 171.8 },
+  { model: "A100 80GB", tflops: 220.4, fp16Tflops: 213.8, bf16Tflops: 220.4 },
+  { model: "RTX 3090", tflops: 41.7, fp16Tflops: 33.7, bf16Tflops: 41.7 },
 ];
 
 // Per-architecture efficiency for the current-regime model: Ada extracts more

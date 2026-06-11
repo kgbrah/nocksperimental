@@ -20,7 +20,9 @@ import {
   gpuByModel,
   gpuCatalog,
   MEASURED_BENCHMARKS,
+  MEASURED_MATMUL,
   VRAM_PROVING_FLOOR_GB,
+  type GpuArch,
   type GpuSpec,
 } from "./miner-specs";
 
@@ -132,17 +134,80 @@ export function currentProofsPerSec(spec: GpuSpec): number {
   return Math.max(0, CURRENT_FIT.w[0] * f[0] + CURRENT_FIT.w[1] * f[1] + CURRENT_FIT.w[2] * f[2]);
 }
 
+// ---- Fork A calibration: real measured GEMM throughput, not spec-sheet peaks --
+// Spec FP16-tensor numbers overstate achievable matmul by ~2x and miss that
+// consumer/workstation GA10x·AD10x parts run FP32-accumulate tensor at HALF rate.
+// We measured GEMM on a consumer Ada (4090), a consumer Ampere (3090), and a
+// full-rate datacenter part (A100), giving three spec→real factors. Every other
+// card's effective matmul throughput is its spec tensor × the factor for its
+// bucket; measured cards use their measurement directly.
+type MatmulBucket = "fullrate" | GpuArch;
+
+function matmulBucket(spec: GpuSpec): MatmulBucket {
+  return spec.fullRateTensor ? "fullrate" : spec.arch;
+}
+
+function deriveMatmulFactors(): { factor: Record<MatmulBucket, number>; measuredBuckets: Set<MatmulBucket> } {
+  const sums: Partial<Record<MatmulBucket, { r: number; n: number }>> = {};
+  for (const mm of MEASURED_MATMUL) {
+    const spec = gpuByModel(mm.model);
+    if (!spec || spec.tensorFp16Tflops <= 0) continue;
+    const b = matmulBucket(spec);
+    const acc = sums[b] ?? { r: 0, n: 0 };
+    acc.r += mm.tflops / spec.tensorFp16Tflops;
+    acc.n += 1;
+    sums[b] = acc;
+  }
+  const measuredBuckets = new Set(Object.keys(sums) as MatmulBucket[]);
+  const avg = (b: MatmulBucket) => (sums[b] ? sums[b]!.r / sums[b]!.n : undefined);
+  // Defaults for un-measured buckets, justified by silicon family:
+  //   Ada (consumer) ← measured 4090; Ampere (consumer) ← measured 3090;
+  //   fullrate ← measured A100; Blackwell ~ Ada (newer, full-featured);
+  //   Hopper only appears as the full-rate H100, so it inherits fullrate.
+  const ada = avg("Ada") ?? 0.52;
+  const ampere = avg("Ampere") ?? 0.29;
+  const fullrate = avg("fullrate") ?? 0.71;
+  const factor: Record<MatmulBucket, number> = {
+    fullrate,
+    Ada: ada,
+    Ampere: ampere,
+    Blackwell: avg("Blackwell") ?? ada,
+    Hopper: avg("Hopper") ?? fullrate,
+  };
+  return { factor, measuredBuckets };
+}
+
+const MATMUL = deriveMatmulFactors();
+
+/** measured GEMM if we ran it, else spec tensor peak × the bucket's spec→real factor. */
+export function effectiveMatmulTflops(spec: GpuSpec): number {
+  const measured = MEASURED_MATMUL.find((m) => m.model === spec.model);
+  if (measured) return measured.tflops;
+  return spec.tensorFp16Tflops * MATMUL.factor[matmulBucket(spec)];
+}
+
+/** true when this card's matmul throughput is a real measurement (not modeled). */
+export function isMatmulMeasured(spec: GpuSpec): boolean {
+  return MEASURED_MATMUL.some((m) => m.model === spec.model);
+}
+
+/** Calibration provenance for the methodology panel. */
+export const matmulCalibration = {
+  measuredCount: MEASURED_MATMUL.length,
+  specToRealFactors: MATMUL.factor,
+  measuredBuckets: Array.from(MATMUL.measuredBuckets),
+};
+
 /**
- * Fork A "matmul PoUW" proof-rate-equivalent for one card. Proof-rate tracks
- * tensor (FP16) throughput; anchored so the reference card keeps its current
- * rate, which makes the regime toggle a clean re-ranking rather than a unit
- * change. Modeled — see the low-confidence label in the UI.
+ * Fork A "matmul PoUW" proof-rate-equivalent for one card. Tracks REAL measured
+ * matmul throughput (effectiveMatmulTflops), anchored so the reference card keeps
+ * its current rate — so the regime toggle is a clean, data-backed re-ranking.
  */
 export function forkAProofsPerSec(spec: GpuSpec): number {
   const ref = gpuByModel(REFERENCE_MODEL);
-  if (!ref) return spec.tensorFp16Tflops;
-  const anchor = currentProofsPerSec(ref) / ref.tensorFp16Tflops;
-  return spec.tensorFp16Tflops * anchor;
+  if (!ref) return effectiveMatmulTflops(spec);
+  const anchor = currentProofsPerSec(ref) / effectiveMatmulTflops(ref);
+  return effectiveMatmulTflops(spec) * anchor;
 }
 
 // ---- miner-setting multipliers (shared across regimes) -----------------------
@@ -191,8 +256,16 @@ export function predictRate(input: PredictInput): RatePrediction {
   const settings = MODE_MULTIPLIER[mode] * threadsMultiplier(threadsPerCard, spec);
   const perCard = base * settings;
   const totalRate = perCard * gpuCountMultiplier(gpuCount);
-  // Fork A is modeled, so its band is deliberately wider than the calibrated fit's.
-  const band = regime === "current" ? CURRENT_FIT.residualStd : Math.max(CURRENT_FIT.residualStd, base * 0.35);
+  // Band: the calibrated current fit; for Fork A, a measured card gets a tighter
+  // band (real GEMM in hand) than a spec-extrapolated one.
+  let band: number;
+  if (regime === "current") {
+    band = CURRENT_FIT.residualStd;
+  } else if (isMatmulMeasured(spec)) {
+    band = Math.max(CURRENT_FIT.residualStd, base * 0.12);
+  } else {
+    band = Math.max(CURRENT_FIT.residualStd, base * 0.35);
+  }
   return {
     baseRatePerCard: base,
     totalRate,

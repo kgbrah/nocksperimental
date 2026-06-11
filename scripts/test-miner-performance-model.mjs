@@ -95,11 +95,40 @@ function main() {
   const ref = s.gpuByModel("RTX 4090");
   assert(near(m.currentProofsPerSec(ref), m.forkAProofsPerSec(ref), 0.01), "reference card (4090) is regime-anchored");
 
-  // 5) A modeled regime carries a wider uncertainty band than the calibrated one.
+  // 4b) Fork A is calibrated on REAL measured GEMM throughput.
+  console.log("4b. matmul calibration");
+  assert(m.matmulCalibration.measuredCount === s.MEASURED_MATMUL.length, "uses every measured GEMM point");
+  // measured cards use their measurement directly.
+  for (const mm of s.MEASURED_MATMUL) {
+    const spec = s.gpuByModel(mm.model);
+    assert(spec && m.isMatmulMeasured(spec), `${mm.model} is flagged matmul-measured`);
+    assert(near(m.effectiveMatmulTflops(spec), mm.tflops, 0.01), `${mm.model} effective matmul = measured ${mm.tflops}`);
+  }
+  // the consumer/full-rate split the measurements revealed: consumer Ampere runs
+  // tensor at far below the full-rate datacenter parts.
+  assert(m.matmulCalibration.specToRealFactors.Ampere < m.matmulCalibration.specToRealFactors.fullrate,
+    "consumer Ampere spec→real factor < full-rate datacenter factor (half-rate tensor)");
+  assert(m.matmulCalibration.specToRealFactors.Ampere < m.matmulCalibration.specToRealFactors.Ada,
+    "consumer Ampere underperforms consumer Ada at matmul");
+  // A workstation Ampere part (A6000) is NOT full-rate — it inherits the half-rate
+  // consumer factor, so it must NOT be modeled near the A100.
+  const a6000 = s.gpuByModel("RTX A6000");
+  const a100 = s.gpuByModel("A100 80GB");
+  assert(m.effectiveMatmulTflops(a6000) < m.effectiveMatmulTflops(a100) * 0.5,
+    "workstation A6000 (half-rate) is far below the full-rate A100 at matmul");
+  // the data-backed re-ranking: the A100 leaps up under Fork A on its REAL number.
+  assert(forkARank.indexOf("A100 80GB") < currentRank.indexOf("A100 80GB"), "A100 climbs under Fork A (measured matmul)");
+
+  // 5) A measured Fork A card gets a tighter band than a modeled one; both regimes
+  //    differ in band per their evidence.
   console.log("5. honesty band");
   const cur = m.predictRate({ spec: ref, regime: "current", mode: "gpu", threadsPerCard: 4, gpuCount: 1 });
-  const fa = m.predictRate({ spec: ref, regime: "forkA", mode: "gpu", threadsPerCard: 4, gpuCount: 1 });
-  assert(fa.bandPs > cur.bandPs, "Fork A prediction band is wider than the calibrated current band");
+  const faMeasured = m.predictRate({ spec: ref, regime: "forkA", mode: "gpu", threadsPerCard: 4, gpuCount: 1 });
+  const modeledCard = s.gpuCatalog.find((g) => !m.isMatmulMeasured(g) && g.tensorFp16Tflops > 0);
+  const faModeled = m.predictRate({ spec: modeledCard, regime: "forkA", mode: "gpu", threadsPerCard: 4, gpuCount: 1 });
+  // band as a fraction of the rate: a measured card is tighter than a modeled one.
+  assert(faMeasured.bandPs / faMeasured.totalRate < faModeled.bandPs / faModeled.totalRate,
+    "a GEMM-measured Fork A card has a tighter relative band than a modeled one");
 
   // 6) Economics: signs, value metric, break-even.
   console.log("6. economics");

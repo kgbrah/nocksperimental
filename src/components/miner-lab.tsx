@@ -7,6 +7,9 @@ import {
   REGIME_DEFAULTS,
   calibration,
   computeEconomics,
+  effectiveMatmulTflops,
+  isMatmulMeasured,
+  matmulCalibration,
   predictRate,
   rankCatalog,
   type EconomicsMode,
@@ -76,8 +79,13 @@ export function MinerLab() {
           The <strong>current zkPoW</strong> regime is calibrated on{" "}
           <strong>{calibration.measuredCount} real goldenminer measurements</strong> (fit R²={" "}
           {calibration.r2.toFixed(3)}, ±{calibration.residualStdPs.toFixed(1)} p/s). The{" "}
-          <strong>Fork A &ldquo;matmul PoUW&rdquo;</strong> regime is a <strong>modeled estimate</strong> — that protocol
-          change isn&apos;t live yet, so its numbers track spec-sheet tensor throughput and carry a wider band.
+          <strong>Fork A &ldquo;matmul PoUW&rdquo;</strong> regime is now calibrated on{" "}
+          <strong>{matmulCalibration.measuredCount} real GEMM-throughput benchmarks</strong> we ran — measured
+          matmul is ~half the spec-sheet peak, and consumer/workstation cards run tensor at half rate (real/spec
+          ≈ {matmulCalibration.specToRealFactors.Ampere.toFixed(2)}) while full-rate datacenter parts hit ≈
+          {matmulCalibration.specToRealFactors.fullrate.toFixed(2)}. Cards we didn&apos;t measure use their
+          architecture&apos;s measured factor (wider band). It still models a not-yet-live protocol — treat it as a
+          forecast, not a promise.
         </p>
       </div>
 
@@ -160,8 +168,20 @@ export function MinerLab() {
         {/* ---- results ---- */}
         <div className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
           <p className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em]">
-            <Zap size={15} aria-hidden="true" /> Predicted ({regime === "current" ? "calibrated" : "modeled"})
+            <Zap size={15} aria-hidden="true" /> Predicted (
+            {regime === "current"
+              ? "calibrated"
+              : isMatmulMeasured(spec)
+                ? "GEMM-measured"
+                : "matmul-modeled"}
+            )
           </p>
+          {regime === "forkA" ? (
+            <p className="mt-1 font-mono text-[11px] text-[#737373]">
+              effective matmul ≈ {effectiveMatmulTflops(spec).toFixed(0)} TFLOPS{" "}
+              {isMatmulMeasured(spec) ? "(measured GEMM)" : `(${spec.tensorFp16Tflops} spec × ${spec.fullRateTensor ? "full-rate" : spec.arch} factor)`}
+            </p>
+          ) : null}
 
           {rate.vramGated ? (
             <p className="mt-3 inline-flex items-center gap-2 border-2 border-[#B91C1C] bg-[#FEF2F2] px-3 py-2 font-mono text-[11px] uppercase text-[#B91C1C]">

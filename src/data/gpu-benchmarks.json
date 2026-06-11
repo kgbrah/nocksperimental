@@ -22,5 +22,13 @@
     "threadsPerCardOptimum": 4,
     "gpuCountCoordinationCostPerExtraCard": 0.01
   },
-  "matmulPoUW": []
+  "matmulPoUW": {
+    "_comment": "REAL measured FP16/BF16 GEMM throughput (8192³ matmul, PyTorch 2.4 cu121, vast.ai, 2026-06-11) — the representative Fork A 'matmul PoUW' workload. tflops uses the better of fp16/bf16. These calibrate forkAProofsPerSec: spec-sheet tensor peaks overstate real GEMM ~2x and miss the consumer/full-rate split (A100 GA100 runs FP32-accumulate tensor at full rate ≈0.71 of spec; consumer/workstation GA10x·AD10x run at half rate ≈0.29). The A100 was the SXM4-40GB variant (identical GA100 tensor throughput to the 80GB catalog part).",
+    "method": "torch.matmul, N=8192, fp16 + bf16, 60 iters after warmup, TFLOPS = 2·N³·iters/sec",
+    "measurements": [
+      { "model": "RTX 4090", "fp16Tflops": 163.9, "bf16Tflops": 171.8, "specTensorFp16": 330, "realOverSpec": 0.52 },
+      { "model": "A100 80GB", "fp16Tflops": 213.8, "bf16Tflops": 220.4, "specTensorFp16": 312, "realOverSpec": 0.71 },
+      { "model": "RTX 3090", "fp16Tflops": 33.7, "bf16Tflops": 41.7, "specTensorFp16": 142, "realOverSpec": 0.29 }
+    ]
+  }
 }
