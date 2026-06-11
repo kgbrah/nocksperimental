@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createBadgeEmbedBundle } from "@/lib/trust-badge-embed";
 import { createBadgeVerificationBundle } from "@/lib/trust-badge-verification";
+import { verifyBaseAnchor } from "@/lib/chain-verify-base";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,11 @@ export default async function BadgeDetailPage({ params }: BadgeDetailPageProps) 
 
   const embedResult = createBadgeEmbedBundle(badgeId);
   const embedBundle = embedResult.status === "embeddable" ? embedResult.bundle : null;
+
+  // Chain-anchored certs carry a ChainAnchor; re-read the chain LIVE so the page
+  // shows independent verification, not just the issuer's signature.
+  const anchor = bundle.badge.evidence?.chainAnchor;
+  const chainVerify = anchor && anchor.verifiability === "evm-full" ? await verifyBaseAnchor(anchor) : null;
   const verificationHref = bundle.issuance
     ? `/api/trust/badges/verify?badgeId=${encodeURIComponent(bundle.badgeId)}&payloadDigest=${encodeURIComponent(bundle.issuance.payloadDigest)}&signature=${encodeURIComponent(bundle.issuance.signature)}&issuerKeyId=${encodeURIComponent(bundle.issuance.issuerKeyId)}`
     : `/api/trust/badges/verify?badgeId=${encodeURIComponent(bundle.badgeId)}`;
@@ -91,6 +97,52 @@ export default async function BadgeDetailPage({ params }: BadgeDetailPageProps) 
         <Metric label="Issuance" value={bundle.issuance?.verification.status ?? "missing"} />
         <Metric label="Embeddable" value={embedBundle ? "yes" : "no"} />
       </section>
+
+      {anchor ? (
+        <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
+          <article className="border-2 border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <FileCheck2 size={18} aria-hidden="true" />
+                <h2 className="text-xl font-semibold">Chain verification</h2>
+              </div>
+              <span
+                className={`px-3 py-1 font-mono text-xs font-semibold uppercase tracking-[0.12em] ${
+                  chainVerify?.onChain ? "bg-[#15803D] text-white" : "bg-[#B91C1C] text-white"
+                }`}
+              >
+                {chainVerify?.onChain ? "verified on-chain" : chainVerify?.error ? "chain unreachable" : "not on-chain"}
+              </span>
+            </div>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-[#4A4A4A]">
+              This cert binds to {anchor.network} block {anchor.blockHeight.toLocaleString()}. The chain was{" "}
+              re-read just now — these checks don&apos;t trust the issuer&apos;s signature, they confirm the
+              transaction and log are actually on-chain.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Metric label="tx mined" value={chainVerify?.checks?.txMined ? "yes" : "no"} />
+              <Metric label="block matched" value={chainVerify?.checks?.blockMatched ? "yes" : "no"} />
+              <Metric label="block exists" value={chainVerify?.checks?.blockExists ? "yes" : "no"} />
+              <Metric label="log inclusion" value={chainVerify?.checks?.logMatched ? "yes" : "no"} />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {chainVerify?.explorerTxUrl ? (
+                <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium" href={chainVerify.explorerTxUrl} target="_blank" rel="noreferrer">
+                  <ArrowUpRight size={14} aria-hidden="true" /> tx on explorer
+                </Link>
+              ) : null}
+              {chainVerify?.explorerBlockUrl ? (
+                <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium" href={chainVerify.explorerBlockUrl} target="_blank" rel="noreferrer">
+                  <ArrowUpRight size={14} aria-hidden="true" /> block on explorer
+                </Link>
+              ) : null}
+              <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium" href={`/api/receipts/verify-chain?badgeId=${encodeURIComponent(badgeId)}`} target="_blank" rel="noreferrer">
+                <Code2 size={14} aria-hidden="true" /> re-verify JSON
+              </Link>
+            </div>
+          </article>
+        </section>
+      ) : null}
 
       <section className="mx-auto max-w-6xl px-5 pb-8 lg:px-8">
         <article className="border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">

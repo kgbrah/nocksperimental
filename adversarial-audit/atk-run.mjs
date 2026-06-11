@@ -176,6 +176,35 @@ try {
     restoreAll();
   }
 
+  // ===== ATTACK H: forge a "chain-anchored" cert with an EMPTY anchor =====
+  // A chain-anchored cert claims its evidence is on-chain. One with no/empty anchor
+  // (non-empty report hash, so the empty-evidence guard alone wouldn't catch it) must
+  // still be refused — the anchor-binding guard requires a well-formed anchor for the
+  // chain-anchored kind, on top of the active-key signature requirement.
+  {
+    const badgeId = "badge-fake-chain-anchored";
+    const issuedAt = "2026-06-08T00:00:00.000Z";
+    const expiresAt = "2027-06-08T00:00:00.000Z";
+    const reportHash = "sha256:" + "cc".repeat(32);
+    const snapshotRoot = "0x" + "ab".repeat(32);
+    const signedPayload = { badgeId, status: "verified", reportHash, snapshotRoot, issuedAt, expiresAt, sourceAnchor: { ...ANCHOR }, kind: "chain-anchored" };
+    const signed = crypto.signBadgePayload(signedPayload, PUBLIC_ACTIVE_SEED);
+    const badge = {
+      id: badgeId, label: "Fake Chain-Anchored", kind: "chain-anchored", status: "verified",
+      reportSlug: "chain-anchored-base-redeem", fixtureId: "x", issuedAt, expiresAt,
+      issuer: "Nocksperimental Trust Registry",
+      evidence: { reportHash, snapshotRoot, signature: signed.signature, invariantPacks: [] }, // NO chainAnchor
+      sourceAnchor: { ...ANCHOR },
+    };
+    const issuance = { id: "issue-" + badgeId, badgeId, issuedAt, issuer: "Nocksperimental Trust Registry", issuerKeyId: crypto.ACTIVE_DEV_ISSUER_KEY_ID, payloadDigest: signed.payloadDigest, signature: signed.signature, signedPayload, verification: { status: "valid", algorithm: "ed25519", checkedAt: issuedAt } };
+    writeSignalsWith(badge, issuance);
+    const v = verifyChild(badgeId);
+    record("H", "Forge a chain-anchored cert with an EMPTY anchor", v.verified, v.verified,
+      `a chain-anchored kind cert with no chainAnchor must fail payloadBoundToBadge (and the active-key gate). verified=${v.verified}`,
+      { checks: v.checks });
+    restoreAll();
+  }
+
   writeFileSync(path.join(OUT, "results.json"), JSON.stringify({ seedMatchesPublished, results }, null, 2));
   console.log("\n================= SUMMARY =================");
   for (const r of results) console.log(`${r.id}  cert=${r.mintsCert ? "MINTED" : "no   "}  verified=${r.verified}  ${r.title}`);

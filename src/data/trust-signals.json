@@ -240,6 +240,40 @@
         "commit": "uncommitted",
         "build": "lab-reissue"
       }
+    },
+    {
+      "id": "badge-chain-anchored-base-redeem-001",
+      "label": "Base bridge-redeem — chain-anchored",
+      "kind": "chain-anchored",
+      "status": "verified",
+      "reportSlug": "chain-anchored-base-redeem",
+      "fixtureId": "chain-anchored-base-redeem-v0",
+      "issuedAt": "2026-06-11T00:00:00.000Z",
+      "expiresAt": "2027-06-11T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "evidence": {
+        "reportHash": "sha256:9e57b9b8d635dcbb12c5dcb65af4fb405bdbf399a310fd58bddb3cf19aa38b68",
+        "snapshotRoot": "0xd298e7b90529076275f55f00d78548f703c7c2a91700153d7fafedbc5e284ebc",
+        "signature": "Ixczjz6DwP66dUcrRqNoH24XlR5LPjgNbiq59SovQTSh6YqzYmV6Cr1a6S+Cv3Y3k4r+EXeYCEDQ7DPty7OOBg==",
+        "invariantPacks": [],
+        "chainAnchor": {
+          "network": "base-sepolia",
+          "chainId": 84532,
+          "verifiability": "evm-full",
+          "blockHash": "0xd298e7b90529076275f55f00d78548f703c7c2a91700153d7fafedbc5e284ebc",
+          "blockHeight": 42649893,
+          "txId": "0xf14397f1ae042cd2f5930534d3ddcc93d0b92ada4edf3efc9b18c3ed19867a89",
+          "witnessFormat": "evm-receipt",
+          "engineVersion": "evm-84532",
+          "contract": "0xaab9a8889a7714864a6b90a9f76a092f7b4df4f3",
+          "eventTopic": "0x934d4a16140d0cf22c85c70dc423d2030b3473b02e5c37c5edc50c09a8fb2d8c",
+          "logIndex": 57
+        }
+      },
+      "sourceAnchor": {
+        "commit": "chain-anchored",
+        "build": "chain-anchor-v0"
+      }
     }
   ],
   "badgeIssuanceReceipts": [
@@ -538,6 +572,46 @@
         "status": "valid",
         "algorithm": "ed25519",
         "checkedAt": "1970-01-01T00:00:00.000Z"
+      }
+    },
+    {
+      "id": "issue-badge-chain-anchored-base-redeem-001",
+      "badgeId": "badge-chain-anchored-base-redeem-001",
+      "issuedAt": "2026-06-11T00:00:00.000Z",
+      "issuer": "Nocksperimental Trust Registry",
+      "issuerKeyId": "nocksperimental-registry-ed25519-prod-v1",
+      "payloadDigest": "sha256:266be43a2dd9919598f0285c07f97cb27ee32f2df0245166c6d1ec19a45eb673",
+      "signature": "Ixczjz6DwP66dUcrRqNoH24XlR5LPjgNbiq59SovQTSh6YqzYmV6Cr1a6S+Cv3Y3k4r+EXeYCEDQ7DPty7OOBg==",
+      "signedPayload": {
+        "badgeId": "badge-chain-anchored-base-redeem-001",
+        "status": "verified",
+        "reportHash": "sha256:9e57b9b8d635dcbb12c5dcb65af4fb405bdbf399a310fd58bddb3cf19aa38b68",
+        "snapshotRoot": "0xd298e7b90529076275f55f00d78548f703c7c2a91700153d7fafedbc5e284ebc",
+        "issuedAt": "2026-06-11T00:00:00.000Z",
+        "expiresAt": "2027-06-11T00:00:00.000Z",
+        "sourceAnchor": {
+          "commit": "chain-anchored",
+          "build": "chain-anchor-v0"
+        },
+        "kind": "chain-anchored",
+        "chainAnchor": {
+          "network": "base-sepolia",
+          "chainId": 84532,
+          "verifiability": "evm-full",
+          "blockHash": "0xd298e7b90529076275f55f00d78548f703c7c2a91700153d7fafedbc5e284ebc",
+          "blockHeight": 42649893,
+          "txId": "0xf14397f1ae042cd2f5930534d3ddcc93d0b92ada4edf3efc9b18c3ed19867a89",
+          "witnessFormat": "evm-receipt",
+          "engineVersion": "evm-84532",
+          "contract": "0xaab9a8889a7714864a6b90a9f76a092f7b4df4f3",
+          "eventTopic": "0x934d4a16140d0cf22c85c70dc423d2030b3473b02e5c37c5edc50c09a8fb2d8c",
+          "logIndex": 57
+        }
+      },
+      "verification": {
+        "status": "valid",
+        "algorithm": "ed25519",
+        "checkedAt": "2026-06-11T00:00:00.000Z"
       }
     }
   ],

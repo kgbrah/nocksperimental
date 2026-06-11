@@ -107,7 +107,7 @@
         "id": { "type": "string" },
         "label": { "type": "string" },
         "kind": {
-          "enum": ["app-report", "solver-score", "token-compatibility", "compute-benchmark"]
+          "enum": ["app-report", "solver-score", "token-compatibility", "compute-benchmark", "chain-anchored"]
         },
         "status": {
           "enum": ["verified", "watch", "revoked", "expired"]

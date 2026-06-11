@@ -4,12 +4,14 @@ import {
   type BadgeFreshness,
   type BadgeSourceAnchor
 } from "@/lib/trust-badge-freshness";
+import type { ChainAnchor } from "@/lib/chain-anchor";
 
 export type TrustBadgeKind =
   | "app-report"
   | "solver-score"
   | "token-compatibility"
-  | "compute-benchmark";
+  | "compute-benchmark"
+  | "chain-anchored";
 export type TrustBadgeStatus = "verified" | "watch" | "revoked" | "expired";
 export type TrustConsumerCategory = "app" | "wallet" | "fund" | "provider";
 export type QualifiedStatus = "qualified" | "watch" | "blocked";
@@ -35,6 +37,10 @@ export type VerifiedBadge = {
     // Both are cross-bound to the signed payload by the verifier; absent on model-attested certs.
     kernelHash?: string;
     baseDeploymentHash?: string;
+    // Chain-verifiable anchor: binds the cert to the chain's own proof surfaces so
+    // it can be re-checked against the chain, not just the issuer signature. Cross-
+    // bound to the signed payload by the verifier; carried on "chain-anchored" certs.
+    chainAnchor?: ChainAnchor;
   };
   sourceAnchor: BadgeSourceAnchor;
 };
@@ -79,6 +85,9 @@ export type BadgeIssuanceReceipt = {
     // these, and the verifier requires signedPayload.* === badge.evidence.* for each.
     kernelHash?: string;
     baseDeploymentHash?: string;
+    // Signed chain anchor (see VerifiedBadge.evidence.chainAnchor). Covered by the Ed25519 signature
+    // and cross-bound to badge.evidence.chainAnchor by the verifier; independently re-checked on-chain.
+    chainAnchor?: ChainAnchor;
   };
   verification: {
     status: BadgeIssuanceVerificationStatus;

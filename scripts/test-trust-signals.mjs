@@ -35,7 +35,7 @@ async function main() {
   );
   const { publicKeyForKeyId } = loadTypeScriptModule("src/lib/trust-issuer-keys.ts");
 
-  assertEqual(badgeIssuanceReceipts.length, 11, "badge issuance receipt count");
+  assertEqual(badgeIssuanceReceipts.length, 12, "badge issuance receipt count");
   const paymentIssuance = issuanceForBadgeId("badge-payment-flow-verified");
   assertEqual(paymentIssuance.badgeId, "badge-payment-flow-verified", "payment issuance badge id");
   assertEqual(
@@ -87,7 +87,7 @@ async function main() {
   );
   assertEqual(legacyRevocation.evidence.snapshotRoot, "3a6d6bff59cb624f", "legacy revocation snapshot root");
 
-  assertEqual(resolvedBadges.length, 11, "resolved badge count");
+  assertEqual(resolvedBadges.length, 12, "resolved badge count");
   const legacyBadge = resolvedBadges.find((badge) => badge.id === "badge-payment-flow-legacy");
   assertEqual(legacyBadge.currentStatus, "revoked", "legacy badge current status");
   assertEqual(legacyBadge.isRevoked, true, "legacy badge revocation flag");
@@ -139,7 +139,7 @@ async function main() {
   assertEqual(providerConsumer.resolvedUses[0].badgeId, "badge-compute-provider-alpha", "provider badge id");
   assertEqual(providerConsumer.resolvedUses[0].snapshotRoot, "compute-alpha-jobclass-root", "provider snapshot root");
 
-  assertEqual(badgeEmbeds.length, 10, "badge embed count");
+  assertEqual(badgeEmbeds.length, 11, "badge embed count");
   assertEqual(badgeEmbedForId("badge-payment-flow-legacy"), undefined, "revoked badge embed");
   const paymentEmbed = badgeEmbedForId("badge-payment-flow-verified");
   assertEqual(paymentEmbed.badgeId, "badge-payment-flow-verified", "payment embed badge id");
@@ -192,6 +192,10 @@ async function main() {
   const configuredReportSlugs = new Set(labConfig.fixtures.map((fixture) => fixture.slug));
 
   for (const badge of verifiedBadges) {
+    // chain-anchored certs have NO lab fixture — their evidence is the chain itself
+    // (re-verified at /api/receipts/verify-chain), so they're exempt from the
+    // lab-report-slug requirement that lab/model-attested certs must satisfy.
+    if (badge.kind === "chain-anchored") continue;
     assertSetHas(configuredReportSlugs, badge.reportSlug, `verified badge report slug ${badge.id}`);
   }
 

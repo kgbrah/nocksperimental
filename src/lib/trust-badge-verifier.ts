@@ -9,6 +9,7 @@ import {
 } from "@/lib/trust-signals";
 import { isDevIssuerKey, verifyBadgeSignature } from "@/lib/trust-badge-crypto";
 import { issuerKeyForId, publicKeyForKeyId } from "@/lib/trust-issuer-keys";
+import { anchorsEqual, isWellFormedAnchor } from "@/lib/chain-anchor";
 
 type BadgeVerificationInput = {
   badgeId?: string | null;
@@ -84,7 +85,14 @@ export function verifyTrustBadgeIssuance({
       // Same binding for a live-base app cert's deployed-contract identity: the signed payload's
       // baseDeploymentHash (sha256 of chainId+inbox+nock) must equal the badge's. A signed payload
       // cannot claim a deployment the badge doesn't carry (parity with kernelHash).
-      (issuance.signedPayload.baseDeploymentHash ?? null) === (badge.evidence.baseDeploymentHash ?? null)
+      (issuance.signedPayload.baseDeploymentHash ?? null) === (badge.evidence.baseDeploymentHash ?? null) &&
+      // Chain anchor binding: the signed payload's chainAnchor must equal the badge's (so a signed
+      // anchor can't be paired with a different displayed one), AND when present it must be
+      // well-formed (non-empty block/tx) — an empty anchor cannot pass. A "chain-anchored" cert MUST
+      // carry an anchor. Independent on-chain re-verification is a separate step (verify-chain).
+      anchorsEqual(issuance.signedPayload.chainAnchor, badge.evidence.chainAnchor) &&
+      (badge.evidence.chainAnchor ? isWellFormedAnchor(badge.evidence.chainAnchor) : true) &&
+      (badge.kind === "chain-anchored" ? isWellFormedAnchor(badge.evidence.chainAnchor) : true)
   );
 
   // The signing key must be a live trust anchor: ACTIVE and NOT a public demo (dev) key.
