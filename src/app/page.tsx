@@ -595,11 +595,11 @@ export default function Home() {
               <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white" href="/reports/sample">
                 <FileCheck2 size={16} aria-hidden="true" /> Open report <ArrowUpRight size={14} aria-hidden="true" />
               </Link>
-              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/reports/generated">
-                <ScrollText size={16} aria-hidden="true" /> Generated
+              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/registry">
+                <ScrollText size={16} aria-hidden="true" /> Registry
               </Link>
-              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/trust">
-                <BadgeCheck size={16} aria-hidden="true" /> Trust
+              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/verify">
+                <BadgeCheck size={16} aria-hidden="true" /> Verify
               </Link>
               <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/nockchain">
                 <GitBranch size={16} aria-hidden="true" /> Nockchain
