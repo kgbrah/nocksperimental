@@ -41,7 +41,7 @@ export function BridgeSupplyPanel() {
             "This is NOT an official Nockchain testnet bridge. We deployed the contracts and run all five bridge operator nodes ourselves. No affiliation with Zorp or the official Nockchain project — we just think they're super cool. tNOCK is a self-issued testnet token backed by fakenet NOCK we mine; it has no real value."}
         </p>
         <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[#737373]">
-          {d?.disclosure.signature ?? "Vibecoded by kg & Claude."}
+          {d?.disclosure.signature ?? "Vibe-coded by kg & Claude."}
         </p>
       </div>
 

@@ -17,6 +17,7 @@ function main() {
 
   const page = readText(pagePath);
   const homePage = readText("src/app/page.tsx");
+  const copyCommandCard = readText("src/components/copy-command-card.tsx");
   const packageJson = JSON.parse(readText("package.json"));
   const smokeScript = readText("scripts/smoke-cloudflare-preview.mjs");
   const deploymentDocs = readText("docs/deployment.md");
@@ -32,6 +33,19 @@ function main() {
   assertIncludes(page, 'href="/api/fakenet"', "fakenet page links to JSON API");
   assertIncludes(page, "readiness.reports.map", "fakenet page renders source reports");
   assertIncludes(homePage, 'href="/fakenet"', "home page fakenet link");
+  assertIncludes(homePage, "TERMINAL_COMMANDS", "home page defines terminal command cards");
+  assertIncludes(
+    homePage,
+    "git clone https://github.com/kgbrah/nocksperimental.git",
+    "home page exposes install command"
+  );
+  assertIncludes(homePage, "npm run dev", "home page exposes run command");
+  assertIncludes(homePage, "npm run lab:sample", "home page exposes sample lab command");
+  assertIncludes(homePage, "npm run lab:ci", "home page exposes CI lab command");
+  assertIncludes(homePage, "npm run verify:portable", "home page exposes portable verifier command");
+  assertIncludes(homePage, "npx nocklab run --config nocklab.config.json --ci --strict", "home page exposes custom config command");
+  assertIncludes(copyCommandCard, "useCopy", "copy command card uses clipboard hook");
+  assertIncludes(copyCommandCard, "Copy", "copy command card renders copy state");
   assertIncludes(
     packageJson.scripts.test,
     "test:local-fakenet-readiness-page",

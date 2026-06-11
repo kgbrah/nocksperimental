@@ -19,6 +19,7 @@ import {
   XCircle
 } from "lucide-react";
 import Link from "next/link";
+import { CopyCommandCard } from "@/components/copy-command-card";
 import { ModuleExplorer } from "@/components/module-explorer";
 import nocklabConfig from "../../nocklab.config.json";
 import { invariantCatalog, sampleLabReport } from "@/lib/lab-report";
@@ -114,6 +115,30 @@ const TEST_LAUNCHERS = [
   { href: "/fakenet", label: "Connect your fakenet", icon: Terminal, blurb: "Bring your own nockchain --fakenet: copy-paste command kit + downloadable runbook." },
   { href: "/bridge", label: "Watch the live bridge", icon: Network, blurb: "Real Nockchain↔Base 3-of-5 bridge state on Base Sepolia — the cross-chain invariants, live." }
 ];
+
+const TERMINAL_COMMANDS = [
+  {
+    label: "Install",
+    description: "Clone the repo, enter the workspace, and install the package-lock pinned dependencies.",
+    command: "git clone https://github.com/kgbrah/nocksperimental.git\ncd nocksperimental\nnpm install"
+  },
+  {
+    label: "Run",
+    description: "Start the local Next.js lab UI, then open http://localhost:3000.",
+    command: "npm run dev"
+  },
+  {
+    label: "Use",
+    description: "Generate lab evidence, run the CI fixture suite, and verify artifacts from the terminal.",
+    command: "npm run lab:sample\nnpm run lab:ci\nnpm run verify:portable"
+  }
+] as const;
+
+const CUSTOM_NOCKAPP_COMMAND = {
+  label: "Use your NockApp config",
+  description: "Point the lab runner at a project config when your fixtures are ready.",
+  command: "npx nocklab run --config nocklab.config.json --ci --strict"
+} as const;
 
 const AUDIENCES = [
   { who: "NockApp developers", icon: Code2, line: "Script peek/poke fixtures and run deterministic local checks before wallets, explorers, and users depend on your app." },
@@ -513,29 +538,29 @@ export default function Home() {
       <section id="run-tests" className="scroll-mt-20 border-b border-[#0B0B0B] bg-[#0B0B0B] text-[#FFFFFF]">
         <div className="mx-auto max-w-7xl px-5 py-12 lg:px-8">
           <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#A3A3A3]">For developers</p>
-          <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Run interactive tests</h2>
+          <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Install, run, and use Nocksperimental</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[#D4D4D4]">
-            Browse what the lab tests, run a fixture, and verify the evidence yourself &mdash; zero trust required.
+            Copy the terminal commands, browse what the lab tests, run a fixture, and verify the evidence
+            yourself &mdash; zero trust required.
           </p>
 
-          <div className="mt-7 grid gap-3 md:grid-cols-3">
-            <Step n="1" title="Install & boot">
-              <Cmd>npm install &amp;&amp; npm run dev</Cmd>
-              <p className="mt-2 text-xs text-[#A3A3A3]">Open http://localhost:3000</p>
-            </Step>
-            <Step n="2" title="Run your first fixture">
-              <Cmd>npm run lab:sample</Cmd>
-              <p className="mt-2 text-xs text-[#A3A3A3]">Writes a report to .nocklab/ — then open the sample viewer.</p>
-            </Step>
-            <Step n="3" title="Verify the evidence">
-              <Cmd>npm run verify:portable</Cmd>
-              <p className="mt-2 text-xs text-[#A3A3A3]">Exit 0 = verified, offline, without trusting this host. Or paste a receipt into /verify.</p>
-            </Step>
+          <div className="mt-7 grid gap-3 lg:grid-cols-3">
+            {TERMINAL_COMMANDS.map((terminalCommand) => (
+              <CopyCommandCard
+                key={terminalCommand.label}
+                label={terminalCommand.label}
+                description={terminalCommand.description}
+                command={terminalCommand.command}
+              />
+            ))}
           </div>
 
-          <div className="mt-4 border border-[#404040] bg-[#171717] p-4">
-            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#A3A3A3]">Point it at your own NockApp</p>
-            <div className="mt-2 font-mono text-xs text-[#FFFFFF]">npx nocklab run --config nocklab.config.json --ci --strict</div>
+          <div className="mt-4">
+            <CopyCommandCard
+              label={CUSTOM_NOCKAPP_COMMAND.label}
+              description={CUSTOM_NOCKAPP_COMMAND.description}
+              command={CUSTOM_NOCKAPP_COMMAND.command}
+            />
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -763,22 +788,6 @@ export default function Home() {
       </section>
     </main>
   );
-}
-
-function Step({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
-  return (
-    <div className="border border-[#404040] bg-[#171717] p-4">
-      <div className="flex items-center gap-2">
-        <span className="grid size-6 place-items-center bg-[#FFFFFF] font-mono text-xs font-semibold text-[#0B0B0B]">{n}</span>
-        <p className="font-semibold">{title}</p>
-      </div>
-      <div className="mt-3">{children}</div>
-    </div>
-  );
-}
-
-function Cmd({ children }: { children: React.ReactNode }) {
-  return <div className="overflow-x-auto border border-[#404040] bg-[#0B0B0B] p-2.5 font-mono text-xs text-[#FFFFFF]">{children}</div>;
 }
 
 function EventGlyph({ type }: { type: string }) {
