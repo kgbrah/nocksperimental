@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   BellRing,
   BookOpenText,
+  BrainCircuit,
   Cable,
   Code2,
   FileWarning,
@@ -83,7 +84,7 @@ export default function NockchainEvidencePage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/nockchain/docs-atlas"
+                href="/api/nockchain/docs-atlas" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 Docs Atlas
@@ -132,14 +133,14 @@ export default function NockchainEvidencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/nockchain/upstream"
+                href="/api/nockchain/upstream" target="_blank" rel="noreferrer"
               >
                 <GitBranch size={16} aria-hidden="true" />
                 Upstream
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/nockchain/zorp"
+                href="/api/nockchain/zorp" target="_blank" rel="noreferrer"
               >
                 <GitBranch size={16} aria-hidden="true" />
                 Zorp Map
@@ -195,7 +196,7 @@ export default function NockchainEvidencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/nockchain/api/source"
+                href="/nockchain/api/source" target="_blank" rel="noreferrer"
               >
                 <RadioTower size={16} aria-hidden="true" />
                 API Source
@@ -237,6 +238,13 @@ export default function NockchainEvidencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
+                href="/nockchain/ai-pow"
+              >
+                <BrainCircuit size={16} aria-hidden="true" />
+                AI-PoW
+              </Link>
+              <Link
+                className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
                 href="/nockchain/state-jams"
               >
                 <Database size={16} aria-hidden="true" />
@@ -265,14 +273,14 @@ export default function NockchainEvidencePage() {
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/nockchain/state-jams"
+                href="/api/nockchain/state-jams" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 State Jams API
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href="/api/nockchain/nockup/receipts"
+                href="/api/nockchain/nockup/receipts" target="_blank" rel="noreferrer"
               >
                 <Fingerprint size={16} aria-hidden="true" />
                 Receipts

@@ -1,0 +1,45 @@
+{
+  "network": "base-sepolia",
+  "chainId": 84532,
+  "contracts": {
+    "ForfeitFlip": {
+      "address": "0x347cE69E43E7dA45Cc90BcC9F124B32BadF9ad86",
+      "deployTx": "0x10673f842814b0ec93883232436d23ba94b92c0c3b7887d6a3c3a4661bf45e69",
+      "house": "0x3906B6B42a008CA6fec05948f4Cf4f374C3d7290",
+      "params": {
+        "minStakeWei": "100000000000000",
+        "maxStakeWei": "5000000000000000",
+        "revealWindowSeconds": 3600,
+        "initialBankrollWei": "20000000000000000"
+      },
+      "explorer": "https://sepolia.basescan.org/address/0x347cE69E43E7dA45Cc90BcC9F124B32BadF9ad86"
+    },
+    "NockSwapVault": {
+      "address": "0xA7B87743bCe396f74152Ae97BDDea2Cc6ED01dD2",
+      "deployTx": "0x02c49cd27988d6c80d945ff2195518e2896e19defc7019af04bfde7ecbf8fd32",
+      "owner": "0x3906B6B42a008CA6fec05948f4Cf4f374C3d7290",
+      "params": {
+        "tnock": "0xaAB9a8889a7714864A6B90A9F76A092f7b4Df4f3",
+        "rateTNockBaseUnitsPerEth": "1000000000000000000000",
+        "initialReserveTNockBaseUnits": "10000000000000000000"
+      },
+      "explorer": "https://sepolia.basescan.org/address/0xA7B87743bCe396f74152Ae97BDDea2Cc6ED01dD2"
+    },
+    "NockEthAMM": {
+      "address": "0x6fA37A71E1f185919AB0b99B614d30B99B2636c2",
+      "deployTx": "0xdccc76d4fa0292a656a66e5946da079c7e51b3d062be9283a464493d957ba42c",
+      "tnock": "0xaAB9a8889a7714864A6B90A9F76A092f7b4Df4f3",
+      "donationWallet": "0xb405EbdE5F5c84372b5663D9D3A5758bb38025Da",
+      "fees": {
+        "lpFeeBps": 30,
+        "donationFeeBps": 1,
+        "note": "0.30% to LPs (in-pool), 0.01% to donation wallet per swap"
+      },
+      "seed": {
+        "eth": "4000000000000000",
+        "tnock": "4000000000000000000"
+      },
+      "explorer": "https://sepolia.basescan.org/address/0x6fA37A71E1f185919AB0b99B614d30B99B2636c2"
+    }
+  }
+}

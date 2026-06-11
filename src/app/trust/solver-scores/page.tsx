@@ -23,7 +23,7 @@ export default function SolverScoresPage() {
             </div>
             <Link
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/trust/solver-scores"
+              href="/api/trust/solver-scores" target="_blank" rel="noreferrer"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON

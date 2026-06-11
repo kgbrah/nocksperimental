@@ -1,4 +1,5 @@
-import { ArrowLeft, ArrowUpRight, BadgeCheck, Dice5, Coins, Gamepad2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, BadgeCheck, Gamepad2, ShieldCheck } from "lucide-react";
+import { FALLBACK_GAME_ICON, GAME_ICONS } from "@/lib/game-icons";
 import Link from "next/link";
 import { launchEvidenceCaseForId } from "@/lib/launch-evidence";
 import { pocGames, type PocGame } from "@/lib/pocgames";
@@ -75,13 +76,14 @@ export default function PocGamesPage() {
 function GameCard({ game }: { game: PocGame }) {
   const badge = resolvedBadgeForId(game.badgeId);
   const launchCase = launchEvidenceCaseForId(game.caseId);
+  const Icon = GAME_ICONS[game.kind] ?? FALLBACK_GAME_ICON;
 
   return (
     <article className="flex flex-col border border-[#0B0B0B] bg-[#FFFFFF] p-5 shadow-[4px_4px_0_#0B0B0B]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-9 w-9 items-center justify-center bg-[#0B0B0B] text-[#FFFFFF]">
-            {game.kind === "flip" ? <Coins size={19} aria-hidden="true" /> : <Dice5 size={19} aria-hidden="true" />}
+            <Icon size={19} aria-hidden="true" />
           </span>
           <h2 className="text-xl font-semibold">{game.name}</h2>
         </div>

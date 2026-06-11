@@ -59,42 +59,42 @@ export default function FakenetReadinessPage() {
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/fakenet"
+              href="/api/fakenet" target="_blank" rel="noreferrer"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
             </a>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/evidence"
+              href="/api/fakenet/evidence" target="_blank" rel="noreferrer"
             >
               <Fingerprint size={16} aria-hidden="true" />
               Evidence
             </a>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/commands"
+              href="/api/fakenet/commands" target="_blank" rel="noreferrer"
             >
               <Terminal size={16} aria-hidden="true" />
               Commands
             </a>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/diagnostics"
+              href="/api/fakenet/diagnostics" target="_blank" rel="noreferrer"
             >
               <ListChecks size={16} aria-hidden="true" />
               Diagnostics
             </a>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/support-bundle"
+              href="/api/fakenet/support-bundle" target="_blank" rel="noreferrer"
             >
               <Code2 size={16} aria-hidden="true" />
               Bundle
             </a>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/runbook.sh"
+              href="/api/fakenet/runbook.sh" target="_blank" rel="noreferrer"
             >
               <FileClock size={16} aria-hidden="true" />
               Runbook
@@ -203,14 +203,14 @@ export default function FakenetReadinessPage() {
             </p>
             <a
               className="mt-3 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/fakenet/evidence/submit"
+              href="/api/fakenet/evidence/submit" target="_blank" rel="noreferrer"
             >
               Submit API
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
             <Link
               className="mt-3 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-              href="/api/fakenet/evidence/receipts"
+              href="/api/fakenet/evidence/receipts" target="_blank" rel="noreferrer"
             >
               Receipts
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -304,7 +304,7 @@ export default function FakenetReadinessPage() {
           </div>
           <a
             className="mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-            href="/api/fakenet/diagnostics"
+            href="/api/fakenet/diagnostics" target="_blank" rel="noreferrer"
           >
             Diagnostics JSON
             <ArrowUpRight size={14} aria-hidden="true" />
@@ -337,7 +337,7 @@ export default function FakenetReadinessPage() {
           </div>
           <a
             className="mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-            href="/api/fakenet/evidence"
+            href="/api/fakenet/evidence" target="_blank" rel="noreferrer"
           >
             Evidence JSON
             <ArrowUpRight size={14} aria-hidden="true" />
@@ -367,7 +367,7 @@ export default function FakenetReadinessPage() {
           </div>
           <a
             className="mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-            href="/api/fakenet/support-bundle"
+            href="/api/fakenet/support-bundle" target="_blank" rel="noreferrer"
           >
             Support bundle JSON
             <ArrowUpRight size={14} aria-hidden="true" />
@@ -375,7 +375,7 @@ export default function FakenetReadinessPage() {
           <a
             className="ml-3 mt-4 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
             data-markdown-bytes={supportBundleMarkdown.length}
-            href="/api/fakenet/support-bundle.md"
+            href="/api/fakenet/support-bundle.md" target="_blank" rel="noreferrer"
           >
             Markdown
             <ArrowUpRight size={14} aria-hidden="true" />
@@ -414,7 +414,7 @@ export default function FakenetReadinessPage() {
             </p>
             <a
               className="mt-3 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/fakenet/runbook.sh"
+              href="/api/fakenet/runbook.sh" target="_blank" rel="noreferrer"
             >
               Download runbook
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -469,7 +469,7 @@ export default function FakenetReadinessPage() {
           )}
           <a
             className="mt-5 inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-            href="/api/fakenet"
+            href="/api/fakenet" target="_blank" rel="noreferrer"
           >
             Raw readiness JSON
             <ArrowUpRight size={14} aria-hidden="true" />

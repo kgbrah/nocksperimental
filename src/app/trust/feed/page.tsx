@@ -43,7 +43,7 @@ export default function TrustFeedPage() {
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/trust/feed"
+              href="/api/trust/feed" target="_blank" rel="noreferrer"
             >
               <Code2 size={16} aria-hidden="true" />
               JSON
@@ -138,6 +138,8 @@ function EvidenceMetric({ label, value, href }: { label: string; value?: string;
         <a
           className="mt-2 inline-flex max-w-full items-center gap-2 break-all font-mono text-xs leading-6 text-[#4A4A4A] underline decoration-[#0B0B0B] underline-offset-4"
           href={href}
+          target="_blank"
+          rel="noreferrer"
         >
           {value}
           <ArrowUpRight className="size-3 shrink-0" aria-hidden="true" />

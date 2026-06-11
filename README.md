@@ -404,6 +404,12 @@ The PR radar tracks currently open upstream Nockchain pull requests and open iss
 
 Use it when deciding whether a pending upstream PR or open issue should refresh a Nockup, wallet, NockApp, PMA/state-jam, operations, Rust atlas, compute benchmark, protocol trace, x402, or generated-report contract. Open and draft PRs are not protocol authority; they are review triggers for tests and receipts.
 
+### AI-PoW readiness (`/nockchain/ai-pow`)
+
+A monitoring (not protocol-authority) surface for the matmul Proof-of-Useful-Work track introduced by upstream [PR #124](https://github.com/nockchain/nockchain/pull/124) — the concrete implementation of watch-board Front #2 (AI Compute Market / Fork A). It records the two new crates (`ai-pow-miner`, `ai-pow-zk`), the 3-layer compact recursive STARK certificate and its measurements, the consensus tie-in (the next PoUW puzzle triggers the 80/20→100% coinbase reversion), and the scaffold-now/flip-on-merge readiness plan. Single source of truth: `src/lib/nockchain-ai-pow.ts`; deep capture: `docs/research/ai-pow-readiness-2026.md`. The PR is OPEN/unmerged — everything here is preview, and no AI-PoW certificate is an "app works on Nockchain" claim.
+
+- `/nockchain/ai-pow`
+
 Run the live drift check before relying on the static radar:
 
 ```bash

@@ -64,7 +64,7 @@ export default function TrustPage() {
             </div>
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-              href="/api/trust"
+              href="/api/trust" target="_blank" rel="noreferrer"
             >
               <ShieldCheck size={16} aria-hidden="true" />
               Trust JSON

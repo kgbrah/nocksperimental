@@ -112,12 +112,144 @@ function main() {
   const winRate = rolls.filter((roll) => roll >= 5000).length / N;
   assert(winRate > 0.47 && winRate < 0.53, `dice is even money at the line (player win rate ${(winRate * 100).toFixed(1)}%)`);
 
-  // 7) The catalog wires both badged games to their committed badge + launch-evidence ids.
-  assertEqual(poc.pocGames.length, 2, "two POC games in the catalog");
-  assertEqual(poc.pocGameById("forfeit-flip").badgeId, "badge-forfeit-flip-verified", "flip badge id");
-  assertEqual(poc.pocGameById("forfeit-dice").badgeId, "badge-forfeit-dice-verified", "dice badge id");
-  assertEqual(poc.pocGameById("forfeit-flip").caseId, "case-forfeit-flip-launch-001", "flip case id");
-  assertEqual(poc.pocGameById("forfeit-dice").caseId, "case-forfeit-dice-launch-001", "dice case id");
+  // 7) Forfeit Roulette — fair round verifies, pocket in range, tamper + lies caught,
+  //    color partition is the standard wheel (18 red / 18 black / 1 green).
+  for (const bet of ["red", "black"]) {
+    const rr = poc.playFairRouletteRound({ nonce: 11, bet });
+    const rrV = poc.verifyRouletteRound(rr);
+    assert(rrV.verified, `fair roulette round (bet=${bet}) verifies from public data`);
+    assert(rr.pocket >= 0 && rr.pocket <= 36, "roulette pocket lands in [0,36]");
+    assert(!poc.verifyRouletteRound({ ...rr, serverSeed: poc.randomSeedHex() }).verified,
+      "a swapped roulette serverSeed fails the hashlock");
+    assert(!poc.verifyRouletteRound({ ...rr, pocket: (rr.pocket + 1) % 37 }).verified,
+      "a falsified roulette pocket is rejected");
+  }
+  {
+    let reds = 0, blacks = 0, greens = 0;
+    for (let p = 0; p <= 36; p += 1) {
+      const c = poc.rouletteColorOf(p);
+      if (c === "red") reds += 1;
+      else if (c === "black") blacks += 1;
+      else greens += 1;
+    }
+    assertEqual(reds, 18, "18 red pockets");
+    assertEqual(blacks, 18, "18 black pockets");
+    assertEqual(greens, 1, "exactly one green zero");
+    // pockets are uniform over the deterministic stream: every pocket appears.
+    const seen = new Set();
+    for (let n = 0; n < 2000; n += 1) {
+      seen.add(poc.roulettePocketFrom({
+        serverSeed: poc.deterministicSeed("rs", n),
+        clientSeed: poc.deterministicSeed("rc", n),
+        nonce: n
+      }).pocket);
+    }
+    assertEqual(seen.size, 37, "all 37 pockets reachable over a 2000-round deterministic stream");
+  }
+
+  // 8) Forfeit Slots — fair round verifies, reels in range, disclosed odds hold over
+  //    a deterministic stream, tampered reels rejected.
+  {
+    const sr = poc.playFairSlotsRound({ nonce: 13 });
+    const srV = poc.verifySlotsRound(sr);
+    assert(srV.verified, "fair slots round verifies from public data");
+    assert(sr.reels.length === 3 && sr.reels.every((r) => r >= 0 && r < 8), "three reels in [0,8)");
+    assert(!poc.verifySlotsRound({ ...sr, serverSeed: poc.randomSeedHex() }).verified,
+      "a swapped slots serverSeed fails the hashlock");
+    assert(!poc.verifySlotsRound({ ...sr, reels: [sr.reels[0], sr.reels[1], (sr.reels[2] + 1) % 8] }).verified,
+      "a falsified reel is rejected");
+    let wins = 0;
+    const N_SLOTS = 4000;
+    for (let n = 0; n < N_SLOTS; n += 1) {
+      const reels = poc.slotsReelsFrom({
+        serverSeed: poc.deterministicSeed("ss", n),
+        clientSeed: poc.deterministicSeed("sc", n),
+        nonce: n
+      }).reels;
+      if (poc.slotsTierOf(reels) !== "miss") wins += 1;
+    }
+    const rate = wins / N_SLOTS;
+    // true P = 176/512 = 0.34375; allow generous sampling tolerance.
+    assert(rate > 0.31 && rate < 0.38, `slots pair-or-better rate ≈ 34.375% (got ${(rate * 100).toFixed(1)}%)`);
+  }
+
+  // 9) Forfeit High Card — fair round verifies, cards distinct + in range, the
+  //    suit-break total order always yields a winner, tamper rejected.
+  {
+    const hc = poc.playFairHighcardRound({ nonce: 17 });
+    const hcV = poc.verifyHighcardRound(hc);
+    assert(hcV.verified, "fair highcard round verifies from public data");
+    assert(hc.playerCard !== hc.houseCard, "highcard cards are distinct");
+    assert(hc.playerCard >= 0 && hc.playerCard < 52 && hc.houseCard >= 0 && hc.houseCard < 52,
+      "highcard cards in [0,52)");
+    assert(!poc.verifyHighcardRound({ ...hc, serverSeed: poc.randomSeedHex() }).verified,
+      "a swapped highcard serverSeed fails the hashlock");
+    assert(!poc.verifyHighcardRound({ ...hc, houseCard: (hc.houseCard + 1) % 52 }).verified,
+      "a falsified house card is rejected");
+    // total order: for any two distinct cards exactly one beats the other.
+    for (let a = 0; a < 52; a += 1) {
+      for (let b = 0; b < 52; b += 1) {
+        if (a === b) continue;
+        assert(poc.cardBeats(a, b) !== poc.cardBeats(b, a), `card order is total (${a} vs ${b})`);
+      }
+    }
+    // near-even game over a deterministic stream (suit-break tilts only rank ties).
+    let playerWins = 0;
+    const N_HC = 3000;
+    for (let n = 0; n < N_HC; n += 1) {
+      const d = poc.highcardDrawFrom({
+        serverSeed: poc.deterministicSeed("hs", n),
+        clientSeed: poc.deterministicSeed("hc", n),
+        nonce: n
+      });
+      if (poc.cardBeats(d.playerCard, d.houseCard)) playerWins += 1;
+    }
+    const hcRate = playerWins / N_HC;
+    assert(hcRate > 0.46 && hcRate < 0.54, `highcard is near even money (player rate ${(hcRate * 100).toFixed(1)}%)`);
+  }
+
+  // 10) Forfeit Limbo — fair round verifies, multiplier ≥ 1.00, win rate matches the
+  //     disclosed 49.5% at the 2.00× target, tamper rejected.
+  {
+    const lr = poc.playFairLimboRound({ nonce: 19 });
+    const lrV = poc.verifyLimboRound(lr);
+    assert(lrV.verified, "fair limbo round verifies from public data");
+    assert(lr.multiplierX100 >= 100, "limbo multiplier is at least 1.00×");
+    assert(!poc.verifyLimboRound({ ...lr, serverSeed: poc.randomSeedHex() }).verified,
+      "a swapped limbo serverSeed fails the hashlock");
+    assert(!poc.verifyLimboRound({ ...lr, multiplierX100: lr.multiplierX100 + 1 }).verified,
+      "a falsified limbo multiplier is rejected");
+    let wins = 0;
+    const N_LIMBO = 4000;
+    for (let n = 0; n < N_LIMBO; n += 1) {
+      if (poc.limboMultiplierFrom({
+        serverSeed: poc.deterministicSeed("ls", n),
+        clientSeed: poc.deterministicSeed("lc", n),
+        nonce: n
+      }).multiplierX100 >= poc.LIMBO_TARGET_X100) wins += 1;
+    }
+    const lRate = wins / N_LIMBO;
+    assert(lRate > 0.465 && lRate < 0.525, `limbo win rate ≈ 49.5% at 2.00× (got ${(lRate * 100).toFixed(1)}%)`);
+  }
+
+  // 11) The catalog wires every game to its badge + launch-evidence ids. flip/dice
+  // carry app-report "verified" badges; the 4 newer games are honestly model-attested
+  // (mock-fakenet fixtures attest the model, not a deployed kernel) — their badge id
+  // ends in -model-attested, matching what issue-badge actually mints.
+  assertEqual(poc.pocGames.length, 6, "six POC games in the catalog");
+  const badgeSuffix = {
+    "forfeit-flip": "verified",
+    "forfeit-dice": "verified",
+    "forfeit-roulette": "model-attested",
+    "forfeit-slots": "model-attested",
+    "forfeit-highcard": "model-attested",
+    "forfeit-limbo": "model-attested"
+  };
+  for (const [id, suffix] of Object.entries(badgeSuffix)) {
+    const short = id.replace("forfeit-", "");
+    assertEqual(poc.pocGameById(id).badgeId, `badge-${id}-${suffix}`, `${short} badge id`);
+    assertEqual(poc.pocGameById(id).caseId, `case-${id}-launch-001`, `${short} case id`);
+  }
   assertEqual(poc.pocGameById("nope"), undefined, "unknown game id is undefined");
 
   console.log("test-pocgames-verifier: all assertions passed");

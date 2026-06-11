@@ -14,6 +14,7 @@ import {
   type ChiSquareResult,
   type DiceRound
 } from "@/lib/pocgames";
+import { tamperSeed } from "@/components/pocgame-ui";
 
 type Phase = "idle" | "house" | "player" | "revealed";
 
@@ -96,8 +97,7 @@ export function ForfeitDiceGame() {
   const auditedRound = useMemo<DiceRound | null>(() => {
     if (!round) return null;
     if (!tamper) return round;
-    const flipped = round.serverSeed.slice(0, -1) + (round.serverSeed.endsWith("0") ? "1" : "0");
-    return { ...round, serverSeed: flipped };
+    return { ...round, serverSeed: tamperSeed(round.serverSeed) };
   }, [round, tamper]);
 
   const verification = auditedRound ? verifyDiceRound(auditedRound) : null;

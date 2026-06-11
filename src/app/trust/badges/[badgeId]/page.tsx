@@ -61,21 +61,21 @@ export default async function BadgeDetailPage({ params }: BadgeDetailPageProps) 
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href={`/api/trust/badges/${badgeId}`}
+                href={`/api/trust/badges/${badgeId}`} target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 JSON
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href={`/api/trust/badges/${badgeId}/verification`}
+                href={`/api/trust/badges/${badgeId}/verification`} target="_blank" rel="noreferrer"
               >
                 <ShieldCheck size={16} aria-hidden="true" />
                 Verification
               </Link>
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-white px-4 py-2 text-sm font-medium text-[#0B0B0B]"
-                href={`/api/trust/badges/${badgeId}/embed`}
+                href={`/api/trust/badges/${badgeId}/embed`} target="_blank" rel="noreferrer"
               >
                 <BadgeCheck size={16} aria-hidden="true" />
                 Embed
@@ -101,28 +101,28 @@ export default async function BadgeDetailPage({ params }: BadgeDetailPageProps) 
           <div className="mt-4 grid gap-3 md:grid-cols-4">
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/trust/badges/${badgeId}`}
+              href={`/api/trust/badges/${badgeId}`} target="_blank" rel="noreferrer"
             >
               Badge API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/trust/badges/${badgeId}/verification`}
+              href={`/api/trust/badges/${badgeId}/verification`} target="_blank" rel="noreferrer"
             >
               Verification Bundle
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href={`/api/trust/badges/${badgeId}/embed`}
+              href={`/api/trust/badges/${badgeId}/embed`} target="_blank" rel="noreferrer"
             >
               Embed Bundle
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={verificationHref}
+              href={verificationHref} target="_blank" rel="noreferrer"
             >
               Verify Issuance
               <ArrowUpRight size={14} aria-hidden="true" />

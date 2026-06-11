@@ -13,8 +13,18 @@
       "createdAt": "2026-06-05T18:00:00.000Z",
       "updatedAt": "2026-06-05T18:20:00.000Z",
       "requestedBy": "nocksperimental",
-      "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "founder-demo" },
-      "evidenceIds": ["evidence-vesl-demo-lab-001", "evidence-vesl-demo-fakenet-001", "evidence-vesl-demo-vesl-001"],
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "founder-demo"
+      },
+      "evidenceIds": [
+        "evidence-vesl-demo-lab-001",
+        "evidence-vesl-demo-fakenet-001",
+        "evidence-vesl-demo-vesl-001"
+      ],
       "reportSlug": "launch-vesl-demo-001",
       "badgeId": null,
       "sourceAnchor": {
@@ -34,8 +44,17 @@
       "createdAt": "2026-06-05T18:30:00.000Z",
       "updatedAt": "2026-06-05T18:45:00.000Z",
       "requestedBy": "nocksperimental",
-      "payment": { "status": "quoted", "rail": "manual", "amount": 2500, "currency": "USD", "reference": "manual-quote-launch-001" },
-      "evidenceIds": ["evidence-payment-flow-lab-001", "evidence-payment-flow-workspace-001"],
+      "payment": {
+        "status": "quoted",
+        "rail": "manual",
+        "amount": 2500,
+        "currency": "USD",
+        "reference": "manual-quote-launch-001"
+      },
+      "evidenceIds": [
+        "evidence-payment-flow-lab-001",
+        "evidence-payment-flow-workspace-001"
+      ],
       "reportSlug": "launch-payment-flow-001",
       "badgeId": null,
       "sourceAnchor": {
@@ -55,8 +74,16 @@
       "createdAt": "2026-06-05T19:00:00.000Z",
       "updatedAt": "2026-06-05T19:20:00.000Z",
       "requestedBy": "private-operator",
-      "payment": { "status": "invoiced", "rail": "nock", "amount": 12500, "currency": "NOCK", "reference": "private-launch-operator-001" },
-      "evidenceIds": ["evidence-confidential-operator-manual-001"],
+      "payment": {
+        "status": "invoiced",
+        "rail": "nock",
+        "amount": 12500,
+        "currency": "NOCK",
+        "reference": "private-launch-operator-001"
+      },
+      "evidenceIds": [
+        "evidence-confidential-operator-manual-001"
+      ],
       "reportSlug": "launch-confidential-operator-001",
       "badgeId": null,
       "sourceAnchor": {
@@ -76,8 +103,16 @@
       "createdAt": "2026-06-08T02:00:00.000Z",
       "updatedAt": "2026-06-08T02:20:00.000Z",
       "requestedBy": "nocksperimental",
-      "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "poc-game-demo" },
-      "evidenceIds": ["evidence-forfeit-flip-lab-001"],
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-flip-lab-001"
+      ],
       "reportSlug": "launch-forfeit-flip-001",
       "badgeId": "badge-forfeit-flip-verified",
       "sourceAnchor": {
@@ -97,10 +132,134 @@
       "createdAt": "2026-06-08T02:02:00.000Z",
       "updatedAt": "2026-06-08T02:22:00.000Z",
       "requestedBy": "nocksperimental",
-      "payment": { "status": "waived", "rail": "none", "amount": null, "currency": null, "reference": "poc-game-demo" },
-      "evidenceIds": ["evidence-forfeit-dice-lab-001"],
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-dice-lab-001"
+      ],
       "reportSlug": "launch-forfeit-dice-001",
       "badgeId": "badge-forfeit-dice-verified",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "caseId": "case-forfeit-roulette-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-roulette",
+      "subjectName": "Forfeit Roulette",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-10T13:30:00.000Z",
+      "updatedAt": "2026-06-10T13:30:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-roulette-lab-001"
+      ],
+      "reportSlug": "launch-forfeit-roulette-001",
+      "badgeId": "badge-forfeit-roulette-model-attested",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "caseId": "case-forfeit-slots-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-slots",
+      "subjectName": "Forfeit Slots",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-10T13:30:00.000Z",
+      "updatedAt": "2026-06-10T13:30:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-slots-lab-001"
+      ],
+      "reportSlug": "launch-forfeit-slots-001",
+      "badgeId": "badge-forfeit-slots-model-attested",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "caseId": "case-forfeit-highcard-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-highcard",
+      "subjectName": "Forfeit High Card",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-10T13:30:00.000Z",
+      "updatedAt": "2026-06-10T13:30:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-highcard-lab-001"
+      ],
+      "reportSlug": "launch-forfeit-highcard-001",
+      "badgeId": "badge-forfeit-highcard-model-attested",
+      "sourceAnchor": {
+        "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
+        "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
+      }
+    },
+    {
+      "caseId": "case-forfeit-limbo-launch-001",
+      "workspaceSlug": "launch-lab-private",
+      "subjectSlug": "forfeit-limbo",
+      "subjectName": "Forfeit Limbo",
+      "subjectType": "nockapp",
+      "customerLane": "builder-auditor",
+      "status": "verified",
+      "visibility": "public",
+      "createdAt": "2026-06-10T13:30:00.000Z",
+      "updatedAt": "2026-06-10T13:30:00.000Z",
+      "requestedBy": "nocksperimental",
+      "payment": {
+        "status": "waived",
+        "rail": "none",
+        "amount": null,
+        "currency": null,
+        "reference": "poc-game-demo"
+      },
+      "evidenceIds": [
+        "evidence-forfeit-limbo-lab-001"
+      ],
+      "reportSlug": "launch-forfeit-limbo-001",
+      "badgeId": "badge-forfeit-limbo-model-attested",
       "sourceAnchor": {
         "commit": "33ba97b1e206dd89b15c61b72b7802caf2136c18",
         "build": "build-33ba97b1e206dd89b15c61b72b7802caf2136c18"
@@ -108,14 +267,162 @@
     }
   ],
   "submissions": [
-    { "evidenceId": "evidence-vesl-demo-lab-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/vesl-demo", "submittedAt": "2026-06-05T18:05:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:launch-vesl-demo-lab-001", "snapshotRoot": "launch-vesl-demo-lab-root-001", "receiptId": null, "redactionSummary": "No private keys, seeds, or environment dumps included." },
-    { "evidenceId": "evidence-vesl-demo-fakenet-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "fakenet", "sourceUrl": "/api/fakenet/evidence", "submittedAt": "2026-06-05T18:08:00.000Z", "submittedBy": "fakenet-adapter", "status": "accepted", "reportHash": "sha256:8eb7d3fff4f531eaa72893ce022df3b196edb72278d5043619c25c37a8688044", "snapshotRoot": "local-fakenet-root-v0", "receiptId": null, "redactionSummary": "Wallet address and endpoint only; no signing material included." },
-    { "evidenceId": "evidence-vesl-demo-vesl-001", "caseId": "case-vesl-demo-launch-001", "sourceKind": "vesl", "sourceUrl": "/api/vesl/evidence/submit", "submittedAt": "2026-06-05T18:12:00.000Z", "submittedBy": "vesl-test", "status": "verified", "reportHash": "sha256:vesl-demo-report-v0", "snapshotRoot": "vesl-demo-snapshot-root-v0", "receiptId": "vesl_submission_demo", "redactionSummary": "Lifecycle tags, peek status, and hull health only." },
-    { "evidenceId": "evidence-payment-flow-lab-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/payment-flow", "submittedAt": "2026-06-05T18:35:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:4cade57672628cbe3441d134eff67d6c589a8d94c70ff989a61da26d67430c91", "snapshotRoot": "3a6d6bff59cb624f", "receiptId": null, "redactionSummary": "Generated report hash and snapshot root only." },
-    { "evidenceId": "evidence-payment-flow-workspace-001", "caseId": "case-payment-flow-prelaunch-001", "sourceKind": "workspace-upload", "sourceUrl": "/api/workspaces/launch-lab-private/evidence", "submittedAt": "2026-06-05T18:40:00.000Z", "submittedBy": "workspace-upload-token", "status": "attention", "reportHash": "sha256:workspace-payment-flow-v0", "snapshotRoot": "workspace-payment-root-v0", "receiptId": null, "redactionSummary": "Upload policy accepted metadata; reviewer notes pending." },
-    { "evidenceId": "evidence-confidential-operator-manual-001", "caseId": "case-confidential-operator-launch-001", "sourceKind": "manual", "sourceUrl": null, "submittedAt": "2026-06-05T19:08:00.000Z", "submittedBy": "private-operator", "status": "verified", "reportHash": "sha256:confidential-operator-manual-001", "snapshotRoot": "confidential-operator-manual-root-001", "receiptId": null, "redactionSummary": "Private operator evidence retained off public routes." },
-    { "evidenceId": "evidence-forfeit-flip-lab-001", "caseId": "case-forfeit-flip-launch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/forfeit-flip-fairness", "submittedAt": "2026-06-08T02:05:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:b61ea88c49baa5f3-forfeit-flip-fairness", "snapshotRoot": "b61ea88c49baa5f3", "receiptId": null, "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced." },
-    { "evidenceId": "evidence-forfeit-dice-lab-001", "caseId": "case-forfeit-dice-launch-001", "sourceKind": "lab", "sourceUrl": "/api/reports/generated/forfeit-dice-fairness", "submittedAt": "2026-06-08T02:07:00.000Z", "submittedBy": "nocklab", "status": "verified", "reportHash": "sha256:28d565bae5f10035-forfeit-dice-fairness", "snapshotRoot": "28d565bae5f10035", "receiptId": null, "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced." }
+    {
+      "evidenceId": "evidence-vesl-demo-lab-001",
+      "caseId": "case-vesl-demo-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/vesl-demo",
+      "submittedAt": "2026-06-05T18:05:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:launch-vesl-demo-lab-001",
+      "snapshotRoot": "launch-vesl-demo-lab-root-001",
+      "receiptId": null,
+      "redactionSummary": "No private keys, seeds, or environment dumps included."
+    },
+    {
+      "evidenceId": "evidence-vesl-demo-fakenet-001",
+      "caseId": "case-vesl-demo-launch-001",
+      "sourceKind": "fakenet",
+      "sourceUrl": "/api/fakenet/evidence",
+      "submittedAt": "2026-06-05T18:08:00.000Z",
+      "submittedBy": "fakenet-adapter",
+      "status": "accepted",
+      "reportHash": "sha256:8eb7d3fff4f531eaa72893ce022df3b196edb72278d5043619c25c37a8688044",
+      "snapshotRoot": "local-fakenet-root-v0",
+      "receiptId": null,
+      "redactionSummary": "Wallet address and endpoint only; no signing material included."
+    },
+    {
+      "evidenceId": "evidence-vesl-demo-vesl-001",
+      "caseId": "case-vesl-demo-launch-001",
+      "sourceKind": "vesl",
+      "sourceUrl": "/api/vesl/evidence/submit",
+      "submittedAt": "2026-06-05T18:12:00.000Z",
+      "submittedBy": "vesl-test",
+      "status": "verified",
+      "reportHash": "sha256:vesl-demo-report-v0",
+      "snapshotRoot": "vesl-demo-snapshot-root-v0",
+      "receiptId": "vesl_submission_demo",
+      "redactionSummary": "Lifecycle tags, peek status, and hull health only."
+    },
+    {
+      "evidenceId": "evidence-payment-flow-lab-001",
+      "caseId": "case-payment-flow-prelaunch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/payment-flow",
+      "submittedAt": "2026-06-05T18:35:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:4cade57672628cbe3441d134eff67d6c589a8d94c70ff989a61da26d67430c91",
+      "snapshotRoot": "3a6d6bff59cb624f",
+      "receiptId": null,
+      "redactionSummary": "Generated report hash and snapshot root only."
+    },
+    {
+      "evidenceId": "evidence-payment-flow-workspace-001",
+      "caseId": "case-payment-flow-prelaunch-001",
+      "sourceKind": "workspace-upload",
+      "sourceUrl": "/api/workspaces/launch-lab-private/evidence",
+      "submittedAt": "2026-06-05T18:40:00.000Z",
+      "submittedBy": "workspace-upload-token",
+      "status": "attention",
+      "reportHash": "sha256:workspace-payment-flow-v0",
+      "snapshotRoot": "workspace-payment-root-v0",
+      "receiptId": null,
+      "redactionSummary": "Upload policy accepted metadata; reviewer notes pending."
+    },
+    {
+      "evidenceId": "evidence-confidential-operator-manual-001",
+      "caseId": "case-confidential-operator-launch-001",
+      "sourceKind": "manual",
+      "sourceUrl": null,
+      "submittedAt": "2026-06-05T19:08:00.000Z",
+      "submittedBy": "private-operator",
+      "status": "verified",
+      "reportHash": "sha256:confidential-operator-manual-001",
+      "snapshotRoot": "confidential-operator-manual-root-001",
+      "receiptId": null,
+      "redactionSummary": "Private operator evidence retained off public routes."
+    },
+    {
+      "evidenceId": "evidence-forfeit-flip-lab-001",
+      "caseId": "case-forfeit-flip-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-flip-fairness",
+      "submittedAt": "2026-06-08T02:05:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:b61ea88c49baa5f3-forfeit-flip-fairness",
+      "snapshotRoot": "b61ea88c49baa5f3",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    },
+    {
+      "evidenceId": "evidence-forfeit-dice-lab-001",
+      "caseId": "case-forfeit-dice-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-dice-fairness",
+      "submittedAt": "2026-06-08T02:07:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:28d565bae5f10035-forfeit-dice-fairness",
+      "snapshotRoot": "28d565bae5f10035",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    },
+    {
+      "evidenceId": "evidence-forfeit-roulette-lab-001",
+      "caseId": "case-forfeit-roulette-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-roulette-fairness",
+      "submittedAt": "2026-06-10T13:30:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:15971a243afdd65e7e4b78a59e7c108adb4c499e7373d9b9f17e7ab1f79750a6",
+      "snapshotRoot": "e530990846751537",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    },
+    {
+      "evidenceId": "evidence-forfeit-slots-lab-001",
+      "caseId": "case-forfeit-slots-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-slots-fairness",
+      "submittedAt": "2026-06-10T13:30:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:7de915e64de11d274fe9103b703d78ab593994fdff2194050695f90c9847024c",
+      "snapshotRoot": "427ceff7d2dc05d1",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    },
+    {
+      "evidenceId": "evidence-forfeit-highcard-lab-001",
+      "caseId": "case-forfeit-highcard-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-highcard-fairness",
+      "submittedAt": "2026-06-10T13:30:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:1b7ec5a1380ae580e878610c787804d687b423bf9735e7b4814600ef619181ef",
+      "snapshotRoot": "41ecb8800fc7f7df",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    },
+    {
+      "evidenceId": "evidence-forfeit-limbo-lab-001",
+      "caseId": "case-forfeit-limbo-launch-001",
+      "sourceKind": "lab",
+      "sourceUrl": "/api/reports/generated/forfeit-limbo-fairness",
+      "submittedAt": "2026-06-10T13:30:00.000Z",
+      "submittedBy": "nocklab",
+      "status": "verified",
+      "reportHash": "sha256:b826c890d59565ff142c81b5764a80caf65b452bb947d96cd9de5c59dd1ac0ad",
+      "snapshotRoot": "e20ee592bdf03a70",
+      "receiptId": null,
+      "redactionSummary": "Commitment-only peek surface; no server seed, client seed, or signing material referenced."
+    }
   ],
   "reports": [
     {
@@ -124,14 +431,44 @@
       "summaryStatus": "verified",
       "score": 92,
       "requiredChecks": [
-        { "id": "lab-report-linked", "label": "Lab report linked", "status": "pass", "summary": "Generated lab report hash and snapshot root are present." },
-        { "id": "fakenet-evidence-linked", "label": "Fakenet evidence linked", "status": "pass", "summary": "Fakenet readiness evidence is attached to the case." },
-        { "id": "vesl-lifecycle-linked", "label": "VESL lifecycle evidence linked", "status": "pass", "summary": "VESL evidence includes lifecycle checks and settlement effects." },
-        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Submissions report no private keys, seeds, or API secrets." }
+        {
+          "id": "lab-report-linked",
+          "label": "Lab report linked",
+          "status": "pass",
+          "summary": "Generated lab report hash and snapshot root are present."
+        },
+        {
+          "id": "fakenet-evidence-linked",
+          "label": "Fakenet evidence linked",
+          "status": "pass",
+          "summary": "Fakenet readiness evidence is attached to the case."
+        },
+        {
+          "id": "vesl-lifecycle-linked",
+          "label": "VESL lifecycle evidence linked",
+          "status": "pass",
+          "summary": "VESL evidence includes lifecycle checks and settlement effects."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Submissions report no private keys, seeds, or API secrets."
+        }
       ],
       "recommendedChecks": [
-        { "id": "badge-ready", "label": "Badge ready", "status": "pass", "summary": "The case is eligible for public badge display." },
-        { "id": "payment-rail", "label": "Payment rail", "status": "warn", "summary": "Payment was waived for this founder demo; paid rail metadata remains provider-neutral." }
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "The case is eligible for public badge display."
+        },
+        {
+          "id": "payment-rail",
+          "label": "Payment rail",
+          "status": "warn",
+          "summary": "Payment was waived for this founder demo; paid rail metadata remains provider-neutral."
+        }
       ],
       "evidenceSummary": "VESL Demo App has lab, fakenet, and VESL lifecycle evidence attached.",
       "reviewerNotes": "Founder demo proves Launch Evidence can aggregate existing Nocksperimental evidence primitives.",
@@ -146,13 +483,38 @@
       "summaryStatus": "watch",
       "score": 78,
       "requiredChecks": [
-        { "id": "lab-report-linked", "label": "Lab report linked", "status": "pass", "summary": "Generated payment-flow lab report is linked." },
-        { "id": "workspace-upload-linked", "label": "Workspace upload linked", "status": "warn", "summary": "Workspace upload metadata is present but still needs reviewer confirmation." },
-        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "No secret-like material is referenced by the static case." }
+        {
+          "id": "lab-report-linked",
+          "label": "Lab report linked",
+          "status": "pass",
+          "summary": "Generated payment-flow lab report is linked."
+        },
+        {
+          "id": "workspace-upload-linked",
+          "label": "Workspace upload linked",
+          "status": "warn",
+          "summary": "Workspace upload metadata is present but still needs reviewer confirmation."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "No secret-like material is referenced by the static case."
+        }
       ],
       "recommendedChecks": [
-        { "id": "vesl-lifecycle", "label": "VESL lifecycle", "status": "warn", "summary": "No VESL lifecycle receipt is linked yet." },
-        { "id": "badge-ready", "label": "Badge ready", "status": "warn", "summary": "Badge issuance should wait for reviewer confirmation." }
+        {
+          "id": "vesl-lifecycle",
+          "label": "VESL lifecycle",
+          "status": "warn",
+          "summary": "No VESL lifecycle receipt is linked yet."
+        },
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "warn",
+          "summary": "Badge issuance should wait for reviewer confirmation."
+        }
       ],
       "evidenceSummary": "Payment Flow has lab evidence and workspace upload metadata, with reviewer confirmation pending.",
       "reviewerNotes": "Keep in watch state until lifecycle or reviewer evidence is attached.",
@@ -167,11 +529,26 @@
       "summaryStatus": "verified",
       "score": 88,
       "requiredChecks": [
-        { "id": "operator-evidence-linked", "label": "Operator evidence linked", "status": "pass", "summary": "Private operator evidence is attached to the case." },
-        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Public verifier responses redact the private report." }
+        {
+          "id": "operator-evidence-linked",
+          "label": "Operator evidence linked",
+          "status": "pass",
+          "summary": "Private operator evidence is attached to the case."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Public verifier responses redact the private report."
+        }
       ],
       "recommendedChecks": [
-        { "id": "public-badge", "label": "Public badge", "status": "warn", "summary": "Badge issuance is deferred while the case remains private." }
+        {
+          "id": "public-badge",
+          "label": "Public badge",
+          "status": "warn",
+          "summary": "Badge issuance is deferred while the case remains private."
+        }
       ],
       "evidenceSummary": "Confidential operator launch evidence is retained for private review only.",
       "reviewerNotes": "Fixture exercises private-case verifier redaction without publishing case details.",
@@ -186,17 +563,42 @@
       "summaryStatus": "verified",
       "score": 97,
       "requiredChecks": [
-        { "id": "lab-report-linked", "label": "Lab fairness report linked", "status": "pass", "summary": "The forfeit-flip-fairness lab report (hash + snapshot root) is attached to the case." },
-        { "id": "fairness-invariants", "label": "Provable-fairness invariants", "status": "pass", "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass." },
-        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Peek surface and evidence reference no server seed, client seed, or signing material." }
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-flip-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
       ],
       "recommendedChecks": [
-        { "id": "badge-ready", "label": "Badge ready", "status": "pass", "summary": "Eligible for a public trust badge; badge-forfeit-flip-verified is issued and signed." },
-        { "id": "settlement-residual", "label": "Settlement residual disclosed", "status": "warn", "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout — consensus cannot gate a payout on the game outcome." }
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-flip-verified is issued and signed."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout \u2014 consensus cannot gate a payout on the game outcome."
+        }
       ],
       "evidenceSummary": "Forfeit Flip carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
       "reviewerNotes": "Proves the fairness model and that the invariants are well-formed; the standalone verifier reproduces the coin-flip seed-leak contrast (100% vs ~50%).",
-      "publicSummary": "Provably-fair coin flip: outcome derives from H(serverSeed‖clientSeed‖nonce); either party can recompute it from public reveals.",
+      "publicSummary": "Provably-fair coin flip: outcome derives from H(serverSeed\u2016clientSeed\u2016nonce); either party can recompute it from public reveals.",
       "generatedAt": "2026-06-08T02:20:00.000Z",
       "reportHash": "sha256:launch-forfeit-flip-001",
       "snapshotRoot": "launch-forfeit-flip-root-001"
@@ -207,21 +609,235 @@
       "summaryStatus": "verified",
       "score": 96,
       "requiredChecks": [
-        { "id": "lab-report-linked", "label": "Lab fairness report linked", "status": "pass", "summary": "The forfeit-dice-fairness lab report (hash + snapshot root) is attached to the case." },
-        { "id": "fairness-invariants", "label": "Provable-fairness invariants", "status": "pass", "summary": "Commitment-only peek, seed-hashlock, strictly increasing nonce, and unbiased [0,9999] roll band all pass." },
-        { "id": "secret-redaction", "label": "Secret redaction", "status": "pass", "summary": "Peek surface and evidence reference no server seed, client seed, or signing material." }
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-dice-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock, strictly increasing nonce, and unbiased [0,9999] roll band all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
       ],
       "recommendedChecks": [
-        { "id": "badge-ready", "label": "Badge ready", "status": "pass", "summary": "Eligible for a public trust badge; badge-forfeit-dice-verified is issued and signed." },
-        { "id": "uniformity-proof", "label": "Distribution uniformity", "status": "pass", "summary": "The standalone verifier proves chi-square uniformity (df=9) with rejection sampling removing modulo bias." },
-        { "id": "settlement-residual", "label": "Settlement residual disclosed", "status": "warn", "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout — consensus cannot gate a payout on the game outcome." }
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-dice-verified is issued and signed."
+        },
+        {
+          "id": "uniformity-proof",
+          "label": "Distribution uniformity",
+          "status": "pass",
+          "summary": "The standalone verifier proves chi-square uniformity (df=9) with rejection sampling removing modulo bias."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout \u2014 consensus cannot gate a payout on the game outcome."
+        }
       ],
       "evidenceSummary": "Forfeit Dice carries a passing commit-reveal fairness report; the published roll lives in the rejection-sampled unbiased band.",
       "reviewerNotes": "Proves the fairness model and invariant well-formedness; the standalone verifier reproduces the chi-square uniformity proof and the modulo-bias negative control.",
-      "publicSummary": "Provably-fair dice: roll = rejection-sampled H(serverSeed‖clientSeed‖nonce) mod 10000; recomputable from public reveals and verifiably uniform.",
+      "publicSummary": "Provably-fair dice: roll = rejection-sampled H(serverSeed\u2016clientSeed\u2016nonce) mod 10000; recomputable from public reveals and verifiably uniform.",
       "generatedAt": "2026-06-08T02:22:00.000Z",
       "reportHash": "sha256:launch-forfeit-dice-001",
       "snapshotRoot": "launch-forfeit-dice-root-001"
+    },
+    {
+      "reportSlug": "launch-forfeit-roulette-001",
+      "caseId": "case-forfeit-roulette-launch-001",
+      "summaryStatus": "verified",
+      "score": 97,
+      "requiredChecks": [
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-roulette-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
+      ],
+      "recommendedChecks": [
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-roulette-model-attested is issued and signed by the active key."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout."
+        }
+      ],
+      "evidenceSummary": "Forfeit Roulette carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
+      "reviewerNotes": "Proves the fairness model and that the invariants are well-formed (model-attested; not the compiled kernel).",
+      "publicSummary": "Provably-fair European roulette: pocket = H(server\u2016client\u2016nonce\u2016draw) mod 37; either party recomputes it. Zero is the disclosed green/house edge.",
+      "generatedAt": "2026-06-10T13:30:00.000Z",
+      "reportHash": "sha256:launch-forfeit-roulette-001",
+      "snapshotRoot": "launch-forfeit-roulette-001-root"
+    },
+    {
+      "reportSlug": "launch-forfeit-slots-001",
+      "caseId": "case-forfeit-slots-launch-001",
+      "summaryStatus": "verified",
+      "score": 97,
+      "requiredChecks": [
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-slots-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
+      ],
+      "recommendedChecks": [
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-slots-model-attested is issued and signed by the active key."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout."
+        }
+      ],
+      "evidenceSummary": "Forfeit Slots carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
+      "reviewerNotes": "Proves the fairness model and that the invariants are well-formed (model-attested; not the compiled kernel).",
+      "publicSummary": "Provably-fair three-reel slots: each reel = H(server\u2016client\u2016nonce\u2016i) mod 8; pair-or-better wins (176/512). Reels recompute from public reveals.",
+      "generatedAt": "2026-06-10T13:30:00.000Z",
+      "reportHash": "sha256:launch-forfeit-slots-001",
+      "snapshotRoot": "launch-forfeit-slots-001-root"
+    },
+    {
+      "reportSlug": "launch-forfeit-highcard-001",
+      "caseId": "case-forfeit-highcard-launch-001",
+      "summaryStatus": "verified",
+      "score": 97,
+      "requiredChecks": [
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-highcard-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
+      ],
+      "recommendedChecks": [
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-highcard-model-attested is issued and signed by the active key."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout."
+        }
+      ],
+      "evidenceSummary": "Forfeit High Card carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
+      "reviewerNotes": "Proves the fairness model and that the invariants are well-formed (model-attested; not the compiled kernel).",
+      "publicSummary": "Provably-fair high card: two distinct cards from H(...); higher rank wins, suit breaks ties. Both cards recompute from public reveals.",
+      "generatedAt": "2026-06-10T13:30:00.000Z",
+      "reportHash": "sha256:launch-forfeit-highcard-001",
+      "snapshotRoot": "launch-forfeit-highcard-001-root"
+    },
+    {
+      "reportSlug": "launch-forfeit-limbo-001",
+      "caseId": "case-forfeit-limbo-launch-001",
+      "summaryStatus": "verified",
+      "score": 97,
+      "requiredChecks": [
+        {
+          "id": "lab-report-linked",
+          "label": "Lab fairness report linked",
+          "status": "pass",
+          "summary": "The forfeit-limbo-fairness lab report (hash + snapshot root) is attached to the case."
+        },
+        {
+          "id": "fairness-invariants",
+          "label": "Provable-fairness invariants",
+          "status": "pass",
+          "summary": "Commitment-only peek, seed-hashlock (sha256(seed)==commit), and strictly increasing nonce all pass."
+        },
+        {
+          "id": "secret-redaction",
+          "label": "Secret redaction",
+          "status": "pass",
+          "summary": "Peek surface and evidence reference no server seed, client seed, or signing material."
+        }
+      ],
+      "recommendedChecks": [
+        {
+          "id": "badge-ready",
+          "label": "Badge ready",
+          "status": "pass",
+          "summary": "Eligible for a public trust badge; badge-forfeit-limbo-model-attested is issued and signed by the active key."
+        },
+        {
+          "id": "settlement-residual",
+          "label": "Settlement residual disclosed",
+          "status": "warn",
+          "summary": "Fairness is fully trustless; settlement is bonded-cooperative + timeout-forfeit (HTLC-grade), not contract-grade forced payout."
+        }
+      ],
+      "evidenceSummary": "Forfeit Limbo carries a passing two-sided commit-reveal fairness report with a commitment-only peek surface.",
+      "reviewerNotes": "Proves the fairness model and that the invariants are well-formed (model-attested; not the compiled kernel).",
+      "publicSummary": "Provably-fair limbo: multiplier = max(1.00, 0.99\u00b72^24/(u+1)); player wins at the 2.00x target. The curve and draw are public and recomputable.",
+      "generatedAt": "2026-06-10T13:30:00.000Z",
+      "reportHash": "sha256:launch-forfeit-limbo-001",
+      "snapshotRoot": "launch-forfeit-limbo-001-root"
     }
   ]
 }

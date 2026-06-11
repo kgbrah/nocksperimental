@@ -1,0 +1,94 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "forfeit-highcard-fairness-v0",
+  "app": {
+    "name": "Forfeit High Card (fairness)",
+    "slug": "forfeit-highcard",
+    "version": "0.0.1",
+    "kernel": "forfeit-highcard"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "Positive proof of the forfeit-highcard fairness invariants over a resolved round.",
+      "Peek surface is commitment-only (no seed); revealed seeds hash to their commitments; nonce strictly increases.",
+      "Two distinct cards drawn from a 52-card deck, recomputable from public reveals; higher rank wins, suit (♣<♦<♥<♠) breaks rank ties.",
+      "Honest limit: this proves the MODEL and that the invariants are well-formed, not the compiled Hoon. Real-VM poke/peek awaits generic-cause nockapp-run."
+    ]
+  },
+  "actors": [
+    {
+      "name": "referee",
+      "pkh": "forfeit-highcard-referee"
+    }
+  ],
+  "initialState": {
+    "peekSurface": {
+      "nonce": 4,
+      "commitHouse": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e",
+      "commitPlayer": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6",
+      "playerCard": 38,
+      "houseCard": 12,
+      "houseDrawIndex": 1,
+      "outcome": true
+    },
+    "reveals": [
+      {
+        "label": "house",
+        "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "commit": "e0e77a507412b120f6ede61f62295b1a7b2ff19d3dcc8f7253e51663470c888e"
+      },
+      {
+        "label": "player",
+        "seed": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "commit": "4ca14526b2751b640d549ce7caf8ac39438592211a0ec370064d57666a682ad6"
+      }
+    ],
+    "nonceSequence": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "steps": [
+    {
+      "id": "peek-commit-surface",
+      "type": "peek",
+      "title": "Peek the commitment-only surface",
+      "target": "/round",
+      "expect": {
+        "path": "peekSurface.nonce",
+        "equals": 4
+      }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "commit-only-peek",
+      "title": "Peek surface never exposes an unrevealed seed",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "peek-reveals-no-secret",
+      "path": "peekSurface"
+    },
+    {
+      "id": "seeds-hashlock",
+      "title": "Revealed seeds hash to their commitments (provable fairness)",
+      "severity": "critical",
+      "kind": "custom-function",
+      "fn": "commit-binds-seed",
+      "path": "reveals"
+    },
+    {
+      "id": "nonce-monotonic",
+      "title": "Nonce strictly increases (replay safety)",
+      "severity": "high",
+      "kind": "monotonic-strict",
+      "path": "nonceSequence"
+    }
+  ]
+}

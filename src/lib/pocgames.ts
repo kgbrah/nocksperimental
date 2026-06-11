@@ -373,6 +373,473 @@ export function deterministicSeed(tag: string, index: number): string {
   return hashHex(hex);
 }
 
+// ---- generic uniform draw ------------------------------------------------------
+//
+// One rejection-sampled uniform value in [0, modulus) per (seeds, nonce, draw) tuple.
+// `draw` is a domain-separation index so multi-draw games (slots reels, two cards)
+// get independent values from the same committed seeds. Same rejection discipline
+// as the dice roll: re-hash until the value falls under the largest multiple of
+// `modulus` below 2^256, so there is no modulo bias and the audit trail
+// (rejectionIndex) is recomputable.
+
+export function drawUniform({
+  serverSeed,
+  clientSeed,
+  nonce,
+  draw,
+  modulus
+}: {
+  serverSeed: string;
+  clientSeed: string;
+  nonce: number;
+  draw: number;
+  modulus: number;
+}): { value: number; rejectionIndex: number } {
+  const mod = BigInt(modulus);
+  const limit = (TWO_POW_256 / mod) * mod;
+  let h = BigInt(`0x${hashHex(serverSeed, clientSeed, nonceHex(nonce), nonceHex(draw))}`);
+  let rejectionIndex = 0;
+  while (h >= limit) {
+    h = BigInt(`0x${hashHex(bigToHex32(h), nonceHex(rejectionIndex))}`);
+    rejectionIndex += 1;
+  }
+  return { value: Number(h % mod), rejectionIndex };
+}
+
+// ---- forfeit roulette ----------------------------------------------------------
+//
+// European single-zero wheel: pocket = uniform draw mod 37. The player bets a color
+// before any reveal; zero is green and always pays the house — the classic, fully
+// disclosed 1/37 house edge.
+
+export const ROULETTE_POCKETS = 37;
+export const ROULETTE_RED = new Set([
+  1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36
+]);
+
+export type RouletteColor = "red" | "black" | "green";
+export type RouletteBet = "red" | "black";
+
+export function rouletteColorOf(pocket: number): RouletteColor {
+  if (pocket === 0) return "green";
+  return ROULETTE_RED.has(pocket) ? "red" : "black";
+}
+
+export type RouletteRound = {
+  nonce: number;
+  bet: RouletteBet;
+  commitHouse: string;
+  commitClient: string;
+  serverSeed: string;
+  clientSeed: string;
+  pocket?: number;
+  rejectionIndex?: number;
+  declaredWinner?: "house" | "player";
+};
+
+export function roulettePocketFrom(input: {
+  serverSeed: string;
+  clientSeed: string;
+  nonce: number;
+}): { pocket: number; rejectionIndex: number } {
+  const { value, rejectionIndex } = drawUniform({ ...input, draw: 0, modulus: ROULETTE_POCKETS });
+  return { pocket: value, rejectionIndex };
+}
+
+export const rouletteWinnerOf = (round: RouletteRound) =>
+  rouletteColorOf(roulettePocketFrom(round).pocket) === round.bet ? "player" : "house";
+
+export type RouletteVerification = {
+  verified: boolean;
+  recomputedPocket: number;
+  recomputedColor: RouletteColor;
+  recomputedWinner: "house" | "player";
+  checks: {
+    houseCommitBindsSeed: boolean;
+    playerCommitBindsSeed: boolean;
+    pocketRecomputes: boolean;
+    rejectionIndexRecomputes: boolean;
+    declaredWinnerCorrect: boolean;
+  };
+};
+
+export function verifyRouletteRound(round: RouletteRound): RouletteVerification {
+  const { pocket, rejectionIndex } = roulettePocketFrom(round);
+  const recomputedColor = rouletteColorOf(pocket);
+  const recomputedWinner = recomputedColor === round.bet ? "player" : "house";
+  const checks = {
+    houseCommitBindsSeed: commit(round.serverSeed) === round.commitHouse,
+    playerCommitBindsSeed: commit(round.clientSeed) === round.commitClient,
+    pocketRecomputes: round.pocket === undefined || round.pocket === pocket,
+    rejectionIndexRecomputes:
+      round.rejectionIndex === undefined || round.rejectionIndex === rejectionIndex,
+    declaredWinnerCorrect:
+      round.declaredWinner === undefined || round.declaredWinner === recomputedWinner
+  };
+  return {
+    verified: Object.values(checks).every(Boolean),
+    recomputedPocket: pocket,
+    recomputedColor,
+    recomputedWinner,
+    checks
+  };
+}
+
+export function playFairRouletteRound(input: {
+  nonce: number;
+  bet: RouletteBet;
+  serverSeed?: string;
+  clientSeed?: string;
+}): Required<RouletteRound> {
+  const serverSeed = input.serverSeed ?? randomSeedHex();
+  const clientSeed = input.clientSeed ?? randomSeedHex();
+  const { pocket, rejectionIndex } = roulettePocketFrom({ serverSeed, clientSeed, nonce: input.nonce });
+  return {
+    nonce: input.nonce,
+    bet: input.bet,
+    commitHouse: commit(serverSeed),
+    commitClient: commit(clientSeed),
+    serverSeed,
+    clientSeed,
+    pocket,
+    rejectionIndex,
+    declaredWinner: rouletteColorOf(pocket) === input.bet ? "player" : "house"
+  };
+}
+
+// ---- forfeit slots -------------------------------------------------------------
+//
+// Three independent reels of eight symbols, each its own domain-separated uniform
+// draw. Player wins on a pair or better. P(win) = (8 + 3·8·7)/8³ = 176/512 = 34.375%
+// — a deliberately visible house edge, disclosed verbatim in the construction.
+
+export const SLOTS_REELS = 3;
+export const SLOTS_SYMBOL_COUNT = 8;
+export const SLOT_SYMBOLS = ["NOCK", "TIP5", "JAM", "HOON", "CORE", "ATOM", "ZORP", "STAR"] as const;
+
+export type SlotsTier = "triple" | "pair" | "miss";
+
+export type SlotsRound = {
+  nonce: number;
+  commitHouse: string;
+  commitClient: string;
+  serverSeed: string;
+  clientSeed: string;
+  reels?: number[];
+  rejectionIndices?: number[];
+  declaredWinner?: "house" | "player";
+};
+
+export function slotsReelsFrom(input: {
+  serverSeed: string;
+  clientSeed: string;
+  nonce: number;
+}): { reels: number[]; rejectionIndices: number[] } {
+  const reels: number[] = [];
+  const rejectionIndices: number[] = [];
+  for (let draw = 0; draw < SLOTS_REELS; draw += 1) {
+    const { value, rejectionIndex } = drawUniform({ ...input, draw, modulus: SLOTS_SYMBOL_COUNT });
+    reels.push(value);
+    rejectionIndices.push(rejectionIndex);
+  }
+  return { reels, rejectionIndices };
+}
+
+export function slotsTierOf(reels: number[]): SlotsTier {
+  const [a, b, c] = reels;
+  if (a === b && b === c) return "triple";
+  if (a === b || a === c || b === c) return "pair";
+  return "miss";
+}
+
+export const slotsWinnerOf = (round: SlotsRound) =>
+  slotsTierOf(slotsReelsFrom(round).reels) === "miss" ? "house" : "player";
+
+export type SlotsVerification = {
+  verified: boolean;
+  recomputedReels: number[];
+  recomputedTier: SlotsTier;
+  recomputedWinner: "house" | "player";
+  checks: {
+    houseCommitBindsSeed: boolean;
+    playerCommitBindsSeed: boolean;
+    reelsRecompute: boolean;
+    rejectionIndicesRecompute: boolean;
+    declaredWinnerCorrect: boolean;
+  };
+};
+
+export function verifySlotsRound(round: SlotsRound): SlotsVerification {
+  const { reels, rejectionIndices } = slotsReelsFrom(round);
+  const recomputedTier = slotsTierOf(reels);
+  const recomputedWinner = recomputedTier === "miss" ? "house" : "player";
+  const checks = {
+    houseCommitBindsSeed: commit(round.serverSeed) === round.commitHouse,
+    playerCommitBindsSeed: commit(round.clientSeed) === round.commitClient,
+    reelsRecompute:
+      round.reels === undefined ||
+      (round.reels.length === reels.length && round.reels.every((r, i) => r === reels[i])),
+    rejectionIndicesRecompute:
+      round.rejectionIndices === undefined ||
+      (round.rejectionIndices.length === rejectionIndices.length &&
+        round.rejectionIndices.every((r, i) => r === rejectionIndices[i])),
+    declaredWinnerCorrect:
+      round.declaredWinner === undefined || round.declaredWinner === recomputedWinner
+  };
+  return {
+    verified: Object.values(checks).every(Boolean),
+    recomputedReels: reels,
+    recomputedTier,
+    recomputedWinner,
+    checks
+  };
+}
+
+export function playFairSlotsRound(input: {
+  nonce: number;
+  serverSeed?: string;
+  clientSeed?: string;
+}): Required<SlotsRound> {
+  const serverSeed = input.serverSeed ?? randomSeedHex();
+  const clientSeed = input.clientSeed ?? randomSeedHex();
+  const { reels, rejectionIndices } = slotsReelsFrom({ serverSeed, clientSeed, nonce: input.nonce });
+  return {
+    nonce: input.nonce,
+    commitHouse: commit(serverSeed),
+    commitClient: commit(clientSeed),
+    serverSeed,
+    clientSeed,
+    reels,
+    rejectionIndices,
+    declaredWinner: slotsTierOf(reels) === "miss" ? "house" : "player"
+  };
+}
+
+// ---- forfeit high card ---------------------------------------------------------
+//
+// War-style single draw: two distinct cards from a 52-card deck — the player's card
+// is draw 0, the house's card walks draw 1, 2, 3… until it lands on a different
+// card (a recomputable collision audit, like the dice rejectionIndex). Higher rank
+// wins; equal ranks fall back to suit order ♣ < ♦ < ♥ < ♠, so a winner always
+// exists and is recomputable by anyone.
+
+export const DECK_SIZE = 52;
+export const CARD_RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"] as const;
+export const CARD_SUITS = ["♣", "♦", "♥", "♠"] as const;
+
+export function cardRank(card: number): number {
+  return card % 13;
+}
+
+export function cardSuit(card: number): number {
+  return Math.floor(card / 13);
+}
+
+export function cardLabel(card: number): string {
+  return `${CARD_RANKS[cardRank(card)]}${CARD_SUITS[cardSuit(card)]}`;
+}
+
+/** total order over distinct cards: rank first, suit breaks rank ties. */
+export function cardBeats(a: number, b: number): boolean {
+  if (cardRank(a) !== cardRank(b)) return cardRank(a) > cardRank(b);
+  return cardSuit(a) > cardSuit(b);
+}
+
+export type HighcardRound = {
+  nonce: number;
+  commitHouse: string;
+  commitClient: string;
+  serverSeed: string;
+  clientSeed: string;
+  playerCard?: number;
+  houseCard?: number;
+  houseDrawIndex?: number;
+  declaredWinner?: "house" | "player";
+};
+
+export function highcardDrawFrom(input: {
+  serverSeed: string;
+  clientSeed: string;
+  nonce: number;
+}): { playerCard: number; houseCard: number; houseDrawIndex: number } {
+  const playerCard = drawUniform({ ...input, draw: 0, modulus: DECK_SIZE }).value;
+  let houseDrawIndex = 1;
+  let houseCard = drawUniform({ ...input, draw: houseDrawIndex, modulus: DECK_SIZE }).value;
+  while (houseCard === playerCard) {
+    houseDrawIndex += 1;
+    houseCard = drawUniform({ ...input, draw: houseDrawIndex, modulus: DECK_SIZE }).value;
+  }
+  return { playerCard, houseCard, houseDrawIndex };
+}
+
+export const highcardWinnerOf = (round: HighcardRound) => {
+  const { playerCard, houseCard } = highcardDrawFrom(round);
+  return cardBeats(playerCard, houseCard) ? "player" : "house";
+};
+
+export type HighcardVerification = {
+  verified: boolean;
+  recomputedPlayerCard: number;
+  recomputedHouseCard: number;
+  recomputedWinner: "house" | "player";
+  checks: {
+    houseCommitBindsSeed: boolean;
+    playerCommitBindsSeed: boolean;
+    cardsRecompute: boolean;
+    houseDrawIndexRecomputes: boolean;
+    declaredWinnerCorrect: boolean;
+  };
+};
+
+export function verifyHighcardRound(round: HighcardRound): HighcardVerification {
+  const { playerCard, houseCard, houseDrawIndex } = highcardDrawFrom(round);
+  const recomputedWinner = cardBeats(playerCard, houseCard) ? "player" : "house";
+  const checks = {
+    houseCommitBindsSeed: commit(round.serverSeed) === round.commitHouse,
+    playerCommitBindsSeed: commit(round.clientSeed) === round.commitClient,
+    cardsRecompute:
+      (round.playerCard === undefined || round.playerCard === playerCard) &&
+      (round.houseCard === undefined || round.houseCard === houseCard),
+    houseDrawIndexRecomputes:
+      round.houseDrawIndex === undefined || round.houseDrawIndex === houseDrawIndex,
+    declaredWinnerCorrect:
+      round.declaredWinner === undefined || round.declaredWinner === recomputedWinner
+  };
+  return {
+    verified: Object.values(checks).every(Boolean),
+    recomputedPlayerCard: playerCard,
+    recomputedHouseCard: houseCard,
+    recomputedWinner,
+    checks
+  };
+}
+
+export function playFairHighcardRound(input: {
+  nonce: number;
+  serverSeed?: string;
+  clientSeed?: string;
+}): Required<HighcardRound> {
+  const serverSeed = input.serverSeed ?? randomSeedHex();
+  const clientSeed = input.clientSeed ?? randomSeedHex();
+  const { playerCard, houseCard, houseDrawIndex } = highcardDrawFrom({
+    serverSeed,
+    clientSeed,
+    nonce: input.nonce
+  });
+  return {
+    nonce: input.nonce,
+    commitHouse: commit(serverSeed),
+    commitClient: commit(clientSeed),
+    serverSeed,
+    clientSeed,
+    playerCard,
+    houseCard,
+    houseDrawIndex,
+    declaredWinner: cardBeats(playerCard, houseCard) ? "player" : "house"
+  };
+}
+
+// ---- forfeit limbo -------------------------------------------------------------
+//
+// Crash-style multiplier: u = uniform draw mod 2^24, multiplier = max(1.00,
+// 0.99·2^24/(u+1)) — the canonical limbo curve with a 1% disclosed edge, in exact
+// integer math (×100 fixed-point). Player wins iff the multiplier reaches the fixed
+// 2.00× target: P(win) = 49.5%.
+
+export const LIMBO_DOMAIN = 16777216; // 2^24
+export const LIMBO_EDGE_NUMERATOR = 99; // 0.99 — the disclosed 1% house edge
+export const LIMBO_TARGET_X100 = 200; // fixed 2.00× target for the demo
+
+export type LimboRound = {
+  nonce: number;
+  commitHouse: string;
+  commitClient: string;
+  serverSeed: string;
+  clientSeed: string;
+  multiplierX100?: number;
+  rejectionIndex?: number;
+  declaredWinner?: "house" | "player";
+};
+
+export function limboMultiplierFrom(input: {
+  serverSeed: string;
+  clientSeed: string;
+  nonce: number;
+}): { multiplierX100: number; rejectionIndex: number } {
+  const { value, rejectionIndex } = drawUniform({ ...input, draw: 0, modulus: LIMBO_DOMAIN });
+  // ×100 fixed-point: floor(99·2^24 / (u+1)) is exact in Number (99·2^24 ≈ 1.66e9).
+  const multiplierX100 = Math.max(100, Math.floor((LIMBO_EDGE_NUMERATOR * LIMBO_DOMAIN) / (value + 1)));
+  return { multiplierX100, rejectionIndex };
+}
+
+export function limboLabel(multiplierX100: number): string {
+  return `${(multiplierX100 / 100).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}×`;
+}
+
+export const limboWinnerOf = (round: LimboRound) =>
+  limboMultiplierFrom(round).multiplierX100 >= LIMBO_TARGET_X100 ? "player" : "house";
+
+export type LimboVerification = {
+  verified: boolean;
+  recomputedMultiplierX100: number;
+  recomputedWinner: "house" | "player";
+  checks: {
+    houseCommitBindsSeed: boolean;
+    playerCommitBindsSeed: boolean;
+    multiplierRecomputes: boolean;
+    rejectionIndexRecomputes: boolean;
+    declaredWinnerCorrect: boolean;
+  };
+};
+
+export function verifyLimboRound(round: LimboRound): LimboVerification {
+  const { multiplierX100, rejectionIndex } = limboMultiplierFrom(round);
+  const recomputedWinner = multiplierX100 >= LIMBO_TARGET_X100 ? "player" : "house";
+  const checks = {
+    houseCommitBindsSeed: commit(round.serverSeed) === round.commitHouse,
+    playerCommitBindsSeed: commit(round.clientSeed) === round.commitClient,
+    multiplierRecomputes:
+      round.multiplierX100 === undefined || round.multiplierX100 === multiplierX100,
+    rejectionIndexRecomputes:
+      round.rejectionIndex === undefined || round.rejectionIndex === rejectionIndex,
+    declaredWinnerCorrect:
+      round.declaredWinner === undefined || round.declaredWinner === recomputedWinner
+  };
+  return {
+    verified: Object.values(checks).every(Boolean),
+    recomputedMultiplierX100: multiplierX100,
+    recomputedWinner,
+    checks
+  };
+}
+
+export function playFairLimboRound(input: {
+  nonce: number;
+  serverSeed?: string;
+  clientSeed?: string;
+}): Required<LimboRound> {
+  const serverSeed = input.serverSeed ?? randomSeedHex();
+  const clientSeed = input.clientSeed ?? randomSeedHex();
+  const { multiplierX100, rejectionIndex } = limboMultiplierFrom({
+    serverSeed,
+    clientSeed,
+    nonce: input.nonce
+  });
+  return {
+    nonce: input.nonce,
+    commitHouse: commit(serverSeed),
+    commitClient: commit(clientSeed),
+    serverSeed,
+    clientSeed,
+    multiplierX100,
+    rejectionIndex,
+    declaredWinner: multiplierX100 >= LIMBO_TARGET_X100 ? "player" : "house"
+  };
+}
+
 // ---- seed generation ---------------------------------------------------------
 
 const SEED_BYTES = 32;
@@ -386,11 +853,17 @@ export function randomSeedHex(): string {
 
 // ---- game catalog ------------------------------------------------------------
 
-export type PocGameId = "forfeit-flip" | "forfeit-dice";
+export type PocGameId =
+  | "forfeit-flip"
+  | "forfeit-dice"
+  | "forfeit-roulette"
+  | "forfeit-slots"
+  | "forfeit-highcard"
+  | "forfeit-limbo";
 
 export type PocGame = {
   id: PocGameId;
-  kind: "flip" | "dice";
+  kind: "flip" | "dice" | "roulette" | "slots" | "highcard" | "limbo";
   name: string;
   tagline: string;
   /** the public outcome construction, rendered verbatim in the UI. */
@@ -428,6 +901,58 @@ export const pocGames: PocGame[] = [
     dossier: "docs/FORFEIT-DICE-DOSSIER.md",
     line: DICE_LINE,
     modulus: DICE_MODULUS
+  },
+  {
+    id: "forfeit-roulette",
+    kind: "roulette",
+    name: "Forfeit Roulette",
+    tagline: "Provably-fair European roulette — pick a color, zero is the disclosed house edge.",
+    construction:
+      "pocket = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ draw) mod 37  →  player wins iff color(pocket) == bet; 0 is green (house)",
+    badgeId: "badge-forfeit-roulette-model-attested",
+    caseId: "case-forfeit-roulette-launch-001",
+    fixtureSlug: "forfeit-roulette-fairness",
+    dossier: "docs/FAIRNESS-DOSSIER.md",
+    modulus: ROULETTE_POCKETS
+  },
+  {
+    id: "forfeit-slots",
+    kind: "slots",
+    name: "Forfeit Slots",
+    tagline: "Provably-fair three-reel slots — pair or better wins, odds disclosed exactly.",
+    construction:
+      "reel[i] = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ i) mod 8  →  player wins iff ≥2 reels match (P = 176/512 = 34.375%)",
+    badgeId: "badge-forfeit-slots-model-attested",
+    caseId: "case-forfeit-slots-launch-001",
+    fixtureSlug: "forfeit-slots-fairness",
+    dossier: "docs/FAIRNESS-DOSSIER.md",
+    modulus: SLOTS_SYMBOL_COUNT
+  },
+  {
+    id: "forfeit-highcard",
+    kind: "highcard",
+    name: "Forfeit High Card",
+    tagline: "Provably-fair war — two distinct cards, higher rank wins, suits break ties.",
+    construction:
+      "playerCard = H(…‖0) mod 52, houseCard = first H(…‖d), d≥1, ≠ playerCard  →  higher rank wins; ties: ♣ < ♦ < ♥ < ♠",
+    badgeId: "badge-forfeit-highcard-model-attested",
+    caseId: "case-forfeit-highcard-launch-001",
+    fixtureSlug: "forfeit-highcard-fairness",
+    dossier: "docs/FAIRNESS-DOSSIER.md",
+    modulus: DECK_SIZE
+  },
+  {
+    id: "forfeit-limbo",
+    kind: "limbo",
+    name: "Forfeit Limbo",
+    tagline: "Provably-fair crash multiplier — 2.00× target, 1% edge disclosed in the curve.",
+    construction:
+      "u = rejection-sampled H(serverSeed ‖ clientSeed ‖ nonce ‖ draw) mod 2²⁴  →  multiplier = max(1.00, 0.99·2²⁴/(u+1)); player wins iff ≥ 2.00×",
+    badgeId: "badge-forfeit-limbo-model-attested",
+    caseId: "case-forfeit-limbo-launch-001",
+    fixtureSlug: "forfeit-limbo-fairness",
+    dossier: "docs/FAIRNESS-DOSSIER.md",
+    line: LIMBO_TARGET_X100
   }
 ];
 

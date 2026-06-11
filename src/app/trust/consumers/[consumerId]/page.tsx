@@ -78,14 +78,14 @@ export default async function TrustConsumerDetailPage({
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-3 text-sm font-medium text-white"
-              href={`/api/trust/consumers/${consumer.id}`}
+              href={`/api/trust/consumers/${consumer.id}`} target="_blank" rel="noreferrer"
             >
               Consumer API
               <ArrowUpRight size={14} aria-hidden="true" />
             </Link>
             <Link
               className="inline-flex items-center justify-between gap-3 border border-[#0B0B0B] bg-white px-4 py-3 text-sm font-medium"
-              href="/api/trust"
+              href="/api/trust" target="_blank" rel="noreferrer"
             >
               Trust API
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -133,7 +133,7 @@ export default async function TrustConsumerDetailPage({
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
                   className="inline-flex items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                  href={evidenceHrefForUse(use)}
+                  href={evidenceHrefForUse(use)} target="_blank" rel="noreferrer"
                 >
                   Evidence Detail
                   <ArrowUpRight size={14} aria-hidden="true" />

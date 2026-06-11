@@ -107,7 +107,7 @@ export default function NockchainDriftStatusPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               className="inline-flex items-center gap-2 border border-[#242424] bg-[#fdfbf4] px-4 py-2 text-sm font-medium"
-              href="/api/nockchain/drift-status"
+              href="/api/nockchain/drift-status" target="_blank" rel="noreferrer"
             >
               View JSON
             </Link>

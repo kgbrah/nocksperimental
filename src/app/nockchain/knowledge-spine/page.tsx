@@ -78,7 +78,7 @@ export default function NockchainKnowledgeSpinePage() {
             <div className="flex flex-wrap gap-2">
               <Link
                 className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white"
-                href="/api/nockchain/knowledge-spine"
+                href="/api/nockchain/knowledge-spine" target="_blank" rel="noreferrer"
               >
                 <Code2 size={16} aria-hidden="true" />
                 Spine API
@@ -277,11 +277,11 @@ export default function NockchainKnowledgeSpinePage() {
             ))}
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm" href="/api/nockchain/zorp">
+            <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm" href="/api/nockchain/zorp" target="_blank" rel="noreferrer">
               <GitBranch size={15} aria-hidden="true" />
               Zorp API
             </Link>
-            <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm" href="/api/registry/checkpoint">
+            <Link className="inline-flex items-center gap-2 border border-[#0B0B0B] px-3 py-2 text-sm" href="/api/registry/checkpoint" target="_blank" rel="noreferrer">
               <Code2 size={15} aria-hidden="true" />
               Checkpoint
             </Link>

@@ -35,10 +35,9 @@ export default async function BazaarPage() {
               </div>
             </div>
             {/* Links to a JSON API route, not a page — a plain anchor is correct here. */}
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a
               className="inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-4 py-2 text-sm font-medium text-white"
-              href="/api/bazaar"
+              href="/api/bazaar" target="_blank" rel="noreferrer"
             >
               <Store size={16} aria-hidden="true" />
               Bazaar JSON
@@ -82,7 +81,7 @@ export default async function BazaarPage() {
             </div>
             <a
               className="mt-4 inline-flex w-fit items-center gap-2 border border-[#242424] bg-[#171717] px-3 py-2 text-sm font-medium text-white"
-              href={`/api/bazaar/${encodeURIComponent(listing.id)}`}
+              href={`/api/bazaar/${encodeURIComponent(listing.id)}`} target="_blank" rel="noreferrer"
             >
               Listing JSON
               <ArrowUpRight size={14} aria-hidden="true" />
