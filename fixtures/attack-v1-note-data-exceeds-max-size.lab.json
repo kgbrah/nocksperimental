@@ -1,0 +1,52 @@
+{
+  "$schema": "../schemas/nockapp-lab-fixture.schema.json",
+  "id": "attack-v1-note-data-exceeds-max-size-v1",
+  "expectRejected": true,
+  "rejectionCode": "%v1-note-data-exceeds-max-size",
+  "app": {
+    "name": "ATTACK: v1 note data exceeds max size",
+    "slug": "tx-validation",
+    "version": "0.0.1",
+    "kernel": "tx-engine-v1-model"
+  },
+  "environment": {
+    "mode": "mock-fakenet",
+    "grpcEndpoint": "n/a",
+    "fakenetCommand": "model",
+    "notes": [
+      "NEGATIVE CONTROL (expectRejected=true): models a v1 spend whose note data payload exceeds the protocol maximum, which the post-Bythos mempool DROPS as %v1-note-data-exceeds-max-size.",
+      "The note-size invariant MUST catch it; expectRejected inverts the caught violation to a green proof-of-prevention.",
+      "rejectionCode names the exact consensus reason so the lab report surfaces which rejection this control proves."
+    ]
+  },
+  "actors": [
+    { "name": "spender", "pkh": "spender" }
+  ],
+  "initialState": {
+    "spend": {
+      "noteId": "note-0",
+      "dataSizeBytes": 9000,
+      "maxNoteDataBytes": 8192
+    }
+  },
+  "steps": [
+    {
+      "id": "submit-oversized-note",
+      "type": "peek",
+      "title": "Inspect the submitted note's data size",
+      "target": "/state",
+      "expect": { "path": "spend.noteId", "equals": "note-0" }
+    }
+  ],
+  "invariants": [
+    {
+      "id": "note-data-within-max",
+      "title": "A note's data payload must not exceed the protocol maximum size (8192 bytes)",
+      "severity": "critical",
+      "kind": "numeric-range",
+      "path": "spend.dataSizeBytes",
+      "min": 0,
+      "max": 8192
+    }
+  ]
+}

@@ -16,6 +16,11 @@
       "type": "boolean",
       "description": "Negative control: the fixture is an exploit attempt that MUST be caught. When true, a failing run (the exploit detected) reads as pass; a passing run (exploit missed) reads as fail."
     },
+    "rejectionCode": {
+      "type": "string",
+      "pattern": "^%[a-z0-9-]+$",
+      "description": "Optional named consensus rejection reason this negative control models, e.g. %v1-note-data-exceeds-max-size (see src/lib/nock-rejection-codes.ts). Only meaningful with expectRejected:true; surfaced into the lab report summary so 'rejected' carries the exact reason."
+    },
     "app": {
       "type": "object",
       "required": ["name", "slug", "version", "kernel"],

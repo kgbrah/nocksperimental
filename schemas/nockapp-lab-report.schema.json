@@ -83,7 +83,14 @@
         "alertsClear": { "type": "integer", "minimum": 0 },
         "alertsTriggered": { "type": "integer", "minimum": 0 },
         "snapshotsCaptured": { "type": "integer", "minimum": 0 },
-        "durationMs": { "type": "integer", "minimum": 0 }
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "expectRejected": { "type": "boolean" },
+        "rawStatus": { "enum": ["pass", "warn", "fail"] },
+        "rejectionCode": {
+          "type": "string",
+          "pattern": "^%[a-z0-9-]+$",
+          "description": "The named consensus rejection reason the negative-control fixture models (mirrors fixture.rejectionCode)."
+        }
       }
     },
     "invariantPacks": {

@@ -690,6 +690,12 @@ async function loadFixture(fixturePath) {
   } catch (error) {
     throw normalizeParseError(error, fixturePath);
   }
+  // A rejectionCode names the consensus reason a NEGATIVE control models, so it is
+  // meaningless without expectRejected — couple them at load (the schema enforces
+  // the code's format; src/lib/nock-rejection-codes.ts is the named vocabulary).
+  if (fixture.rejectionCode != null && fixture.expectRejected !== true) {
+    throw new Error(`${fixturePath}: rejectionCode "${fixture.rejectionCode}" requires expectRejected:true`);
+  }
   const fixtureDir = path.dirname(fixturePath);
   const packs = [];
 
@@ -851,7 +857,8 @@ async function buildReport(fixture, startedAt, fixturePath) {
       snapshotsCaptured: stateSnapshots.length,
       durationMs: Math.max(Date.now() - startedAt, stepReports.length * 17),
       expectRejected: fixture.expectRejected === true,
-      rawStatus
+      rawStatus,
+      ...(fixture.rejectionCode ? { rejectionCode: fixture.rejectionCode } : {})
     },
     invariantPacks: fixture.invariantPackRefs ?? [],
     steps: stepReports,
