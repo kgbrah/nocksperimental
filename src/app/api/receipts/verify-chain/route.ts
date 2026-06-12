@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { resolvedBadgeForId } from "@/lib/trust-signals";
 import { verifyTrustBadgeIssuance } from "@/lib/trust-badge-verifier";
 import { verifyBaseAnchor } from "@/lib/chain-verify-base";
+import { verifyNockAnchor } from "@/lib/chain-verify-nock";
 import { guard } from "@/lib/x402/meter";
 
 // Independent CHAIN verification of a receipt's anchor. Resolves a chain-anchored
@@ -40,11 +41,13 @@ export async function GET(request: Request) {
     );
   }
 
-  // EVM anchors are independently re-verifiable today. Nock anchors land in Phase 2/3.
+  // EVM anchors re-read the chain (chain-verify-base). Nock anchors RE-FOLD their
+  // tx-in-block Merkle proof with the in-browser Tip5 (chain-verify-nock) — both are
+  // independent re-derivations that don't trust the issuer signature.
   const chainVerify =
     anchor.verifiability === "evm-full"
       ? await verifyBaseAnchor(anchor)
-      : { verifiability: anchor.verifiability, onChain: false, checks: {}, error: "nock chain-verify not yet wired (Phase 2/3)" };
+      : verifyNockAnchor(anchor);
 
   const overall = signature.verified === true && chainVerify.onChain === true;
 
