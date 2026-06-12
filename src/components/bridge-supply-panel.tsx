@@ -92,7 +92,10 @@ export function BridgeSupplyPanel() {
               </p>
               {d ? (
                 <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] text-[#737373]">
-                  Base: live · Nockchain: snapshot {new Date(d.asOf.nock).toISOString().slice(0, 10)}
+                  Base: live ·{" "}
+                  {d.nock.live
+                    ? `Nockchain: live · updated ${new Date(d.asOf.nock).toISOString().slice(11, 19)}Z`
+                    : `Nockchain: snapshot ${new Date(d.asOf.nock).toISOString().slice(0, 10)}`}
                 </p>
               ) : null}
             </div>

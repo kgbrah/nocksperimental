@@ -34,8 +34,8 @@ export default function SwapPage() {
           </div>
           <h1 className="mt-2 text-4xl font-semibold">Swap into native NOCK</h1>
           <p className="mt-3 text-base leading-7 text-[#4A4A4A]">
-            Three legs, no minimum: swap Base Sepolia ETH for <code>tNOCK</code> from the vault&apos;s
-            on-chain reserves, burn the <code>tNOCK</code> through our bridge token with your fakenet
+            Three legs, no minimum: swap Base Sepolia ETH for <code>tNOCK</code>&nbsp;from the vault&apos;s
+            on-chain reserves, burn the <code>tNOCK</code>&nbsp;through our bridge token with your fakenet
             payout address committed in the burn&apos;s lock root, and redeem the burn for native NOCK
             paid out on the Nockchain fakenet. The burn transaction is the receipt — one burn redeems
             exactly once, and the payout address can&apos;t be changed after the burn.

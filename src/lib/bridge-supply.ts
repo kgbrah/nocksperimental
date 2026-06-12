@@ -75,9 +75,38 @@ export async function getBridgeSupply() {
   // is, is checked below against custody (mined − miner-spendable) — not assumed.
   const backingTargetNicks = tnockSupplyNicks;
 
-  // --- Nockchain side (snapshot) ---
-  const minedNicks = BigInt(snapshot.minedNicks);
-  const spendableNicks = BigInt(snapshot.spendableNicks);
+  // --- Nockchain side: LIVE from the orchestrator (it can read the local fakenet
+  // node), refreshed every few minutes from its treasury cache; the baked-in
+  // snapshot is the fallback when the orchestrator is unreachable. ---
+  let minedNicks = BigInt(snapshot.minedNicks);
+  let spendableNicks = BigInt(snapshot.spendableNicks);
+  let chainHeight: number = snapshot.chainHeight;
+  let nockAsOf: string = snapshot.updatedAt;
+  let nockLive = false;
+  try {
+    const orch = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "http://127.0.0.1:8787";
+    const r = await fetch(`${orch}/bridge/nock-supply`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(4000)
+    });
+    if (r.ok) {
+      const j = (await r.json()) as {
+        chainHeight: number | null;
+        minedNicks: string | null;
+        spendableNicks: string | null;
+        updatedAt: number | null;
+      };
+      if (j.chainHeight && j.minedNicks && j.spendableNicks) {
+        chainHeight = j.chainHeight;
+        minedNicks = BigInt(j.minedNicks);
+        spendableNicks = BigInt(j.spendableNicks);
+        nockAsOf = j.updatedAt ? new Date(j.updatedAt).toISOString() : new Date().toISOString();
+        nockLive = true;
+      }
+    }
+  } catch {
+    /* orchestrator unreachable / slow — keep the snapshot figures */
+  }
 
   // --- conservation invariants ---
   // (C) mined  ==  spendable(miner) + custody(backing) + residual(genesis/immature coinbase + tx fees)
@@ -96,12 +125,13 @@ export async function getBridgeSupply() {
 
   return {
     disclosure: BRIDGE_DISCLOSURE,
-    asOf: { base: "live", nock: snapshot.updatedAt },
+    asOf: { base: "live", nock: nockAsOf },
     nock: {
       mined: { nicks: minedNicks.toString(), nock: nockFromNicks(minedNicks) },
       spendable: { nicks: spendableNicks.toString(), nock: nockFromNicks(spendableNicks) },
-      chainHeight: snapshot.chainHeight,
-      blockRewardNock: Number(BigInt(snapshot.blockRewardNicks) / NICKS_PER_NOCK)
+      chainHeight,
+      blockRewardNock: Number(BigInt(snapshot.blockRewardNicks) / NICKS_PER_NOCK),
+      live: nockLive
     },
     tnock: {
       totalSupply: { base: tnockSupplyBase.toString(), tnock: Number(tnockSupplyBase) / 10 ** TNOCK_DECIMALS },
