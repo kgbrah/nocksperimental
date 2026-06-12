@@ -10,6 +10,7 @@ import {
 import { isDevIssuerKey, verifyBadgeSignature } from "@/lib/trust-badge-crypto";
 import { issuerKeyForId, publicKeyForKeyId } from "@/lib/trust-issuer-keys";
 import { anchorsEqual, isWellFormedAnchor } from "@/lib/chain-anchor";
+import { fakenetKeyOnLivenetViolation } from "@/lib/fakenet-keys";
 
 type BadgeVerificationInput = {
   badgeId?: string | null;
@@ -102,6 +103,19 @@ export function verifyTrustBadgeIssuance({
     issuance && issuerKeyActive && !isDevIssuerKey(issuance.issuerKeyId)
   );
 
+  // Trojan-horse guard (parity with the dev-key rule): the published fakenet key
+  // also works on livenet, so a cert that claims a LIVENET chain network while its
+  // evidence is bound to a well-known fakenet key can never be `verified` livenet
+  // evidence — anyone can produce it. Scoped to livenet networks so honest
+  // `*-fakenet`/`*-sepolia` certs that legitimately use the key are unaffected.
+  const notFakenetSignedLivenet = !(
+    badge &&
+    fakenetKeyOnLivenetViolation({
+      network: badge.evidence.chainAnchor?.network,
+      evidence: { evidence: badge.evidence, signedPayload: issuance?.signedPayload },
+    })
+  );
+
   const exactIssuanceMatch = Boolean(
     badge &&
       issuance &&
@@ -110,6 +124,7 @@ export function verifyTrustBadgeIssuance({
       issuerKeyMatched &&
       signatureCryptographicallyValid &&
       issuerKeyIsTrustAnchor &&
+      notFakenetSignedLivenet &&
       payloadBoundToBadge &&
       activeVerifiedStatus &&
       !badge.isRevoked
@@ -137,6 +152,7 @@ export function verifyTrustBadgeIssuance({
       issuerKeyResolved,
       issuerKeyActive,
       issuerKeyIsTrustAnchor,
+      notFakenetSignedLivenet,
       signatureCryptographicallyValid,
       payloadBoundToBadge,
       activeVerifiedStatus,
