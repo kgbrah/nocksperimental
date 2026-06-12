@@ -64,7 +64,20 @@ fix), restart the orchestrator, then re-drive the two stuck redemptions
 - **38** bridge release-tag citation — `latestCommitReleased` is computed from the
   drift-watch data (`nockchain-bridge-trace.ts:280`), not a manual edit.
 
+### Branch hygiene (ranks 2, 13, 40) — partially done, rest needs your call
+Verified each candidate against `origin/main` before any deletion (the backlog's
+"[gone] = merged" assumption was WRONG for most):
+- ✅ Pruned `chore/nockchain-watch` (0 commits outside `origin/main`).
+- 🛑 Retained — **unique commits not in `origin/main`** (likely squash-merged, but
+  do not delete until the content is confirmed in main): `feat/forfeit-game-trust-badges`
+  (1), `feat/pocgames-demo-guis` (1), `launch-evidence-slice-1` (**16**).
+- 🛑 Retained `feat/lab-timing-artifact-…` + its worktree `…-labfix/`: the branch is
+  in main, but the **worktree has 14 uncommitted modified files** — commit or discard
+  those first (`git -C ../nocksperimental-labfix status`), then
+  `git worktree remove` + `git branch -d`.
+- `docs/init-deep-agents-…` (rank 12): single docs commit not in main — review the
+  diff, then merge-to-main or close (merge is outward-facing → your call).
+
 ### Awaiting your call
-- **12, 13, 40, PR #23** — branch hygiene + the home-dashboard PR. You said "not
-  now." PR #23 (rebase `feat/home-dashboard` → resolve `page.tsx` conflicts → merge)
-  is the one item that's fully doable on request.
+- **PR #23** — rebase `feat/home-dashboard` → resolve `page.tsx` conflicts → merge.
+  Outward-facing (merges to main); you said "not now." Fully doable on request.
