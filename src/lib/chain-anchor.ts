@@ -47,6 +47,12 @@ export type ChainAnchor = {
 
 const isHex = (s: unknown): s is string => typeof s === "string" && /^0x[0-9a-fA-F]+$/.test(s);
 
+// The witness/proof format a receipt's anchor was built under. Recorded so a later
+// witness-format upgrade (stub → %full lock-Merkle, or an EVM receipt-shape change)
+// can't silently invalidate older anchors — the verifier keys on tx-id, the format
+// is metadata. (nockchain roadmap alignment 2026.)
+const WITNESS_FORMATS: ReadonlySet<string> = new Set(["evm-receipt", "stub", "%full"]);
+
 /**
  * Build an EVM (Base) chain anchor from a transaction receipt and the index of
  * the event log that the receipt attests (e.g. the BurnForWithdrawal that a
@@ -77,12 +83,47 @@ export function buildBaseAnchor(args: {
   };
 }
 
+/**
+ * Build a Nockchain chain anchor, recording the witness format that applied:
+ *   "%full" — the V4 lock carried an axis-committed tx-in-block Merkle proof
+ *             (verifiability "nock-inclusion"); independently re-foldable.
+ *   "stub"  — only block assignment + deterministic note name yet
+ *             (verifiability "nock-block-note-pending"); honest interim tier.
+ * engineVersion pins the protocol/engine so a later witness upgrade can't silently
+ * reinterpret the anchor — the receipt chain anchors to tx-id, never witness bytes.
+ */
+export function buildNockAnchor(args: {
+  network: "nockchain" | "nockchain-fakenet";
+  blockHash: string; // block id / digest, as the chain reports it
+  blockHeight: number;
+  txId: string;
+  witnessFormat: "stub" | "%full";
+  engineVersion: string;
+  noteName?: { first: string; last: string };
+  merkleProof?: { root: string; path: string[]; axis: number };
+}): ChainAnchor {
+  return {
+    network: args.network,
+    verifiability: args.witnessFormat === "%full" ? "nock-inclusion" : "nock-block-note-pending",
+    blockHash: args.blockHash,
+    blockHeight: args.blockHeight,
+    txId: args.txId,
+    witnessFormat: args.witnessFormat,
+    engineVersion: args.engineVersion,
+    ...(args.noteName ? { noteName: args.noteName } : {}),
+    ...(args.merkleProof ? { merkleProof: args.merkleProof } : {}),
+  };
+}
+
 /** Structural validity: an anchor that is present must be non-empty + well-formed. */
 export function isWellFormedAnchor(a: ChainAnchor | undefined | null): a is ChainAnchor {
   if (!a) return false;
   if (!a.network || !a.verifiability) return false;
   if (typeof a.blockHeight !== "number" || a.blockHeight < 0) return false;
   if (!a.blockHash || !a.txId || !a.engineVersion) return false;
+  // Witness format + engine version must be present and recognized: a receipt that
+  // doesn't record HOW it was witnessed can't be safely re-verified after an upgrade.
+  if (!WITNESS_FORMATS.has(a.witnessFormat)) return false;
   if (a.verifiability === "evm-full") {
     return isHex(a.blockHash) && isHex(a.txId) && isHex(a.contract ?? "") && isHex(a.eventTopic ?? "") && typeof a.logIndex === "number";
   }
