@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { ArrowRight, BadgeCheck, Coins, Eye, Lock, RefreshCw, ServerOff, ShieldAlert, Trophy } from "lucide-react";
 import {
   ORCHESTRATOR_URL,
@@ -9,6 +9,7 @@ import {
   pingOrchestrator,
   staticUnavailableReason
 } from "@/lib/orchestrator";
+import { verifyNockAnchorClientSide } from "@/lib/nock-anchor-verify";
 
 // Drives a REAL Nock %fair round through the cross-chain orchestrator
 // (services/orchestrator): the house commits, the escrow is funded on the Nock
@@ -341,6 +342,7 @@ function Step({ index, title, done, icon, children }: { index: number; title: st
 // receipt chain (which proves the house published the seeds) — this proves the
 // settlement is COMMITTED ON-CHAIN, re-derivable by anyone from the block.
 function ChainAnchorPanel({ result }: { result: AnchorResult | null }) {
+  const [showProof, setShowProof] = useState(false);
   if (!result) {
     return (
       <div className="mt-3 border border-[#0B0B0B] bg-[#F6F6F6] px-3 py-2">
@@ -359,10 +361,27 @@ function ChainAnchorPanel({ result }: { result: AnchorResult | null }) {
     );
   }
   const a = result.anchor;
+  // Re-check the proof IN THE BROWSER, without trusting the node's label: the
+  // proof's own root must equal the block's canonical tx-root. A mismatch is a
+  // real integrity failure and is shown as one — never as "chain-verified".
+  const check = verifyNockAnchorClientSide(a);
+  const independent = check.level === "independently-verified";
+  if (check.level === "inconsistent") {
+    return (
+      <div className="mt-3 border border-[#B42318] bg-[#0B0B0B] px-3 py-2 text-[#FFFFFF]">
+        <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#FF6B6B]">
+          <ShieldAlert size={12} /> inclusion proof failed client-side root check
+        </div>
+        <div className="mt-1 font-mono text-[10px] text-[#FFB4B4]">
+          the node’s proof root does not equal block {a.blockId.slice(0, 12)}…’s tx-root — not trusting this claim
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="mt-3 border border-[#0B0B0B] bg-[#0B0B0B] px-3 py-2 text-[#FFFFFF]">
       <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#FFFFFF]">
-        <BadgeCheck size={12} /> chain-verified · tx committed in block tx-root
+        <BadgeCheck size={12} /> {independent ? "chain-verified · independently re-derived in your browser" : "chain-verified · tx committed in block tx-root"}
       </div>
       <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[10px] text-[#BFBFBF]">
         <span>block</span><span className="break-all text-[#FFFFFF]">{a.blockId}</span>
@@ -370,8 +389,32 @@ function ChainAnchorPanel({ result }: { result: AnchorResult | null }) {
         <span>tx-root</span><span className="break-all text-[#FFFFFF]">{a.txRoot}</span>
         <span>merkle axis</span><span className="text-[#FFFFFF]">{a.axis} · {a.merkleProof.path.length}-step path</span>
       </div>
+      <div className="mt-1.5 inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#7CFFB2]">
+        <BadgeCheck size={10} /> {independent ? "Merkle path re-folded to tx-root via Tip5 — no node trust" : "root-consistency re-checked in your browser"}
+      </div>
+      <button
+        type="button"
+        onClick={() => setShowProof((s) => !s)}
+        className="mt-1.5 flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.1em] text-[#9A9A9A] hover:text-[#FFFFFF]"
+      >
+        <Eye size={10} /> {showProof ? "hide" : "show"} proof
+      </button>
+      {showProof && (
+        <div className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 border-t border-[#262626] pt-1.5 font-mono text-[9px] text-[#BFBFBF]">
+          <span>network</span><span className="break-all text-[#E5E5E5]">{a.network}</span>
+          <span>tx id</span><span className="break-all text-[#E5E5E5]">{a.txId}</span>
+          <span>proof root</span><span className="break-all text-[#E5E5E5]">{a.merkleProof.root}</span>
+          {a.merkleProof.path.map((sib, i) => (
+            <Fragment key={i}>
+              <span>sibling {i + 1}</span><span className="break-all text-[#E5E5E5]">{sib}</span>
+            </Fragment>
+          ))}
+        </div>
+      )}
       <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#737373]">
-        {a.verifiability} · kernel-self-verified (tip5 z-set merkle)
+        {independent
+          ? "independently re-verified in your browser (tip5 z-set merkle) — does not trust the node"
+          : `${a.verifiability} · kernel-self-verified (tip5 z-set merkle) · node-attested`}
       </div>
     </div>
   );
