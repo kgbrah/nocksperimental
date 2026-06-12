@@ -25,6 +25,22 @@ type Phase = "idle" | "open" | "funded" | "settled" | "error";
 type Settlement = { settled: boolean; payTo?: string; amountNicks?: number; txId?: string | null; height?: number; refund?: boolean; reason?: string };
 type Receipt = { body: { phase: string; winner?: string; outcome?: number; settlement?: Settlement }; rootHash: string; signature: string };
 
+// A kernel-self-verified Nock tx-inclusion proof for the settlement tx, served
+// on demand by GET /round/:id/anchor. The node proves AND verifies it against
+// the block's canonical tx-root before returning, so this is real evidence the
+// settlement is committed in a block — not just a signed claim.
+type ChainAnchor = {
+  network: string;
+  verifiability: string;
+  blockId: string;
+  height: number;
+  txId: string;
+  txRoot: string;
+  axis: number;
+  merkleProof: { root: string; path: string[] };
+};
+type AnchorResult = { available: boolean; reason?: string; anchor?: ChainAnchor };
+
 // The orchestrator's responses are dynamic per route; this covers the fields
 // the component reads across open/play/reveal and GET /round/:id.
 type OrchResult = {
@@ -85,11 +101,26 @@ export function NockFairGame() {
   const [settlement, setSettlement] = useState<(Settlement & { winner?: string }) | null>(null);
   const [receipts, setReceipts] = useState<Receipt[] | null>(null);
   const [chainVerified, setChainVerified] = useState<boolean | null>(null);
+  const [anchor, setAnchor] = useState<AnchorResult | null>(null);
 
   const reset = useCallback(() => {
     setPhase("idle"); setBusy(null); setError(null); setRoundId(null); setCommitH(null);
     setFunding(null); setSettlement(null); setReceipts(null); setChainVerified(null);
+    setAnchor(null);
   }, []);
+
+  // Once a round is settled on-chain, fetch the kernel-self-verified inclusion
+  // proof for its settlement tx (re-derivable from the chain, served on demand).
+  // Best-effort: a missing anchor never blocks the result UI. While `anchor` is
+  // null on a settled round, the panel shows a "deriving…" state.
+  useEffect(() => {
+    if (phase !== "settled" || !roundId || !settlement?.settled || !settlement.txId) return;
+    let cancelled = false;
+    (orchestratorGet(`/round/${roundId}/anchor`) as Promise<AnchorResult>)
+      .then((a) => { if (!cancelled) setAnchor(a); })
+      .catch(() => { if (!cancelled) setAnchor({ available: false, reason: "anchor fetch failed" }); });
+    return () => { cancelled = true; };
+  }, [phase, roundId, settlement?.settled, settlement?.txId]);
 
   // After a failed step, re-read the round and land on its REAL server-side
   // state: a lost response may have funded or settled the round (it stays
@@ -258,6 +289,7 @@ export function NockFairGame() {
               ) : (
                 <p className="text-xs text-[#4A4A4A]">{settlement.reason || "awaiting player client-side claim"}</p>
               )}
+              {settlement.settled && <ChainAnchorPanel result={anchor} />}
             </div>
           ) : (
             <Btn onClick={reveal} busy={busy === "reveal"} disabled={phase !== "funded"}>Reveal & settle{busy === "reveal" ? " (mining…)" : ""}</Btn>
@@ -301,6 +333,46 @@ function Step({ index, title, done, icon, children }: { index: number; title: st
         <span className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em]">{icon}{title}</span>
       </div>
       <div className="mt-3">{children}</div>
+    </div>
+  );
+}
+// Chain-verifiable inclusion proof for the settlement tx: a kernel-self-verified
+// Merkle path binding the tx into its block's tx-root. Distinct from the signed
+// receipt chain (which proves the house published the seeds) — this proves the
+// settlement is COMMITTED ON-CHAIN, re-derivable by anyone from the block.
+function ChainAnchorPanel({ result }: { result: AnchorResult | null }) {
+  if (!result) {
+    return (
+      <div className="mt-3 border border-[#0B0B0B] bg-[#F6F6F6] px-3 py-2">
+        <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#4A4A4A]">
+          <RefreshCw size={11} className="animate-spin" /> deriving on-chain inclusion proof…
+        </div>
+      </div>
+    );
+  }
+  if (!result.available || !result.anchor) {
+    return (
+      <div className="mt-3 border border-[#BFBFBF] bg-[#F6F6F6] px-3 py-2">
+        <div className="font-mono text-[10px] uppercase tracking-[0.12em] text-[#4A4A4A]">tx-inclusion proof</div>
+        <div className="mt-0.5 font-mono text-[10px] text-[#4A4A4A]">not yet available — {result.reason || "unknown"}</div>
+      </div>
+    );
+  }
+  const a = result.anchor;
+  return (
+    <div className="mt-3 border border-[#0B0B0B] bg-[#0B0B0B] px-3 py-2 text-[#FFFFFF]">
+      <div className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-[#FFFFFF]">
+        <BadgeCheck size={12} /> chain-verified · tx committed in block tx-root
+      </div>
+      <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 font-mono text-[10px] text-[#BFBFBF]">
+        <span>block</span><span className="break-all text-[#FFFFFF]">{a.blockId}</span>
+        <span>height</span><span className="text-[#FFFFFF]">{a.height}</span>
+        <span>tx-root</span><span className="break-all text-[#FFFFFF]">{a.txRoot}</span>
+        <span>merkle axis</span><span className="text-[#FFFFFF]">{a.axis} · {a.merkleProof.path.length}-step path</span>
+      </div>
+      <div className="mt-1.5 font-mono text-[9px] uppercase tracking-[0.1em] text-[#737373]">
+        {a.verifiability} · kernel-self-verified (tip5 z-set merkle)
+      </div>
     </div>
   );
 }
