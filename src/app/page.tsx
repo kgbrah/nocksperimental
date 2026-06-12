@@ -614,7 +614,7 @@ export default function Home() {
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.14em] text-[#0B0B0B]">First working artifact</p>
-              <h2 className="mt-2 text-2xl font-semibold">A fixture-driven lab report</h2>
+              <h2 className="mt-2 text-2xl font-semibold">Fixture-driven lab report</h2>
             </div>
             <div className="flex flex-wrap gap-2">
               <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#0B0B0B] px-4 py-2 text-sm font-medium text-white" href="/reports/sample">
@@ -628,6 +628,15 @@ export default function Home() {
               </Link>
               <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/nockchain">
                 <GitBranch size={16} aria-hidden="true" /> Nockchain
+              </Link>
+              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/reports/generated">
+                <FileCheck2 size={16} aria-hidden="true" /> Generated reports
+              </Link>
+              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/reports/history">
+                <ScrollText size={16} aria-hidden="true" /> Report history
+              </Link>
+              <Link className="inline-flex w-fit items-center gap-2 border border-[#0B0B0B] bg-[#FFFFFF] px-4 py-2 text-sm font-medium" href="/workspaces">
+                <ScrollText size={16} aria-hidden="true" /> Workspaces
               </Link>
             </div>
           </div>
