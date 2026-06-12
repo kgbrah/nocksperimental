@@ -24,6 +24,15 @@
     {
       "binding": "NOCKS_NOCKUP_RECEIPTS",
       "id": "b2466d985b9346e4ad569a7b134df7ce"
+    },
+    {
+      // x402 metered-trust receipts (src/lib/x402/kv.ts → X402_KV_BINDING).
+      // The namespace is not yet provisioned: before deploying, run
+      //   wrangler kv namespace create NOCKS_X402_RECEIPTS
+      // and replace the id below. Until then the x402 layer falls back to an
+      // in-memory map, so tests and local dev stay green without a binding.
+      "binding": "NOCKS_X402_RECEIPTS",
+      "id": "REPLACE_WITH_X402_KV_NAMESPACE_ID"
     }
   ],
   "rules": [
