@@ -12,6 +12,35 @@ certs, x402 metering), the **%fair casino + orchestrator**
 3-of-5 operator quorum), the **wallet V4 escrow lock builder**
 (`nock-wallet`), and **golden-miner** (mining/pool surfaces).
 
+## 0. Dated change log
+
+### 2026-06-15 — Roswell ZKVM harness + kernels-open-bridge rename
+
+**Source**: `nockchain/nockchain` master; cargo-workspace + cargo-manifests drift checks; no new `activation_height` confirmed (docs.nockchain.org blocked by network allowlist in this CI run).
+
+**What changed upstream:**
+
+1. **New crates: `crates/roswell` + `crates/kernels/roswell`** — A new binary `roswell` has been added as a productionized ZKVM proof-pipeline harness and test runner. Capabilities:
+   - *Test suites*: `test-ci`, `test-verifier`, `test-crypto`, `test-dumb`, `test-wallet`, `test-wallet-shard`, `test-bridge`, `test-puzzle`, `test-zoon`
+   - *Proof generation*: `prove-puzzle` (generate complete ZK proof for PoW puzzle, versioned `v`/`n`)
+   - *Proof streaming*: `make-proof-snapshot`, `make-proof-stream-window` (chunked proof generation), `assemble-proof-stream`, `assemble-proof-continuation` (reassemble from windows+snapshot)
+   - *Proof verification*: `check-proof` (verify a jammed proof)
+   - *Benchmarks*: `bench-verifier`, `bench-dumb`, `bench-h-zoon` (hash hot-path benchmarks; z-map vs h-map comparison)
+   - Uses `zkvm-jetpack` internally via `produce_prover_hot_state()`
+   - `kernels-roswell` dev-dependency now wired into `crates/bridge` for bridge-test coverage
+
+2. **`crates/kernels/bridge` renamed to `kernels-open-bridge`** — The bridge kernel package name changed from `kernels-bridge` to `kernels-open-bridge`. This is a Cargo package name change only (path stays `crates/kernels/bridge`). Suggests clearer delineation of the "open" (public/permissionless) bridge kernel from future closed variants.
+
+3. **Widespread manifest churn** — 36/36 existing crate manifests changed hash. Likely: dependency graph ripple from roswell integration + the kernels-open-bridge rename propagating through workspace references.
+
+**App impact:**
+
+- **Front #3 (Full Nock ZKVM)**: Roswell is strong evidence that the ZKVM proof pipeline is being productionized. Proof streaming (window → snapshot → assembly) suggests the team has solved chunked proof generation, which is a key engineering prerequisite for the full ZKVM. No activation_height — this is still developer tooling ahead of the upgrade.
+- **Front #1 (Bridge Withdrawals)**: `kernels-open-bridge` rename + `kernels-roswell` as bridge dev-dependency suggest the bridge kernel is being formalized and integration-tested. Watch for bridge-withdrawal mechanics to appear in the bridge source.
+- **No consensus changes**: None of these crate additions change the Transaction Engine, Intent Script, or protocol-evolution activation heights. Build discipline unchanged. The `roswell` binary is a proof toolchain, not a consensus primitive.
+- **Proof-receipt versioning**: The proof streaming API introduces new proof object types (`ProofStreamWindow`, snapshots, assembled proofs). If nocksperimental receipt formats ever incorporate proof objects, they should track the `roswell` proof-stream format as the canonical reference.
+- **No new activation_height found** this run (docs.nockchain.org was blocked by the CI network allowlist). Manually verify `protocol-evolution.md` is unchanged if a node upgrade decision is pending.
+
 ## 1. The protocol's direction in one paragraph
 
 Nockchain's bet is that mining and useful verifiable computation become the
