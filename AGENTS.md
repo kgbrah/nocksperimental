@@ -1,8 +1,11 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-06-05T18:59:56-04:00
-**Commit:** ec45a61
-**Branch:** main
+**Generated:** 2026-06-05T18:59:56-04:00 (commit ec45a61, branch main)
+**Last verified:** 2026-06-20 — structure, scripts, and conventions below confirmed
+current at commit 97cafa0 (branch feat/interactive-gui-wallet). The branch's EVM /
+wallet / on-chain-games / miner lane is now catalogued below (OVERVIEW, WHERE TO LOOK,
+ANTI-PATTERNS) and in the per-directory guides `src/app/AGENTS.md`, `src/lib/AGENTS.md`,
+and `src/lib/x402/AGENTS.md`.
 
 ## OVERVIEW
 
@@ -10,19 +13,34 @@ Nocksperimental is a Next.js App Router product lab for NockApp launch evidence:
 fixtures, invariant checks, fakenet diagnostics, receipts, trust surfaces,
 Nockchain atlases, x402 metering, and Cloudflare Worker deployment.
 
+The `feat/interactive-gui-wallet` branch adds an **EVM lane**: a server-side
+**read-only** viem layer over Base Sepolia (chainId 84532; Base mainnet 8453 is
+registered-but-gated) that reads a federated 3-of-5 bridge, re-verifies on-chain
+receipt anchors, and computes bridge conservation; a browser wallet/DeFi GUI (Reown
+AppKit + wagmi — every write is signed client-side in the user's wallet); on-chain
+commit-reveal games (`ForfeitFlip` on Base Sepolia, ETH + tNOCK) plus browser-only
+provably-fair demos; and a client-side miner-ROI estimator with a copy-only NOCK
+payout command builder. Foundry (solc 0.8.28) contracts live in `contracts/`. The
+entire EVM lane is testnet/illustrative — no real value, no official Nockchain bridge.
+
 ## STRUCTURE
 
 ```
 nocksperimental/
-|-- src/app/       # Next pages and API route handlers
-|-- src/lib/       # evidence, receipt, trust, registry, x402, Nockchain logic
-|-- scripts/       # nocklab CLI, custom Node test shards, deploy smoke checks
-|-- docs/          # strategy, deployment, research, specs, work plans
-|-- fixtures/      # lab fixture inputs
-|-- schemas/       # JSON contracts for fixtures, reports, trust/workspaces
-|-- packs/         # reusable invariant packs
-`-- src/data/      # static public registry/history/trust/workspace data
+|-- src/app/        # Next pages and API route handlers
+|-- src/lib/        # evidence, receipt, trust, registry, x402, EVM/Nockchain logic
+|-- src/components/ # React UI incl. web3/ (wallet, swap, on-chain game components)
+|-- contracts/      # Foundry (solc 0.8.28) EVM contracts: ForfeitFlip, NockEthAMM, NockSwapVault
+|-- scripts/        # nocklab CLI, custom Node test shards, deploy smoke checks
+|-- docs/           # strategy, deployment, research, specs, work plans
+|-- fixtures/       # lab fixture inputs
+|-- schemas/        # JSON contracts for fixtures, reports, trust/workspaces
+|-- packs/          # reusable invariant packs
+`-- src/data/       # static public registry/history/trust/workspace data
 ```
+
+Per-directory guides carry the detailed rules for their trees: `src/app/AGENTS.md`,
+`src/lib/AGENTS.md`, `src/lib/x402/AGENTS.md`. Read the one for the tree you are editing.
 
 ## WHERE TO LOOK
 
@@ -34,6 +52,10 @@ nocksperimental/
 | Lab runner | `scripts/run-lab.mjs`, `packages/nocklab/`, `fixtures`, `packs`, `schemas` | Writes ignored `.nocklab/` artifacts. Published to npm as `nocklab` (extracted to `packages/nocklab/`); the repo itself stays `private`. |
 | Product direction | `docs/strategy.md`, `docs/superpowers/specs` | Launch Evidence is the first product lane. |
 | Cloudflare deploy | `wrangler.jsonc`, `open-next.config.ts`, `docs/deployment.md` | OpenNext Workers target. |
+| EVM Base read layer + Foundry contracts | `src/lib/base-*`, `src/lib/chain-*`, `src/lib/bridge-supply.ts`, `src/app/api/{rpc/base,base,bridge}/`, `contracts/` | Read-only viem PUBLIC clients; NO private keys. RPC URL stays server-side — the browser reads via the `/api/rpc/base` proxy. `networks.ts` is the write gate (84532 enabled, 8453 gated). |
+| Wallet GUI + AMM/swap/bridge flows | `src/app/providers.tsx`, `src/components/web3/`, `src/lib/{amm,swap}-contracts.ts`, `src/lib/orchestrator.ts` | Reown AppKit + wagmi. Every swap/AMM/burn/donate WRITE is built and signed in the user's browser wallet, gated by `WalletGate` + `isChainEnabled`. Off-chain mint/redeem is HTTP to a co-located loopback orchestrator (never the Worker). |
+| On-chain & provably-fair games | `contracts/src/ForfeitFlip.sol`, `src/lib/flip-house.ts`, `src/lib/pocgames.ts`, `src/app/{play,pocgames}/`, `src/app/api/game/flip/` | Two-sided commit-reveal: the house commits `keccak256(serverSeed)` before the player stakes. On-chain `ForfeitFlip` (84532) carries real testnet value; `/pocgames` are browser-only (no value). `flip-house.ts` is the ONLY key holder (Worker secret). |
+| Miner lab + payout economics | `src/lib/miner-performance-model.ts`, `src/lib/miner-specs.ts`, `src/lib/nock-payout.ts`, `src/app/{miner-lab,payouts}/` | Pure, deterministic, client-side. Miner Lab is an ESTIMATOR (calibrated `current`, modeled `forkA`) — not live mining. Payouts only emits a `nockchain-wallet create-tx` string the operator signs locally; never touches keys. |
 
 ## LAUNCH EVIDENCE DIRECTION
 
@@ -124,3 +146,38 @@ Key focused suites: `npm run test:x402`, `npm run test:bazaar`,
 - Do not let x402 facilitator failures silently fall back to stub mode.
 - Do not turn the Nockchain watch board into protocol authority; it is a weekly
   monitoring surface that complements docs/upstream/operations atlases.
+
+EVM lane (branch-local — `feat/interactive-gui-wallet`):
+
+- The EVM read layer is **keyless**: do NOT add a private key, signer, or
+  `createWalletClient` to `base-rpc`/`base-bridge`/`chain-verify-base`/`chain-anchor`/
+  `networks`/`bridge-supply` — they are viem PUBLIC clients (reads) only. The sole
+  intentional key-holder is `flip-house.ts` (house operator, Worker secret).
+- Never ship the dedicated RPC URL to the client. The browser reads through the
+  same-origin `/api/rpc/base` proxy; keep its method allowlist to reads +
+  `eth_sendRawTransaction` (already-signed bytes), never add account-unlocking or
+  `eth_sign`-style methods, and keep it pinned to Base Sepolia.
+- Do NOT enable Base mainnet (8453) real-value writes by flipping `enabled:true` or
+  bypassing `isChainEnabled`/`ENABLED_CHAIN_IDS` until cross-chain flows are proven.
+  Donations are the only mainnet exception, via the independent `isDonationAllowed()`.
+- All EVM writes (swap/AMM/burn/transfer) are signed in the user's wallet via wagmi.
+  Do NOT move signing into a Next route, the Worker, or the orchestrator — routes and
+  the orchestrator verify/observe and pay from their OWN keys only.
+- Commit-reveal fairness is load-bearing: the house commits before the player stakes;
+  `reveal` reverts `BadReveal` unless `keccak256(serverSeed) == commit`; the outcome is
+  fixed at play (no upper reveal bound) and `claimTimeout` pays the player the FULL
+  `2*stake` pot and is callable by anyone. Do not add a deadline that flips the result,
+  reuse a `commit`/serverSeed (`usedCommit` is permanent), expose a serverSeed before
+  its round Settles, or present a not-yet-Settled round as a loss.
+- Deployment JSON (`contracts/deployments/base-sepolia-84532.json`) and addresses in
+  `networks.ts`/`*-contracts.ts` are PUBLIC testnet addresses/txids only — no keys.
+  Deploy scripts read `DEPLOYER_PRIVATE_KEY` via `vm.envUint` (env, never argv). Note
+  `bridge-supply.ts` deliberately uses a DIFFERENT address pair than `networks.ts`;
+  keep them straight. `TNOCK_DECIMALS` is 16, not 18.
+- Miner Lab numbers are illustrative model estimates, not realized earnings or
+  live-protocol truth; keep `gpu-benchmarks.json` in sync with `miner-specs.ts` (a test
+  enforces this). Payouts is a one-way transfer command builder — no keys, no
+  swap/HTLC/timelock logic.
+- Do NOT present bridge-supply or any of these reads as official Nockchain truth or
+  real value: preserve `BRIDGE_DISCLOSURE` and the `conserved:false` flagging. ABI files
+  under `src/lib/abi/` are extracted from Foundry artifacts — regenerate, never hand-edit.
