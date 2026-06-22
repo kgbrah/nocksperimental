@@ -12,6 +12,20 @@ certs, x402 metering), the **%fair casino + orchestrator**
 3-of-5 operator quorum), the **wallet V4 escrow lock builder**
 (`nock-wallet`), and **golden-miner** (mining/pool surfaces).
 
+## 2026-06-22 update: `roswell` proving binary
+
+New crates `crates/roswell` (binary) and `crates/kernels/roswell` (kernel) merged into the upstream workspace. Key signals:
+
+- **Commands**: `prove-puzzle`, `make-proof-snapshot`, `make-proof-stream-window`, `assemble-proof-stream`, `assemble-proof-continuation`, `check-proof` — a full streaming ZK proof assembly pipeline.
+- **Dependency**: `zkvm-jetpack` (the in-repo ZKVM implementation) — confirms this is the live ZKVM proving path, not a stub.
+- **Kernel pattern**: `kernels-roswell` embeds a precompiled Nock kernel (JAM file) at build time, following the same pattern as `kernels/miner`, `kernels/wallet`, etc.
+- **Test suites inside**: `test-verifier`, `test-crypto`, `test-wallet`, `test-bridge`, `test-puzzle`, `bench-verifier` — this subsumes integration testing into the proving harness.
+
+**Read-across for our apps:**
+- The `prove-puzzle` command and streaming proof assembly suggest the PoUW puzzle proving pipeline (Fork A / PR #124) is being built out at the kernel level. Until PR #124 merges, do not treat the puzzle format as stable — `roswell`'s interface is the authoritative signal.
+- For the ZKVM front (Front #3): `roswell` is the first proving CLI using `zkvm-jetpack`. When its proof format stabilizes, our receipt / evidence layer should reference the proof schema it produces (not a stub or self-reported claim).
+- No `activation_height` announced. No public roadmap change recorded this cycle (roadmap check 403-blocked). Monitor `roswell` CLI changes and any new docs page for the puzzle/proving spec.
+
 ## 1. The protocol's direction in one paragraph
 
 Nockchain's bet is that mining and useful verifiable computation become the
