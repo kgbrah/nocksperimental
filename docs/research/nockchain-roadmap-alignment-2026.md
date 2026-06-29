@@ -199,3 +199,34 @@ doc's triggers) and the existing `check:nockchain-*-drift` suite (canonical
 sources), review diffs, update `docs/nockchain-watch.md`, then re-pin the
 baseline. Event-driven: any new upgrade spec with an `activation_height` →
 schedule node upgrades and re-run escrow/bridge fixtures before the height.
+
+## 7. Field notes
+
+### 2026-06-29 — `roswell` ZK proving binary lands on master
+
+Two new crates appeared on `nockchain/nockchain` master (workspace: 36→38
+members): `crates/roswell` (binary named `roswell`) and `crates/kernels/roswell`
+(`kernels-roswell` kernel). The binary uses `nockapp`, `nockvm`, and
+`zkvm-jetpack` and exposes commands for:
+
+- Puzzle proving: `test-puzzle`, `prove-puzzle`, `make-proof-snapshot`
+- Proof stream construction: `make-proof-stream-window`, `assemble-proof-stream`,
+  `assemble-proof-continuation`, `check-proof`
+- Test suites: `test-verifier`, `test-crypto`, `test-wallet`, `test-bridge`,
+  `test-wallet-shard`
+- Benchmarks: `bench-verifier`, `bench-dumb`, `bench-h-zoon`, `dec-benchmark`
+
+**Interpretation**: roswell is ZKVM proving/testing infrastructure, not a
+completion milestone for Front #3. The "proof stream" commands (window +
+assemble + continuation) suggest the team is building out how ZK proofs are
+segmented and delivered — this could be the proving pipeline for the PoUW
+puzzle mechanism or for the compute-market proof certificate format. The
+`zkvm-jetpack` dependency (not previously in our Rust atlas) is new infrastructure
+worth tracking.
+
+**Action**: update `src/lib/nockchain-rust-atlas.ts` to include `roswell` and
+`kernels-roswell` in the workspace member catalog; flag `zkvm-jetpack` as a new
+ZK acceleration dependency. Monitor for related documentation in
+`docs.nockchain.org` (new pages for proof streaming or puzzle construction)
+and for PR activity that ties roswell into the block-validation or compute-market
+proving path.
