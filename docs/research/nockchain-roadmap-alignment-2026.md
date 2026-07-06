@@ -199,3 +199,64 @@ doc's triggers) and the existing `check:nockchain-*-drift` suite (canonical
 sources), review diffs, update `docs/nockchain-watch.md`, then re-pin the
 baseline. Event-driven: any new upgrade spec with an `activation_height` →
 schedule node upgrades and re-run escrow/bridge fixtures before the height.
+
+## 7. Dated monitoring notes
+
+### 2026-07-06 — Wallet README expansion + roswell ZKVM crates
+
+**Wallet CLI (crates/nockchain-wallet/README.md) — significant update confirmed
+on GitHub master (hash drift):**
+
+- Ergonomic `--bridge-deposit <nocks> --to-evm-address <0x...>` flag pair now
+  the documented primary path for bridge deposits. Bridge enforces minimum
+  **100,000 nocks** and a **0.3% fee**; wrapped-NOCK ERC-20 contract on Base is
+  `0x9B5E262cF9bb04869ab40b19AF91D2dc85761722`. Deposit CLI is stable enough to
+  document formally — update bridge-evidence fixtures and any copy referencing
+  the JSON-only path.
+- `migrate-v0-notes --destination <v1-p2pkh-b58>` is now the official full-sweep
+  command for v0→v1 note migration. Creates one tx per active v0 signer bucket;
+  outputs saved to `./txs/`. The six-step migration flow (pull → rebuild →
+  import v0 seed → confirm → set-active-master → migrate → send) is the
+  canonical path. **V4 lock-builder docs and wallet tooling should reference this
+  command** — it supersedes manual `create-tx` with `--refund-pkh` for sweeps.
+- `watch multisig --threshold <M> --participants "<pkh-a>,<pkh-b>,..."` extends
+  watch-only tracking to multisig locks — relevant for our 3-of-5 bridge quorum
+  monitoring.
+- `tx-accepted <base58-tx-id>` queries acceptance (public API only); note it
+  confirms node acceptance, not mempool presence, and cannot confirm inclusion
+  when timelocks are pending.
+- Message signing (`sign-message`, `verify-message`) and hash signing
+  (`sign-hash`, `verify-hash`) are now officially documented CLI surfaces.
+
+**NockApp README (crates/nockapp/README.md) — minor update confirmed:**
+
+- Logging config additions: `RUST_MIN_STACK=838860` for large builds,
+  `MINIMAL_LOG_FORMAT=true` for compact single-letter colored log levels. Update
+  any local NockApp runner docs or CI setup scripts that pin log format.
+
+**New upstream crates: `crates/roswell` + `crates/kernels/roswell` — ZKVM
+development signal (Front #3):**
+
+- `roswell` is a CLI testing and benchmarking binary for the Nock VM; it
+  depends on `zkvm-jetpack` (alongside `nockapp`, `nockvm`, `noun-serde`,
+  `tokio`, `tracing`, and `clap`). Capabilities: run test suites (wallet,
+  crypto, bridge, verifier), generate/verify ZK proofs for built-in puzzles,
+  snapshot/stream proof windows, benchmark verifier and Nock ops.
+- `kernels-roswell` is the companion kernel (compile-time jam-embedded, no
+  external deps).
+- The `zkvm-jetpack` dependency signals that ZKVM proof machinery is far enough
+  along to drive a benchmark harness. This is an active-development signal for
+  Front #3 (Full Nock ZKVM Completion), not a completion signal — but confirms
+  the ZKVM is being exercised in the repo. The `zkp` opcode (Front #4) and the
+  coinbase reversion gate both depend on this completing.
+- **No action required yet**, but watch for roswell graduating to a
+  user-facing binary or for `zkvm-jetpack` to appear in protocol-critical paths.
+- Cargo workspace member count: 36 → 38. The rust-atlas baseline needs a
+  separate update to add roswell roles.
+
+**Monitoring limitations this cycle:** nockchain.org returned HTTP 403 to
+automated checks — roadmap milestone statuses and new writings posts could not
+be scraped. No milestone status flips (e.g., Bridge Withdrawals → COMPLETED,
+AI Compute Market → CURRENT) can be confirmed for this cycle. GitHub API also
+rate-limited most raw-commit source-anchor checks. Re-run roadmap check
+manually or wait for next cycle when site is accessible.
