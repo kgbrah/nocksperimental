@@ -7,7 +7,8 @@ surfaces* — nockchain.org/roadmap, docs.nockchain.org, and /writings — so th
 nocksperimental and our other Nock revenue apps see protocol changes coming
 before they land.
 
-- **Updated:** 2026-06-10 — Front #2 (AI Compute Market / Fork A) flipped to IMPLEMENTATION OPEN: PR #124 (AI-PoW matmul, `ai-pow-miner` + `ai-pow-zk`) is now a full open PR on `nockchain/nockchain`. See PR-radar #124.
+- **Updated:** 2026-07-06 — Docs drift confirmed: `crates/nockchain-wallet/README.md` and `crates/nockapp/README.md` both changed on GitHub master. Wallet README significantly expanded: ergonomic `--bridge-deposit`/`--to-evm-address` CLI flags now documented, new `migrate-v0-notes` command (v0→v1 sweep), `watch multisig`, `tx-accepted`, and message/hash signing commands. Two new upstream crates appeared (`crates/roswell` + `crates/kernels/roswell`): a Nock VM testing/benchmarking CLI that depends on `zkvm-jetpack` — active ZKVM proof development signal for Front #3. nockchain.org returned 403 this run (roadmap/writings inaccessible to automated checks); no milestone status flips can be confirmed for this cycle. Knowledge-spine fingerprints re-pinned to match GitHub master.
+- **Previously (2026-06-10):** Front #2 (AI Compute Market / Fork A) flipped to IMPLEMENTATION OPEN: PR #124 (AI-PoW matmul, `ai-pow-miner` + `ai-pow-zk`) is now a full open PR on `nockchain/nockchain`. See PR-radar #124.
 - **Sources:** nockchain.org/roadmap (33 milestones), docs.nockchain.org (39
   pages), nockchain.org/writings (9 most-recent posts), whitepaper
   (`nockchain.org/nockchain.pdf`, Allen & Murphy, 2026-04-30)
