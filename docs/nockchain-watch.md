@@ -7,7 +7,9 @@ surfaces* — nockchain.org/roadmap, docs.nockchain.org, and /writings — so th
 nocksperimental and our other Nock revenue apps see protocol changes coming
 before they land.
 
-- **Updated:** 2026-06-10 — Front #2 (AI Compute Market / Fork A) flipped to IMPLEMENTATION OPEN: PR #124 (AI-PoW matmul, `ai-pow-miner` + `ai-pow-zk`) is now a full open PR on `nockchain/nockchain`. See PR-radar #124.
+- **Updated:** 2026-07-13 — Docs drift carry-over (PR #32 still open/unmerged). Upstream commit advanced to `db50a30dc58d8345996b6fb7544e59049115aaef`. Wallet source files grew substantially since our local pin (`lock_resolver.rs` +44 %, `word_count.rs` +27 %, `create_tx.rs` +32 %, `command.rs` +74 %, `recipient.rs` +57 %) — confirming the implementation of bridge-deposit ergonomics, multisig tx, migrate-v0-notes, and signing operations now documented in the wallet README. Nous (013) networking upgrade is `final` in PROTOCOL.md (rollout-gated, `activation_height = 0`, `consensus_critical = false`) — no hard cutover, operators can upgrade incrementally. No new upgrade specs or activation heights. nockchain.org still returning 403 to automated checks (roadmap/writings unscrapable for second consecutive cycle). Knowledge-spine fingerprints re-pinned to match GitHub master (same hashes as PR #32).
+- **Previously (2026-07-06):** Wallet README significantly expanded (bridge-deposit CLI, migrate-v0-notes, watch multisig, tx-accepted, sign/verify message and hash). nockapp README minor update (RUST_MIN_STACK, MINIMAL_LOG_FORMAT). Two new upstream crates: `crates/roswell` + `crates/kernels/roswell` (Nock VM bench/test harness; depends on `zkvm-jetpack` — active ZKVM proof signal for Front #3).
+- **Previously (2026-06-10):** Front #2 (AI Compute Market / Fork A) flipped to IMPLEMENTATION OPEN: PR #124 (AI-PoW matmul, `ai-pow-miner` + `ai-pow-zk`) is now a full open PR on `nockchain/nockchain`. See PR-radar #124.
 - **Sources:** nockchain.org/roadmap (33 milestones), docs.nockchain.org (39
   pages), nockchain.org/writings (9 most-recent posts), whitepaper
   (`nockchain.org/nockchain.pdf`, Allen & Murphy, 2026-04-30)

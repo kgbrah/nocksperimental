@@ -43,7 +43,7 @@ const documentFingerprints = [
     path: "crates/nockapp/README.md",
     tier: "tier1",
     authority: "scoped-nockapp-runtime-interface",
-    sha256: "ae4d3949cae8823ef8cff9724b789099b19a3365f0e294c60bf98dc9bf2e6472"
+    sha256: "d5b5fcaa8422166a19f6eda68f6ece07541b8f75201eab9d799730fa6b08e930"
   },
   {
     path: "crates/nockchain-api/README.md",
@@ -55,7 +55,7 @@ const documentFingerprints = [
     path: "crates/nockchain-wallet/README.md",
     tier: "tier1",
     authority: "scoped-wallet-cli-operations",
-    sha256: "d069f43e7eaad0631f78c1c3e51b68984e6a89f6182d287258225ef806e350c1"
+    sha256: "79e6ece738e206a0de73817e2df3bd580cab6a327b3364b99f4ac25159752383"
   }
 ] as const;
 
