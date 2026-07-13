@@ -199,3 +199,24 @@ doc's triggers) and the existing `check:nockchain-*-drift` suite (canonical
 sources), review diffs, update `docs/nockchain-watch.md`, then re-pin the
 baseline. Event-driven: any new upgrade spec with an `activation_height` →
 schedule node upgrades and re-run escrow/bridge fixtures before the height.
+
+## 7. Dated monitoring notes
+
+### 2026-07-13 — Wallet source growth + Nous confirmed final + carry-over drift
+
+**Carry-over from PR #32 (2026-07-06, unmerged):** wallet README expansion (bridge-deposit CLI, migrate-v0-notes, watch multisig, tx-accepted, message/hash signing), nockapp README minor update (RUST_MIN_STACK, MINIMAL_LOG_FORMAT), two new upstream crates `crates/roswell` + `crates/kernels/roswell` (ZKVM bench signal for Front #3). Knowledge-spine fingerprints updated this cycle to match GitHub master.
+
+**Wallet source confirmed implemented (not just documented):** Five wallet source files grew substantially since our local pin (upstream commit `33ba97b1e...` → `db50a30dc...`):
+- `crates/wallet-tx-builder/src/lock_resolver.rs`: +44% (24 KB → 35 KB)
+- `crates/wallet-tx-builder/src/word_count.rs`: +27% (36 KB → 46 KB)
+- `crates/nockchain-wallet/src/create_tx.rs`: +32% (88 KB → 116 KB)
+- `crates/nockchain-wallet/src/command.rs`: +74% (27 KB → 46 KB)
+- `crates/nockchain-wallet/src/recipient.rs`: +57% (19 KB → 30 KB)
+
+This confirms bridge-deposit ergonomics, multisig tx construction, v0→v1 migration, and signing operations are implemented in source (not just README docs). Update wallet-source-drift pin before using these as evidence anchors.
+
+**Nous (013) networking upgrade:** Confirmed `final` in PROTOCOL.md (`activation_height = 0`, `consensus_critical = false`, target 2026-Q2). Rollout-gated — operators upgrade incrementally via libp2p protocol negotiation (gen1↔gen2). No hard cutover height; no node upgrade deadline.
+
+**Monitoring limitations (second consecutive cycle):** nockchain.org returning HTTP 403 to automated scraper — roadmap milestone status flips (Bridge Withdrawals, AI Compute Market) and new writings posts cannot be confirmed. GitHub API also 403'd the PR radar and release-assets checks. Re-run manually when site access is restored.
+
+**No new activation heights or upgrade specs.** PROTOCOL.md highest sequence remains 014 (Aletheia, already activated at height 65,500).
