@@ -111,9 +111,12 @@ cheap now and expensive later.
 
 - The **official** bridge is also a 3-of-5 ecosystem multisig (Zorp holds 2)
   over a deterministic event-mirroring state machine — our architecture is
-  congruent with theirs. **Bridge withdrawals are the CURRENT roadmap item**
-  and the mechanics are unpublished: do not finalize our withdrawal design
-  until their model lands; expect our fixture assumptions to need a pass.
+  congruent with theirs. **Bridge withdrawals are the CURRENT roadmap item.**
+  As of 2026-07-20, the withdrawal protocol mechanics are now implementation-wired
+  (both Nock kernel and Rust runtime sides; see dated note in §7). The
+  `withdrawal` type uses `dest=nock-lock-root` with no fee field; the
+  dedicated poke is `%create-withdrawal-tx`. **Run a bridge-fixture review pass
+  now** — the "mechanics unpublished" blocker is lifted.
 - On the Nockchain side, 3-of-5 is native `pkh(3-of-5)` with **exactly-3**
   semantics; pair it with a time-delayed recovery branch (the whitepaper's
   own custody example) for operator-rotation safety.
@@ -192,7 +195,33 @@ cheap now and expensive later.
 - **Fakenet + Developer API (SWPS) and Iris V2 dev SDK (Nockbox)**: integrate
   early; our wallet-connect work (Iris) tracks Iris V2's new SDK.
 
-## 6. Standing monitoring loop
+## 7. Dated notes (significant upstream events)
+
+### 2026-07-20 — Native Hoon compiler infrastructure (`honk`/`hatch`) and Roswell kernel
+
+Six new crates appeared in `nockchain/nockchain` upstream:
+
+- **`hatch`** — Native Rust Hoon parser using `chumsky` + `ariadne`. Covers all rune families (tall + wide forms). Emits a typed `Hoon` AST. Used by the native compiler as its parser front-end.
+- **`honk`** — Native Rust Hoon→Nock compiler with byte-for-byte parity with `hoonc` on `hoon-138`. Implements `++ut` semantics natively. Has a CLI used by Bazel native Hoon rules. Output modes: `standard`, `arbitrary`, `dynock`, `dynock-typed`. Diagnostic tools in `honk-tools` (`jam-diff`, `extract-hoonc-octs-type`).
+- **`honc-cold-138`** — Cold compiled state for hoon-138, used by `honk` during build.
+- **`kernels/roswell`** + **`roswell`** — New kernel and runner binary. `roswell` depends on `zkvm-jetpack`, making it the first ZK-capable kernel binary in the workspace. Likely the kernel target for the Full ZKVM track (Front #3).
+
+**Impact on our apps:**
+- *Lab / evidence*: The native compiler enables reproducible, auditable Hoon→Nock compilation. Future invariant packs could prove the compilation step; `honk`'s deterministic output mode (`arbitrary`) is the right target.
+- *ZKVM readiness*: `roswell` + `zkvm-jetpack` suggests ZK kernel work is progressing ahead of the Q3 2026 public ZKVM target. Watch for a companion writings post or `kernels/roswell` documentation.
+- *Tooling*: Bazel native Hoon rules via `honk` — if we build NockApps, we can adopt Bazel native rules instead of the Hoon-self-hosted path.
+- *No new activation heights* introduced in this diff; `blockchain_constants.rs` change was 2 bytes (minor patch).
+
+### 2026-07-20 — Bridge withdrawals now implementation-wired
+
+`crates/bridge/docs/bridge-withdrawals.md` updated (previously described as "mechanics still unpublished" on this watch board). The document now describes:
+- Nock kernel: `is-bridge-withdrawal-tx` branch wired, `++ nockchain-process-withdrawal-settlements` arm implemented, `++ base-propose-withdrawals` arm implemented with `dest=nock-lock-root` (no fee field), new effects: `%base-block-withdrawals-pending`, `%base-block-withdrawals-committed`, `%withdrawal-proposal-built`, `%withdrawal-tx-signed`, `%create-withdrawal-tx` poke.
+- Rust runtime: `open/crates/bridge/src/withdrawal/runtime.rs` wires withdrawal assembly, signing, and submission loops alongside existing deposit execution.
+- `bridge-dev/tests/scenarios.rs` grew +18KB (new scenarios).
+
+**Action for Base bridge section:** The `docs/research/nockchain-roadmap-alignment-2026.md` note that "withdrawal mechanics are unpublished" is now stale. Update wallet/bridge fixtures to match `withdrawal` shape using `dest=nock-lock-root` with no `nock-tx-fee` field. Plan a fixture review pass when the roadmap flips to COMPLETED and a public writings post appears.
+
+## 8. Standing monitoring loop
 
 Weekly: run `npm run check:nockchain-roadmap-drift` (public surfaces — this
 doc's triggers) and the existing `check:nockchain-*-drift` suite (canonical
